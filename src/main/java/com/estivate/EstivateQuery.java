@@ -266,7 +266,7 @@ public class EstivateQuery extends EstivateAggregator{
 		}
 
 		// check no missing class from queryClasses in joinedQueryClasses
-		if(targetEntities.size() != joinedEntities.size()) {
+		if(!joinedEntities.containsAll(targetEntities)) {
 			throw new RuntimeException(
 					"No junction found for classes "
 					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 

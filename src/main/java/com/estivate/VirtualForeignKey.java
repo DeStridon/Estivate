@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Target( ElementType.FIELD )
 @Retention( RetentionPolicy.RUNTIME )
-public @interface EstivateVirtualForeignKey {
+public @interface VirtualForeignKey {
 	
 	public Class entity();
 	public String attribute() default "";
