@@ -24,32 +24,29 @@ import javax.persistence.TupleElement;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.hibernate.query.NativeQuery;
 
-import com.wezen.framework.orm.joinQuery.JoinQuery.Entity;
+import com.estivate.EstivateQuery.Entity;
 
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
-public class JoinQueryExecutor {
+public class EstivateExecutor {
 	
-	@Autowired SessionFactory sessionFactory;
+	private final Session session;
 	
+	public EstivateExecutor(Session session) {
+		this.session = session;
+	}
 	
-	public List<JoinQueryResult> list(JoinQuery joinQuery){
-		Session session = this.sessionFactory.openSession();
+	public List<EstivateResult> list(EstivateQuery joinQuery){
 
 		try {
 
-			Query<Tuple> query = session.createNativeQuery(joinQuery.compile(), Tuple.class);
+			NativeQuery<Tuple> query = session.createNativeQuery(joinQuery.compile(), Tuple.class);
 			List<Tuple> tuples = query.getResultList();
-			List<JoinQueryResult> results = tuples.stream().map(tuple -> new JoinQueryResult(joinQuery, tuple)).collect(Collectors.toList());
+			List<EstivateResult> results = tuples.stream().map(tuple -> new EstivateResult(joinQuery, tuple)).collect(Collectors.toList());
 				
 			return results;
 			
@@ -64,14 +61,13 @@ public class JoinQueryExecutor {
 		}
 	}
 	
-	public <U> List<U> listAs(JoinQuery joinQuery, Class<U> clazz) {
-		Session session = this.sessionFactory.openSession();
-
+	public <U> List<U> listAs(EstivateQuery joinQuery, Class<U> clazz) {
+		
 		try {
-			Query<Tuple> query = session.createNativeQuery(joinQuery.compile(), Tuple.class);
+			NativeQuery<Tuple> query = session.createNativeQuery(joinQuery.compile(), Tuple.class);
 			List<Tuple> tuples = query.getResultList();
 			
-			List<U> results = tuples.stream().map(tuple -> new JoinQueryResult(joinQuery, tuple).mapAs(clazz)).collect(Collectors.toList());
+			List<U> results = tuples.stream().map(tuple -> new EstivateResult(joinQuery, tuple).mapAs(clazz)).collect(Collectors.toList());
 			return results;
 			
 		} catch (HibernateException e) {
@@ -96,7 +92,7 @@ public class JoinQueryExecutor {
 			return;
 		}
 		
-		Field idField = JoinQueryUtil.getFieldWithAnnotation(entity.getClass(), Id.class);
+		Field idField = EstivateUtil.getFieldWithAnnotation(entity.getClass(), Id.class);
 		
 		if(idField == null) {
 			log.error("No @Id field on class "+entity.getClass());
@@ -109,28 +105,28 @@ public class JoinQueryExecutor {
 		}
 		
 		// 1. Create query
-		String query = "UPDATE "+JoinQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
+		String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
 
 		// 2. List updated fields
 		List<String> fieldUpdateQueries = new ArrayList<>();
 		for(Field field : updatedFields) {
-			fieldUpdateQueries.add(field.getName() + " = " + JoinQueryUtil.compileObject(entity.getClass(), field.getName(), field.get(entity)));
+			fieldUpdateQueries.add(field.getName() + " = " + EstivateUtil.compileObject(entity.getClass(), field.getName(), field.get(entity)));
 		}
 		
 		query += fieldUpdateQueries.stream().collect(Collectors.joining(","));
 		
-		query += "WHERE "+JoinQuery.nameMapper.mapAttribute(idField.getName())+" = "+idField.getLong(entity);
+		query += "WHERE "+EstivateQuery.nameMapper.mapAttribute(idField.getName())+" = "+idField.getLong(entity);
 		
 	}
 	
 	
 	//@AllArgsConstructor
-	public static class JoinQueryResult{
+	public static class EstivateResult{
 		
-		JoinQuery query;
+		EstivateQuery query;
 		Tuple tuple;
 		
-		public JoinQueryResult(JoinQuery query, Tuple tuple) {
+		public EstivateResult(EstivateQuery query, Tuple tuple) {
 			this.query = query;
 			this.tuple = tuple;
 		}
@@ -163,7 +159,7 @@ public class JoinQueryExecutor {
 		public Long mapCount(Class c, String attribute) {
 			
 			for(TupleElement<?> element : tuple.getElements()) {
-				if(element.getAlias().equals("COUNT(distinct "+JoinQuery.nameMapper.mapEntityAttribute(c, attribute)+")")) {
+				if(element.getAlias().equals("COUNT(distinct "+EstivateQuery.nameMapper.mapEntityAttribute(c, attribute)+")")) {
 					return Long.valueOf(tuple.get(element.getAlias()).toString());
 				}
 			}
@@ -173,7 +169,7 @@ public class JoinQueryExecutor {
 		
 		public String mapAsString(Class c, String attribute) {
 			for(TupleElement<?> element : tuple.getElements()) {
-				if(element.getAlias().equals(JoinQuery.nameMapper.mapEntityAttribute(c, attribute))) {
+				if(element.getAlias().equals(EstivateQuery.nameMapper.mapEntityAttribute(c, attribute))) {
 					return tuple.get(element.getAlias()).toString();
 				}
 			}

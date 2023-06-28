@@ -2,7 +2,7 @@ package com.estivate;
 
 import java.lang.reflect.Field;
 
-import com.wezen.framework.StringPipe;
+import com.estivate.util.StringPipe;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class JoinQueryClassJoin {
+public class EstivateJoin {
 
-	JoinQuery.Entity internalClass;
+	EstivateQuery.Entity internalClass;
 
-	JoinQuery.Entity externalClass;
+	EstivateQuery.Entity externalClass;
 
 	// TODO : join type ? LEFT, RIGHT, INNER
 
@@ -28,38 +28,38 @@ public class JoinQueryClassJoin {
 
 		StringPipe sb = new StringPipe().separator(" ")
 				.append  ("INNER JOIN")
-				.append  (JoinQuery.nameMapper.mapEntity(externalClass.entity))
+				.append  (EstivateQuery.nameMapper.mapEntity(externalClass.entity))
 				.appendIf(externalClass.alias != null, "AS "+externalClass.alias)
 				.append  ("ON")
-				.append  (externalClass.getName()+"."+JoinQuery.nameMapper.mapAttribute(externalAttribute))
+				.append  (externalClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(externalAttribute))
 				.append  ("=")
-				.append  (internalClass.getName()+"."+JoinQuery.nameMapper.mapAttribute(internalAttribute));
+				.append  (internalClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(internalAttribute));
 
 		return sb.toString();
 	}
 
-	public JoinQueryClassJoin(JoinQuery.Entity internalEntity, Class externalEntity, String internalAttribute, String externalAttribute) {
-		this(internalEntity, new JoinQuery.Entity(externalEntity), internalAttribute, externalAttribute);
+	public EstivateJoin(EstivateQuery.Entity internalEntity, Class externalEntity, String internalAttribute, String externalAttribute) {
+		this(internalEntity, new EstivateQuery.Entity(externalEntity), internalAttribute, externalAttribute);
 	}
 
-	public JoinQueryClassJoin(Class internalEntity, Class externalEntity, String internalAttribute, String externalAttribute) {
-		this(new JoinQuery.Entity(internalEntity), new JoinQuery.Entity(externalEntity), internalAttribute, externalAttribute);
+	public EstivateJoin(Class internalEntity, Class externalEntity, String internalAttribute, String externalAttribute) {
+		this(new EstivateQuery.Entity(internalEntity), new EstivateQuery.Entity(externalEntity), internalAttribute, externalAttribute);
 	}
 
 
 
-	public static JoinQueryClassJoin find(JoinQuery.Entity internal, JoinQuery.Entity external) {
+	public static EstivateJoin find(EstivateQuery.Entity internal, EstivateQuery.Entity external) {
 
 		// try doing the join from external class to internal class
 		for(Field externalField : external.entity.getDeclaredFields()) {
-			VirtualForeignKey reference = externalField.getDeclaredAnnotation(VirtualForeignKey.class);
+			EstivateVirtualForeignKey reference = externalField.getDeclaredAnnotation(EstivateVirtualForeignKey.class);
 
 			// if key not found or not refering to baseClass, skip
 			if(reference == null || reference.entity() != internal.entity) {
 				continue;
 			}
 
-			JoinQueryClassJoin cj = new JoinQueryClassJoin();
+			EstivateJoin cj = new EstivateJoin();
 			cj.internalClass = internal;
 			cj.externalClass = external;
 			cj.internalAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
@@ -70,12 +70,12 @@ public class JoinQueryClassJoin {
 
 		// try the other way around
 		for(Field internalField : internal.entity.getDeclaredFields()) {
-			VirtualForeignKey reference = internalField.getDeclaredAnnotation(VirtualForeignKey.class);
+			EstivateVirtualForeignKey reference = internalField.getDeclaredAnnotation(EstivateVirtualForeignKey.class);
 			if(reference == null || reference.entity() != external.entity) {
 				continue;
 			}
 
-			JoinQueryClassJoin cj = new JoinQueryClassJoin();
+			EstivateJoin cj = new EstivateJoin();
 			cj.internalClass = internal;
 			cj.externalClass = external;
 			cj.internalAttribute = internalField.getName();

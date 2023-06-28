@@ -1,4 +1,4 @@
-package com.wezen.framework.orm.joinQuery;
+package com.estivate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -12,7 +12,7 @@ import javax.persistence.Enumerated;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JoinQueryUtil {
+public class EstivateUtil {
 	
 	static Object compileObject(Class entity, String attribute, Object value) {
 		try {

@@ -1,11 +1,11 @@
 package com.estivate;
 
-import com.wezen.framework.orm.joinQuery.JoinAggregator.GroupType;
-import com.wezen.framework.orm.joinQuery.JoinCriterion.Operator;
-import com.wezen.framework.orm.joinQuery.JoinCriterion.Operator.CriterionType;
-import com.wezen.framework.orm.joinQuery.JoinQuery.Entity;
+import com.estivate.EstivateQuery.Entity;
+import com.estivate.EstivateAggregator.GroupType;
+import com.estivate.EstivateCriterion.Operator;
+import com.estivate.EstivateCriterion.Operator.CriterionType;
 
-public interface JoinNode {
+public interface EstivateNode {
 	
 	public String compile();
 	
@@ -15,24 +15,24 @@ public interface JoinNode {
 	public static Operator lte(Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Lte, value); }
 	public static Operator gte(Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Gte, value); }
 
-	public static JoinAggregator or(JoinNode... criterions) {
-		JoinAggregator aggregator = new JoinAggregator(GroupType.OR);
-		for(JoinNode criterion : criterions) {
+	public static EstivateAggregator or(EstivateNode... criterions) {
+		EstivateAggregator aggregator = new EstivateAggregator(GroupType.OR);
+		for(EstivateNode criterion : criterions) {
 			aggregator.criterions.add(criterion);
 		}
 		return aggregator;
 	}
 	
-	public static JoinAggregator add(JoinNode... criterions) {
-		JoinAggregator aggregator = new JoinAggregator(GroupType.AND);
-		for(JoinNode criterion : criterions) {
+	public static EstivateAggregator add(EstivateNode... criterions) {
+		EstivateAggregator aggregator = new EstivateAggregator(GroupType.AND);
+		for(EstivateNode criterion : criterions) {
 			aggregator.criterions.add(criterion);
 		}
 		return aggregator;
 	}
 
-	public JoinNode clone();
+	public EstivateNode clone();
 
-	public JoinQueryPreparedStatement preparedStatement();
+	public EstivateStatement preparedStatement();
 
 }

@@ -11,8 +11,8 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-import com.wezen.framework.StringPipe;
-import com.wezen.framework.orm.joinQuery.JoinQuery.Entity;
+import com.estivate.EstivateQuery.Entity;
+import com.estivate.util.StringPipe;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -21,14 +21,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-public abstract class JoinCriterion implements JoinNode{
+public abstract class EstivateCriterion implements EstivateNode{
 	
 	public Entity entity;
 	public String attribute;
 	
 	public abstract String compile();
 	
-	public abstract JoinCriterion clone();
+	public abstract EstivateCriterion clone();
 	
 //	private static String compileValue(Class entity, String attribute, Object value) {
 //		try {
@@ -75,7 +75,7 @@ public abstract class JoinCriterion implements JoinNode{
 //	}
 
 	public String compileName() {
-		return entity.getName()+"."+JoinQuery.nameMapper.mapAttribute(attribute);
+		return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute);
 	}
 
 
@@ -141,7 +141,7 @@ public abstract class JoinCriterion implements JoinNode{
 		
 	@Data
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Operator extends JoinCriterion{
+	public static class Operator extends EstivateCriterion{
 		
 		public static enum CriterionType{
 			Eq("="),
@@ -174,7 +174,7 @@ public abstract class JoinCriterion implements JoinNode{
 		public String compile() {
 			
 			StringPipe sb = new StringPipe().separator(" ")
-					.append(entity.getName() + "." + JoinQuery.nameMapper.mapAttribute(attribute))
+					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
 					.append(type.symbol)
 					.append(compileGenericType(value));
 
@@ -192,11 +192,11 @@ public abstract class JoinCriterion implements JoinNode{
 		}
 
 		@Override
-		public JoinQueryPreparedStatement preparedStatement() {
+		public EstivateStatement preparedStatement() {
 
-			JoinQueryPreparedStatement jqps = new JoinQueryPreparedStatement();
+			EstivateStatement jqps = new EstivateStatement();
 			jqps.query = new StringPipe().separator(" ")
-					.append(entity.getName() + "." + JoinQuery.nameMapper.mapAttribute(attribute))
+					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
 					.append(type.symbol)
 					.append("?").toString();
 			jqps.parameters.add(compileGenericType(value));
@@ -210,7 +210,7 @@ public abstract class JoinCriterion implements JoinNode{
 	}
 	
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class In extends JoinCriterion {
+	public static class In extends EstivateCriterion {
 		
 		List<Object> values;
 
@@ -225,7 +225,7 @@ public abstract class JoinCriterion implements JoinNode{
 			if(values.size() == 0) {
 				return null;
 			}
-			return entity.getName()+"."+JoinQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> compileGenericType(x)).collect(Collectors.joining(",\n ", "(", ")"));
+			return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> compileGenericType(x)).collect(Collectors.joining(",\n ", "(", ")"));
 		}
 		
 		public In clone() {
@@ -237,12 +237,12 @@ public abstract class JoinCriterion implements JoinNode{
 		}
 
 		@Override
-		public JoinQueryPreparedStatement preparedStatement() {
+		public EstivateStatement preparedStatement() {
 			if(values.size() == 0) {
 				return null;
 			}
-			JoinQueryPreparedStatement jqps = new JoinQueryPreparedStatement();
-			jqps.query = entity.getName()+"."+JoinQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> "?").collect(Collectors.joining(",\n ", "(", ")"));
+			EstivateStatement jqps = new EstivateStatement();
+			jqps.query = entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> "?").collect(Collectors.joining(",\n ", "(", ")"));
 			jqps.parameters = values;
 			return jqps;
 		}
@@ -250,7 +250,7 @@ public abstract class JoinCriterion implements JoinNode{
 	}
 	
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class Between extends JoinCriterion{
+	public static class Between extends EstivateCriterion{
 
 		public Long min;
 		public Long max;
@@ -264,7 +264,7 @@ public abstract class JoinCriterion implements JoinNode{
 		
 		@Override
 		public String compile() {
-			return entity.getName()+"."+ JoinQuery.nameMapper.mapAttribute(attribute)+" between "+min+" and "+max;
+			return entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(attribute)+" between "+min+" and "+max;
 		}
 		
 		public Between clone() {
@@ -278,9 +278,9 @@ public abstract class JoinCriterion implements JoinNode{
 		}
 
 		@Override
-		public JoinQueryPreparedStatement preparedStatement() {
-			JoinQueryPreparedStatement jqps = new JoinQueryPreparedStatement();
-			jqps.query = entity.getName()+"."+ JoinQuery.nameMapper.mapAttribute(attribute)+" between ? and ?";
+		public EstivateStatement preparedStatement() {
+			EstivateStatement jqps = new EstivateStatement();
+			jqps.query = entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(attribute)+" between ? and ?";
 			jqps.parameters.add(min);
 			jqps.parameters.add(max);
 			return jqps;
@@ -291,7 +291,7 @@ public abstract class JoinCriterion implements JoinNode{
 	}
 	
 	
-	public static class NullCheck extends JoinCriterion{
+	public static class NullCheck extends EstivateCriterion{
 		public boolean isNull;
 		
 		public NullCheck(Entity entity, String attribute, boolean isNull) {
@@ -302,7 +302,7 @@ public abstract class JoinCriterion implements JoinNode{
 		
 		@Override
 		public String compile() {
-			return entity.getName() + "." + JoinQuery.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
+			return entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
 		}
 		
 		public NullCheck clone() {
@@ -310,9 +310,9 @@ public abstract class JoinCriterion implements JoinNode{
 		}
 
 		@Override
-		public JoinQueryPreparedStatement preparedStatement() {
-			JoinQueryPreparedStatement jqps = new JoinQueryPreparedStatement();
-			jqps.query = entity.getName() + "." + JoinQuery.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
+		public EstivateStatement preparedStatement() {
+			EstivateStatement jqps = new EstivateStatement();
+			jqps.query = entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
 			return jqps;
 		}
 
