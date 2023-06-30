@@ -12,27 +12,27 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EstivateJoin {
 
-	EstivateQuery.Entity internalClass;
+	EstivateQuery.Entity sourceClass;
 
-	EstivateQuery.Entity externalClass;
+	EstivateQuery.Entity targetClass;
 
 	JoinType type = JoinType.INNER;
 
-	String internalAttribute;
+	String sourceAttribute;
 
-	String externalAttribute;
+	String targetAttribute;
 
 	public String toString() {
 		
 		StringPipe sb = new StringPipe().separator(" ")
 				.append  (type.toString())
 				.append  ("JOIN")
-				.append  (EstivateQuery.nameMapper.mapEntity(externalClass.entity))
-				.appendIf(externalClass.alias != null, "AS "+externalClass.alias)
+				.append  (EstivateQuery.nameMapper.mapEntity(targetClass.entity))
+				.appendIf(targetClass.alias != null, "AS "+targetClass.alias)
 				.append  ("ON")
-				.append  (externalClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(externalAttribute))
+				.append  (targetClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(targetAttribute))
 				.append  ("=")
-				.append  (internalClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(internalAttribute));
+				.append  (sourceClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(sourceAttribute));
 
 		return sb.toString();
 		
@@ -60,10 +60,10 @@ public class EstivateJoin {
 			}
 
 			EstivateJoin cj = new EstivateJoin();
-			cj.internalClass = internal;
-			cj.externalClass = external;
-			cj.internalAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
-			cj.externalAttribute = externalField.getName();
+			cj.sourceClass = internal;
+			cj.targetClass = external;
+			cj.sourceAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
+			cj.targetAttribute = externalField.getName();
 
 			return cj;
 		}
@@ -76,10 +76,10 @@ public class EstivateJoin {
 			}
 
 			EstivateJoin cj = new EstivateJoin();
-			cj.internalClass = internal;
-			cj.externalClass = external;
-			cj.internalAttribute = internalField.getName();
-			cj.externalAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
+			cj.sourceClass = internal;
+			cj.targetClass = external;
+			cj.sourceAttribute = internalField.getName();
+			cj.targetAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
 
 			return cj;
 		}

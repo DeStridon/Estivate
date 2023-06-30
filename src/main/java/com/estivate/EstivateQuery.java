@@ -245,7 +245,7 @@ public class EstivateQuery extends EstivateAggregator{
 		// list all classes needed for query
 		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
 		targetEntities.addAll(manuallyJoinedClasses);
-		targetEntities.addAll(manualJoins.stream().map(x -> x.internalClass).collect(Collectors.toSet()));
+		targetEntities.addAll(manualJoins.stream().map(x -> x.sourceClass).collect(Collectors.toSet()));
 		
 
 		// initiate joinedQueryClasses list
@@ -257,7 +257,7 @@ public class EstivateQuery extends EstivateAggregator{
 		while(true) { 
 			EstivateJoin cj = tryAddingJoinedClass(joinedEntities, targetEntities);
 			if(cj != null) {
-				joinedEntities.add(cj.externalClass);
+				joinedEntities.add(cj.targetClass);
 				classJoins.add(cj);
 			}
 			else {
@@ -293,7 +293,7 @@ public class EstivateQuery extends EstivateAggregator{
 				
 				// try joining through manual joins
 				EstivateJoin manualJoin = manualJoins.stream()
-						.filter(x -> x.internalClass.equals(joinedClass) && x.externalClass.equals(candidate))
+						.filter(x -> x.sourceClass.equals(joinedClass) && x.targetClass.equals(candidate))
 						.findFirst().orElse(null);
 				
 				if(manualJoin != null) {

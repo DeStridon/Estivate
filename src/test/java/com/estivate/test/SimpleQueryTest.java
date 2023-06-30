@@ -36,8 +36,8 @@ public class SimpleQueryTest {
 		// workers username
 		query.in(TaskHistoryEntity.class, TaskHistoryEntity.Fields.username, List.of("jojo", "nanard", "andré"));
 		
-		// has comments
-	
+		// has comments - right join
+		query.join(new EstivateJoin(
 		
 		System.out.println(query.compile());
 	}
