@@ -9,41 +9,49 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor
 public class EstivateJoin {
 
-	EstivateQuery.Entity sourceClass;
+	EstivateQuery.Entity joinerEntity;
 
-	EstivateQuery.Entity targetClass;
+	EstivateQuery.Entity joinedEntity;
 
-	JoinType type = JoinType.INNER;
+	String joinerAttribute;
 
-	String sourceAttribute;
-
-	String targetAttribute;
+	String joinedAttribute;
+	
+	JoinType joinType = JoinType.INNER;
 
 	public String toString() {
 		
 		StringPipe sb = new StringPipe().separator(" ")
-				.append  (type.toString())
+				.append  (joinType.toString())
 				.append  ("JOIN")
-				.append  (EstivateQuery.nameMapper.mapEntity(targetClass.entity))
-				.appendIf(targetClass.alias != null, "AS "+targetClass.alias)
+				.append  (EstivateQuery.nameMapper.mapEntity(joinedEntity.entity))
+				.appendIf(joinedEntity.alias != null, "AS "+joinedEntity.alias)
 				.append  ("ON")
-				.append  (targetClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(targetAttribute))
+				.append  (joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(joinedAttribute))
 				.append  ("=")
-				.append  (sourceClass.getName()+"."+EstivateQuery.nameMapper.mapAttribute(sourceAttribute));
+				.append  (joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(joinerAttribute));
 
 		return sb.toString();
 		
 	}
 
-	public EstivateJoin(EstivateQuery.Entity internalEntity, Class externalEntity, String internalAttribute, String externalAttribute) {
-		this(internalEntity, new EstivateQuery.Entity(externalEntity), JoinType.INNER, internalAttribute, externalAttribute);
+	public EstivateJoin(EstivateQuery.Entity internalEntity, EstivateQuery.Entity externalEntity){
+		this.joinerEntity = internalEntity;
+		this.joinedEntity = externalEntity;
+	}
+	
+	public EstivateJoin(EstivateQuery.Entity joinerEntity, Class joinedClass){
+		this(joinerEntity, new EstivateQuery.Entity(joinedClass));
+	}
+	
+	public EstivateJoin(Class joinerClass, EstivateQuery.Entity joinedEntity){
+		this(new EstivateQuery.Entity(joinerClass), joinedEntity);
 	}
 
-	public EstivateJoin(Class internalEntity, Class externalEntity, String internalAttribute, String externalAttribute) {
-		this(new EstivateQuery.Entity(internalEntity), new EstivateQuery.Entity(externalEntity), JoinType.INNER, internalAttribute, externalAttribute);
+	public EstivateJoin(Class internalEntity, Class externalEntity) {
+		this(new EstivateQuery.Entity(internalEntity), new EstivateQuery.Entity(externalEntity));
 	}
 
 
@@ -60,10 +68,10 @@ public class EstivateJoin {
 			}
 
 			EstivateJoin cj = new EstivateJoin();
-			cj.sourceClass = internal;
-			cj.targetClass = external;
-			cj.sourceAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
-			cj.targetAttribute = externalField.getName();
+			cj.joinerEntity = internal;
+			cj.joinedEntity = external;
+			cj.joinerAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
+			cj.joinedAttribute = externalField.getName();
 
 			return cj;
 		}
@@ -76,10 +84,10 @@ public class EstivateJoin {
 			}
 
 			EstivateJoin cj = new EstivateJoin();
-			cj.sourceClass = internal;
-			cj.targetClass = external;
-			cj.sourceAttribute = internalField.getName();
-			cj.targetAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
+			cj.joinerEntity = internal;
+			cj.joinedEntity = external;
+			cj.joinerAttribute = internalField.getName();
+			cj.joinedAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
 
 			return cj;
 		}
@@ -93,6 +101,21 @@ public class EstivateJoin {
 		RIGHT,
 		INNER,
 		OUTER
+	}
+
+	public EstivateJoin joinerAttribute(String id) {
+		this.joinerAttribute = id; 
+		return this;
+	}
+	
+	public EstivateJoin joinedAttribute(String attributeName) {
+		this.joinedAttribute = attributeName;
+		return this;
+	}
+	
+	public EstivateJoin joinType(JoinType joinType) {
+		this.joinType = joinType;
+		return this;
 	}
 
 

@@ -1,0 +1,4 @@
+
+- don't join unnecessary classes
+- create unit tests
+- finalize update
