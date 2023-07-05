@@ -411,6 +411,8 @@ public class EstivateQuery extends EstivateAggregator{
 			return EstivateQuery.nameMapper.mapEntity(entity);
 		}
 	}
+	
+	
 
 
 }

@@ -79,65 +79,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 	}
 
 
-	private static Object compileObject(Class entity, String attribute, Object value) {
-		try {
-			Field field = entity.getDeclaredField(attribute);
-			
-			Type fieldType = field.getType();
-			
-			if(field.getDeclaredAnnotation(Convert.class) != null) {
-				Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(converter instanceof AttributeConverter) {
-					AttributeConverter attributeConverter = (AttributeConverter) converter;
-					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
-					return convertedValue;
-				}
-			}
-			if(fieldType instanceof Class && ((Class<?>) fieldType).isEnum()) {
-
-				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
-					return value.toString();
-				}
-				else {
-					return ((Enum) value).ordinal();
-				}
-			}
-
-			return value;
-
-		}
-		catch(Exception e) {
-			log.error("Exception while trying to map field "+entity.getSimpleName()+"."+attribute);
-			e.printStackTrace();
-		}
-		
-		log.warn("Could not determine type of field "+entity.getSimpleName()+"."+attribute);
-		
-		return compileGenericType(value);
-
-	}
 	
-	public static String compileGenericType(Object value) {
-		if(value instanceof String) {
-			
-			return "\""+((String) value)
-					.replace("\\", "\\\\")
-					//.replace("'", "\'\'")
-					.replace("\"", "\"\"")
-					.replace(":", "\\:")
-					+"\"";
-		}
-		else if(value instanceof java.util.Date) {
-			return "\"" + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((java.util.Date) value) + "\""; 
-		}
-		else if(value instanceof Boolean) {
-			return (boolean) value ? "1":"0";
-		}
-		else {
-			return value.toString();
-		}
-	}
 		
 	@Data
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -167,7 +109,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			this.entity = entity;
 			this.attribute = attribute;
 			this.type = type;
-			this.value = compileObject(entity.entity, attribute, value);
+			this.value = EstivateUtil.compileObject(entity.entity, attribute, value);
 		}
 
 		@Override
@@ -176,7 +118,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			StringPipe sb = new StringPipe().separator(" ")
 					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
 					.append(type.symbol)
-					.append(compileGenericType(value));
+					.append(EstivateUtil.compileGenericType(value));
 
 			return sb.toString();
 			
@@ -199,7 +141,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
 					.append(type.symbol)
 					.append("?").toString();
-			jqps.parameters.add(compileGenericType(value));
+			jqps.parameters.add(EstivateUtil.compileGenericType(value));
 
 			return jqps;
 
@@ -217,7 +159,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 		public In(Entity entity, String attribute, Collection<Object> values) {
 			this.entity = entity;
 			this.attribute = attribute;
-			this.values = values.stream().map(x -> compileObject(entity.entity, attribute, x)).toList();
+			this.values = values.stream().map(x -> EstivateUtil.compileObject(entity.entity, attribute, x)).toList();
 		}
 		
 		@Override
@@ -225,7 +167,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			if(values.size() == 0) {
 				return null;
 			}
-			return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> compileGenericType(x)).collect(Collectors.joining(",\n ", "(", ")"));
+			return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> EstivateUtil.compileGenericType(x)).collect(Collectors.joining(",\n ", "(", ")"));
 		}
 		
 		public In clone() {
