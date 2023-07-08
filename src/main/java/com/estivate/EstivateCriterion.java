@@ -1,15 +1,9 @@
 package com.estivate;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.persistence.AttributeConverter;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 
 import com.estivate.EstivateQuery.Entity;
 import com.estivate.util.StringPipe;
@@ -26,53 +20,10 @@ public abstract class EstivateCriterion implements EstivateNode{
 	public Entity entity;
 	public String attribute;
 	
-	public abstract String compile();
+
 	
 	public abstract EstivateCriterion clone();
-	
-//	private static String compileValue(Class entity, String attribute, Object value) {
-//		try {
-//			Field field = entity.getDeclaredField(attribute);
-//
-//			Type fieldType = field.getType();
-//
-//			if(fieldType instanceof Number ||
-//				fieldType == String.class ||
-//				fieldType == boolean.class ||
-//				fieldType == Boolean.class ||
-//				fieldType == Long.class) {
-//				return compileGenericType(value);
-//			}
-//
-//			else if(field.getDeclaredAnnotation(Convert.class) != null) {
-//				Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
-//				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-//				if(converter instanceof AttributeConverter) {
-//					AttributeConverter attributeConverter = (AttributeConverter) converter;
-//					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
-//					return compileGenericType(convertedValue);
-//				}
-//			}
-//			else if(fieldType instanceof Class && ((Class<?>) fieldType).isEnum()) {
-//
-//				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
-//					return compileGenericType(value.toString());
-//				}
-//				else {
-//					return compileGenericType(((Enum) value).ordinal());
-//				}
-//			}
-//		}
-//		catch(Exception e) {
-//			log.error("Exception while trying to map field "+entity.getSimpleName()+"."+attribute);
-//			e.printStackTrace();
-//		}
-//
-//		log.warn("Could not determine type of field "+entity.getSimpleName()+"."+attribute);
-//
-//		return compileGenericType(value);
-//
-//	}
+
 
 	public String compileName() {
 		return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute);
@@ -85,7 +36,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Operator extends EstivateCriterion{
 		
-		public static enum CriterionType{
+		public enum CriterionType{
 			Eq("="),
 			NotEq("!="),
 			Lt("<"),
@@ -109,7 +60,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			this.entity = entity;
 			this.attribute = attribute;
 			this.type = type;
-			this.value = EstivateUtil.compileObject(entity.entity, attribute, value);
+			this.value = value; //EstivateUtil.compileObject(entity.entity, attribute, value);
 		}
 
 		@Override
@@ -118,7 +69,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			StringPipe sb = new StringPipe().separator(" ")
 					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
 					.append(type.symbol)
-					.append(EstivateUtil.compileGenericType(value));
+					.append(EstivateUtil.compileAttribute(entity.entity, attribute, value));
 
 			return sb.toString();
 			
@@ -141,7 +92,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
 					.append(type.symbol)
 					.append("?").toString();
-			jqps.parameters.add(EstivateUtil.compileGenericType(value));
+			jqps.parameters.add(EstivateUtil.compileAttribute(entity.entity, attribute, value));
 
 			return jqps;
 
@@ -159,7 +110,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 		public In(Entity entity, String attribute, Collection<Object> values) {
 			this.entity = entity;
 			this.attribute = attribute;
-			this.values = values.stream().map(x -> EstivateUtil.compileObject(entity.entity, attribute, x)).toList();
+			this.values = new ArrayList<>(values) ; // values.stream().map(x -> EstivateUtil.compileObject(entity.entity, attribute, x)).toList();
 		}
 		
 		@Override
@@ -167,7 +118,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			if(values.size() == 0) {
 				return null;
 			}
-			return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> EstivateUtil.compileGenericType(x)).collect(Collectors.joining(",\n ", "(", ")"));
+			return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> EstivateUtil.compileAttribute(entity.entity, attribute, x)).collect(Collectors.joining(",\n ", "(", ")"));
 		}
 		
 		public In clone() {

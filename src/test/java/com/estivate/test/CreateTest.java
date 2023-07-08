@@ -21,10 +21,14 @@ public class CreateTest {
 
 		
 		connection.createStatement().execute(EstivateBasic.create(FragmentEntity.class));
+		connection.createStatement().execute(EstivateBasic.create(TaskEntity.class));
 		
 		
 		TaskEntity task = TaskEntity.builder().projectId(1).build();
 		
+		System.out.println(EstivateBasic.insert(task));
+		
+		connection.createStatement().execute(EstivateBasic.insert(task));
 		
 		
 	}

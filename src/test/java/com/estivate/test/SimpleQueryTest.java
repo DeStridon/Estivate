@@ -15,7 +15,9 @@ import com.estivate.test.entities.NoUseEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskActivityEntity;
 import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.TaskEntity.MacroState;
 import com.estivate.test.entities.TaskHistoryEntity;
+import com.estivate.test.entities.misc.Language;
 
 public class SimpleQueryTest {
 	
@@ -77,6 +79,22 @@ public class SimpleQueryTest {
         connection.close();
  
 
+		
+	}
+	
+	@Test
+	public void taskEnumTest() {
+		
+		EstivateQuery query = new EstivateQuery(TaskEntity.class);
+		
+		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1, 2, 3, 4);
+		
+//		query.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Language.en_GB, Language.fr_FR);
+//		
+//		query.in(TaskEntity.class, TaskEntity.Fields.status, MacroState.Analysis, MacroState.Translation);
+		
+		
+		System.out.println(query.compile());
 		
 	}
 

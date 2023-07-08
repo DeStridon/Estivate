@@ -20,6 +20,7 @@ public class EstivateUtil {
 			
 			Type fieldType = field.getType();
 			
+			// Convert annotation takes priority
 			if(field.getDeclaredAnnotation(Convert.class) != null) {
 				Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
 				Object converter = convertAnnotation.converter().getConstructor().newInstance();
@@ -29,6 +30,7 @@ public class EstivateUtil {
 					return convertedValue;
 				}
 			}
+			// Then check if enum and with annotation
 			if(fieldType instanceof Class && ((Class<?>) fieldType).isEnum()) {
 
 				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
@@ -53,7 +55,7 @@ public class EstivateUtil {
 
 	}
 	
-	public static String compileGenericType(Object value) {
+	private static String compileGenericType(Object value) {
 		if(value instanceof String) {
 			
 			return "\""+((String) value)
@@ -72,6 +74,10 @@ public class EstivateUtil {
 		else {
 			return value.toString();
 		}
+	}
+	
+	public static String compileAttribute(Class entity, String attribute, Object value) {
+		return compileGenericType(compileObject(entity, attribute, value));
 	}
 	
 	public static Field getFieldWithAnnotation(Class entityClass, Class<? extends Annotation> annotationClass) {

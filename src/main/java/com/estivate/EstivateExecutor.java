@@ -110,7 +110,7 @@ public class EstivateExecutor {
 		// 2. List updated fields
 		List<String> fieldUpdateQueries = new ArrayList<>();
 		for(Field field : updatedFields) {
-			fieldUpdateQueries.add(field.getName() + " = " + EstivateUtil.compileObject(entity.getClass(), field.getName(), field.get(entity)));
+			fieldUpdateQueries.add(field.getName() + " = " + EstivateUtil.compileAttribute(entity.getClass(), field.getName(), field.get(entity)));
 		}
 		
 		query += fieldUpdateQueries.stream().collect(Collectors.joining(","));
