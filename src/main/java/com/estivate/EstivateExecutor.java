@@ -38,6 +38,7 @@ public class EstivateExecutor {
 	
 	public EstivateExecutor(Session session) {
 		this.session = session;
+		
 	}
 	
 	public List<EstivateResult> list(EstivateQuery joinQuery){

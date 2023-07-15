@@ -12,6 +12,8 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.estivate.util.StringPipe;
@@ -47,17 +49,24 @@ public class EstivateBasic {
 			}
 			
 			if(returnClass == Integer.class || returnClass == Long.class || returnClass == Long.TYPE) {
-				fieldCreation.append("int");
+				fieldCreation.append("INT");
 			}
-			else if(field.getType() == String.class) {
-				fieldCreation.append("varchar(100)");
+			else if(returnClass == String.class) {
+				fieldCreation.append("VARCHAR");
 			}
 			else {
 				System.out.println("Cannot map type "+field.getType());
 			}
 			
 			if(field.isAnnotationPresent(Id.class)) {
-				fieldCreation.append("primary key");
+				fieldCreation.append("PRIMARY KEY");
+			}
+			
+			if(field.getDeclaredAnnotation(GeneratedValue.class) != null) {
+				GeneratedValue generatedValue = field.getDeclaredAnnotation(GeneratedValue.class);
+				if(generatedValue.strategy() == GenerationType.IDENTITY) {
+					fieldCreation.append("AUTO_INCREMENT");
+				}
 			}
 			
 			
@@ -66,6 +75,7 @@ public class EstivateBasic {
 		
 		String result = "CREATE TABLE "+entity.getSimpleName()+" ("+fields.stream().collect(Collectors.joining(", "))+")";
 		System.out.println(result);
+		
 		return result;
 	}
 	
@@ -96,7 +106,9 @@ public class EstivateBasic {
 			
 		}
 		
-		return "INSERT INTO "+entity.getClass().getSimpleName()+"("+fieldValueList.keySet().stream().collect(Collectors.joining(", "))+") VALUES ("+fieldValueList.values().stream().collect(Collectors.joining(", "))+")";
+		String query = "INSERT INTO "+entity.getClass().getSimpleName()+"("+fieldValueList.keySet().stream().collect(Collectors.joining(", "))+") VALUES ("+fieldValueList.values().stream().collect(Collectors.joining(", "))+")";
+		//System.out.println(query);
+		return query;
 	}
 	
 
