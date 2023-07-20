@@ -13,8 +13,10 @@ import com.estivate.test.entities.misc.LanguageConverter;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 
+@Data
 @Builder
 @AllArgsConstructor
 @FieldNameConstants
