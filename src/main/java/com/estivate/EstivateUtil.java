@@ -58,12 +58,12 @@ public class EstivateUtil {
 	private static String compileGenericType(Object value) {
 		if(value instanceof String) {
 			
-			return "\""+((String) value)
+			return "'"+((String) value)
 					.replace("\\", "\\\\")
 					//.replace("'", "\'\'")
 					.replace("\"", "\"\"")
 					.replace(":", "\\:")
-					+"\"";
+					+"'";
 		}
 		else if(value instanceof java.util.Date) {
 			return "\"" + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((java.util.Date) value) + "\""; 

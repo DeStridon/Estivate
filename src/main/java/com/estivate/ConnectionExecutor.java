@@ -51,7 +51,7 @@ public class ConnectionExecutor {
         	ResultSetMetaData metadata = resultSet.getMetaData();
 
         	Map<String, String> map = new HashMap<>();
-        	for(int i = 0; i < metadata.getColumnCount(); i++) {
+        	for(int i = 1; i < metadata.getColumnCount(); i++) {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
 

@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import javax.persistence.Transient;
+
 import com.estivate.EstivateNameMapper.DefaultNameMapper;
 
 import lombok.AllArgsConstructor;
@@ -341,8 +343,7 @@ public class EstivateQuery extends EstivateAggregator{
 		Class<?> currentClazz = c.entity;
 		while(currentClazz != Object.class) {
 			
-			String[] fields = args.length == 0 ?
-					Arrays.stream(currentClazz.getDeclaredFields()).map( x -> x.getName() ).toArray(String[]::new) : args;
+			String[] fields = args.length == 0 ? Arrays.stream(currentClazz.getDeclaredFields()).filter(x -> !x.isAnnotationPresent(Transient.class)).map( x -> x.getName() ).toArray(String[]::new) : args;
 			
 			for(String field : fields){
 				select(c, field);
