@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.estivate.CachedEntity;
 import com.estivate.VirtualForeignKey;
 import com.estivate.test.entities.misc.Language;
 import com.estivate.test.entities.misc.LanguageConverter;
@@ -20,7 +21,7 @@ import lombok.experimental.FieldNameConstants;
 @Builder
 @AllArgsConstructor
 @FieldNameConstants
-public class TaskEntity {
+public class TaskEntity extends CachedEntity {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -28,6 +29,8 @@ public class TaskEntity {
 	
 	@VirtualForeignKey(entity = ProjectEntity.class)
 	long projectId;
+	
+	String name;
 	
 	@Enumerated(EnumType.ORDINAL)
 	MacroState status;

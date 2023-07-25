@@ -17,6 +17,7 @@ public abstract class CachedEntity {
 	public void saveState() {
 		
 		for(Field field : this.getClass().getDeclaredFields()) {
+			field.setAccessible(true);
 			Object object = field.get(this);
 			__cache.put(field.getName(), hashCode(object));
 		}

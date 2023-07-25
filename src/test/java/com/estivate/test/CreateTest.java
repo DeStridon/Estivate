@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
 import com.estivate.EstivateBasic;
+import com.estivate.EstivateQuery;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
@@ -29,13 +30,24 @@ public class CreateTest {
 		execute(EstivateBasic.create(FragmentEntity.class));
 		execute(EstivateBasic.create(TaskEntity.class));
 		
-		
-		TaskEntity task = TaskEntity.builder().projectId(1).build();
 		ConnectionExecutor ce = new ConnectionExecutor(connection);
 		
-		ce.insert(task);
-		assertEquals(1L, task.getId());
+		TaskEntity task1 = TaskEntity.builder().projectId(1).name("old name").build();
+		ce.saveOrUpdate(task1);
+		assertEquals(1L, task1.getId());
 		
+		EstivateQuery query = new EstivateQuery(TaskEntity.class).eq(TaskEntity.class, TaskEntity.Fields.id, 1);
+		TaskEntity task2 = ce.uniqueResult(query, TaskEntity.class);
+		
+		task1.setName("new name");
+		ce.saveOrUpdate(task1);
+		
+		task2.setProjectId(2);
+		ce.saveOrUpdate(task2);
+		
+		TaskEntity task3 = ce.uniqueResult(query, TaskEntity.class);
+		assertEquals(2, task3.getProjectId());
+		assertEquals("new name", task3.getName());
 	}
 	
 	public void execute(String request) {

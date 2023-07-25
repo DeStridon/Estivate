@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -25,10 +24,6 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.Tuple;
-
-import org.hibernate.HibernateException;
-import org.hibernate.query.NativeQuery;
 
 import com.estivate.EstivateQuery.Entity;
 
@@ -44,7 +39,29 @@ public class ConnectionExecutor {
 		this.connection = connection;
 	}
 	
+	@SneakyThrows
+	public <U> U uniqueResult(EstivateQuery query, Class<U> clazz) {
+		Statement statement = connection.createStatement();
+        
+        statement.execute(query.compile());
+        
+        ResultSet resultSet = statement.getResultSet();
+        
+        if(resultSet.next()) {
+        	ResultSetMetaData metadata = resultSet.getMetaData();
 
+        	Map<String, String> map = new HashMap<>();
+        	for(int i = 0; i < metadata.getColumnCount(); i++) {
+        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
+        	}
+
+        	EstivateResult2 result = new EstivateResult2(query, map);
+        	return result.mapAs(clazz);
+        }
+        return null;
+	}
+	
+	
 	@SneakyThrows
 	public List<EstivateResult2> list(EstivateQuery joinQuery){
 		
@@ -90,11 +107,16 @@ public class ConnectionExecutor {
 	public <U> U saveOrUpdate(U object) {
 		
 		Field idField = getIdField(object);
+		idField.setAccessible(true);
 		if(idField != null && idField.getLong(object) == 0L) {
 			insert(object);
 		}
 		else {
 			update(object);
+		}
+		
+		if(object instanceof CachedEntity) {
+			((CachedEntity) object).saveState();
 		}
 		
 		return object;
@@ -139,9 +161,13 @@ public class ConnectionExecutor {
 	
 	@SneakyThrows
 	// TODO : implement query execution
-	public void updateCached(CachedEntity entity) {
-		
-		List<Field> updatedFields = entity.updatedFields();
+	public void update(Object entity) {
+
+		List<Field> updatedFields = List.of(entity.getClass().getFields());
+
+		if(entity instanceof CachedEntity) {
+			updatedFields = ((CachedEntity) entity).updatedFields();
+		}
 		
 		// No change to entity
 		if(updatedFields.isEmpty()) {
@@ -317,6 +343,9 @@ public class ConnectionExecutor {
 
 		
 	}
+
+
+	
 	
 //	public <U> List<U> listAs(JoinQueryPreparedStatement joinQuery, Class<U> clazz) {
 //		Session session = this.sessionFactory.openSession();
