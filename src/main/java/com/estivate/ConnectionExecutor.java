@@ -56,7 +56,9 @@ public class ConnectionExecutor {
         	}
 
         	EstivateResult2 result = new EstivateResult2(query, map);
-        	return result.mapAs(clazz);
+        	U object = result.mapAs(clazz);
+        	
+        	return object;
         }
         return null;
 	}
@@ -181,6 +183,7 @@ public class ConnectionExecutor {
 			return;
 		}
 		
+		idField.setAccessible(true);
 		Long id = idField.getLong(entity);
 		if(id == null || id == 0) {
 			log.error("Null or 0 value id for entity, no update possible");
@@ -197,7 +200,14 @@ public class ConnectionExecutor {
 		
 		query += fieldUpdateQueries.stream().collect(Collectors.joining(","));
 		
-		query += "WHERE "+EstivateQuery.nameMapper.mapAttribute(idField.getName())+" = "+idField.getLong(entity);
+		query += " WHERE "+EstivateQuery.nameMapper.mapAttribute(idField.getName())+" = "+idField.getLong(entity);
+		
+		System.out.println(query);
+		
+		PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+		boolean check = preparedStatement.execute();
+		
+		System.out.println(check);
 		
 	}
 	
@@ -245,6 +255,10 @@ public class ConnectionExecutor {
 					}
 					currentClazz = currentClazz.getSuperclass();
 				}
+				
+				if(obj instanceof CachedEntity) {
+					((CachedEntity) obj).saveState();
+				}
 
 				return obj;
 			}
@@ -257,8 +271,8 @@ public class ConnectionExecutor {
 		public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
 			Type type = field.getGenericType();
 			field.setAccessible(true);
-
-			String value = arguments.get(entity.getName()+"."+field.getName());
+			
+			String value = arguments.get(entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(field.getName()));
 
 			if(value == null) {
 				return;

@@ -82,7 +82,9 @@ public class EstivateUtil {
 	
 	public static Field getFieldWithAnnotation(Class entityClass, Class<? extends Annotation> annotationClass) {
 		
-		for(Field field : entityClass.getFields()) {
+		Field[] fields = entityClass.getDeclaredFields();
+		
+		for(Field field : entityClass.getDeclaredFields()) {
 			if(field.isAnnotationPresent(annotationClass)) {
 				return field;
 			}

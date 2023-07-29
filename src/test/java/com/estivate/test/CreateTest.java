@@ -11,8 +11,10 @@ import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
 import com.estivate.EstivateBasic;
+import com.estivate.EstivateNameMapper.UppercaseNameMapper;
 import com.estivate.EstivateQuery;
 import com.estivate.test.entities.FragmentEntity;
+import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
 public class CreateTest {
@@ -26,6 +28,8 @@ public class CreateTest {
 	
 	@Test
 	public void globalTest() throws SQLException {
+		
+		EstivateQuery.nameMapper = new UppercaseNameMapper();
 		
 		execute(EstivateBasic.create(FragmentEntity.class));
 		execute(EstivateBasic.create(TaskEntity.class));
@@ -45,6 +49,7 @@ public class CreateTest {
 		task2.setProjectId(2);
 		ce.saveOrUpdate(task2);
 		
+		
 		TaskEntity task3 = ce.uniqueResult(query, TaskEntity.class);
 		assertEquals(2, task3.getProjectId());
 		assertEquals("new name", task3.getName());
@@ -60,6 +65,8 @@ public class CreateTest {
 			e.printStackTrace();
 		}
 	}
+	
+
 	
 	
 	

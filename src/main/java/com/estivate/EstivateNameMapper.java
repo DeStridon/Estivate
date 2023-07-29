@@ -20,6 +20,21 @@ public interface EstivateNameMapper {
 			return mapEntity(entity)+"."+attributeName;
 		}
 	}
+	
+	public static class UppercaseNameMapper implements EstivateNameMapper{
+		public String mapEntity(Class c) {
+			return c.getSimpleName().toUpperCase();
+		}
+		
+		public String mapAttribute(String attributeName) {
+			return attributeName.toUpperCase();
+		}
+	
+		public String mapEntityAttribute(Class entity, String attributeName) {
+			return mapEntity(entity)+"."+attributeName.toUpperCase();
+		}
+		
+	}
 
 
 	
