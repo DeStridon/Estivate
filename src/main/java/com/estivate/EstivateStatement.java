@@ -23,6 +23,8 @@ public class EstivateStatement {
 		
 		return new EstivateStatement(sb.toString(), criterionsStatements.stream().flatMap(x -> x.parameters.stream()).collect(Collectors.toList()));
 	}
+
+
 	
 	
 

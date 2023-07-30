@@ -162,7 +162,6 @@ public class ConnectionExecutor {
 	}
 	
 	@SneakyThrows
-	// TODO : implement query execution
 	public void update(Object entity) {
 
 		List<Field> updatedFields = List.of(entity.getClass().getFields());
@@ -190,7 +189,12 @@ public class ConnectionExecutor {
 		}
 		
 		// 1. Create query
-		String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
+		EstimateStatement statement = new EstimateStatement()
+				.appendQuery("UPDATE ")
+				.appendQuery(EstivateQuery.nameMapper.mapEntity(entity.getClass()))
+				.appendQuery(" SET ");
+				
+				//String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
 
 		// 2. List updated fields
 		List<String> fieldUpdateQueries = new ArrayList<>();
@@ -205,11 +209,16 @@ public class ConnectionExecutor {
 		System.out.println(query);
 		
 		PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+		
+		
+		
 		boolean check = preparedStatement.execute();
 		
 		System.out.println(check);
 		
 	}
+	
+	//void applyParameter(PreparedStatement statement, )
 	
 	
 	//@AllArgsConstructor
