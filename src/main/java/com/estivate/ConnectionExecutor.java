@@ -189,7 +189,7 @@ public class ConnectionExecutor {
 		}
 		
 		// 1. Create query
-		EstimateStatement statement = new EstimateStatement()
+		EstimateStatement statement = new EstimateStatement(connection)
 				.appendQuery("UPDATE ")
 				.appendQuery(EstivateQuery.nameMapper.mapEntity(entity.getClass()))
 				.appendQuery(" SET ");
@@ -197,28 +197,26 @@ public class ConnectionExecutor {
 				//String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
 
 		// 2. List updated fields
-		List<String> fieldUpdateQueries = new ArrayList<>();
+		statement.appendQuery(updatedFields.stream().map(x-> EstivateQuery.nameMapper.mapEntityAttribute(entity.getClass(), x.getName()) + " = ?").collect(Collectors.joining(", ")));
+		
 		for(Field field : updatedFields) {
-			fieldUpdateQueries.add(field.getName() + " = " + EstivateUtil.compileAttribute(entity.getClass(), field.getName(), field.get(entity)));
+			statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
 		}
 		
-		query += fieldUpdateQueries.stream().collect(Collectors.joining(","));
 		
-		query += " WHERE "+EstivateQuery.nameMapper.mapAttribute(idField.getName())+" = "+idField.getLong(entity);
-		
-		System.out.println(query);
-		
-		PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+		statement.appendQuery(" WHERE "+EstivateQuery.nameMapper.mapAttribute(idField.getName())+" = ?");
+		statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 		
 		
+		//PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 		
-		boolean check = preparedStatement.execute();
+		
+		
+		boolean check = statement.execute();
 		
 		System.out.println(check);
 		
 	}
-	
-	//void applyParameter(PreparedStatement statement, )
 	
 	
 	//@AllArgsConstructor

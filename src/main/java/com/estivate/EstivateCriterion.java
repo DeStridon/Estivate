@@ -60,7 +60,7 @@ public abstract class EstivateCriterion implements EstivateNode{
 			this.entity = entity;
 			this.attribute = attribute;
 			this.type = type;
-			this.value = value; //EstivateUtil.compileObject(entity.entity, attribute, value);
+			this.value = value;
 		}
 
 		@Override
