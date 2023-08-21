@@ -23,8 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EstivateQuery extends EstivateAggregator{
 	
-	//@Autowired SessionFactory sessionFactory;
-	
 	// Method wrappers
 	
 	public EstivateQuery eq   (Class entity, String attribute, Object value)        { super.eq    (entity, attribute, value);  return this; }
@@ -114,112 +112,112 @@ public class EstivateQuery extends EstivateAggregator{
 	
 	
 	
-	public String compile() {
-		StringBuilder sb = new StringBuilder();
-		
-		// Append selects 
-		sb.append("SELECT");
-		
-		// If no select specified by developer, fill with baseclass attributes
-		if(selects.isEmpty()) {
-			select(baseClass);
-		}
-		
-		// "distinct" keyword is used to avoid having duplicate results when joining from multiple tables, only shown when not having anything else than columns and no grouping
-		if(selects.stream().allMatch(x -> x.contains(".")) && groupBys.isEmpty()) {
-			sb.append(" distinct");
-		}
-		
-		sb.append("\n  "+String.join(",\n  ", selects)+"\n");
-		sb.append("FROM "+nameMapper.mapEntity(baseClass)+"\n");
-
-		// Append joins
-		for(EstivateJoin c : buildJoins()) {
-			sb.append(c.toString()+'\n');
-		}
-		
-		// Append where
-		sb.append("WHERE ");
-		sb.append(super.compile()+"\n");
-		
-		// Append group bys (if any)
-		if(!groupBys.isEmpty()) {
-			sb.append(groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-		}
-		
-		// Append order
-		if(!orders.isEmpty()) {
-			sb.append(orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-		}
-		
-		// Append limit & offset
-		if(limit != null) {
-			sb.append("LIMIT "+limit+"\n");
-		}
-		if(offset != null) {
-			sb.append("OFFSET "+ offset +"\n");
-		}
-
-		return sb.toString();
-	}
+//	public String compile() {
+//		StringBuilder sb = new StringBuilder();
+//		
+//		// Append selects 
+//		sb.append("SELECT");
+//		
+//		// If no select specified by developer, fill with baseclass attributes
+//		if(selects.isEmpty()) {
+//			select(baseClass);
+//		}
+//		
+//		// "distinct" keyword is used to avoid having duplicate results when joining from multiple tables, only shown when not having anything else than columns and no grouping
+//		if(selects.stream().allMatch(x -> x.contains(".")) && groupBys.isEmpty()) {
+//			sb.append(" distinct");
+//		}
+//		
+//		sb.append("\n  "+String.join(",\n  ", selects));
+//		sb.append("FROM "+nameMapper.mapEntity(baseClass)+" \n");
+//
+//		// Append joins
+//		for(EstivateJoin c : buildJoins()) {
+//			sb.append(c.toString()+'\n');
+//		}
+//		
+//		// Append where
+//		sb.append("WHERE ");
+//		sb.append(super.compile()+"\n");
+//		
+//		// Append group bys (if any)
+//		if(!groupBys.isEmpty()) {
+//			sb.append(groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+//		}
+//		
+//		// Append order
+//		if(!orders.isEmpty()) {
+//			sb.append(orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+//		}
+//		
+//		// Append limit & offset
+//		if(limit != null) {
+//			sb.append("LIMIT "+limit+"\n");
+//		}
+//		if(offset != null) {
+//			sb.append("OFFSET "+ offset +"\n");
+//		}
+//
+//		return sb.toString();
+//	}
 	
 	
-	public EstivateStatement preparedStatement() {
-		
-		EstivateStatement jqps = super.preparedStatement();
-		
-		StringBuilder sb = new StringBuilder();
-		
-		// Append selects 
-		sb.append("SELECT");
-		
-		// If no select specified by developer, fill with baseclass attributes
-		if(selects.isEmpty()) {
-			select(baseClass);
-		}
-		
-		// "distinct" keyword is used to avoid having duplicate results when joining from multiple tables, only shown when not having anything else than columns and no grouping
-		if(selects.stream().allMatch(x -> x.contains(".")) && groupBys.isEmpty()) {
-			sb.append(" distinct");
-		}
-		
-		sb.append("\n  "+String.join(",\n  ", selects)+"\n");
-		sb.append("FROM "+nameMapper.mapEntity(baseClass)+"\n");
-
-		// Append joins
-		for(EstivateJoin c : buildJoins()) {
-			sb.append(c.toString()+'\n');
-		}
-		
-		// Append where
-		sb.append("WHERE ");
-		
-		sb.append(jqps.query);
-		
-		sb.append("\n");
-		
-		// Append group bys (if any)
-		if(!groupBys.isEmpty()) {
-			sb.append(groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-		}
-		
-		// Append order
-		if(!orders.isEmpty()) {
-			sb.append(orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-		}
-		
-		// Append limit & offset
-		if(limit != null) {
-			sb.append("LIMIT "+limit+"\n");
-		}
-		if(offset != null) {
-			sb.append("OFFSET "+ offset +"\n");
-		}
-		
-		jqps.query = sb.toString();
-		
-		return jqps;
-	}
+//	public EstivateStatement_old preparedStatement() {
+//		
+//		EstivateStatement_old jqps = super.preparedStatement();
+//		
+//		StringBuilder sb = new StringBuilder();
+//		
+//		// Append selects 
+//		sb.append("SELECT");
+//		
+//		// If no select specified by developer, fill with baseclass attributes
+//		if(selects.isEmpty()) {
+//			select(baseClass);
+//		}
+//		
+//		// "distinct" keyword is used to avoid having duplicate results when joining from multiple tables, only shown when not having anything else than columns and no grouping
+//		if(selects.stream().allMatch(x -> x.contains(".")) && groupBys.isEmpty()) {
+//			sb.append(" distinct");
+//		}
+//		
+//		sb.append("\n  "+String.join(",\n  ", selects)+"\n");
+//		sb.append("FROM "+nameMapper.mapEntity(baseClass)+"\n");
+//
+//		// Append joins
+//		for(EstivateJoin c : buildJoins()) {
+//			sb.append(c.toString()+'\n');
+//		}
+//		
+//		// Append where
+//		sb.append("WHERE ");
+//		
+//		sb.append(jqps.query);
+//		
+//		sb.append("\n");
+//		
+//		// Append group bys (if any)
+//		if(!groupBys.isEmpty()) {
+//			sb.append(groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+//		}
+//		
+//		// Append order
+//		if(!orders.isEmpty()) {
+//			sb.append(orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+//		}
+//		
+//		// Append limit & offset
+//		if(limit != null) {
+//			sb.append("LIMIT "+limit+"\n");
+//		}
+//		if(offset != null) {
+//			sb.append("OFFSET "+ offset +"\n");
+//		}
+//		
+//		jqps.query = sb.toString();
+//		
+//		return jqps;
+//	}
 	
 	
 	// nested search of the different classes used in criterions and to be added in joins

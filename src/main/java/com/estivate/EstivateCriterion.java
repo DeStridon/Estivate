@@ -25,9 +25,9 @@ public abstract class EstivateCriterion implements EstivateNode{
 	public abstract EstivateCriterion clone();
 
 
-	public String compileName() {
-		return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute);
-	}
+//	public String compileName() {
+//		return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute);
+//	}
 
 
 	
@@ -84,19 +84,19 @@ public abstract class EstivateCriterion implements EstivateNode{
 			return op;
 		}
 
-		@Override
-		public EstivateStatement preparedStatement() {
-
-			EstivateStatement jqps = new EstivateStatement();
-			jqps.query = new StringPipe().separator(" ")
-					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
-					.append(type.symbol)
-					.append("?").toString();
-			jqps.parameters.add(EstivateUtil.compileAttribute(entity.entity, attribute, value));
-
-			return jqps;
-
-		}
+//		@Override
+//		public EstivateStatement_old preparedStatement() {
+//
+//			EstivateStatement_old jqps = new EstivateStatement_old();
+//			jqps.query = new StringPipe().separator(" ")
+//					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
+//					.append(type.symbol)
+//					.append("?").toString();
+//			jqps.parameters.add(EstivateUtil.compileAttribute(entity.entity, attribute, value));
+//
+//			return jqps;
+//
+//		}
 
 		
 		
@@ -129,16 +129,16 @@ public abstract class EstivateCriterion implements EstivateNode{
 			return in;
 		}
 
-		@Override
-		public EstivateStatement preparedStatement() {
-			if(values.size() == 0) {
-				return null;
-			}
-			EstivateStatement jqps = new EstivateStatement();
-			jqps.query = entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> "?").collect(Collectors.joining(",\n ", "(", ")"));
-			jqps.parameters = values;
-			return jqps;
-		}
+//		@Override
+//		public EstivateStatement_old preparedStatement() {
+//			if(values.size() == 0) {
+//				return null;
+//			}
+//			EstivateStatement_old jqps = new EstivateStatement_old();
+//			jqps.query = entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> "?").collect(Collectors.joining(",\n ", "(", ")"));
+//			jqps.parameters = values;
+//			return jqps;
+//		}
 
 	}
 	
@@ -170,14 +170,14 @@ public abstract class EstivateCriterion implements EstivateNode{
 			return b;
 		}
 
-		@Override
-		public EstivateStatement preparedStatement() {
-			EstivateStatement jqps = new EstivateStatement();
-			jqps.query = entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(attribute)+" between ? and ?";
-			jqps.parameters.add(min);
-			jqps.parameters.add(max);
-			return jqps;
-		}
+//		@Override
+//		public EstivateStatement_old preparedStatement() {
+//			EstivateStatement_old jqps = new EstivateStatement_old();
+//			jqps.query = entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(attribute)+" between ? and ?";
+//			jqps.parameters.add(min);
+//			jqps.parameters.add(max);
+//			return jqps;
+//		}
 
 		
 
@@ -202,12 +202,12 @@ public abstract class EstivateCriterion implements EstivateNode{
 			return new NullCheck(entity, attribute, isNull);
 		}
 
-		@Override
-		public EstivateStatement preparedStatement() {
-			EstivateStatement jqps = new EstivateStatement();
-			jqps.query = entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
-			return jqps;
-		}
+//		@Override
+//		public EstivateStatement_old preparedStatement() {
+//			EstivateStatement_old jqps = new EstivateStatement_old();
+//			jqps.query = entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
+//			return jqps;
+//		}
 
 	}
 

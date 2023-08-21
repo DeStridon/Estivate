@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,9 +22,12 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.estivate.EstivateQuery.Entity;
+import com.estivate.util.StringPipe;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -41,21 +43,23 @@ public class ConnectionExecutor {
 	
 	@SneakyThrows
 	public <U> U uniqueResult(EstivateQuery query, Class<U> clazz) {
-		Statement statement = connection.createStatement();
-        
-        statement.execute(query.compile());
+		
+		
+		EstivateStatement statement = toStatement(query);
+		
+		statement.execute();
         
         ResultSet resultSet = statement.getResultSet();
+    	ResultSetMetaData metadata = resultSet.getMetaData();
         
         if(resultSet.next()) {
-        	ResultSetMetaData metadata = resultSet.getMetaData();
 
         	Map<String, String> map = new HashMap<>();
-        	for(int i = 1; i < metadata.getColumnCount(); i++) {
+        	for(int i = 1; i <= metadata.getColumnCount(); i++) {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
 
-        	EstivateResult2 result = new EstivateResult2(query, map);
+        	EstivateResult result = new EstivateResult(query, map);
         	U object = result.mapAs(clazz);
         	
         	return object;
@@ -65,41 +69,129 @@ public class ConnectionExecutor {
 	
 	
 	@SneakyThrows
-	public List<EstivateResult2> list(EstivateQuery joinQuery){
+	public List<EstivateResult> list(EstivateQuery joinQuery){
 		
-        Statement statement = connection.createStatement();
-         
-        statement.execute(joinQuery.compile());
+		EstivateStatement statement = toStatement(joinQuery);
+		
+        statement.execute();
         
         ResultSet resultSet = statement.getResultSet();
         
-        ResultSetMetaData metadata = resultSet.getMetaData();
-
-        List<EstivateResult2> results = new ArrayList<>();
+        
+        List<EstivateResult> results = new ArrayList<>();
         
         while(resultSet.next()) {
-        	
         	Map<String, String> map = new HashMap<>();
-        	
-        	for(int i = 0; i < metadata.getColumnCount(); i++) {
+        	ResultSetMetaData metadata = resultSet.getMetaData();
+
+        	for(int i = 1; i <= metadata.getColumnCount(); i++) {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
-
-        	EstivateResult2 result = new EstivateResult2(joinQuery, map);
-        	
+        	EstivateResult result = new EstivateResult(joinQuery, map);
         	results.add(result);
-        	
         }
         
         return results;
 		
+	}
+	
+	public EstivateStatement toStatement(EstivateQuery joinQuery) {
+		
+		EstivateStatement statement = new EstivateStatement(connection);
+		
+		statement.appendQuery("SELECT ");
+		
+		//TODO : avoid modifying joinQuery
+		if(joinQuery.selects.isEmpty()) {
+			joinQuery.select(joinQuery.baseClass);
+		}
+		
+		if(joinQuery.selects.stream().allMatch(x -> x.contains(".")) && joinQuery.groupBys.isEmpty()) {
+			statement.appendQuery("distinct ");
+		}
+		
+		statement.appendQuery(String.join(", ", joinQuery.selects)+"\n");
+		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+" \n");
+		
+        for(EstivateJoin join : joinQuery.buildJoins()) {
+        	statement.appendQuery(join.toString()+'\n');
+        }
+        
+        if(!joinQuery.criterions.isEmpty()) {
+        	statement.appendQuery("WHERE");
+        	attachWhere(statement, joinQuery);
+        }
+        
+		// Append group bys (if any)
+		if(!joinQuery.groupBys.isEmpty()) {
+			statement.appendQuery(joinQuery.groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+		}
+		
+		// Append order
+		if(!joinQuery.orders.isEmpty()) {
+			statement.appendQuery(joinQuery.orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+		}
+		
+		// Append limit & offset
+		if(joinQuery.limit != null) {
+			statement.appendQuery("LIMIT "+joinQuery.limit+"\n");
+		}
+		if(joinQuery.offset != null) {
+			statement.appendQuery("OFFSET "+ joinQuery.offset +"\n");
+		}
+        
+        return statement;
+        
+	}
+	
+	public void attachWhere(EstivateStatement statement, EstivateNode node) {
+		
+		if(node instanceof EstivateAggregator aggregator) {
+			for(int i = 0; i < aggregator.criterions.size(); i++) {
+				if(i > 0) {
+					statement.appendQuery(" "+aggregator.groupType.toString()+" ");
+				}
+				attachWhere(statement, aggregator.criterions.get(i));
+			}
+			
+		}
+		else if(node instanceof EstivateCriterion.Operator operator) {
+			statement.appendQuery(operator.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(operator.attribute));
+			statement.appendQuery(operator.type.symbol);
+			statement.appendQuery("?");
+			statement.appendValue(operator.entity.entity, operator.attribute, operator.value);
+		}
+		else if(node instanceof EstivateCriterion.In in) {
+			statement.appendQuery(in.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(in.attribute));
+			statement.appendQuery(" in (");
+			statement.appendQuery(in.values.stream().map(x -> "?").collect(Collectors.joining(", ")));
+			statement.appendQuery(")");
+			for(Object value : in.values) {
+				statement.appendValue(in.entity.entity, in.attribute, value);
+			}
+		}
+		else if(node instanceof EstivateCriterion.Between between) {
+			statement.appendQuery(between.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(between.attribute));
+			statement.appendQuery(between.entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(between.attribute)+" ? and ?");
+			statement.appendValue(between.entity.entity, between.attribute, between.min);
+			statement.appendValue(between.entity.entity, between.attribute, between.max);
+			
+		}
+		else if(node instanceof EstivateCriterion.NullCheck nullcheck) {
+			statement.appendQuery(nullcheck.entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+		}
+		else {
+			throw new RuntimeException("Node type not supported : "+node.getClass());
+		}
 		
 	}
 	
+	
+	
 	public <U> List<U> listAs(EstivateQuery joinQuery, Class<U> clazz) {
-		List<EstivateResult2> results = list(joinQuery);
+		List<EstivateResult> results = list(joinQuery);
 		List<U> output = new ArrayList<>();
-		for(EstivateResult2 result : results) {
+		for(EstivateResult result : results) {
 			output.add(result.mapAs(clazz));
 		}
 		return output;
@@ -127,26 +219,144 @@ public class ConnectionExecutor {
 	@SneakyThrows
 	private <U> U insert(U object) {
 		
-		String request = EstivateBasic.insert(object);
+
+		List<String> fieldValueList = new ArrayList<>();
+
+		EstivateStatement statement = new EstivateStatement(connection)
+				.appendQuery("INSERT INTO ")
+				.appendQuery(EstivateQuery.nameMapper.mapEntity(object.getClass()));
+
 		
-		try {
-			PreparedStatement preparedStatement = connection.prepareStatement(request, PreparedStatement.RETURN_GENERATED_KEYS);
-			preparedStatement.execute();
-			ResultSet rs = preparedStatement.getGeneratedKeys();
-			if (rs.next()) {
-				Field field = getIdField(object);
-				field.setAccessible(true);
-				field.setLong(object, rs.getLong(1));
+		for(Field field : object.getClass().getDeclaredFields()) {
+			field.setAccessible(true);
+			// Skip Id, will be auto generated by db
+			if(field.isAnnotationPresent(Id.class)) {
+				continue;
 			}
-			else {
-				return null;
+			
+			try {
+				
+				if(field.get(object) == null) {
+					continue;
+				}
+				
+				fieldValueList.add(field.getName());
+				statement.appendValue(object.getClass(), field.getName(), field.get(object));
+				//EstivateUtil.compileAttribute(entity.getClass(), field.getName(), field.get(entity)));
+				
 			}
+			catch(Exception e) {
+				log.error("Cannot map field "+field.getName(), e);
+			}
+			
 		}
-		catch(Exception e) {
-			log.error("Error with request : "+request, e);
+				
+		statement.appendQuery("(")
+				.appendQuery(fieldValueList.stream().collect(Collectors.joining(", ")))
+				.appendQuery(") VALUES (")
+				.appendQuery(fieldValueList.stream().map(x -> "?").collect(Collectors.joining(", ")))
+				.appendQuery(")");
+		
+		
+				
+		statement.execute();
+		
+		ResultSet rs = statement.getGeneratedKeys();
+		if (rs.next()) {
+			Field field = getIdField(object);
+			field.setAccessible(true);
+			field.setLong(object, rs.getLong(1));
+		}
+		else {
+			return null;
 		}
 		
 		return object;
+	}
+	
+//	@SneakyThrows
+//	private <U> U insert_old(U object) {
+//		
+//		String request = EstivateBasic.insert(object);
+//		
+//		try {
+//			PreparedStatement preparedStatement = connection.prepareStatement(request, PreparedStatement.RETURN_GENERATED_KEYS);
+//			preparedStatement.execute();
+//			ResultSet rs = preparedStatement.getGeneratedKeys();
+//			if (rs.next()) {
+//				Field field = getIdField(object);
+//				field.setAccessible(true);
+//				field.setLong(object, rs.getLong(1));
+//			}
+//			else {
+//				return null;
+//			}
+//		}
+//		catch(Exception e) {
+//			log.error("Error with request : "+request, e);
+//		}
+//		
+//		return object;
+//		
+//	}
+	
+	@SneakyThrows
+	public boolean create(Class entityClass) {
+		
+		List<String> fields = new ArrayList<>();
+		for(Field field : entityClass.getDeclaredFields()) {
+			StringPipe fieldCreation = new StringPipe();
+			fieldCreation.separator(" ");
+			
+			fieldCreation.append(field.getName());
+			
+			Class returnClass = field.getType();
+			
+			if(field.getDeclaredAnnotation(Convert.class) != null) {
+				returnClass = String.class;
+			}
+			
+			if(returnClass.isEnum()) {
+
+				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
+					returnClass = String.class;
+				}
+				else {
+					returnClass = Integer.class;
+				}
+			}
+			
+			if(returnClass == Integer.class || returnClass == Long.class || returnClass == Long.TYPE) {
+				fieldCreation.append("INT");
+			}
+			else if(returnClass == String.class) {
+				fieldCreation.append("VARCHAR");
+			}
+			else {
+				System.out.println("Cannot map type "+field.getType());
+			}
+			
+			if(field.isAnnotationPresent(Id.class)) {
+				fieldCreation.append("PRIMARY KEY");
+			}
+			
+			if(field.getDeclaredAnnotation(GeneratedValue.class) != null) {
+				GeneratedValue generatedValue = field.getDeclaredAnnotation(GeneratedValue.class);
+				if(generatedValue.strategy() == GenerationType.IDENTITY) {
+					fieldCreation.append("AUTO_INCREMENT");
+				}
+			}
+			
+			
+			fields.add(fieldCreation.toString());
+		}
+		
+		String result = "CREATE TABLE "+entityClass.getSimpleName()+" ("+fields.stream().collect(Collectors.joining(", "))+")";
+		
+		PreparedStatement statement = connection.prepareStatement(result);
+		
+		return statement.execute();
+		
 		
 	}
 	
@@ -189,7 +399,7 @@ public class ConnectionExecutor {
 		}
 		
 		// 1. Create query
-		EstimateStatement statement = new EstimateStatement(connection)
+		EstivateStatement statement = new EstivateStatement(connection)
 				.appendQuery("UPDATE ")
 				.appendQuery(EstivateQuery.nameMapper.mapEntity(entity.getClass()))
 				.appendQuery(" SET ");
@@ -220,12 +430,12 @@ public class ConnectionExecutor {
 	
 	
 	//@AllArgsConstructor
-	public static class EstivateResult2{
+	public static class EstivateResult{
 		
 		EstivateQuery query;
 		Map<String, String> columns;
 		
-		public EstivateResult2(EstivateQuery query, Map<String, String> columns) {
+		public EstivateResult(EstivateQuery query, Map<String, String> columns) {
 			this.query = query;
 			this.columns = columns;
 		}

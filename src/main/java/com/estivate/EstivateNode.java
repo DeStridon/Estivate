@@ -1,9 +1,9 @@
 package com.estivate;
 
-import com.estivate.EstivateQuery.Entity;
 import com.estivate.EstivateAggregator.GroupType;
 import com.estivate.EstivateCriterion.Operator;
 import com.estivate.EstivateCriterion.Operator.CriterionType;
+import com.estivate.EstivateQuery.Entity;
 
 public interface EstivateNode {
 	
@@ -33,6 +33,6 @@ public interface EstivateNode {
 
 	public EstivateNode clone();
 
-	public EstivateStatement preparedStatement();
+//	public EstivateStatement_old preparedStatement();
 
 }

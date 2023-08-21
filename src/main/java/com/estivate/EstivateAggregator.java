@@ -5,10 +5,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.EstivateQuery.Entity;
 import com.estivate.EstivateCriterion.NullCheck;
 import com.estivate.EstivateCriterion.Operator;
 import com.estivate.EstivateCriterion.Operator.CriterionType;
+import com.estivate.EstivateQuery.Entity;
 
 public class EstivateAggregator implements EstivateNode {
 	
@@ -114,15 +114,15 @@ public class EstivateAggregator implements EstivateNode {
 	}
 
 
-	public EstivateStatement preparedStatement() {
-		List<EstivateStatement> criterionsStatements = criterions.stream().map(x -> x.preparedStatement()).collect(Collectors.toList());
-		
-		if(criterions.size() == 1) {
-			return criterionsStatements.get(0);
-		}
-		
-		return EstivateStatement.mergeInOne(criterionsStatements, "(", ")", " "+groupType+" ");
-	}
+//	public EstivateStatement_old preparedStatement() {
+//		List<EstivateStatement_old> criterionsStatements = criterions.stream().map(x -> x.preparedStatement()).collect(Collectors.toList());
+//		
+//		if(criterions.size() == 1) {
+//			return criterionsStatements.get(0);
+//		}
+//		
+//		return EstivateStatement_old.mergeInOne(criterionsStatements, "(", ")", " "+groupType+" ");
+//	}
 
 	
 

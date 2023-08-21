@@ -10,11 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
-import com.estivate.EstivateBasic;
 import com.estivate.EstivateNameMapper.UppercaseNameMapper;
 import com.estivate.EstivateQuery;
 import com.estivate.test.entities.FragmentEntity;
-import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
 public class CreateTest {
@@ -30,11 +28,11 @@ public class CreateTest {
 	public void globalTest() throws SQLException {
 		
 		EstivateQuery.nameMapper = new UppercaseNameMapper();
-		
-		execute(EstivateBasic.create(FragmentEntity.class));
-		execute(EstivateBasic.create(TaskEntity.class));
-		
 		ConnectionExecutor ce = new ConnectionExecutor(connection);
+		
+		System.out.println(ce.create(FragmentEntity.class));
+		System.out.println(ce.create(TaskEntity.class));
+		
 		
 		TaskEntity task1 = TaskEntity.builder().projectId(1).name("old name").build();
 		ce.saveOrUpdate(task1);
@@ -55,16 +53,7 @@ public class CreateTest {
 		assertEquals("new name", task3.getName());
 	}
 	
-	public void execute(String request) {
-		
-		try {
-			connection.createStatement().execute(request);
-		}
-		catch(Exception e) {
-			System.err.println("Error with request : "+request);
-			e.printStackTrace();
-		}
-	}
+	
 	
 
 	
