@@ -1,5 +1,7 @@
 package com.estivate.test.entities;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.estivate.VirtualForeignKey;
@@ -18,6 +20,7 @@ import lombok.experimental.FieldNameConstants;
 public class SegmentEntity {
 	
 	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	long id;
 	
 	@VirtualForeignKey(entity = ProjectEntity.class)

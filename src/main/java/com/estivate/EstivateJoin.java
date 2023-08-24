@@ -1,11 +1,15 @@
 package com.estivate;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.estivate.util.StringPipe;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -15,9 +19,8 @@ public class EstivateJoin {
 
 	EstivateQuery.Entity joinedEntity;
 
-	String joinerAttribute;
-
-	String joinedAttribute;
+	
+	List<Pair<String, String>> joins = new ArrayList<>();
 	
 	JoinType joinType = JoinType.INNER;
 
@@ -27,31 +30,30 @@ public class EstivateJoin {
 				.append  (joinType.toString())
 				.append  ("JOIN")
 				.append  (EstivateQuery.nameMapper.mapEntity(joinedEntity.entity))
-				.appendIf(joinedEntity.alias != null, "AS "+joinedEntity.alias)
+				.appendIf(joinedEntity.alias != null, joinedEntity.alias)
 				.append  ("ON")
-				.append  (joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(joinedAttribute))
-				.append  ("=")
-				.append  (joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(joinerAttribute));
-
+				.append  (joins.stream().map(x -> joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getLeft()) + " = " + joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getRight())).collect(Collectors.joining(", ")));
 		return sb.toString();
 		
 	}
 
-	public EstivateJoin(EstivateQuery.Entity internalEntity, EstivateQuery.Entity externalEntity){
+	public EstivateJoin(EstivateQuery.Entity internalEntity, EstivateQuery.Entity externalEntity, String joinerAttribute, String joinedAttribute){
 		this.joinerEntity = internalEntity;
 		this.joinedEntity = externalEntity;
+		joins.add(Pair.of(joinerAttribute, joinedAttribute));
 	}
 	
-	public EstivateJoin(EstivateQuery.Entity joinerEntity, Class joinedClass){
-		this(joinerEntity, new EstivateQuery.Entity(joinedClass));
+	public EstivateJoin(EstivateQuery.Entity joinerEntity, Class joinedClass, String joinerAttribute, String joinedAttribute){
+		this(joinerEntity, new EstivateQuery.Entity(joinedClass), joinerAttribute, joinedAttribute);
 	}
 	
-	public EstivateJoin(Class joinerClass, EstivateQuery.Entity joinedEntity){
-		this(new EstivateQuery.Entity(joinerClass), joinedEntity);
+	public EstivateJoin(Class joinerClass, EstivateQuery.Entity joinedEntity, String joinerAttribute, String joinedAttribute){
+		this(new EstivateQuery.Entity(joinerClass), joinedEntity, joinerAttribute, joinedAttribute);
 	}
+	
 
-	public EstivateJoin(Class internalEntity, Class externalEntity) {
-		this(new EstivateQuery.Entity(internalEntity), new EstivateQuery.Entity(externalEntity));
+	public EstivateJoin(Class internalEntity, Class externalEntity, String joinerAttribute, String joinedAttribute) {
+		this(new EstivateQuery.Entity(internalEntity), new EstivateQuery.Entity(externalEntity), joinerAttribute, joinedAttribute);
 	}
 
 
@@ -70,8 +72,7 @@ public class EstivateJoin {
 			EstivateJoin cj = new EstivateJoin();
 			cj.joinerEntity = internal;
 			cj.joinedEntity = external;
-			cj.joinerAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
-			cj.joinedAttribute = externalField.getName();
+			cj.on(reference.attribute().isBlank() ? "id" : reference.attribute(), externalField.getName());
 
 			return cj;
 		}
@@ -86,8 +87,7 @@ public class EstivateJoin {
 			EstivateJoin cj = new EstivateJoin();
 			cj.joinerEntity = internal;
 			cj.joinedEntity = external;
-			cj.joinerAttribute = internalField.getName();
-			cj.joinedAttribute = reference.attribute().isBlank() ? "id" : reference.attribute();
+			cj.on(internalField.getName(), reference.attribute().isBlank() ? "id" : reference.attribute());
 
 			return cj;
 		}
@@ -102,19 +102,14 @@ public class EstivateJoin {
 		INNER,
 		OUTER
 	}
-
-	public EstivateJoin joinerAttribute(String id) {
-		this.joinerAttribute = id; 
-		return this;
-	}
-	
-	public EstivateJoin joinedAttribute(String attributeName) {
-		this.joinedAttribute = attributeName;
-		return this;
-	}
 	
 	public EstivateJoin joinType(JoinType joinType) {
 		this.joinType = joinType;
+		return this;
+	}
+
+	public EstivateJoin on(String joinerAttribute, String joinedAttribute) {
+		joins.add(Pair.of(joinerAttribute, joinedAttribute));
 		return this;
 	}
 

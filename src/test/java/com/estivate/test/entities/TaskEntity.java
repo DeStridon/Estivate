@@ -43,6 +43,7 @@ public class TaskEntity extends CachedEntity {
 	@Convert(converter=LanguageConverter.class)
 	Language targetLanguage;
 	
+	boolean archived;
 	
 	
 	public static enum MacroState {

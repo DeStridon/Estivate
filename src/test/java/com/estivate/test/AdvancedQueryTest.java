@@ -53,7 +53,7 @@ public class AdvancedQueryTest {
 		
 		// has comments - right join, filter on task activity & segment activity
 		// left join where not null
-		query.join(new EstivateJoin(TaskEntity.class, TaskActivityEntity.class).joinerAttribute(TaskEntity.Fields.id).joinedAttribute(TaskActivityEntity.Fields.taskId).joinType(JoinType.LEFT));
+		query.join(new EstivateJoin(TaskEntity.class, TaskActivityEntity.class, TaskEntity.Fields.id, TaskActivityEntity.Fields.taskId).joinType(JoinType.LEFT));
 		
 		query.isNotNull(TaskActivityEntity.class, TaskActivityEntity.Fields.id);
 		

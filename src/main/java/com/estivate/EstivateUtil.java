@@ -32,13 +32,16 @@ public class EstivateUtil {
 			}
 			// Then check if enum and with annotation
 			if(fieldType instanceof Class && ((Class<?>) fieldType).isEnum()) {
-
+				if(value == null) {
+					return null;
+				}
+				
 				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
 					return value.toString();
 				}
-				else {
-					return ((Enum) value).ordinal();
-				}
+				
+				return ((Enum) value).ordinal();
+				
 			}
 
 			return value;

@@ -107,11 +107,11 @@ public class ConnectionExecutor {
 		}
 		
 		if(joinQuery.selects.stream().allMatch(x -> x.contains(".")) && joinQuery.groupBys.isEmpty()) {
-			statement.appendQuery("distinct ");
+			statement.appendQuery("distinct");
 		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.selects)+"\n");
-		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+" \n");
+		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+" "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+"\n");
 		
         for(EstivateJoin join : joinQuery.buildJoins()) {
         	statement.appendQuery(join.toString()+'\n');
@@ -332,8 +332,11 @@ public class ConnectionExecutor {
 			else if(returnClass == String.class) {
 				fieldCreation.append("VARCHAR");
 			}
+			else if(returnClass == Boolean.class || returnClass == boolean.class) {
+				fieldCreation.append("BOOL");
+			}
 			else {
-				System.out.println("Cannot map type "+field.getType());
+				log.error("Cannot map type "+field.getType());
 			}
 			
 			if(field.isAnnotationPresent(Id.class)) {
