@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConnectionExecutor {
 	
-	final private Connection connection;
+	final public Connection connection;
 	
 	public ConnectionExecutor(Connection connection) {
 		this.connection = connection;
@@ -111,7 +111,7 @@ public class ConnectionExecutor {
 		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.selects)+"\n");
-		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+" "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+"\n");
+		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+"\n");
 		
         for(EstivateJoin join : joinQuery.buildJoins()) {
         	statement.appendQuery(join.toString()+'\n');

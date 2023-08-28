@@ -1,5 +1,7 @@
 package com.estivate.test.entities;
 
+import java.util.Date;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -47,6 +49,8 @@ public class SegmentEntity {
 	
 	MicroState microStatus;
 	
+	Date archived;
+
 	public static enum MicroState{
 		Waiting,
 		InProgress,

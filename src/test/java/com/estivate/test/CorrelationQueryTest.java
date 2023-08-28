@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
 import com.estivate.EstivateJoin;
+import com.estivate.EstivateJoin.JoinType;
 import com.estivate.EstivateQuery;
 import com.estivate.EstivateQuery.Entity;
 import com.estivate.test.entities.FragmentEntity;
@@ -103,39 +104,53 @@ public class CorrelationQueryTest {
 	
 	@Test
 	public void testRequest() {
-		/*
-		 * SELECT * FROM SegmentEntity taskSegment
-		 *  INNER JOIN SegmentEntity correlatedSegment ON 
-		 *  	correlatedSegment.projectId = taskSegment.projectId AND
-		 *  	correlatedSegment.sourceLanguage = taskSegment.sourceLanguage AND
-		 *  	correlatedSegment.targetLanguage = taskSegment.targetLanguage AND
-		 *  	correlatedSegment.id < taskSegment.id
-		 *  	correlatedSegment.taskId <= taskSegment.taskId
-		 *  	correlatedSegment.sourceContent = taskSegment.targetContent
-		 *  	
-		 *  WHERE taskSegment.taskId = 12 and projectId = 1;
-		 */
 		
-		Entity upSegmentEntity = new Entity(SegmentEntity.class, "UPSEGMENT");
+		CorrelationScope scope = CorrelationScope.Task;
 		
-		Entity segmentEntity = new Entity(SegmentEntity.class, "segment");
 		
-		EstivateJoin join = new EstivateJoin(SegmentEntity.class, upSegmentEntity, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
-				.on(SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
+		// Upsegment choice criterias :
+		// - fragment cant be something ordering : we shall have the different choices to be 
+		// - scope ordering : task, fragment, project
+		
+		
+		
+		Entity correlatedSegment = new Entity(SegmentEntity.class, "CorrelatedSegment");
+		EstivateJoin join = new EstivateJoin(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
 				.on(SegmentEntity.Fields.sourceLanguage, SegmentEntity.Fields.sourceLanguage)
-				.on(SegmentEntity.Fields.targetLanguage, SegmentEntity.Fields.targetLanguage);
-
+				.on(SegmentEntity.Fields.targetLanguage, SegmentEntity.Fields.targetLanguage)
+				.on(SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
+				.joinType(JoinType.LEFT);
+		
+		if(scope == CorrelationScope.Task) {
+			join.on(SegmentEntity.Fields.taskId, SegmentEntity.Fields.taskId);
+		}
+		else if(scope == CorrelationScope.Document) {
+			
+		}
+		
+		// Add where not equals to field value
+		
 		EstivateQuery query = new EstivateQuery(SegmentEntity.class)
 				.join(join)
-				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 75)
+				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.Waiting)
-				.gt(upSegmentEntity, SegmentEntity.Fields.macroStatus, MacroState.Translation);
+				.gt(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation)
+				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived);
 				
-		System.out.println(connection.toStatement(query));
+		System.out.println(connection.toStatement(query).query());
 		
 		connection.list(query);
 		
+	}
+	
+	public static enum CorrelationScope{
+		Project,
+		Document, // same document
+		DocumentResubmission, //
+		Fragment, // same fragment
+		TaskResubmission,
+		Task //
 	}
 	
 }

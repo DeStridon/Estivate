@@ -32,7 +32,7 @@ public class EstivateJoin {
 				.append  (EstivateQuery.nameMapper.mapEntity(joinedEntity.entity))
 				.appendIf(joinedEntity.alias != null, joinedEntity.alias)
 				.append  ("ON")
-				.append  (joins.stream().map(x -> joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getLeft()) + " = " + joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getRight())).collect(Collectors.joining(", ")));
+				.append  (joins.stream().map(x -> joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getLeft()) + " = " + joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getRight())).collect(Collectors.joining(" and ")));
 		return sb.toString();
 		
 	}
