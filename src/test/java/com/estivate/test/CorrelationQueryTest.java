@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
+import com.estivate.EstivateField;
 import com.estivate.EstivateJoin;
 import com.estivate.EstivateJoin.JoinType;
 import com.estivate.EstivateQuery;
@@ -136,7 +137,8 @@ public class CorrelationQueryTest {
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.Waiting)
 				.gt(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation)
-				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived);
+				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived)
+				.notEq(correlatedSegment, SegmentEntity.Fields.id, new EstivateField(SegmentEntity.class, SegmentEntity.Fields.id));
 				
 		System.out.println(connection.toStatement(query).query());
 		

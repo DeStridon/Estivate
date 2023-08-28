@@ -335,8 +335,11 @@ public class ConnectionExecutor {
 			else if(returnClass == Boolean.class || returnClass == boolean.class) {
 				fieldCreation.append("BOOL");
 			}
+			else if(returnClass == java.util.Date.class || returnClass == java.sql.Date.class) {
+				fieldCreation.append("DATE");
+			}
 			else {
-				log.error("Cannot map type "+field.getType());
+				throw new RuntimeException("Cannot map type "+field.getType());
 			}
 			
 			if(field.isAnnotationPresent(Id.class)) {
