@@ -113,7 +113,7 @@ public class ConnectionExecutor {
 		statement.appendQuery(String.join(", ", joinQuery.selects)+"\n");
 		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+"\n");
 		
-        for(EstivateJoin join : joinQuery.buildJoins()) {
+        for(EstivateJoin join : joinQuery.joins) {
         	statement.appendQuery(join.toString()+'\n');
         }
         
@@ -273,32 +273,7 @@ public class ConnectionExecutor {
 		
 		return object;
 	}
-	
-//	@SneakyThrows
-//	private <U> U insert_old(U object) {
-//		
-//		String request = EstivateBasic.insert(object);
-//		
-//		try {
-//			PreparedStatement preparedStatement = connection.prepareStatement(request, PreparedStatement.RETURN_GENERATED_KEYS);
-//			preparedStatement.execute();
-//			ResultSet rs = preparedStatement.getGeneratedKeys();
-//			if (rs.next()) {
-//				Field field = getIdField(object);
-//				field.setAccessible(true);
-//				field.setLong(object, rs.getLong(1));
-//			}
-//			else {
-//				return null;
-//			}
-//		}
-//		catch(Exception e) {
-//			log.error("Error with request : "+request, e);
-//		}
-//		
-//		return object;
-//		
-//	}
+
 	
 	@SneakyThrows
 	public boolean create(Class entityClass) {
@@ -580,34 +555,6 @@ public class ConnectionExecutor {
 
 		
 	}
-
-
-	
-	
-//	public <U> List<U> listAs(JoinQueryPreparedStatement joinQuery, Class<U> clazz) {
-//		Session session = this.sessionFactory.openSession();
-//
-//		try {
-//			Query<Tuple> query = session.createNativeQuery(joinQuery.query, Tuple.class);
-//			for(int i = 0; i < joinQuery.parameters.size(); i++) {
-//				query.setParameter(i, joinQuery.parameters.get(i));
-//			}
-//			List<Tuple> tuples = query.getResultList();
-//			
-//			List<U> results = tuples.stream().map(tuple -> new JoinQueryResult(joinQuery, tuple).mapAs(clazz)).collect(Collectors.toList());
-//			return results;
-//			
-//		} catch (HibernateException e) {
-//			log.error("DB Error", e, joinQuery.compile());
-//			return null;
-//		} catch (Exception exception) {
-//			log.error("DB Error", exception, joinQuery.compile());
-//			return null;
-//		} finally {
-//			session.close();
-//		}
-//	}
-
 
 
 

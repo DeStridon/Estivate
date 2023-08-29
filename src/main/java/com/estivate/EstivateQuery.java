@@ -77,8 +77,8 @@ public class EstivateQuery extends EstivateAggregator{
 	
 	
 	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
-	Set<Entity> manuallyJoinedClasses = new LinkedHashSet<>();
-	Set<EstivateJoin> manualJoins = new LinkedHashSet<>();
+	Set<Entity> joinedClasses = new LinkedHashSet<>();
+	Set<EstivateJoin> joins = new LinkedHashSet<>();
 	
 	@Getter
 	Set<String> selects = new TreeSet<>();
@@ -111,115 +111,6 @@ public class EstivateQuery extends EstivateAggregator{
 	}
 	
 	
-	
-//	public String compile() {
-//		StringBuilder sb = new StringBuilder();
-//		
-//		// Append selects 
-//		sb.append("SELECT");
-//		
-//		// If no select specified by developer, fill with baseclass attributes
-//		if(selects.isEmpty()) {
-//			select(baseClass);
-//		}
-//		
-//		// "distinct" keyword is used to avoid having duplicate results when joining from multiple tables, only shown when not having anything else than columns and no grouping
-//		if(selects.stream().allMatch(x -> x.contains(".")) && groupBys.isEmpty()) {
-//			sb.append(" distinct");
-//		}
-//		
-//		sb.append("\n  "+String.join(",\n  ", selects));
-//		sb.append("FROM "+nameMapper.mapEntity(baseClass)+" \n");
-//
-//		// Append joins
-//		for(EstivateJoin c : buildJoins()) {
-//			sb.append(c.toString()+'\n');
-//		}
-//		
-//		// Append where
-//		sb.append("WHERE ");
-//		sb.append(super.compile()+"\n");
-//		
-//		// Append group bys (if any)
-//		if(!groupBys.isEmpty()) {
-//			sb.append(groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-//		}
-//		
-//		// Append order
-//		if(!orders.isEmpty()) {
-//			sb.append(orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-//		}
-//		
-//		// Append limit & offset
-//		if(limit != null) {
-//			sb.append("LIMIT "+limit+"\n");
-//		}
-//		if(offset != null) {
-//			sb.append("OFFSET "+ offset +"\n");
-//		}
-//
-//		return sb.toString();
-//	}
-	
-	
-//	public EstivateStatement_old preparedStatement() {
-//		
-//		EstivateStatement_old jqps = super.preparedStatement();
-//		
-//		StringBuilder sb = new StringBuilder();
-//		
-//		// Append selects 
-//		sb.append("SELECT");
-//		
-//		// If no select specified by developer, fill with baseclass attributes
-//		if(selects.isEmpty()) {
-//			select(baseClass);
-//		}
-//		
-//		// "distinct" keyword is used to avoid having duplicate results when joining from multiple tables, only shown when not having anything else than columns and no grouping
-//		if(selects.stream().allMatch(x -> x.contains(".")) && groupBys.isEmpty()) {
-//			sb.append(" distinct");
-//		}
-//		
-//		sb.append("\n  "+String.join(",\n  ", selects)+"\n");
-//		sb.append("FROM "+nameMapper.mapEntity(baseClass)+"\n");
-//
-//		// Append joins
-//		for(EstivateJoin c : buildJoins()) {
-//			sb.append(c.toString()+'\n');
-//		}
-//		
-//		// Append where
-//		sb.append("WHERE ");
-//		
-//		sb.append(jqps.query);
-//		
-//		sb.append("\n");
-//		
-//		// Append group bys (if any)
-//		if(!groupBys.isEmpty()) {
-//			sb.append(groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-//		}
-//		
-//		// Append order
-//		if(!orders.isEmpty()) {
-//			sb.append(orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-//		}
-//		
-//		// Append limit & offset
-//		if(limit != null) {
-//			sb.append("LIMIT "+limit+"\n");
-//		}
-//		if(offset != null) {
-//			sb.append("OFFSET "+ offset +"\n");
-//		}
-//		
-//		jqps.query = sb.toString();
-//		
-//		return jqps;
-//	}
-	
-	
 	// nested search of the different classes used in criterions and to be added in joins
 	public Set<Entity> digClasses(EstivateAggregator aggregator){
 		
@@ -239,45 +130,49 @@ public class EstivateQuery extends EstivateAggregator{
 	}
 	
 	
-	// purpose : build join tree out of entities nodes and join branches
-	public List<EstivateJoin> buildJoins() {
-
-		// list all classes needed for query
-		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
-		targetEntities.addAll(manuallyJoinedClasses);
-		targetEntities.addAll(manualJoins.stream().map(x -> x.joinerEntity).collect(Collectors.toSet()));
-		
-
-		// initiate joinedQueryClasses list
-		Set<Entity> joinedEntities = new HashSet<>(List.of(new Entity(baseClass)));
-		
-		// now build classJoins
-		List<EstivateJoin> classJoins = new ArrayList<>();
-		
-		while(true) { 
-			EstivateJoin cj = tryAddingJoinedClass(joinedEntities, targetEntities);
-			if(cj != null) {
-				joinedEntities.add(cj.joinedEntity);
-				classJoins.add(cj);
-			}
-			else {
-				break;
-			}
-		}
-
-		// check no missing class from queryClasses in joinedQueryClasses
-		if(!joinedEntities.containsAll(targetEntities)) {
-			throw new RuntimeException(
-					"No junction found for classes "
-					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
-					+ " with classes "
-					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
-		}
-		
-		return classJoins;
-		
-		
-	}
+//	// purpose : build join tree out of entities nodes and join branches
+//	public List<EstivateJoin> buildJoins() {
+//
+//		// 0. initiate
+//		Set<Entity> joinedEntities = new HashSet<>(List.of(new Entity(baseClass)));
+//		List<EstivateJoin> classJoins = new ArrayList<>();
+//		
+//		// 1. list all classes needed for query
+//		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
+////		targetEntities.addAll(manuallyJoinedClasses);
+////		targetEntities.addAll(manualJoins.stream().map(x -> x.joinerEntity).collect(Collectors.toSet()));
+////		targetEntities.addAll(manualJoins.stream().map(x -> x.joinedEntity).collect(Collectors.toSet()));
+//		
+//		// 2. use manual joins
+//		
+//
+//		// initiate joinedQueryClasses list
+//		
+//		
+//		while(true) { 
+//			EstivateJoin cj = tryAddingJoinedClass(joinedEntities, targetEntities);
+//			if(cj != null) {
+//				joinedEntities.add(cj.joinedEntity);
+//				classJoins.add(cj);
+//			}
+//			else {
+//				break;
+//			}
+//		}
+//
+//		// check no missing class from queryClasses in joinedQueryClasses
+//		if(!joinedEntities.containsAll(targetEntities)) {
+//			throw new RuntimeException(
+//					"No junction found for classes "
+//					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
+//					+ " with classes "
+//					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
+//		}
+//		
+//		return classJoins;
+//		
+//		
+//	}
 
 	// links first suitable class of candidates to one of already joined classes
 	// return null if every class already joined or if all remaining classes cannot be joined
@@ -292,7 +187,7 @@ public class EstivateQuery extends EstivateAggregator{
 			for(Entity joinedClass : joined) {
 				
 				// try joining through manual joins
-				EstivateJoin manualJoin = manualJoins.stream()
+				EstivateJoin manualJoin = joins.stream()
 						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
 						.findFirst().orElse(null);
 				
@@ -312,10 +207,10 @@ public class EstivateQuery extends EstivateAggregator{
 	
 	
 	
-	public EstivateQuery join(Entity c) { manuallyJoinedClasses.add(c); return this; }
+	public EstivateQuery join(Entity c) { joinedClasses.add(c); return this; }
 	public EstivateQuery join(Class c) { return join(new Entity(c)); }
 
-	public EstivateQuery join(EstivateJoin classJoin) { manualJoins.add(classJoin); return this; }
+	public EstivateQuery join(EstivateJoin classJoin) { joins.add(classJoin); return this; }
 	
 	public EstivateQuery orderAsc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapAttribute(attribute) + " ASC"); return this; }
 	public EstivateQuery orderAsc(Class c, String attribute) { return orderAsc(new Entity(c), attribute); }

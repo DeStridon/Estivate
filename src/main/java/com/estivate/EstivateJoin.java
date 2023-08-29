@@ -32,14 +32,14 @@ public class EstivateJoin {
 				.append  (EstivateQuery.nameMapper.mapEntity(joinedEntity.entity))
 				.appendIf(joinedEntity.alias != null, joinedEntity.alias)
 				.append  ("ON")
-				.append  (joins.stream().map(x -> joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getLeft()) + " = " + joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getRight())).collect(Collectors.joining(" and ")));
+				.append  (joins.stream().map(x -> joinerEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getLeft()) + " = " + joinedEntity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(x.getRight())).collect(Collectors.joining(" and ")));
 		return sb.toString();
 		
 	}
 
-	public EstivateJoin(EstivateQuery.Entity internalEntity, EstivateQuery.Entity externalEntity, String joinerAttribute, String joinedAttribute){
-		this.joinerEntity = internalEntity;
-		this.joinedEntity = externalEntity;
+	public EstivateJoin(EstivateQuery.Entity joinerEntity, EstivateQuery.Entity joinedEntity, String joinerAttribute, String joinedAttribute){
+		this.joinerEntity = joinerEntity;
+		this.joinedEntity = joinedEntity;
 		joins.add(Pair.of(joinerAttribute, joinedAttribute));
 	}
 	
@@ -52,8 +52,8 @@ public class EstivateJoin {
 	}
 	
 
-	public EstivateJoin(Class internalEntity, Class externalEntity, String joinerAttribute, String joinedAttribute) {
-		this(new EstivateQuery.Entity(internalEntity), new EstivateQuery.Entity(externalEntity), joinerAttribute, joinedAttribute);
+	public EstivateJoin(Class joinerEntity, Class joinedEntity, String joinerAttribute, String joinedAttribute) {
+		this(new EstivateQuery.Entity(joinerEntity), new EstivateQuery.Entity(joinedEntity), joinerAttribute, joinedAttribute);
 	}
 
 
