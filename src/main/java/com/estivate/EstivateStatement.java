@@ -46,6 +46,27 @@ public class EstivateStatement {
 		parameters.add(EstivateUtil.compileObject(entity, fieldName, parameter));
 		return this;
 	}
+	
+	public EstivateStatement appendParameter(Class entity, String attribute, Object parameter) {
+		if(parameter instanceof EstivateField field) {
+			appendQuery(field.toString());
+		}
+		else {
+			appendQuery("?");
+			appendValue(entity, attribute, parameter);
+		}
+		return this;
+	}
+	
+	public String appendParameterFetchQuery(Class entity, String attribute, Object parameter) {
+		if(parameter instanceof EstivateField field) {
+			return field.toString();
+		}
+
+		appendValue(entity, attribute, parameter);
+		return "?";
+
+	}
 
 	public boolean execute() {
 		try {
@@ -109,6 +130,8 @@ public class EstivateStatement {
 		}
 		return null;
 	}
+
+
 	
 	
 

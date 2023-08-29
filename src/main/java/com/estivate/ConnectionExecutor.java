@@ -158,13 +158,12 @@ public class ConnectionExecutor {
 		else if(node instanceof EstivateCriterion.Operator operator) {
 			statement.appendQuery(operator.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(operator.attribute));
 			statement.appendQuery(operator.type.symbol);
-			statement.appendQuery("?");
-			statement.appendValue(operator.entity.entity, operator.attribute, operator.value);
+			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
 		else if(node instanceof EstivateCriterion.In in) {
 			statement.appendQuery(in.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(in.attribute));
 			statement.appendQuery(" in (");
-			statement.appendQuery(in.values.stream().map(x -> "?").collect(Collectors.joining(", ")));
+			statement.appendQuery(in.values.stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 			for(Object value : in.values) {
 				statement.appendValue(in.entity.entity, in.attribute, value);
@@ -172,9 +171,10 @@ public class ConnectionExecutor {
 		}
 		else if(node instanceof EstivateCriterion.Between between) {
 			statement.appendQuery(between.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(between.attribute));
-			statement.appendQuery(between.entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(between.attribute)+" ? and ?");
-			statement.appendValue(between.entity.entity, between.attribute, between.min);
-			statement.appendValue(between.entity.entity, between.attribute, between.max);
+			statement.appendQuery(between.entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(between.attribute));
+			statement.appendParameter(between.entity.entity, between.attribute, between.min);
+			statement.appendQuery(" and ");
+			statement.appendParameter(between.entity.entity, between.attribute, between.max);
 			
 		}
 		else if(node instanceof EstivateCriterion.NullCheck nullcheck) {

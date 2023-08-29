@@ -106,7 +106,7 @@ public class CorrelationQueryTest {
 	@Test
 	public void testRequest() {
 		
-		CorrelationScope scope = CorrelationScope.Task;
+		CorrelationScope scope = CorrelationScope.Resubmission;
 		
 		
 		// Upsegment choice criterias :
@@ -116,29 +116,34 @@ public class CorrelationQueryTest {
 		
 		
 		Entity correlatedSegment = new Entity(SegmentEntity.class, "CorrelatedSegment");
-		EstivateJoin join = new EstivateJoin(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
+		EstivateJoin segmentJoin = new EstivateJoin(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
 				.on(SegmentEntity.Fields.sourceLanguage, SegmentEntity.Fields.sourceLanguage)
 				.on(SegmentEntity.Fields.targetLanguage, SegmentEntity.Fields.targetLanguage)
 				.on(SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
 				.joinType(JoinType.LEFT);
-		
-		if(scope == CorrelationScope.Task) {
-			join.on(SegmentEntity.Fields.taskId, SegmentEntity.Fields.taskId);
-		}
-		else if(scope == CorrelationScope.Document) {
-			
-		}
-		
-		// Add where not equals to field value
-		
+
 		EstivateQuery query = new EstivateQuery(SegmentEntity.class)
-				.join(join)
+				.join(segmentJoin)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 75)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.Waiting)
 				.gt(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation)
 				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived)
 				.notEq(correlatedSegment, SegmentEntity.Fields.id, new EstivateField(SegmentEntity.class, SegmentEntity.Fields.id));
+
+		
+		if(scope == CorrelationScope.Task) {
+			segmentJoin.on(SegmentEntity.Fields.taskId, SegmentEntity.Fields.taskId);
+		}
+		else if(scope == CorrelationScope.Resubmission) {
+			Entity correlatedTask = new Entity(TaskEntity.class, "CorrelatedTask");
+			query.join(new EstivateJoin(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
+			query.join(new EstivateJoin(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
+			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new EstivateField(correlatedTask, TaskEntity.Fields.externalName));
+		}
+		
+		// Add where not equals to field value
+		
 				
 		System.out.println(connection.toStatement(query).query());
 		
@@ -148,11 +153,8 @@ public class CorrelationQueryTest {
 	
 	public static enum CorrelationScope{
 		Project,
-		Document, // same document
-		DocumentResubmission, //
-		Fragment, // same fragment
-		TaskResubmission,
-		Task //
+		Resubmission,
+		Task;
 	}
 	
 }

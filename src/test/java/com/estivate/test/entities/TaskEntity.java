@@ -45,6 +45,8 @@ public class TaskEntity extends CachedEntity {
 	
 	boolean archived;
 	
+	String externalName;
+	
 	
 	public static enum MacroState {
 		Analysis, 		//0
