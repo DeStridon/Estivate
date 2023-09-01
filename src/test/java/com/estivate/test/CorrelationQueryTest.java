@@ -106,7 +106,7 @@ public class CorrelationQueryTest {
 	@Test
 	public void testRequest() {
 		
-		CorrelationScope scope = CorrelationScope.Resubmission;
+		CorrelationScope scope = CorrelationScope.Fragment;
 		
 		
 		// Upsegment choice criterias :
@@ -127,9 +127,12 @@ public class CorrelationQueryTest {
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 75)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.Waiting)
+				.isNull(TaskEntity.class, TaskEntity.Fields.archived)
 				.gt(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation)
 				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived)
-				.notEq(correlatedSegment, SegmentEntity.Fields.id, new EstivateField(SegmentEntity.class, SegmentEntity.Fields.id));
+				.notEq(correlatedSegment, SegmentEntity.Fields.id, new EstivateField(SegmentEntity.class, SegmentEntity.Fields.id))
+				.orderDesc(SegmentEntity.class, SegmentEntity.Fields.macroStatus)
+				;
 
 		
 		if(scope == CorrelationScope.Task) {
@@ -140,6 +143,14 @@ public class CorrelationQueryTest {
 			query.join(new EstivateJoin(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
 			query.join(new EstivateJoin(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
 			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new EstivateField(correlatedTask, TaskEntity.Fields.externalName));
+		}
+		else if(scope == CorrelationScope.Fragment) {
+			Entity correlatedFragment = new Entity(FragmentEntity.class, "CorrelatedFragment");
+			query.join(new EstivateJoin(SegmentEntity.class, FragmentEntity.class, SegmentEntity.Fields.sourceFragmentId, FragmentEntity.Fields.id));
+			query.join(new EstivateJoin(correlatedSegment, correlatedFragment, SegmentEntity.Fields.taskId, FragmentEntity.Fields.id));
+			query.eq(FragmentEntity.class, FragmentEntity.Fields.externalName, new EstivateField(correlatedFragment, TaskEntity.Fields.externalName));
+		}
+		else if(scope == CorrelationScope.Document) {
 		}
 		
 		// Add where not equals to field value
@@ -152,9 +163,10 @@ public class CorrelationQueryTest {
 	}
 	
 	public static enum CorrelationScope{
-		Project,
 		Resubmission,
-		Task;
+		Fragment,
+		Task,
+		Document;
 	}
 	
 }
