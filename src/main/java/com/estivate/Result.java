@@ -17,18 +17,18 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
 import com.estivate.entity.CachedEntity;
-import com.estivate.query.EstivateQuery;
-import com.estivate.query.EstivateQuery.Entity;
+import com.estivate.query.Query;
+import com.estivate.query.Query.Entity;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EstivateResult {
+public class Result {
 
-	EstivateQuery query;
+	Query query;
 	Map<String, String> columns;
 	
-	public EstivateResult(EstivateQuery query, Map<String, String> columns) {
+	public Result(Query query, Map<String, String> columns) {
 		this.query = query;
 		this.columns = columns;
 	}
@@ -46,7 +46,7 @@ public class EstivateResult {
 	}
 	
 	public String mapAsString(Class c, String attribute) {
-		return columns.get(EstivateQuery.nameMapper.mapEntityAttribute(c, attribute));
+		return columns.get(Query.nameMapper.mapEntityAttribute(c, attribute));
 	}
 	
 	
@@ -82,7 +82,7 @@ public class EstivateResult {
 		Type type = field.getGenericType();
 		field.setAccessible(true);
 		
-		String value = arguments.get(entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(field.getName()));
+		String value = arguments.get(entity.getName()+"."+Query.nameMapper.mapAttribute(field.getName()));
 
 		if(value == null) {
 			return;

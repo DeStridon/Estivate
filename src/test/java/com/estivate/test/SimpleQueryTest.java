@@ -6,9 +6,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.estivate.ConnectionExecutor;
-import com.estivate.EstivateNameMapper;
-import com.estivate.query.EstivateQuery;
+import com.estivate.Context;
+import com.estivate.NameMapper;
+import com.estivate.query.Query;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
@@ -17,13 +17,13 @@ import com.estivate.test.entities.misc.Language;
 
 public class SimpleQueryTest {
 	
-	ConnectionExecutor connection;
+	Context connection;
 	
 	@Test
 	public void prepare() throws SQLException {
-		this.connection = new ConnectionExecutor(DriverManager.getConnection("jdbc:h2:mem:test"));
+		this.connection = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
 		
-		EstivateQuery.nameMapper = new EstivateNameMapper.UppercaseNameMapper();
+		Query.nameMapper = new NameMapper.UppercaseNameMapper();
 
 		connection.create(TaskEntity.class);
 		connection.create(SegmentEntity.class);
@@ -43,7 +43,7 @@ public class SimpleQueryTest {
 	
 	
 	public void taskByLanguage() {
-		EstivateQuery query = new EstivateQuery(TaskEntity.class)
+		Query query = new Query(TaskEntity.class)
 				.eq(TaskEntity.class, TaskEntity.Fields.targetLanguage, Language.ja_JP);
 		
 		TaskEntity task = connection.uniqueResult(query, TaskEntity.class);
@@ -54,7 +54,7 @@ public class SimpleQueryTest {
 	
 	
 	public void taskGroupedByProject() {
-		EstivateQuery query = new EstivateQuery(TaskEntity.class)
+		Query query = new Query(TaskEntity.class)
 				.groupBy(TaskEntity.class, TaskEntity.Fields.projectId)
 				.groupBy(TaskEntity.class, TaskEntity.Fields.sourceLanguage);
 		

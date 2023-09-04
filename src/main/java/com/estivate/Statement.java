@@ -1,26 +1,33 @@
 package com.estivate;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.query.EstivateAggregator;
-import com.estivate.query.EstivateCriterion;
-import com.estivate.query.EstivateField;
-import com.estivate.query.EstivateJoin;
+import javax.persistence.AttributeConverter;
+import javax.persistence.Convert;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+
+import com.estivate.query.Aggregator;
+import com.estivate.query.Criterion;
+import com.estivate.query.Property;
+import com.estivate.query.Join;
 import com.estivate.query.EstivateNode;
-import com.estivate.query.EstivateQuery;
+import com.estivate.query.Query;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EstivateStatement {
+public class Statement {
 
 	Connection connection;
 	
@@ -29,11 +36,11 @@ public class EstivateStatement {
 	
 	PreparedStatement statement = null;
 	
-	public EstivateStatement(Connection connection){
+	public Statement(Connection connection){
 		this.connection = connection;
 	}
 	
-	public EstivateStatement appendQuery(String queryContent) {
+	public Statement appendQuery(String queryContent) {
 		if(!query.isEmpty()) {
 			query.append(" ");
 		}
@@ -46,13 +53,13 @@ public class EstivateStatement {
 	}
 	
 	
-	public EstivateStatement appendValue(Class entity, String fieldName, Object parameter) {
-		parameters.add(EstivateUtil.compileObject(entity, fieldName, parameter));
+	public Statement appendValue(Class entity, String fieldName, Object parameter) {
+		parameters.add(compileObject(entity, fieldName, parameter));
 		return this;
 	}
 	
-	public EstivateStatement appendParameter(Class entity, String attribute, Object parameter) {
-		if(parameter instanceof EstivateField field) {
+	public Statement appendParameter(Class entity, String attribute, Object parameter) {
+		if(parameter instanceof Property field) {
 			appendQuery(field.toString());
 		}
 		else {
@@ -63,7 +70,7 @@ public class EstivateStatement {
 	}
 	
 	public String appendParameterFetchQuery(Class entity, String attribute, Object parameter) {
-		if(parameter instanceof EstivateField field) {
+		if(parameter instanceof Property field) {
 			return field.toString();
 		}
 
@@ -75,7 +82,7 @@ public class EstivateStatement {
 	public boolean execute() {
 		try {
 			
-			statement = connection.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+			statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
 			for(int i = 0; i < parameters.size(); i++) {
 				
 				Object object = parameters.get(i);
@@ -135,9 +142,9 @@ public class EstivateStatement {
 		return null;
 	}
 
-	public static EstivateStatement toStatement(Connection connection, EstivateQuery joinQuery) {
+	public static Statement toStatement(Connection connection, Query joinQuery) {
 		
-		EstivateStatement statement = new EstivateStatement(connection);
+		Statement statement = new Statement(connection);
 		
 		statement.appendQuery("SELECT ");
 		
@@ -153,7 +160,7 @@ public class EstivateStatement {
 		statement.appendQuery(String.join(", ", joinQuery.getSelects())+"\n");
 		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");
 		
-        for(EstivateJoin join : joinQuery.buildJoins()) {
+        for(Join join : joinQuery.buildJoins()) {
         	statement.appendQuery(join.toString()+'\n');
         }
         
@@ -184,9 +191,9 @@ public class EstivateStatement {
         
 	}
 	
-	public static void attachWhere(EstivateStatement statement, EstivateNode node) {
+	public static void attachWhere(Statement statement, EstivateNode node) {
 		
-		if(node instanceof EstivateAggregator aggregator) {
+		if(node instanceof Aggregator aggregator) {
 			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
 				if(i > 0) {
 					statement.appendQuery(" "+aggregator.getGroupType().toString()+" ");
@@ -195,13 +202,13 @@ public class EstivateStatement {
 			}
 			
 		}
-		else if(node instanceof EstivateCriterion.Operator operator) {
-			statement.appendQuery(operator.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(operator.attribute));
+		else if(node instanceof Criterion.Operator operator) {
+			statement.appendQuery(operator.entity.getName()+"."+Query.nameMapper.mapAttribute(operator.attribute));
 			statement.appendQuery(operator.type.symbol);
 			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
-		else if(node instanceof EstivateCriterion.In in) {
-			statement.appendQuery(in.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(in.attribute));
+		else if(node instanceof Criterion.In in) {
+			statement.appendQuery(in.entity.getName()+"."+Query.nameMapper.mapAttribute(in.attribute));
 			statement.appendQuery(" in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
@@ -209,22 +216,94 @@ public class EstivateStatement {
 				statement.appendValue(in.entity.entity, in.attribute, value);
 			}
 		}
-		else if(node instanceof EstivateCriterion.Between between) {
-			statement.appendQuery(between.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(between.attribute));
-			statement.appendQuery(between.entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(between.attribute));
+		else if(node instanceof Criterion.Between between) {
+			statement.appendQuery(between.entity.getName()+"."+Query.nameMapper.mapAttribute(between.attribute));
+			statement.appendQuery(between.entity.getName()+"."+ Query.nameMapper.mapAttribute(between.attribute));
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
 			statement.appendQuery(" and ");
 			statement.appendParameter(between.entity.entity, between.attribute, between.max);
 			
 		}
-		else if(node instanceof EstivateCriterion.NullCheck nullcheck) {
-			statement.appendQuery(nullcheck.entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+		else if(node instanceof Criterion.NullCheck nullcheck) {
+			statement.appendQuery(nullcheck.entity.getName() + "." + Query.nameMapper.mapAttribute(nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());
 		}
 		
 	}
+	
+	
+	Object compileObject(Class entity, String attribute, Object value) {
+		try {
+			Field field = entity.getDeclaredField(attribute);
+			
+			Type fieldType = field.getType();
+			
+			// Convert annotation takes priority
+			if(field.getDeclaredAnnotation(Convert.class) != null) {
+				Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(converter instanceof AttributeConverter) {
+					AttributeConverter attributeConverter = (AttributeConverter) converter;
+					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
+					return convertedValue;
+				}
+			}
+			// Then check if enum and with annotation
+			if(fieldType instanceof Class && ((Class<?>) fieldType).isEnum()) {
+				if(value == null) {
+					return null;
+				}
+				
+				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
+					return value.toString();
+				}
+				
+				return ((Enum) value).ordinal();
+				
+			}
+
+			return value;
+
+		}
+		catch(Exception e) {
+			log.error("Exception while trying to map field "+entity.getSimpleName()+"."+attribute);
+			e.printStackTrace();
+		}
+		
+		log.warn("Could not determine type of field "+entity.getSimpleName()+"."+attribute);
+		
+		return compileGenericType(value);
+
+	}
+	
+	String compileGenericType(Object value) {
+		if(value instanceof String) {
+			
+			return "'"+((String) value)
+					.replace("\\", "\\\\")
+					//.replace("'", "\'\'")
+					.replace("\"", "\"\"")
+					.replace(":", "\\:")
+					+"'";
+		}
+		else if(value instanceof java.util.Date) {
+			return "\"" + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((java.util.Date) value) + "\""; 
+		}
+		else if(value instanceof Boolean) {
+			return (boolean) value ? "1":"0";
+		}
+		else {
+			return value.toString();
+		}
+	}
+	
+	String compileAttribute(Class entity, String attribute, Object value) {
+		return compileGenericType(compileObject(entity, attribute, value));
+	}
+	
+	
 
 	
 	

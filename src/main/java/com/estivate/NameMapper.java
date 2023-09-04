@@ -1,13 +1,13 @@
 package com.estivate;
 
-public interface EstivateNameMapper {
+public interface NameMapper {
 	
 	public String mapEntity(Class c);
 	public String mapAttribute(String attributeName);
 	public String mapEntityAttribute(Class entity, String attributeName);
 	
 	
-	public static class DefaultNameMapper implements EstivateNameMapper{
+	public static class DefaultNameMapper implements NameMapper{
 		public String mapEntity(Class c) {
 			return c.getSimpleName();
 		}
@@ -21,7 +21,7 @@ public interface EstivateNameMapper {
 		}
 	}
 	
-	public static class UppercaseNameMapper implements EstivateNameMapper{
+	public static class UppercaseNameMapper implements NameMapper{
 		public String mapEntity(Class c) {
 			return c.getSimpleName().toUpperCase();
 		}

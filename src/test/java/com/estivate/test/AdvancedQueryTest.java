@@ -7,13 +7,12 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.estivate.ConnectionExecutor;
-import com.estivate.query.EstivateJoin;
-import com.estivate.query.EstivateQuery;
-import com.estivate.query.EstivateJoin.JoinType;
+import com.estivate.Context;
+import com.estivate.Statement;
+import com.estivate.query.Join;
+import com.estivate.query.Join.JoinType;
+import com.estivate.query.Query;
 import com.estivate.test.entities.FragmentEntity;
-import com.estivate.test.entities.NoUseEntity;
-import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskActivityEntity;
 import com.estivate.test.entities.TaskEntity;
 import com.estivate.test.entities.TaskEntity.MacroState;
@@ -32,7 +31,7 @@ public class AdvancedQueryTest {
 	@Test
 	public void simpleQueryTest() {
 		
-		EstivateQuery query = new EstivateQuery(TaskEntity.class);
+		Query query = new Query(TaskEntity.class);
 		
 		//query.join(new EstivateJoin(SegmentEntity.class, FragmentEntity.class, SegmentEntity.Fields.targetFragmentId, FragmentEntity.Fields.id));
 		
@@ -53,13 +52,11 @@ public class AdvancedQueryTest {
 		
 		// has comments - right join, filter on task activity & segment activity
 		// left join where not null
-		query.join(new EstivateJoin(TaskEntity.class, TaskActivityEntity.class, TaskEntity.Fields.id, TaskActivityEntity.Fields.taskId).joinType(JoinType.LEFT));
+		query.join(new Join(TaskEntity.class, TaskActivityEntity.class, TaskEntity.Fields.id, TaskActivityEntity.Fields.taskId).joinType(JoinType.LEFT));
 		
 		query.isNotNull(TaskActivityEntity.class, TaskActivityEntity.Fields.id);
 		
-		ConnectionExecutor ce = new ConnectionExecutor(connection);
-		
-		System.out.println(ce.toStatement(query).query());
+		System.out.println(Statement.toStatement(connection, query).query());
 		
 	}
 	
@@ -67,7 +64,7 @@ public class AdvancedQueryTest {
 	@Test
 	public void taskEnumTest() {
 		
-		EstivateQuery query = new EstivateQuery(TaskEntity.class);
+		Query query = new Query(TaskEntity.class);
 		
 		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1, 2, 3, 4);
 		
@@ -75,9 +72,9 @@ public class AdvancedQueryTest {
 		
 		query.in(TaskEntity.class, TaskEntity.Fields.status, MacroState.Analysis, MacroState.Translation);
 		
-		ConnectionExecutor ce = new ConnectionExecutor(connection);
+		Context ce = new Context(connection);
 		
-		System.out.println(ce.toStatement(query).query());
+		System.out.println(Statement.toStatement(connection, query).query());
 		
 		
 		

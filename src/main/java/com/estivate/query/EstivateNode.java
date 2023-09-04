@@ -1,13 +1,13 @@
 package com.estivate.query;
 
-import com.estivate.query.EstivateAggregator.GroupType;
-import com.estivate.query.EstivateCriterion.Operator;
-import com.estivate.query.EstivateCriterion.Operator.CriterionType;
-import com.estivate.query.EstivateQuery.Entity;
+import com.estivate.query.Aggregator.GroupType;
+import com.estivate.query.Criterion.Operator;
+import com.estivate.query.Criterion.Operator.CriterionType;
+import com.estivate.query.Query.Entity;
 
 public interface EstivateNode {
 	
-	public String compile();
+	//public String compile();
 	
 	public static Operator eq (Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Eq,  value); }
 	public static Operator lt (Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Lt,  value); }
@@ -15,16 +15,16 @@ public interface EstivateNode {
 	public static Operator lte(Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Lte, value); }
 	public static Operator gte(Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Gte, value); }
 
-	public static EstivateAggregator or(EstivateNode... criterions) {
-		EstivateAggregator aggregator = new EstivateAggregator(GroupType.OR);
+	public static Aggregator or(EstivateNode... criterions) {
+		Aggregator aggregator = new Aggregator(GroupType.OR);
 		for(EstivateNode criterion : criterions) {
 			aggregator.criterions.add(criterion);
 		}
 		return aggregator;
 	}
 	
-	public static EstivateAggregator add(EstivateNode... criterions) {
-		EstivateAggregator aggregator = new EstivateAggregator(GroupType.AND);
+	public static Aggregator add(EstivateNode... criterions) {
+		Aggregator aggregator = new Aggregator(GroupType.AND);
 		for(EstivateNode criterion : criterions) {
 			aggregator.criterions.add(criterion);
 		}

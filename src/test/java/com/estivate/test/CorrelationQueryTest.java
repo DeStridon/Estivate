@@ -1,4 +1,5 @@
 package com.estivate.test;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
@@ -6,12 +7,13 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.estivate.ConnectionExecutor;
-import com.estivate.query.EstivateField;
-import com.estivate.query.EstivateJoin;
-import com.estivate.query.EstivateQuery;
-import com.estivate.query.EstivateJoin.JoinType;
-import com.estivate.query.EstivateQuery.Entity;
+import com.estivate.Context;
+import com.estivate.Statement;
+import com.estivate.query.Join;
+import com.estivate.query.Join.JoinType;
+import com.estivate.query.Property;
+import com.estivate.query.Query;
+import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.SegmentEntity.MicroState;
@@ -24,26 +26,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CorrelationQueryTest {
 	
-	ConnectionExecutor connection;
+	Connection connection;
+	
+	Context connectionExecutor;
 	
 	@Before
 	public void prepare() throws SQLException {
-		this.connection = new ConnectionExecutor(DriverManager.getConnection("jdbc:h2:mem:test"));
+		this.connection = DriverManager.getConnection("jdbc:h2:mem:test");
+	
+		this.connectionExecutor = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
 
-		connection.create(TaskEntity.class);
-		connection.create(SegmentEntity.class);
-		connection.create(FragmentEntity.class);
-		connection.create(TaskHistoryEntity.class);
+		connectionExecutor.create(TaskEntity.class);
+		connectionExecutor.create(SegmentEntity.class);
+		connectionExecutor.create(FragmentEntity.class);
+		connectionExecutor.create(TaskHistoryEntity.class);
 		
-		TaskEntity task1 = connection.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #1").status(MacroState.Delivered).build());
+		TaskEntity task1 = connectionExecutor.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #1").status(MacroState.Delivered).build());
 		SegmentEntity segment11 = generateSegment(task1, "content A");
 		SegmentEntity segment12 = generateSegment(task1, "content B");
 		
-		TaskEntity task2 = connection.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #2").status(MacroState.Translation).build());
+		TaskEntity task2 = connectionExecutor.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #2").status(MacroState.Translation).build());
 		SegmentEntity segment21 = generateSegment(task2, "content A");
 		SegmentEntity segment22 = generateSegment(task2, "content C");
 		
-		TaskEntity task3 = connection.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #3").status(MacroState.Analysis).build());
+		TaskEntity task3 = connectionExecutor.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #3").status(MacroState.Analysis).build());
 		SegmentEntity segment31 = generateSegment(task3, "content A");
 		SegmentEntity segment32 = generateSegment(task3, "content B");
 		SegmentEntity segment33 = generateSegment(task3, "content C");
@@ -61,10 +67,10 @@ public class CorrelationQueryTest {
 		
 	}
 	
-	EstivateQuery correlationQuery(TaskEntity task, List<SegmentEntity> segments, CorrelationDirection direction) {
+	Query correlationQuery(TaskEntity task, List<SegmentEntity> segments, CorrelationDirection direction) {
 		
 		
-		EstivateQuery query = new EstivateQuery(SegmentEntity.class)
+		Query query = new Query(SegmentEntity.class)
 				//.join(TaskEntity.class)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, task.getProjectId())
 				.eq(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage, task.getSourceLanguage())
@@ -99,7 +105,7 @@ public class CorrelationQueryTest {
 				
 				.sourceContent(sourceContent)
 				.build();
-		return connection.saveOrUpdate(segment);		
+		return connectionExecutor.saveOrUpdate(segment);		
 
 	}
 	
@@ -114,13 +120,13 @@ public class CorrelationQueryTest {
 		// - scope ordering : task, fragment, project
 		
 		Entity correlatedSegment = new Entity(SegmentEntity.class, "CorrelatedSegment");
-		EstivateJoin segmentJoin = new EstivateJoin(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
+		Join segmentJoin = new Join(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
 				.on(SegmentEntity.Fields.sourceLanguage, SegmentEntity.Fields.sourceLanguage)
 				.on(SegmentEntity.Fields.targetLanguage, SegmentEntity.Fields.targetLanguage)
 				.on(SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
 				.joinType(JoinType.LEFT);
 
-		EstivateQuery query = new EstivateQuery(SegmentEntity.class)
+		Query query = new Query(SegmentEntity.class)
 				.join(segmentJoin)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 75)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
@@ -128,7 +134,7 @@ public class CorrelationQueryTest {
 				.isNull(TaskEntity.class, TaskEntity.Fields.archived)
 				.gt(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation)
 				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived)
-				.notEq(correlatedSegment, SegmentEntity.Fields.id, new EstivateField(SegmentEntity.class, SegmentEntity.Fields.id))
+				.notEq(correlatedSegment, SegmentEntity.Fields.id, new Property(SegmentEntity.class, SegmentEntity.Fields.id))
 				.orderDesc(SegmentEntity.class, SegmentEntity.Fields.macroStatus)
 				;
 
@@ -138,15 +144,15 @@ public class CorrelationQueryTest {
 		}
 		else if(scope == CorrelationScope.Resubmission) {
 			Entity correlatedTask = new Entity(TaskEntity.class, "CorrelatedTask");
-			query.join(new EstivateJoin(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
-			query.join(new EstivateJoin(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
-			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new EstivateField(correlatedTask, TaskEntity.Fields.externalName));
+			query.join(new Join(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
+			query.join(new Join(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
+			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new Property(correlatedTask, TaskEntity.Fields.externalName));
 		}
 		else if(scope == CorrelationScope.Fragment) {
 			Entity correlatedFragment = new Entity(FragmentEntity.class, "CorrelatedFragment");
-			query.join(new EstivateJoin(SegmentEntity.class, FragmentEntity.class, SegmentEntity.Fields.sourceFragmentId, FragmentEntity.Fields.id));
-			query.join(new EstivateJoin(correlatedSegment, correlatedFragment, SegmentEntity.Fields.taskId, FragmentEntity.Fields.id));
-			query.eq(FragmentEntity.class, FragmentEntity.Fields.externalName, new EstivateField(correlatedFragment, TaskEntity.Fields.externalName));
+			query.join(new Join(SegmentEntity.class, FragmentEntity.class, SegmentEntity.Fields.sourceFragmentId, FragmentEntity.Fields.id));
+			query.join(new Join(correlatedSegment, correlatedFragment, SegmentEntity.Fields.taskId, FragmentEntity.Fields.id));
+			query.eq(FragmentEntity.class, FragmentEntity.Fields.externalName, new Property(correlatedFragment, TaskEntity.Fields.externalName));
 		}
 		else if(scope == CorrelationScope.Document) {
 		}
@@ -154,9 +160,9 @@ public class CorrelationQueryTest {
 		// Add where not equals to field value
 		
 				
-		System.out.println(connection.toStatement(query).query());
+		System.out.println(Statement.toStatement(connection, query).query());
 		
-		connection.list(query);
+		connectionExecutor.list(query);
 		
 	}
 	

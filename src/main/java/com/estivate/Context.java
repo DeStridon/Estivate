@@ -1,24 +1,17 @@
 package com.estivate;
 
-import java.lang.reflect.Constructor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.naming.directory.AttributeInUseException;
-import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -27,31 +20,26 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.estivate.entity.CachedEntity;
-import com.estivate.query.EstivateAggregator;
-import com.estivate.query.EstivateCriterion;
-import com.estivate.query.EstivateJoin;
-import com.estivate.query.EstivateNode;
-import com.estivate.query.EstivateQuery;
-import com.estivate.query.EstivateQuery.Entity;
+import com.estivate.query.Query;
 import com.estivate.util.StringPipe;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConnectionExecutor {
+public class Context {
 	
 	final public Connection connection;
 	
-	public ConnectionExecutor(Connection connection) {
+	public Context(Connection connection) {
 		this.connection = connection;
 	}
 	
 	@SneakyThrows
-	public <U> U uniqueResult(EstivateQuery query, Class<U> clazz) {
+	public <U> U uniqueResult(Query query, Class<U> clazz) {
 		
 		
-		EstivateStatement statement = EstivateStatement.toStatement(connection, query);
+		Statement statement = Statement.toStatement(connection, query);
 		
 		statement.execute();
         
@@ -65,7 +53,7 @@ public class ConnectionExecutor {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
 
-        	EstivateResult result = new EstivateResult(query, map);
+        	Result result = new Result(query, map);
         	U object = result.mapAs(clazz);
         	
         	return object;
@@ -75,16 +63,16 @@ public class ConnectionExecutor {
 	
 	
 	@SneakyThrows
-	public List<EstivateResult> list(EstivateQuery joinQuery){
+	public List<Result> list(Query joinQuery){
 		
-		EstivateStatement statement = EstivateStatement.toStatement(connection, joinQuery);
+		Statement statement = Statement.toStatement(connection, joinQuery);
 		
         statement.execute();
         
         ResultSet resultSet = statement.getResultSet();
         
         
-        List<EstivateResult> results = new ArrayList<>();
+        List<Result> results = new ArrayList<>();
         
         while(resultSet.next()) {
         	Map<String, String> map = new HashMap<>();
@@ -93,7 +81,7 @@ public class ConnectionExecutor {
         	for(int i = 1; i <= metadata.getColumnCount(); i++) {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
-        	EstivateResult result = new EstivateResult(joinQuery, map);
+        	Result result = new Result(joinQuery, map);
         	results.add(result);
         }
         
@@ -102,10 +90,10 @@ public class ConnectionExecutor {
 	}
 	
 	
-	public <U> List<U> listAs(EstivateQuery joinQuery, Class<U> clazz) {
-		List<EstivateResult> results = list(joinQuery);
+	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
+		List<Result> results = list(joinQuery);
 		List<U> output = new ArrayList<>();
-		for(EstivateResult result : results) {
+		for(Result result : results) {
 			output.add(result.mapAs(clazz));
 		}
 		return output;
@@ -136,9 +124,9 @@ public class ConnectionExecutor {
 
 		List<String> fieldValueList = new ArrayList<>();
 
-		EstivateStatement statement = new EstivateStatement(connection)
+		Statement statement = new Statement(connection)
 				.appendQuery("INSERT INTO ")
-				.appendQuery(EstivateQuery.nameMapper.mapEntity(object.getClass()));
+				.appendQuery(Query.nameMapper.mapEntity(object.getClass()));
 
 		
 		for(Field field : object.getClass().getDeclaredFields()) {
@@ -280,7 +268,7 @@ public class ConnectionExecutor {
 			return;
 		}
 		
-		Field idField = EstivateUtil.getFieldWithAnnotation(entity.getClass(), Id.class);
+		Field idField = getFieldWithAnnotation(entity.getClass(), Id.class);
 		
 		if(idField == null) {
 			log.error("No @Id field on class "+entity.getClass());
@@ -294,22 +282,22 @@ public class ConnectionExecutor {
 		}
 		
 		// 1. Create query
-		EstivateStatement statement = new EstivateStatement(connection)
+		Statement statement = new Statement(connection)
 				.appendQuery("UPDATE ")
-				.appendQuery(EstivateQuery.nameMapper.mapEntity(entity.getClass()))
+				.appendQuery(Query.nameMapper.mapEntity(entity.getClass()))
 				.appendQuery(" SET ");
 				
 				//String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
 
 		// 2. List updated fields
-		statement.appendQuery(updatedFields.stream().map(x-> EstivateQuery.nameMapper.mapEntityAttribute(entity.getClass(), x.getName()) + " = ?").collect(Collectors.joining(", ")));
+		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapEntityAttribute(entity.getClass(), x.getName()) + " = ?").collect(Collectors.joining(", ")));
 		
 		for(Field field : updatedFields) {
 			statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
 		}
 		
 		
-		statement.appendQuery(" WHERE "+EstivateQuery.nameMapper.mapAttribute(idField.getName())+" = ?");
+		statement.appendQuery(" WHERE "+Query.nameMapper.mapAttribute(idField.getName())+" = ?");
 		statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 		
 		
@@ -320,6 +308,20 @@ public class ConnectionExecutor {
 		
 	}
 
+	
+	public static Field getFieldWithAnnotation(Class entityClass, Class<? extends Annotation> annotationClass) {
+		
+		Field[] fields = entityClass.getDeclaredFields();
+		
+		for(Field field : entityClass.getDeclaredFields()) {
+			if(field.isAnnotationPresent(annotationClass)) {
+				return field;
+			}
+		}
+		
+		return null;
+		
+	}
 
 
 }
