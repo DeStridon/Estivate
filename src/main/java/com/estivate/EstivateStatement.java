@@ -39,10 +39,6 @@ public class EstivateStatement {
 		return query.toString();
 	}
 	
-//	public EstimateStatement appendParameter(Class entity, String fieldName) {
-//		query.append();
-//		return this;
-//	}
 	
 	public EstivateStatement appendValue(Class entity, String fieldName, Object parameter) {
 		parameters.add(EstivateUtil.compileObject(entity, fieldName, parameter));
