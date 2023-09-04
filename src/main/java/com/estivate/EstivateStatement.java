@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.estivate.query.EstivateField;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

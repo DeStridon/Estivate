@@ -1,6 +1,6 @@
-package com.estivate;
+package com.estivate.query;
 
-import com.estivate.EstivateQuery.Entity;
+import com.estivate.query.EstivateQuery.Entity;
 
 import lombok.AllArgsConstructor;
 

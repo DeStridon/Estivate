@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
-import com.estivate.EstivateJoin;
-import com.estivate.EstivateJoin.JoinType;
-import com.estivate.EstivateQuery;
+import com.estivate.query.EstivateJoin;
+import com.estivate.query.EstivateQuery;
+import com.estivate.query.EstivateJoin.JoinType;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.NoUseEntity;
 import com.estivate.test.entities.SegmentEntity;
@@ -37,8 +37,8 @@ public class AdvancedQueryTest {
 		//query.join(new EstivateJoin(SegmentEntity.class, FragmentEntity.class, SegmentEntity.Fields.targetFragmentId, FragmentEntity.Fields.id));
 		
 		query
-		.join(SegmentEntity.class)
-		.join(NoUseEntity.class)
+		//.join(SegmentEntity.class)
+		//.join(NoUseEntity.class)
 		.eq(FragmentEntity.class, FragmentEntity.Fields.projectId, 1)
 		.eqIfNotNull(FragmentEntity.class, FragmentEntity.Fields.externalName, "externalNameTest")
 		.eqIfNotNull(FragmentEntity.class, FragmentEntity.Fields.externalReference, "externalReferenceTest")

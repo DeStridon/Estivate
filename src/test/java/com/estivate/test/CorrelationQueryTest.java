@@ -7,11 +7,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
-import com.estivate.EstivateField;
-import com.estivate.EstivateJoin;
-import com.estivate.EstivateJoin.JoinType;
-import com.estivate.EstivateQuery;
-import com.estivate.EstivateQuery.Entity;
+import com.estivate.query.EstivateField;
+import com.estivate.query.EstivateJoin;
+import com.estivate.query.EstivateQuery;
+import com.estivate.query.EstivateJoin.JoinType;
+import com.estivate.query.EstivateQuery.Entity;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.SegmentEntity.MicroState;
@@ -65,7 +65,7 @@ public class CorrelationQueryTest {
 		
 		
 		EstivateQuery query = new EstivateQuery(SegmentEntity.class)
-				.join(TaskEntity.class)
+				//.join(TaskEntity.class)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, task.getProjectId())
 				.eq(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage, task.getSourceLanguage())
 				.eq(SegmentEntity.class, SegmentEntity.Fields.targetLanguage, task.getTargetLanguage())
@@ -112,8 +112,6 @@ public class CorrelationQueryTest {
 		// Upsegment choice criterias :
 		// - fragment cant be something ordering : we shall have the different choices to be 
 		// - scope ordering : task, fragment, project
-		
-		
 		
 		Entity correlatedSegment = new Entity(SegmentEntity.class, "CorrelatedSegment");
 		EstivateJoin segmentJoin = new EstivateJoin(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)

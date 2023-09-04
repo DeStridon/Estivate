@@ -1,4 +1,4 @@
-package com.estivate;
+package com.estivate.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.Transient;
 
+import com.estivate.EstivateNameMapper;
 import com.estivate.EstivateNameMapper.DefaultNameMapper;
 
 import lombok.AllArgsConstructor;
@@ -72,12 +73,13 @@ public class EstivateQuery extends EstivateAggregator{
 	public EstivateQuery eqOrNull(Entity entity, String attribute, Object value) { super.eqOrNull(entity, attribute, value); return this;	}
 	
 	
+	@Getter
 	final Class baseClass;
+
 	public static EstivateNameMapper nameMapper = new DefaultNameMapper();
 	
 	
 	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
-	Set<Entity> joinedClasses = new LinkedHashSet<>();
 	Set<EstivateJoin> joins = new LinkedHashSet<>();
 	
 	@Getter
@@ -89,7 +91,10 @@ public class EstivateQuery extends EstivateAggregator{
 	@Getter
 	Set<String> groupBys = new LinkedHashSet<>();
 	
+	@Getter
 	Integer offset;
+
+	@Getter
 	Integer limit;
 	
 	// TODO : delete nameMapper here to load it dynamically from hibernate bean ?
@@ -116,8 +121,18 @@ public class EstivateQuery extends EstivateAggregator{
 		
 		Set<Entity> classes = new HashSet<>();
 		for(EstivateNode node : aggregator.criterions) {
+			
 			if(node instanceof EstivateCriterion) {
 				classes.add(((EstivateCriterion) node).entity);
+				
+				if(node instanceof EstivateCriterion.Operator) {
+					EstivateCriterion.Operator operator = (EstivateCriterion.Operator) node;
+					if(operator.value instanceof EstivateField) {
+						EstivateField estivateField = (EstivateField) operator.value;
+						classes.add(estivateField.entity);
+					}
+				}
+				
 			}
 			else if(node instanceof EstivateAggregator) {
 				classes.addAll(digClasses((EstivateAggregator) node));
@@ -130,70 +145,63 @@ public class EstivateQuery extends EstivateAggregator{
 	}
 	
 	
-//	// purpose : build join tree out of entities nodes and join branches
-//	public List<EstivateJoin> buildJoins() {
-//
-//		// 0. initiate
-//		Set<Entity> joinedEntities = new HashSet<>(List.of(new Entity(baseClass)));
-//		List<EstivateJoin> classJoins = new ArrayList<>();
-//		
-//		// 1. list all classes needed for query
-//		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
-////		targetEntities.addAll(manuallyJoinedClasses);
-////		targetEntities.addAll(manualJoins.stream().map(x -> x.joinerEntity).collect(Collectors.toSet()));
-////		targetEntities.addAll(manualJoins.stream().map(x -> x.joinedEntity).collect(Collectors.toSet()));
-//		
-//		// 2. use manual joins
-//		
-//
-//		// initiate joinedQueryClasses list
-//		
-//		
-//		while(true) { 
-//			EstivateJoin cj = tryAddingJoinedClass(joinedEntities, targetEntities);
-//			if(cj != null) {
-//				joinedEntities.add(cj.joinedEntity);
-//				classJoins.add(cj);
-//			}
-//			else {
-//				break;
-//			}
-//		}
-//
-//		// check no missing class from queryClasses in joinedQueryClasses
-//		if(!joinedEntities.containsAll(targetEntities)) {
-//			throw new RuntimeException(
-//					"No junction found for classes "
-//					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
-//					+ " with classes "
-//					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
-//		}
-//		
-//		return classJoins;
-//		
-//		
-//	}
+	// purpose : build join tree out of entities nodes and join branches
+	public List<EstivateJoin> buildJoins() {
+
+		// 0. initiate
+		Set<Entity> joinedEntities = new HashSet<>(List.of(new Entity(baseClass)));
+		List<EstivateJoin> classJoins = new ArrayList<>();
+		
+		// 1. list all classes needed for query
+		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
+		
+		while(true) { 
+			EstivateJoin cj = tryAddingJoinedClass(joinedEntities, targetEntities);
+			if(cj != null) {
+				joinedEntities.add(cj.joinedEntity);
+				classJoins.add(cj);
+			}
+			else {
+				break;
+			}
+		}
+
+		// check no missing class from queryClasses in joinedQueryClasses
+		if(!joinedEntities.containsAll(targetEntities)) {
+			throw new RuntimeException(
+					"No junction found for classes "
+					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
+					+ " with classes "
+					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
+		}
+		
+		return classJoins;
+		
+		
+	}
 
 	// links first suitable class of candidates to one of already joined classes
 	// return null if every class already joined or if all remaining classes cannot be joined
 	private EstivateJoin tryAddingJoinedClass(Set<Entity> joined, Set<Entity> candidates) {
 		for(Entity candidate : candidates) {
+			
 			// if already joined, skip
 			if(joined.contains(candidate)) {
 				continue;
 			}
 			
-			// try to join, if not successful throw exc
+			// joining strategy #1 : manual joins
 			for(Entity joinedClass : joined) {
-				
-				// try joining through manual joins
 				EstivateJoin manualJoin = joins.stream()
 						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
 						.findFirst().orElse(null);
-				
 				if(manualJoin != null) {
 					return manualJoin;
 				}
+			}
+			
+			// joining strategy #2 : VirtualKey
+			for(Entity joinedClass : joined) {
 				
 				EstivateJoin cj = EstivateJoin.find(joinedClass, candidate);
 				if(cj != null) {
@@ -207,8 +215,8 @@ public class EstivateQuery extends EstivateAggregator{
 	
 	
 	
-	public EstivateQuery join(Entity c) { joinedClasses.add(c); return this; }
-	public EstivateQuery join(Class c) { return join(new Entity(c)); }
+	//public EstivateQuery join(Entity c) { joinedClasses.add(c); return this; }
+	//public EstivateQuery join(Class c) { return join(new Entity(c)); }
 
 	public EstivateQuery join(EstivateJoin classJoin) { joins.add(classJoin); return this; }
 	
@@ -291,8 +299,8 @@ public class EstivateQuery extends EstivateAggregator{
 	@EqualsAndHashCode
 	@AllArgsConstructor
 	public static class Entity{
-		Class entity;
-		String alias;
+		public final Class entity;
+		public final String alias;
 		
 		public Entity(Class entity) {
 			this(entity, null);
@@ -306,7 +314,4 @@ public class EstivateQuery extends EstivateAggregator{
 		}
 	}
 	
-	
-
-
 }

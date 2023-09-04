@@ -1,15 +1,17 @@
-package com.estivate;
+package com.estivate.query;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.EstivateQuery.Entity;
+import com.estivate.EstivateUtil;
+import com.estivate.query.EstivateQuery.Entity;
 import com.estivate.util.StringPipe;
 
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,17 +22,8 @@ public abstract class EstivateCriterion implements EstivateNode{
 	public Entity entity;
 	public String attribute;
 	
-
-	
 	public abstract EstivateCriterion clone();
 
-
-//	public String compileName() {
-//		return entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(attribute);
-//	}
-
-
-	
 		
 	@Data
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -84,27 +77,12 @@ public abstract class EstivateCriterion implements EstivateNode{
 			return op;
 		}
 
-//		@Override
-//		public EstivateStatement_old preparedStatement() {
-//
-//			EstivateStatement_old jqps = new EstivateStatement_old();
-//			jqps.query = new StringPipe().separator(" ")
-//					.append(entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(attribute))
-//					.append(type.symbol)
-//					.append("?").toString();
-//			jqps.parameters.add(EstivateUtil.compileAttribute(entity.entity, attribute, value));
-//
-//			return jqps;
-//
-//		}
-
-		
-		
 	}
 	
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class In extends EstivateCriterion {
 		
+		@Getter
 		List<Object> values;
 
 		public In(Entity entity, String attribute, Collection<Object> values) {

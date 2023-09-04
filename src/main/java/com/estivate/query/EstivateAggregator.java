@@ -1,15 +1,18 @@
-package com.estivate;
+package com.estivate.query;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.EstivateCriterion.NullCheck;
-import com.estivate.EstivateCriterion.Operator;
-import com.estivate.EstivateCriterion.Operator.CriterionType;
-import com.estivate.EstivateQuery.Entity;
+import com.estivate.query.EstivateCriterion.NullCheck;
+import com.estivate.query.EstivateCriterion.Operator;
+import com.estivate.query.EstivateCriterion.Operator.CriterionType;
+import com.estivate.query.EstivateQuery.Entity;
 
+import lombok.Getter;
+
+@Getter
 public class EstivateAggregator implements EstivateNode {
 	
 	final GroupType groupType;
@@ -93,47 +96,17 @@ public class EstivateAggregator implements EstivateNode {
 	}
 	
 	public String compile() {
-		
 		List<String> criterionsCompiled = criterions.stream().map(x -> x.compile()).collect(Collectors.toList());
-
 		if(criterions.size() == 1) {
 			return criterions.get(0).compile();
 		}
-		
 		return "("+criterionsCompiled.stream().collect(Collectors.joining(" "+groupType+" "))+")";
-		
 	}
-
-
-
 
 	public EstivateAggregator clone() {
 		EstivateAggregator joinAggregator = new EstivateAggregator(this.groupType);
 		joinAggregator.criterions = criterions.stream().map(x -> x.clone()).toList();
 		return joinAggregator;
 	}
-
-
-//	public EstivateStatement_old preparedStatement() {
-//		List<EstivateStatement_old> criterionsStatements = criterions.stream().map(x -> x.preparedStatement()).collect(Collectors.toList());
-//		
-//		if(criterions.size() == 1) {
-//			return criterionsStatements.get(0);
-//		}
-//		
-//		return EstivateStatement_old.mergeInOne(criterionsStatements, "(", ")", " "+groupType+" ");
-//	}
-
-	
-
-
-	
-
-
-
-
-
-	
-	
 
 }

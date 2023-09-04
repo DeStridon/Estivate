@@ -26,7 +26,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import com.estivate.EstivateQuery.Entity;
+import com.estivate.entity.CachedEntity;
+import com.estivate.query.EstivateAggregator;
+import com.estivate.query.EstivateCriterion;
+import com.estivate.query.EstivateJoin;
+import com.estivate.query.EstivateNode;
+import com.estivate.query.EstivateQuery;
+import com.estivate.query.EstivateQuery.Entity;
 import com.estivate.util.StringPipe;
 
 import lombok.SneakyThrows;
@@ -102,42 +108,42 @@ public class ConnectionExecutor {
 		statement.appendQuery("SELECT ");
 		
 		//TODO : avoid modifying joinQuery
-		if(joinQuery.selects.isEmpty()) {
-			joinQuery.select(joinQuery.baseClass);
+		if(joinQuery.getSelects().isEmpty()) {
+			joinQuery.select(joinQuery.getBaseClass());
 		}
 		
-		if(joinQuery.selects.stream().allMatch(x -> x.contains(".")) && joinQuery.groupBys.isEmpty()) {
+		if(joinQuery.getSelects().stream().allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
 			statement.appendQuery("distinct");
 		}
 		
-		statement.appendQuery(String.join(", ", joinQuery.selects)+"\n");
-		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.baseClass)+"\n");
+		statement.appendQuery(String.join(", ", joinQuery.getSelects())+"\n");
+		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");
 		
-        for(EstivateJoin join : joinQuery.joins) {
+        for(EstivateJoin join : joinQuery.buildJoins()) {
         	statement.appendQuery(join.toString()+'\n');
         }
         
-        if(!joinQuery.criterions.isEmpty()) {
+        if(!joinQuery.getCriterions().isEmpty()) {
         	statement.appendQuery("WHERE");
         	attachWhere(statement, joinQuery);
         }
         
 		// Append group bys (if any)
-		if(!joinQuery.groupBys.isEmpty()) {
-			statement.appendQuery(joinQuery.groupBys.stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+		if(!joinQuery.getGroupBys().isEmpty()) {
+			statement.appendQuery(joinQuery.getGroupBys().stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}
 		
 		// Append order
-		if(!joinQuery.orders.isEmpty()) {
-			statement.appendQuery(joinQuery.orders.stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+		if(!joinQuery.getOrders().isEmpty()) {
+			statement.appendQuery(joinQuery.getOrders().stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
 		}
 		
 		// Append limit & offset
-		if(joinQuery.limit != null) {
-			statement.appendQuery("LIMIT "+joinQuery.limit+"\n");
+		if(joinQuery.getLimit() != null) {
+			statement.appendQuery("LIMIT "+joinQuery.getLimit()+"\n");
 		}
-		if(joinQuery.offset != null) {
-			statement.appendQuery("OFFSET "+ joinQuery.offset +"\n");
+		if(joinQuery.getOffset() != null) {
+			statement.appendQuery("OFFSET "+ joinQuery.getOffset() +"\n");
 		}
         
         return statement;
@@ -147,11 +153,11 @@ public class ConnectionExecutor {
 	public void attachWhere(EstivateStatement statement, EstivateNode node) {
 		
 		if(node instanceof EstivateAggregator aggregator) {
-			for(int i = 0; i < aggregator.criterions.size(); i++) {
+			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
 				if(i > 0) {
-					statement.appendQuery(" "+aggregator.groupType.toString()+" ");
+					statement.appendQuery(" "+aggregator.getGroupType().toString()+" ");
 				}
-				attachWhere(statement, aggregator.criterions.get(i));
+				attachWhere(statement, aggregator.getCriterions().get(i));
 			}
 			
 		}
@@ -163,9 +169,9 @@ public class ConnectionExecutor {
 		else if(node instanceof EstivateCriterion.In in) {
 			statement.appendQuery(in.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(in.attribute));
 			statement.appendQuery(" in (");
-			statement.appendQuery(in.values.stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
-			for(Object value : in.values) {
+			for(Object value : in.getValues()) {
 				statement.appendValue(in.entity.entity, in.attribute, value);
 			}
 		}

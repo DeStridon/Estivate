@@ -1,4 +1,4 @@
-package com.estivate;
+package com.estivate.entity;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

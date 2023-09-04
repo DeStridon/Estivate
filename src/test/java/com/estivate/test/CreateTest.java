@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.estivate.ConnectionExecutor;
 import com.estivate.EstivateNameMapper.UppercaseNameMapper;
-import com.estivate.EstivateQuery;
+import com.estivate.query.EstivateQuery;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.TaskEntity;
 

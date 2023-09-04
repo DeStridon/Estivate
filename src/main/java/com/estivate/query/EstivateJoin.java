@@ -1,4 +1,4 @@
-package com.estivate;
+package com.estivate.query;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.estivate.entity.VirtualForeignKey;
 import com.estivate.util.StringPipe;
 
 import lombok.AccessLevel;

@@ -1,9 +1,9 @@
-package com.estivate;
+package com.estivate.query;
 
-import com.estivate.EstivateAggregator.GroupType;
-import com.estivate.EstivateCriterion.Operator;
-import com.estivate.EstivateCriterion.Operator.CriterionType;
-import com.estivate.EstivateQuery.Entity;
+import com.estivate.query.EstivateAggregator.GroupType;
+import com.estivate.query.EstivateCriterion.Operator;
+import com.estivate.query.EstivateCriterion.Operator.CriterionType;
+import com.estivate.query.EstivateQuery.Entity;
 
 public interface EstivateNode {
 	

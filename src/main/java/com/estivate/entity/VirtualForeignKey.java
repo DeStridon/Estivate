@@ -1,4 +1,4 @@
-package com.estivate;
+package com.estivate.entity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

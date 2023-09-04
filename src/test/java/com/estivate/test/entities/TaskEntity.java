@@ -7,8 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import com.estivate.CachedEntity;
-import com.estivate.VirtualForeignKey;
+import com.estivate.entity.CachedEntity;
+import com.estivate.entity.VirtualForeignKey;
 import com.estivate.test.entities.misc.Language;
 import com.estivate.test.entities.misc.LanguageConverter;
 
