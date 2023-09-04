@@ -51,7 +51,7 @@ public class ConnectionExecutor {
 	public <U> U uniqueResult(EstivateQuery query, Class<U> clazz) {
 		
 		
-		EstivateStatement statement = toStatement(query);
+		EstivateStatement statement = EstivateStatement.toStatement(connection, query);
 		
 		statement.execute();
         
@@ -77,7 +77,7 @@ public class ConnectionExecutor {
 	@SneakyThrows
 	public List<EstivateResult> list(EstivateQuery joinQuery){
 		
-		EstivateStatement statement = toStatement(joinQuery);
+		EstivateStatement statement = EstivateStatement.toStatement(connection, joinQuery);
 		
         statement.execute();
         
@@ -100,98 +100,6 @@ public class ConnectionExecutor {
         return results;
 		
 	}
-	
-	public EstivateStatement toStatement(EstivateQuery joinQuery) {
-		
-		EstivateStatement statement = new EstivateStatement(connection);
-		
-		statement.appendQuery("SELECT ");
-		
-		//TODO : avoid modifying joinQuery
-		if(joinQuery.getSelects().isEmpty()) {
-			joinQuery.select(joinQuery.getBaseClass());
-		}
-		
-		if(joinQuery.getSelects().stream().allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
-			statement.appendQuery("distinct");
-		}
-		
-		statement.appendQuery(String.join(", ", joinQuery.getSelects())+"\n");
-		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");
-		
-        for(EstivateJoin join : joinQuery.buildJoins()) {
-        	statement.appendQuery(join.toString()+'\n');
-        }
-        
-        if(!joinQuery.getCriterions().isEmpty()) {
-        	statement.appendQuery("WHERE");
-        	attachWhere(statement, joinQuery);
-        }
-        
-		// Append group bys (if any)
-		if(!joinQuery.getGroupBys().isEmpty()) {
-			statement.appendQuery(joinQuery.getGroupBys().stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-		}
-		
-		// Append order
-		if(!joinQuery.getOrders().isEmpty()) {
-			statement.appendQuery(joinQuery.getOrders().stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-		}
-		
-		// Append limit & offset
-		if(joinQuery.getLimit() != null) {
-			statement.appendQuery("LIMIT "+joinQuery.getLimit()+"\n");
-		}
-		if(joinQuery.getOffset() != null) {
-			statement.appendQuery("OFFSET "+ joinQuery.getOffset() +"\n");
-		}
-        
-        return statement;
-        
-	}
-	
-	public void attachWhere(EstivateStatement statement, EstivateNode node) {
-		
-		if(node instanceof EstivateAggregator aggregator) {
-			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
-				if(i > 0) {
-					statement.appendQuery(" "+aggregator.getGroupType().toString()+" ");
-				}
-				attachWhere(statement, aggregator.getCriterions().get(i));
-			}
-			
-		}
-		else if(node instanceof EstivateCriterion.Operator operator) {
-			statement.appendQuery(operator.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(operator.attribute));
-			statement.appendQuery(operator.type.symbol);
-			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
-		}
-		else if(node instanceof EstivateCriterion.In in) {
-			statement.appendQuery(in.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(in.attribute));
-			statement.appendQuery(" in (");
-			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
-			statement.appendQuery(")");
-			for(Object value : in.getValues()) {
-				statement.appendValue(in.entity.entity, in.attribute, value);
-			}
-		}
-		else if(node instanceof EstivateCriterion.Between between) {
-			statement.appendQuery(between.entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(between.attribute));
-			statement.appendQuery(between.entity.getName()+"."+ EstivateQuery.nameMapper.mapAttribute(between.attribute));
-			statement.appendParameter(between.entity.entity, between.attribute, between.min);
-			statement.appendQuery(" and ");
-			statement.appendParameter(between.entity.entity, between.attribute, between.max);
-			
-		}
-		else if(node instanceof EstivateCriterion.NullCheck nullcheck) {
-			statement.appendQuery(nullcheck.entity.getName() + "." + EstivateQuery.nameMapper.mapAttribute(nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
-		}
-		else {
-			throw new RuntimeException("Node type not supported : "+node.getClass());
-		}
-		
-	}
-	
 	
 	
 	public <U> List<U> listAs(EstivateQuery joinQuery, Class<U> clazz) {
@@ -405,160 +313,10 @@ public class ConnectionExecutor {
 		statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 		
 		
-		//PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-		
-		
 		
 		boolean check = statement.execute();
 		
 		System.out.println(check);
-		
-	}
-	
-	
-	//@AllArgsConstructor
-	public static class EstivateResult{
-		
-		EstivateQuery query;
-		Map<String, String> columns;
-		
-		public EstivateResult(EstivateQuery query, Map<String, String> columns) {
-			this.query = query;
-			this.columns = columns;
-		}
-		
-		private Map<String, Object> cache = new HashMap<>();
-		
-		public <U> U mapAs(Class<U> clazz) throws SecurityException, IllegalArgumentException {
-			
-			if(!cache.containsKey(clazz.getSimpleName())) {
-				cache.put(clazz.getSimpleName(), generateObject(clazz, columns));
-			}
-			
-			return (U) cache.get(clazz.getSimpleName());
-			
-		}
-		
-		public String mapAsString(Class c, String attribute) {
-			return columns.get(EstivateQuery.nameMapper.mapEntityAttribute(c, attribute));
-		}
-		
-		
-		public static <U> U generateObject(Class<U> clazz, Map<String, String> arguments) {
-			try {
-				Constructor<U> constructor = clazz.getConstructor();
-				U obj = constructor.newInstance();
-
-				Class<?> currentClazz = clazz;
-				Entity entity = new Entity(clazz);
-
-				while(currentClazz != Object.class) {
-
-					for(Field field : currentClazz.getDeclaredFields()) {
-						setGeneratedField(entity, arguments, field, obj);
-					}
-					currentClazz = currentClazz.getSuperclass();
-				}
-				
-				if(obj instanceof CachedEntity) {
-					((CachedEntity) obj).saveState();
-				}
-
-				return obj;
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
-			Type type = field.getGenericType();
-			field.setAccessible(true);
-			
-			String value = arguments.get(entity.getName()+"."+EstivateQuery.nameMapper.mapAttribute(field.getName()));
-
-			if(value == null) {
-				return;
-			}
-
-			if(type == String.class) {
-				field.set(obj, value);
-			}
-			else if(type == long.class) {
-				field.setLong(obj, Long.parseLong(value));
-			}
-			else if(type == Long.class) {
-				field.set(obj, Long.parseLong(value));
-			}
-			else if(type == boolean.class) {
-				field.setBoolean(obj, Boolean.parseBoolean(value));
-			}
-			else if(type == Boolean.class) {
-				field.set(obj, Boolean.parseBoolean(value));
-			}
-			else if(type == Byte.class) {
-				field.set(obj, Byte.parseByte(value));
-			}
-			else if(type == double.class) {
-				field.setDouble(obj, Double.parseDouble(value));
-			}
-			else if(type == Double.class) {
-				field.set(obj, Double.parseDouble(value));
-			}
-			else if(type == Character.class && value.length() > 0) {
-				field.set(obj, value.charAt(0));
-			}
-			else if(type == Float.class) {
-				field.set(obj, Float.parseFloat(value));
-			}
-			else if(type == int.class) {
-				field.setInt(obj, Integer.parseInt(value));
-			}
-			else if(type == Integer.class) {
-				field.set(obj, Integer.parseInt(value));
-			}
-			else if(type == short.class) {
-				field.setShort(obj, Short.parseShort(value));
-			}
-			else if(type == Short.class) {
-				field.set(obj, Short.parseShort(value));
-			}
-			else if(type == Date.class) {
-				// TODO : check date format is the right one
-				field.set(obj, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value));
-			}
-			// @Convert (might be enum, this condition should be tested before classic enum)
-			else if(field.getDeclaredAnnotation(Convert.class) != null) {
-				Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(!(converter instanceof AttributeConverter)) {
-					log.error("Cannot convert with converter "+converter.getClass());
-					return;
-				}
-				AttributeConverter attributeConverter = (AttributeConverter) converter;
-				Object attributeValue = attributeConverter.convertToEntityAttribute(value);
-				field.set(obj, attributeValue);
-			}
-			// @Enumerated
-			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
-
-				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
-				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
-					field.set(obj, Enum.valueOf((Class)type, value));
-				}
-				else {
-					int ordinal = Integer.parseInt(value);
-					Object finalValue = field.getType().getEnumConstants()[ordinal];
-					field.set(obj, field.getType().getEnumConstants()[ordinal]);
-				}
-			}
-			else {
-				log.error("This type is not mapped yet : "+type);
-				throw new AttributeInUseException("This type is not mapped yet : "+type);
-			}
-		}
-
 		
 	}
 
