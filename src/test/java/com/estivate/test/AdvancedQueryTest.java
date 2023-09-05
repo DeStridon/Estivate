@@ -2,6 +2,7 @@ package com.estivate.test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -42,13 +43,13 @@ public class AdvancedQueryTest {
 		.eqIfNotNull(FragmentEntity.class, FragmentEntity.Fields.externalName, "externalNameTest")
 		.eqIfNotNull(FragmentEntity.class, FragmentEntity.Fields.externalReference, "externalReferenceTest")
 		.eq(TaskHistoryEntity.class, TaskHistoryEntity.Fields.projectId, 1)
-		.in(TaskHistoryEntity.class, TaskHistoryEntity.Fields.username, List.of("a", "b", "c"))
+		.in(TaskHistoryEntity.class, TaskHistoryEntity.Fields.username, Arrays.asList("a", "b", "c"))
 		
 		// content search
-		.in(TaskEntity.class, TaskEntity.Fields.id, List.of(1,2,3,4));
+		.in(TaskEntity.class, TaskEntity.Fields.id, Arrays.asList(1,2,3,4));
 		
 		// workers username
-		query.in(TaskHistoryEntity.class, TaskHistoryEntity.Fields.username, List.of("jojo", "nanard", "andré"));
+		query.in(TaskHistoryEntity.class, TaskHistoryEntity.Fields.username, Arrays.asList("jojo", "nanard", "andré"));
 		
 		// has comments - right join, filter on task activity & segment activity
 		// left join where not null

@@ -3,6 +3,7 @@ package com.estivate.query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.estivate.query.Query.Entity;
 
@@ -100,7 +101,7 @@ public abstract class Criterion implements EstivateNode{
 			In in = new In();
 			in.entity = entity;
 			in.attribute = attribute;
-			in.values = values.stream().toList();
+			in.values = values.stream().collect(Collectors.toList());
 			return in;
 		}
 

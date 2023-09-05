@@ -149,7 +149,7 @@ public class Query extends Aggregator{
 	public List<Join> buildJoins() {
 
 		// 0. initiate
-		Set<Entity> joinedEntities = new HashSet<>(List.of(new Entity(baseClass)));
+		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(new Entity(baseClass)));
 		List<Join> classJoins = new ArrayList<>();
 		
 		// 1. list all classes needed for query

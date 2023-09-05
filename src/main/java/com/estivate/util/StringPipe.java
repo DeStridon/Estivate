@@ -12,7 +12,7 @@ public class StringPipe {
 	}
 	
 	public StringPipe append(String string) {
-		if(!sb.isEmpty() && !separator.isEmpty()) {
+		if(sb.length() > 0 && !separator.isEmpty()) {
 			sb.append(separator);
 		}
 		sb.append(string);

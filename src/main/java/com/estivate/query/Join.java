@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.estivate.entity.VirtualForeignKey;
@@ -73,7 +74,7 @@ public class Join {
 			Join cj = new Join();
 			cj.joinerEntity = internal;
 			cj.joinedEntity = external;
-			cj.on(reference.attribute().isBlank() ? "id" : reference.attribute(), externalField.getName());
+			cj.on(StringUtils.isBlank(reference.attribute()) ? "id" : reference.attribute(), externalField.getName());
 
 			return cj;
 		}
@@ -88,7 +89,7 @@ public class Join {
 			Join cj = new Join();
 			cj.joinerEntity = internal;
 			cj.joinedEntity = external;
-			cj.on(internalField.getName(), reference.attribute().isBlank() ? "id" : reference.attribute());
+			cj.on(internalField.getName(), StringUtils.isBlank(reference.attribute()) ? "id" : reference.attribute());
 
 			return cj;
 		}

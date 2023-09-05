@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -257,7 +258,7 @@ public class Context {
 	@SneakyThrows
 	public void update(Object entity) {
 
-		List<Field> updatedFields = List.of(entity.getClass().getFields());
+		List<Field> updatedFields = Arrays.asList(entity.getClass().getFields());
 
 		if(entity instanceof CachedEntity) {
 			updatedFields = ((CachedEntity) entity).updatedFields();

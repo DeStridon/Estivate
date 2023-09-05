@@ -41,7 +41,7 @@ public class Statement {
 	}
 	
 	public Statement appendQuery(String queryContent) {
-		if(!query.isEmpty()) {
+		if(query.length() > 0) {
 			query.append(" ");
 		}
 		query.append(queryContent);
@@ -59,7 +59,8 @@ public class Statement {
 	}
 	
 	public Statement appendParameter(Class entity, String attribute, Object parameter) {
-		if(parameter instanceof Property field) {
+		if(parameter instanceof Property) {
+			Property field = (Property) parameter;
 			appendQuery(field.toString());
 		}
 		else {
@@ -70,7 +71,8 @@ public class Statement {
 	}
 	
 	public String appendParameterFetchQuery(Class entity, String attribute, Object parameter) {
-		if(parameter instanceof Property field) {
+		if(parameter instanceof Property) {
+			Property field = (Property) parameter;
 			return field.toString();
 		}
 
@@ -88,22 +90,28 @@ public class Statement {
 				Object object = parameters.get(i);
 				
 				try {
-					if(object instanceof String s) {
+					if(object instanceof String) {
+						String s = (String) object;
 						statement.setString(i+1, s);
 					}
-					else if(object instanceof Integer n) {
+					else if(object instanceof Integer) {
+						Integer n = (Integer) object;
 						statement.setInt(i+1, n);
 					}
-					else if(object instanceof Long l) {
+					else if(object instanceof Long) {
+						Long l = (Long) object;
 						statement.setLong(i+1, l);
 					}
-					else if(object instanceof Float f) {
+					else if(object instanceof Float) {
+						Float f = (Float) object;
 						statement.setFloat(i+1, f);
 					}
-					else if(object instanceof Boolean b) {
+					else if(object instanceof Boolean) {
+						Boolean b = (Boolean) object;
 						statement.setBoolean(i+1, b);
 					}
-					else if(object instanceof Date d) {
+					else if(object instanceof Date) {
+						Date d = (Date) object;
 						statement.setDate(i+1, new java.sql.Date(d.getTime()));
 					}
 					else {
@@ -193,7 +201,8 @@ public class Statement {
 	
 	public static void attachWhere(Statement statement, EstivateNode node) {
 		
-		if(node instanceof Aggregator aggregator) {
+		if(node instanceof Aggregator) {
+			Aggregator aggregator = (Aggregator) node;
 			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
 				if(i > 0) {
 					statement.appendQuery(" "+aggregator.getGroupType().toString()+" ");
@@ -202,12 +211,14 @@ public class Statement {
 			}
 			
 		}
-		else if(node instanceof Criterion.Operator operator) {
+		else if(node instanceof Criterion.Operator) {
+			Criterion.Operator operator = (Criterion.Operator) node;
 			statement.appendQuery(operator.entity.getName()+"."+Query.nameMapper.mapAttribute(operator.attribute));
 			statement.appendQuery(operator.type.symbol);
 			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
-		else if(node instanceof Criterion.In in) {
+		else if(node instanceof Criterion.In) {
+			Criterion.In in = (Criterion.In) node;
 			statement.appendQuery(in.entity.getName()+"."+Query.nameMapper.mapAttribute(in.attribute));
 			statement.appendQuery(" in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
@@ -216,7 +227,8 @@ public class Statement {
 				statement.appendValue(in.entity.entity, in.attribute, value);
 			}
 		}
-		else if(node instanceof Criterion.Between between) {
+		else if(node instanceof Criterion.Between) {
+			Criterion.Between between = (Criterion.Between) node;
 			statement.appendQuery(between.entity.getName()+"."+Query.nameMapper.mapAttribute(between.attribute));
 			statement.appendQuery(between.entity.getName()+"."+ Query.nameMapper.mapAttribute(between.attribute));
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
@@ -224,7 +236,8 @@ public class Statement {
 			statement.appendParameter(between.entity.entity, between.attribute, between.max);
 			
 		}
-		else if(node instanceof Criterion.NullCheck nullcheck) {
+		else if(node instanceof Criterion.NullCheck) {
+			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
 			statement.appendQuery(nullcheck.entity.getName() + "." + Query.nameMapper.mapAttribute(nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
 		else {

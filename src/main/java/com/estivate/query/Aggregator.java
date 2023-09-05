@@ -1,6 +1,7 @@
 package com.estivate.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator gt    (Entity entity, String attribute, Object value)     { criterions.add(new Operator(entity, attribute, CriterionType.Gt,     value)); return this; }
 	public Aggregator lte   (Entity entity, String attribute, Object value)     { criterions.add(new Operator(entity, attribute, CriterionType.Lte,    value)); return this; }
 	public Aggregator gte   (Entity entity, String attribute, Object value)     { criterions.add(new Operator(entity, attribute, CriterionType.Gte,    value)); return this; }
-	public Aggregator in    (Entity entity, String attribute, Object... values) { criterions.add(new Criterion.In(entity, attribute, List.of(values))); return this; }
+	public Aggregator in    (Entity entity, String attribute, Object... values) { criterions.add(new Criterion.In(entity, attribute, Arrays.asList(values))); return this; }
 	public Aggregator in    (Entity entity, String attribute, Collection<Object> values) { criterions.add(new Criterion.In(entity, attribute, values)); return this; }
 	public Aggregator like	(Entity entity, String attribute, String value)     { criterions.add(new Operator(entity, attribute, CriterionType.Like,   value)); return this; }
 	
@@ -69,7 +70,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator gtIfNotNull   (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Gt,  value));} return this; }
 	public Aggregator lteIfNotNull  (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Lte, value));} return this; }
 	public Aggregator gteIfNotNull  (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Gte, value));} return this; }
-	public Aggregator inIfNotNull   (Entity entity, String attribute, Object... values) {	if(values != null) {criterions.add(new Criterion.In(entity, attribute, List.of(values)));} return this; }
+	public Aggregator inIfNotNull   (Entity entity, String attribute, Object... values) {	if(values != null) {criterions.add(new Criterion.In(entity, attribute, Arrays.asList(values)));} return this; }
 	public Aggregator inIfNotNull   (Entity entity, String attribute, List<Object> values) {	if(values != null) {criterions.add(new Criterion.In(entity, attribute, values));} return this; }
 	public Aggregator likeIfNotNull (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Like, value));} return this; }
 	
@@ -105,7 +106,7 @@ public class Aggregator implements EstivateNode {
 
 	public Aggregator clone() {
 		Aggregator joinAggregator = new Aggregator(this.groupType);
-		joinAggregator.criterions = criterions.stream().map(x -> x.clone()).toList();
+		joinAggregator.criterions = criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		return joinAggregator;
 	}
 
