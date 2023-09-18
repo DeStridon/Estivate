@@ -127,8 +127,8 @@ public class Query extends Aggregator{
 				
 				if(node instanceof Criterion.Operator) {
 					Criterion.Operator operator = (Criterion.Operator) node;
-					if(operator.value instanceof Property) {
-						Property estivateField = (Property) operator.value;
+					if(operator.value instanceof PropertyValue) {
+						PropertyValue estivateField = (PropertyValue) operator.value;
 						classes.add(estivateField.entity);
 					}
 				}

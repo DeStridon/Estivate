@@ -1,6 +1,5 @@
 package com.estivate;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -19,9 +18,9 @@ import javax.persistence.Enumerated;
 
 import com.estivate.query.Aggregator;
 import com.estivate.query.Criterion;
-import com.estivate.query.Property;
-import com.estivate.query.Join;
 import com.estivate.query.EstivateNode;
+import com.estivate.query.Join;
+import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 
 import lombok.extern.slf4j.Slf4j;
@@ -59,8 +58,8 @@ public class Statement {
 	}
 	
 	public Statement appendParameter(Class entity, String attribute, Object parameter) {
-		if(parameter instanceof Property) {
-			Property field = (Property) parameter;
+		if(parameter instanceof PropertyValue) {
+			PropertyValue field = (PropertyValue) parameter;
 			appendQuery(field.toString());
 		}
 		else {
@@ -71,10 +70,11 @@ public class Statement {
 	}
 	
 	public String appendParameterFetchQuery(Class entity, String attribute, Object parameter) {
-		if(parameter instanceof Property) {
-			Property field = (Property) parameter;
+		if(parameter instanceof PropertyValue) {
+			PropertyValue field = (PropertyValue) parameter;
 			return field.toString();
 		}
+		
 
 		appendValue(entity, attribute, parameter);
 		return "?";
@@ -315,10 +315,6 @@ public class Statement {
 	String compileAttribute(Class entity, String attribute, Object value) {
 		return compileGenericType(compileObject(entity, attribute, value));
 	}
-	
-	
-
-	
 	
 
 }

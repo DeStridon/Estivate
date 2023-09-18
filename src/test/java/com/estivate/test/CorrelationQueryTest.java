@@ -11,7 +11,7 @@ import com.estivate.Context;
 import com.estivate.Statement;
 import com.estivate.query.Join;
 import com.estivate.query.Join.JoinType;
-import com.estivate.query.Property;
+import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.FragmentEntity;
@@ -67,37 +67,8 @@ public class CorrelationQueryTest {
 		
 	}
 	
-	Query correlationQuery(TaskEntity task, List<SegmentEntity> segments, CorrelationDirection direction) {
-		
-		
-		Query query = new Query(SegmentEntity.class)
-				//.join(TaskEntity.class)
-				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, task.getProjectId())
-				.eq(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage, task.getSourceLanguage())
-				.eq(SegmentEntity.class, SegmentEntity.Fields.targetLanguage, task.getTargetLanguage())
-				.notEq(TaskEntity.class, TaskEntity.Fields.archived, true)
-				.notEq(SegmentEntity.class, SegmentEntity.Fields.taskId, task.getId());
-		
-		if(direction == CorrelationDirection.Fetch) {
-			query
-				.gt(SegmentEntity.class, SegmentEntity.Fields.macroStatus, task.getStatus())
-				.notEq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.InProgress);
-		}
-		
-		else if(direction == CorrelationDirection.Patch) {
-			query
-				.lt(SegmentEntity.class, SegmentEntity.Fields.macroStatus, task.getStatus())
-				.eq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.Waiting);
-		}
-		
-		else {
-			log.error("At least a direction should be given");
-		}
-				
-		return query;
-	}
 	
-	static enum CorrelationDirection{ Fetch, Patch };
+	static enum CorrelationDirection{ Fetch, Spread };
 	
 	SegmentEntity generateSegment(TaskEntity task, String sourceContent) {
 
@@ -112,14 +83,32 @@ public class CorrelationQueryTest {
 	@Test
 	public void testRequest() {
 		
-		CorrelationScope scope = CorrelationScope.Fragment;
+		for(CorrelationScope scope : CorrelationScope.values()) {
+			System.out.println("Correlation Scope = "+scope+" Direction = Fetch");
+			Query fetchingQuery = getQuery(scope, CorrelationDirection.Fetch);
+			System.out.println(Statement.toStatement(connection, fetchingQuery).query());
+			System.out.println("\n");
+
+			System.out.println("Correlation Scope = "+scope+" Direction = Spread");
+			Query applyQuery = getQuery(scope, CorrelationDirection.Spread);
+			System.out.println(Statement.toStatement(connection, applyQuery).query());
+			System.out.println("\n");
+
+		}
+		//connectionExecutor.list(query);
 		
+	}
+	
+	public Query getQuery(CorrelationScope scope, CorrelationDirection direction) {
 		
 		// Upsegment choice criterias :
 		// - fragment cant be something ordering : we shall have the different choices to be 
 		// - scope ordering : task, fragment, project
 		
 		Entity correlatedSegment = new Entity(SegmentEntity.class, "CorrelatedSegment");
+		Entity correlatedTask = new Entity(TaskEntity.class, "CorrelatedTask");
+		
+		// Join on segments with same project, languages and content
 		Join segmentJoin = new Join(SegmentEntity.class, correlatedSegment, SegmentEntity.Fields.projectId, SegmentEntity.Fields.projectId)
 				.on(SegmentEntity.Fields.sourceLanguage, SegmentEntity.Fields.sourceLanguage)
 				.on(SegmentEntity.Fields.targetLanguage, SegmentEntity.Fields.targetLanguage)
@@ -128,41 +117,46 @@ public class CorrelationQueryTest {
 
 		Query query = new Query(SegmentEntity.class)
 				.join(segmentJoin)
+				.join(new Join(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id))
+				.select(correlatedSegment)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 75)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
-				.eq(SegmentEntity.class, SegmentEntity.Fields.microStatus, MicroState.Waiting)
-				.isNull(TaskEntity.class, TaskEntity.Fields.archived)
-				.gt(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation)
-				.isNotNull(SegmentEntity.class, SegmentEntity.Fields.archived)
-				.notEq(correlatedSegment, SegmentEntity.Fields.id, new Property(SegmentEntity.class, SegmentEntity.Fields.id))
+				.isNull(SegmentEntity.class, SegmentEntity.Fields.archived)
 				.orderDesc(SegmentEntity.class, SegmentEntity.Fields.macroStatus)
-				;
+				.notEq(correlatedSegment, SegmentEntity.Fields.id, new PropertyValue(SegmentEntity.class, SegmentEntity.Fields.id))
+				.isNull(correlatedTask, TaskEntity.Fields.archived);
+				
+		
+		
+		if(direction == CorrelationDirection.Fetch) {
+			query.eq(correlatedSegment, SegmentEntity.Fields.microStatus, MicroState.Done); // Fetch only from Done segments
+			query.gte(correlatedSegment, SegmentEntity.Fields.macroStatus, MacroState.Translation); // MacroStatus should be at least translation (TODO : only rely on micro state ?)
+		}
+		else if(direction == CorrelationDirection.Spread) {
+			query.in(correlatedSegment, SegmentEntity.Fields.microStatus, MicroState.OutOfScope, MicroState.Waiting); // spread to waiting or OutOfScope segmnets
+			query.lt(correlatedSegment, SegmentEntity.Fields.macroStatus, new PropertyValue(SegmentEntity.class, SegmentEntity.Fields.macroStatus)); // spread to segment with lower macro status
+		}
 
 		
 		if(scope == CorrelationScope.Task) {
-			segmentJoin.on(SegmentEntity.Fields.taskId, SegmentEntity.Fields.taskId);
+			query.eq(correlatedSegment, SegmentEntity.Fields.taskId, new PropertyValue(SegmentEntity.class, SegmentEntity.Fields.taskId));
 		}
 		else if(scope == CorrelationScope.Resubmission) {
-			Entity correlatedTask = new Entity(TaskEntity.class, "CorrelatedTask");
+			
 			query.join(new Join(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
-			query.join(new Join(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
-			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new Property(correlatedTask, TaskEntity.Fields.externalName));
+			
+			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new PropertyValue(correlatedTask, TaskEntity.Fields.externalName));
 		}
 		else if(scope == CorrelationScope.Fragment) {
 			Entity correlatedFragment = new Entity(FragmentEntity.class, "CorrelatedFragment");
 			query.join(new Join(SegmentEntity.class, FragmentEntity.class, SegmentEntity.Fields.sourceFragmentId, FragmentEntity.Fields.id));
 			query.join(new Join(correlatedSegment, correlatedFragment, SegmentEntity.Fields.taskId, FragmentEntity.Fields.id));
-			query.eq(FragmentEntity.class, FragmentEntity.Fields.externalName, new Property(correlatedFragment, TaskEntity.Fields.externalName));
-		}
-		else if(scope == CorrelationScope.Document) {
+			query.eq(FragmentEntity.class, FragmentEntity.Fields.externalName, new PropertyValue(correlatedFragment, TaskEntity.Fields.externalName));
 		}
 		
 		// Add where not equals to field value
 		
-				
-		System.out.println(Statement.toStatement(connection, query).query());
-		
-		connectionExecutor.list(query);
+		return query;
 		
 	}
 	
@@ -170,7 +164,7 @@ public class CorrelationQueryTest {
 		Resubmission,
 		Fragment,
 		Task,
-		Document;
+		//Document;
 	}
 	
 }
