@@ -2,7 +2,6 @@ package com.estivate.test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +13,7 @@ import com.estivate.query.Join.JoinType;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
+import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.SegmentEntity.MicroState;
@@ -117,7 +117,7 @@ public class CorrelationQueryTest {
 
 		Query query = new Query(SegmentEntity.class)
 				.join(segmentJoin)
-				.join(new Join(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, TaskEntity.Fields.id))
+				.join(new Join(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, AbstractEntity.Fields.id))
 				.select(correlatedSegment)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 75)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
@@ -143,7 +143,7 @@ public class CorrelationQueryTest {
 		}
 		else if(scope == CorrelationScope.Resubmission) {
 			
-			query.join(new Join(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, TaskEntity.Fields.id));
+			query.join(new Join(SegmentEntity.class, TaskEntity.class, SegmentEntity.Fields.taskId, AbstractEntity.Fields.id));
 			
 			query.eq(TaskEntity.class, TaskEntity.Fields.externalName, new PropertyValue(correlatedTask, TaskEntity.Fields.externalName));
 		}

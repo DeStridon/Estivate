@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.estivate.Context;
 import com.estivate.NameMapper.UppercaseNameMapper;
 import com.estivate.query.Query;
+import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
@@ -38,7 +39,7 @@ public class CreateTest {
 		ce.saveOrUpdate(task1);
 		assertEquals(1L, task1.getId());
 		
-		Query query = new Query(TaskEntity.class).eq(TaskEntity.class, TaskEntity.Fields.id, 1);
+		Query query = new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, 1);
 		TaskEntity task2 = ce.uniqueResult(query, TaskEntity.class);
 		
 		task1.setName("new name");

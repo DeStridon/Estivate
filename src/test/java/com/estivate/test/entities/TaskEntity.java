@@ -25,11 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
-public class TaskEntity extends CachedEntity {
-	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	long id;
+public class TaskEntity extends AbstractEntity {
 	
 	@VirtualForeignKey(entity = ProjectEntity.class)
 	long projectId;
