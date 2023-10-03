@@ -136,6 +136,9 @@ public class Context {
 			if(field.isAnnotationPresent(Id.class)) {
 				continue;
 			}
+			else if(field.getType() == org.slf4j.Logger.class) {
+				continue;
+			}
 			
 			try {
 				
@@ -204,8 +207,17 @@ public class Context {
 				}
 			}
 			
-			if(returnClass == Integer.class || returnClass == Long.class || returnClass == Long.TYPE) {
+			if(returnClass == org.slf4j.Logger.class) {
+				continue;
+			}
+			else if(returnClass == Integer.class || returnClass == Integer.TYPE || returnClass == Long.class || returnClass == Long.TYPE) {
 				fieldCreation.append("INT");
+			}
+			else if(returnClass == Float.class || returnClass == Float.TYPE) {
+				fieldCreation.append("FLOAT");
+			}
+			else if(returnClass == Double.class || returnClass == Double.TYPE) {
+				fieldCreation.append("DOUBLE");
 			}
 			else if(returnClass == String.class) {
 				fieldCreation.append("VARCHAR");

@@ -17,7 +17,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 @Builder
 @NoArgsConstructor
@@ -42,6 +44,8 @@ public class TaskEntity extends CachedEntity {
 
 	@Convert(converter=LanguageConverter.class)
 	Language targetLanguage;
+	
+	double matchingPoint;
 	
 	boolean archived;
 	
