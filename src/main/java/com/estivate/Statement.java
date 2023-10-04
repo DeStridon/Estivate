@@ -106,6 +106,10 @@ public class Statement {
 						Float f = (Float) object;
 						statement.setFloat(i+1, f);
 					}
+					else if(object instanceof Double) {
+						Double f = (Double) object;
+						statement.setDouble(i+1, f);
+					}
 					else if(object instanceof Boolean) {
 						Boolean b = (Boolean) object;
 						statement.setBoolean(i+1, b);

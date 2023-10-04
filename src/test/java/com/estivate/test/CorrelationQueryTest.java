@@ -123,7 +123,7 @@ public class CorrelationQueryTest {
 				.eq(SegmentEntity.class, SegmentEntity.Fields.projectId, 1)
 				.isNull(SegmentEntity.class, SegmentEntity.Fields.archived)
 				.orderDesc(SegmentEntity.class, SegmentEntity.Fields.macroStatus)
-				.notEq(correlatedSegment, SegmentEntity.Fields.id, new PropertyValue(SegmentEntity.class, SegmentEntity.Fields.id))
+				.notEq(correlatedSegment, AbstractEntity.Fields.id, new PropertyValue(SegmentEntity.class, AbstractEntity.Fields.id))
 				.isNull(correlatedTask, TaskEntity.Fields.archived);
 				
 		

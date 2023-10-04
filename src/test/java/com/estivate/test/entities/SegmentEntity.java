@@ -19,11 +19,7 @@ import lombok.experimental.FieldNameConstants;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
-public class SegmentEntity {
-	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	long id;
+public class SegmentEntity extends AbstractEntity {
 	
 	@VirtualForeignKey(entity = ProjectEntity.class)
 	long projectId;
