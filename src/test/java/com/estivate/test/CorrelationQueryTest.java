@@ -49,10 +49,15 @@ public class CorrelationQueryTest {
 		SegmentEntity segment21 = generateSegment(task2, "content A");
 		SegmentEntity segment22 = generateSegment(task2, "content C");
 		
+		task2.setUpdated(null);
+		connectionExecutor.saveOrUpdate(task2);
+		
 		TaskEntity task3 = connectionExecutor.saveOrUpdate(TaskEntity.builder().projectId(1).name("task #3").status(MacroState.Analysis).build());
 		SegmentEntity segment31 = generateSegment(task3, "content A");
 		SegmentEntity segment32 = generateSegment(task3, "content B");
 		SegmentEntity segment33 = generateSegment(task3, "content C");
+		
+		
 		
 		
 //		// Task 2 heritates from Task 1

@@ -2,10 +2,6 @@ package com.estivate.test.entities;
 
 import java.util.Date;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
 import com.estivate.entity.VirtualForeignKey;
 import com.estivate.test.entities.TaskEntity.MacroState;
 import com.estivate.test.entities.misc.Language;

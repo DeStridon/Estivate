@@ -8,10 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.Convert;
@@ -23,6 +25,8 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import com.estivate.entity.CachedEntity;
+import com.estivate.entity.CreationDate;
+import com.estivate.entity.UpdateDate;
 import com.estivate.query.Query;
 import com.estivate.util.StringPipe;
 
@@ -140,6 +144,9 @@ public class Context {
 			}
 			else if(field.getType() == org.slf4j.Logger.class) {
 				continue;
+			}
+			else if((field.isAnnotationPresent(CreationDate.class) || field.isAnnotationPresent(UpdateDate.class)) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+				field.set(object, new Date());
 			}
 			
 			try {
@@ -272,12 +279,12 @@ public class Context {
 		return null;
 	}
 	
-	List<Field> getAllFields(Class<? extends Object> objectClass){
+	Set<Field> getAllFields(Class<? extends Object> objectClass){
 		
 		if(objectClass == null) {
-			return new ArrayList<>();
+			return new HashSet<>();
 		}
-		List<Field> fields = getAllFields(objectClass.getSuperclass());
+		Set<Field> fields = getAllFields(objectClass.getSuperclass());
 		for(Field field : objectClass.getDeclaredFields()) {
 			
 			if(field.isAnnotationPresent(Transient.class)) {
@@ -293,7 +300,24 @@ public class Context {
 	@SneakyThrows
 	public void update(Object entity) {
 
-		List<Field> updatedFields = getAllFields(entity.getClass());
+		
+		
+		Long id = null;
+		Field idField = null;
+		for(Field field : getAllFields(entity.getClass())) {
+			if(field.isAnnotationPresent(Id.class)) {
+				field.setAccessible(true);
+				idField = field;
+				id = field.getLong(entity);
+			}
+			
+			else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+				field.setAccessible(true);
+				field.set(entity, new Date());
+			}
+		}
+		
+		Set<Field> updatedFields = getAllFields(entity.getClass());
 
 		if(entity instanceof CachedEntity) {
 			updatedFields = ((CachedEntity) entity).updatedFields();
@@ -304,17 +328,9 @@ public class Context {
 			return;
 		}
 		
-		Field idField = getFieldWithAnnotation(entity.getClass(), Id.class);
 		
-		if(idField == null) {
-			log.error("No @Id field on class "+entity.getClass());
-			return;
-		}
-		
-		idField.setAccessible(true);
-		Long id = idField.getLong(entity);
-		if(id == null || id == 0) {
-			log.error("Null or 0 value id for entity, no update possible");
+		if(idField == null || id == null || id == 0) {
+			log.error("No id with value found, no update possible");
 		}
 		
 		// 1. Create query
@@ -341,19 +357,6 @@ public class Context {
 		boolean check = statement.execute();
 		
 		System.out.println(check);
-		
-	}
-
-	
-	public Field getFieldWithAnnotation(Class<? extends Object> entityClass, Class<? extends Annotation> annotationClass) {
-		
-		for(Field field : getAllFields(entityClass)) {
-			if(field.isAnnotationPresent(annotationClass)) {
-				return field;
-			}
-		}
-		
-		return null;
 		
 	}
 

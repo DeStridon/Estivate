@@ -1,10 +1,10 @@
 package com.estivate.entity;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Transient;
 
@@ -28,9 +28,9 @@ public abstract class CachedEntity {
 	}
 	
 	@SneakyThrows
-	public List<Field> updatedFields(){
+	public Set<Field> updatedFields(){
 		
-		List<Field> fields = new ArrayList<>();
+		Set<Field> fields = new HashSet<>();
 		
 		for(Field field : this.getClass().getDeclaredFields()) {
 			field.setAccessible(true);

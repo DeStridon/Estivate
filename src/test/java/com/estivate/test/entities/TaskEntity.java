@@ -1,13 +1,13 @@
 package com.estivate.test.entities;
 
+import java.util.Date;
+
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 
-import com.estivate.entity.CachedEntity;
+import com.estivate.entity.CreationDate;
+import com.estivate.entity.UpdateDate;
 import com.estivate.entity.VirtualForeignKey;
 import com.estivate.test.entities.misc.Language;
 import com.estivate.test.entities.misc.LanguageConverter;
@@ -31,6 +31,12 @@ public class TaskEntity extends AbstractEntity {
 	long projectId;
 	
 	String name;
+	
+	@CreationDate
+	Date created;
+	
+	@UpdateDate
+	Date updated;
 	
 	@Enumerated(EnumType.ORDINAL)
 	MacroState status;
