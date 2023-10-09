@@ -8,6 +8,8 @@ import java.util.Set;
 
 import javax.persistence.Transient;
 
+import com.estivate.util.FieldUtils;
+
 import lombok.SneakyThrows;
 
 
@@ -19,7 +21,7 @@ public abstract class CachedEntity {
 	@SneakyThrows
 	public void saveState() {
 		
-		for(Field field : this.getClass().getDeclaredFields()) {
+		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
 			field.setAccessible(true);
 			Object object = field.get(this);
 			__cache.put(field.getName(), hashCode(object));
@@ -32,7 +34,7 @@ public abstract class CachedEntity {
 		
 		Set<Field> fields = new HashSet<>();
 		
-		for(Field field : this.getClass().getDeclaredFields()) {
+		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
 			field.setAccessible(true);
 			Object object = field.get(this);
 			if(__cache.containsKey(field.getName()) && equals(__cache.get(field.getName()), hashCode(object))) {

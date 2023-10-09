@@ -19,6 +19,7 @@ import javax.persistence.Enumerated;
 import com.estivate.entity.CachedEntity;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
+import com.estivate.util.FieldUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +61,7 @@ public class Result {
 
 			while(currentClazz != Object.class) {
 
-				for(Field field : currentClazz.getDeclaredFields()) {
+				for(Field field : FieldUtils.getEntityFields(currentClazz)) {
 					setGeneratedField(entity, arguments, field, obj);
 				}
 				currentClazz = currentClazz.getSuperclass();

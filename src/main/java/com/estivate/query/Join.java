@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.estivate.entity.VirtualForeignKey;
+import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
 
 import lombok.AccessLevel;
@@ -63,7 +64,7 @@ public class Join {
 	public static Join find(Query.Entity internal, Query.Entity external) {
 
 		// try doing the join from external class to internal class
-		for(Field externalField : external.entity.getDeclaredFields()) {
+		for(Field externalField : FieldUtils.getEntityFields(external.entity)) {
 			VirtualForeignKey reference = externalField.getDeclaredAnnotation(VirtualForeignKey.class);
 
 			// if key not found or not refering to baseClass, skip
@@ -80,7 +81,7 @@ public class Join {
 		}
 
 		// try the other way around
-		for(Field internalField : internal.entity.getDeclaredFields()) {
+		for(Field internalField : FieldUtils.getEntityFields(internal.entity)) {
 			VirtualForeignKey reference = internalField.getDeclaredAnnotation(VirtualForeignKey.class);
 			if(reference == null || reference.entity() != external.entity) {
 				continue;

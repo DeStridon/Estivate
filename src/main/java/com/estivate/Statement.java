@@ -22,6 +22,7 @@ import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
+import com.estivate.util.FieldUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -253,7 +254,7 @@ public class Statement {
 	
 	Object compileObject(Class entity, String attribute, Object value) {
 		try {
-			Field field = entity.getDeclaredField(attribute);
+			Field field = FieldUtils.findField(entity, attribute);
 			
 			Type fieldType = field.getType();
 			

@@ -10,10 +10,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import javax.persistence.Transient;
-
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
+import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -244,7 +243,7 @@ public class Query extends Aggregator{
 		Class<?> currentClazz = c.entity;
 		while(currentClazz != Object.class) {
 			
-			String[] fields = args.length == 0 ? Arrays.stream(currentClazz.getDeclaredFields()).filter(x -> !x.isAnnotationPresent(Transient.class)).map( x -> x.getName() ).toArray(String[]::new) : args;
+			String[] fields = args.length == 0 ? FieldUtils.getEntityFields(currentClazz).stream().map( x -> x.getName() ).toArray(String[]::new) : args;
 			
 			for(String field : fields){
 				select(c, field);
@@ -299,7 +298,7 @@ public class Query extends Aggregator{
 	@EqualsAndHashCode
 	@AllArgsConstructor
 	public static class Entity{
-		public final Class entity;
+		public final Class<? extends Object> entity;
 		public final String alias;
 		
 		public Entity(Class entity) {
