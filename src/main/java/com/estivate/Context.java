@@ -150,7 +150,7 @@ public class Context {
 					continue;
 				}
 				
-				fieldValueList.add(field.getName());
+				fieldValueList.add(Query.nameMapper.mapAttribute(field.getName()));
 				statement.appendValue(object.getClass(), field.getName(), field.get(object));
 				//EstivateUtil.compileAttribute(entity.getClass(), field.getName(), field.get(entity)));
 				
@@ -322,7 +322,7 @@ public class Context {
 				//String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
 
 		// 2. List updated fields
-		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapEntityAttribute(entity.getClass(), x.getName()) + " = ?").collect(Collectors.joining(", ")));
+		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapAttribute(x.getName()) + " = ?").collect(Collectors.joining(", ")));
 		
 		for(Field field : updatedFields) {
 			statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
