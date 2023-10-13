@@ -21,6 +21,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PostPersist;
 import javax.persistence.PrePersist;
 
 import com.estivate.entity.CachedEntity;
@@ -128,8 +129,7 @@ public class Context {
 	@SneakyThrows
 	private <U> U insert(U object) {
 		
-		Set<Method> prePersistMethods = FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class);
-		for(Method method : prePersistMethods) {
+		for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class)) {
 			method.invoke(object);
 		}
 
@@ -185,6 +185,10 @@ public class Context {
 		}
 		else {
 			return null;
+		}
+		
+		for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PostPersist.class)) {
+			method.invoke(object);
 		}
 		
 		return object;
@@ -286,29 +290,30 @@ public class Context {
 	@SneakyThrows
 	public void update(Object entity) {
 
-		Set<Method> prePersistMethods = FieldUtils.findMethodWithAnnotation(entity.getClass(), PrePersist.class);
-		for(Method method : prePersistMethods) {
+		
+		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PrePersist.class)) {
 			method.invoke(entity);
 		}
 		
 		Long id = null;
 		Field idField = null;
-		for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
-			if(field.isAnnotationPresent(Id.class)) {
-				field.setAccessible(true);
-				idField = field;
-				id = field.getLong(entity);
-			}
-			
-			else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
-				field.setAccessible(true);
-				field.set(entity, new Date());
-			}
-		}
-		
 		
 		Set<Field> updatedFields = FieldUtils.getEntityFields(entity.getClass());
 
+		
+		for(Field field : updatedFields) {
+			field.setAccessible(true);
+
+			if(field.isAnnotationPresent(Id.class)) {
+				idField = field;
+				id = field.getLong(entity);
+			}
+			else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+				field.set(entity, new Date());
+			}
+			
+		}
+		
 		if(entity instanceof CachedEntity) {
 			updatedFields = ((CachedEntity) entity).updatedFields();
 		}
@@ -346,7 +351,9 @@ public class Context {
 		
 		boolean check = statement.execute();
 		
-		System.out.println(check);
+		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PostPersist.class)) {
+			method.invoke(entity);
+		}
 		
 	}
 
