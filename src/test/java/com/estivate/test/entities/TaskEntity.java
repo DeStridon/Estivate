@@ -5,8 +5,10 @@ import java.util.Date;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.PostPersist;
+import javax.persistence.PrePersist;
 
-import com.estivate.entity.CreationDate;
+import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.entity.VirtualForeignKey;
 import com.estivate.test.entities.misc.Language;
@@ -32,7 +34,7 @@ public class TaskEntity extends AbstractEntity {
 	
 	String name;
 	
-	@CreationDate
+	@InsertDate
 	Date created;
 	
 	@UpdateDate
@@ -52,6 +54,16 @@ public class TaskEntity extends AbstractEntity {
 	boolean archived;
 	
 	String externalName;
+	
+	@PrePersist
+	public void prePersist() {
+		System.out.println("prepersist");
+	}
+	
+	@PostPersist
+	public void postPersist() {
+		System.out.println("postPersist");
+	}
 	
 	
 	public static enum MacroState {

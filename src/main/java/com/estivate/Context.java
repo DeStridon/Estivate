@@ -2,6 +2,7 @@ package com.estivate;
 
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,9 +21,10 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 
 import com.estivate.entity.CachedEntity;
-import com.estivate.entity.CreationDate;
+import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.query.Query;
 import com.estivate.util.FieldUtils;
@@ -126,6 +128,10 @@ public class Context {
 	@SneakyThrows
 	private <U> U insert(U object) {
 		
+		Set<Method> prePersistMethods = FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class);
+		for(Method method : prePersistMethods) {
+			method.invoke(object);
+		}
 
 		List<String> fieldValueList = new ArrayList<>();
 
@@ -140,7 +146,7 @@ public class Context {
 			if(field.isAnnotationPresent(Id.class)) {
 				continue;
 			}
-			else if((field.isAnnotationPresent(CreationDate.class) || field.isAnnotationPresent(UpdateDate.class)) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+			else if((field.isAnnotationPresent(InsertDate.class) || field.isAnnotationPresent(UpdateDate.class)) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
 				field.set(object, new Date());
 			}
 			
@@ -280,7 +286,10 @@ public class Context {
 	@SneakyThrows
 	public void update(Object entity) {
 
-		
+		Set<Method> prePersistMethods = FieldUtils.findMethodWithAnnotation(entity.getClass(), PrePersist.class);
+		for(Method method : prePersistMethods) {
+			method.invoke(entity);
+		}
 		
 		Long id = null;
 		Field idField = null;
@@ -296,6 +305,7 @@ public class Context {
 				field.set(entity, new Date());
 			}
 		}
+		
 		
 		Set<Field> updatedFields = FieldUtils.getEntityFields(entity.getClass());
 
