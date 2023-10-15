@@ -2,6 +2,7 @@ package com.estivate.query;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,9 @@ public class Join {
 	List<Pair<String, String>> joins = new ArrayList<>();
 	
 	JoinType joinType = JoinType.INNER;
+	
+	IndexHint indexHint = null;
+	List<String> indexNames;
 
 	public String toString() {
 		
@@ -33,8 +37,11 @@ public class Join {
 				.append  (joinType.toString())
 				.append  ("JOIN")
 				.append  (Query.nameMapper.mapEntity(joinedEntity.entity))
-				.appendIf(joinedEntity.alias != null, joinedEntity.alias)
-				.append  ("ON")
+				.appendIf(joinedEntity.alias != null, joinedEntity.alias);
+		if(indexHint != null && indexNames != null && !indexNames.isEmpty()) {
+			sb	.append  (indexHint.toString()+ " INDEX ("+indexNames.stream().collect(Collectors.joining(", "))+")");
+		}
+		sb		.append  ("ON")
 				.append  (joins.stream().map(x -> joinerEntity.getName()+"."+Query.nameMapper.mapAttribute(x.getLeft()) + " = " + joinedEntity.getName()+"."+Query.nameMapper.mapAttribute(x.getRight())).collect(Collectors.joining(" and ")));
 		return sb.toString();
 		
@@ -106,13 +113,21 @@ public class Join {
 		OUTER
 	}
 	
-	public Join joinType(JoinType joinType) {
+	public Join setJoinType(JoinType joinType) {
 		this.joinType = joinType;
 		return this;
 	}
 
 	public Join on(String joinerAttribute, String joinedAttribute) {
 		joins.add(Pair.of(joinerAttribute, joinedAttribute));
+		return this;
+	}
+
+	public Join setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
+		this.indexHint = indexHint;
+		
+		this.indexNames = new ArrayList<>(List.of(mainIndex));
+		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
 

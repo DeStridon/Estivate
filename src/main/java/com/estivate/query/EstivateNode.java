@@ -7,8 +7,6 @@ import com.estivate.query.Query.Entity;
 
 public interface EstivateNode {
 	
-	//public String compile();
-	
 	public static Operator eq (Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Eq,  value); }
 	public static Operator lt (Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Lt,  value); }
 	public static Operator gt (Entity entity, String attribute, Object value) { return new Operator(entity, attribute, CriterionType.Gt,  value); }
@@ -32,7 +30,5 @@ public interface EstivateNode {
 	}
 
 	public EstivateNode clone();
-
-//	public EstivateStatement_old preparedStatement();
 
 }

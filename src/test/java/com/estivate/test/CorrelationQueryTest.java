@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.estivate.Context;
 import com.estivate.Statement;
+import com.estivate.query.IndexHint;
 import com.estivate.query.Join;
 import com.estivate.query.Join.JoinType;
 import com.estivate.query.PropertyValue;
@@ -118,9 +119,11 @@ public class CorrelationQueryTest {
 				.on(SegmentEntity.Fields.sourceLanguage, SegmentEntity.Fields.sourceLanguage)
 				.on(SegmentEntity.Fields.targetLanguage, SegmentEntity.Fields.targetLanguage)
 				.on(SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
-				.joinType(JoinType.LEFT);
+				.setJoinType(JoinType.LEFT)
+				.setIndexHint(IndexHint.FORCE, "joinIndex");
 
 		Query query = new Query(SegmentEntity.class)
+				.setIndexHint(IndexHint.USE, "entityIndex")
 				.join(segmentJoin)
 				.join(new Join(correlatedSegment, correlatedTask, SegmentEntity.Fields.taskId, AbstractEntity.Fields.id))
 				.select(correlatedSegment)

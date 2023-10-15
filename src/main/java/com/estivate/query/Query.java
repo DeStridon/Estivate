@@ -95,8 +95,13 @@ public class Query extends Aggregator{
 
 	@Getter
 	Integer limit;
+
+	@Getter
+	IndexHint indexHint;
+
+	@Getter
+	List<String> indexNames;
 	
-	// TODO : delete nameMapper here to load it dynamically from hibernate bean ?
 	public Query(Class baseClass) {
 		super(GroupType.AND);
 		this.baseClass = baseClass;
@@ -291,6 +296,13 @@ public class Query extends Aggregator{
 		select(entity, attribute);
 		groupBys.add("`"+entity.getName()+"."+attribute+"`");
 		
+		return this;
+	}
+	
+	public Query setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
+		this.indexHint = indexHint;
+		this.indexNames = new ArrayList<>(List.of(mainIndex));
+		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
 	

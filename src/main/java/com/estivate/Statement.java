@@ -171,7 +171,11 @@ public class Statement {
 		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.getSelects())+"\n");
-		statement.appendQuery("FROM "+joinQuery.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");
+		statement.appendQuery("FROM "+Query.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");
+		
+		if(joinQuery.getIndexHint() != null && joinQuery.getIndexNames() != null && !joinQuery.getIndexNames().isEmpty()) {
+			statement.appendQuery(joinQuery.getIndexHint()+ " INDEX ("+joinQuery.getIndexNames().stream().collect(Collectors.joining(", "))+")");
+		}
 		
         for(Join join : joinQuery.buildJoins()) {
         	statement.appendQuery(join.toString()+'\n');
