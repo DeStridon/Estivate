@@ -43,6 +43,7 @@ public class Context {
 		this.connection = connection;
 	}
 	
+	
 	@SneakyThrows
 	public <U> U uniqueResult(Query query, Class<U> clazz) {
 		
@@ -269,6 +270,10 @@ public class Context {
 		return statement.execute();
 		
 		
+	}
+	
+	public String queryAsString(Query query) {
+		return Statement.toStatement(connection, query).query();
 	}
 	
 	private Field getIdField(Class<? extends Object> objectClass) {

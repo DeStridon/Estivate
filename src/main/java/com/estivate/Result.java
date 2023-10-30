@@ -21,13 +21,14 @@ import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.util.FieldUtils;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Result {
 
-	Query query;
-	Map<String, String> columns;
+	@Getter Query query;
+	@Getter Map<String, String> columns;
 	
 	public Result(Query query, Map<String, String> columns) {
 		this.query = query;
@@ -48,6 +49,14 @@ public class Result {
 	
 	public String mapAsString(Class c, String attribute) {
 		return columns.get(Query.nameMapper.mapEntityAttribute(c, attribute));
+	}
+	
+	public Integer mapAsInteger(Class c, String attribute) {
+		return Integer.valueOf(columns.get(Query.nameMapper.mapEntityAttribute(c, attribute)));		
+	}
+	
+	public Long mapAsLong(Class c, String attribute) {
+		return Long.valueOf(columns.get(Query.nameMapper.mapEntityAttribute(c, attribute)));		
 	}
 	
 	
