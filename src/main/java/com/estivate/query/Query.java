@@ -301,7 +301,7 @@ public class Query extends Aggregator{
 	
 	public Query setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
 		this.indexHint = indexHint;
-		this.indexNames = new ArrayList<>(List.of(mainIndex));
+		this.indexNames = new ArrayList<>(Arrays.asList(mainIndex));
 		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
