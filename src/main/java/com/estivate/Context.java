@@ -22,7 +22,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.InsertDate;
@@ -296,7 +298,7 @@ public class Context {
 	public void update(Object entity) {
 
 		
-		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PrePersist.class)) {
+		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PreUpdate.class)) {
 			method.invoke(entity);
 		}
 		
@@ -356,7 +358,7 @@ public class Context {
 		
 		boolean check = statement.execute();
 		
-		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PostPersist.class)) {
+		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PostUpdate.class)) {
 			method.invoke(entity);
 		}
 		

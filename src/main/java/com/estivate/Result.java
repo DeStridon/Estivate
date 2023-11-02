@@ -60,6 +60,21 @@ public class Result {
 	}
 	
 	
+	public Long mapCount() {
+		if(columns.containsKey("COUNT(*)")) {
+			return Long.valueOf(columns.get("COUNT(*)"));			
+		}
+		return null;
+	}
+	
+	public Long mapCount(Class<? extends Object> c, String attribute) {
+		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapEntityAttribute(c, attribute)+")")) {
+			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapEntityAttribute(c, attribute)+")"));
+		}
+		return null;
+	}
+	
+	
 	public static <U> U generateObject(Class<U> clazz, Map<String, String> arguments) {
 		try {
 			Constructor<U> constructor = clazz.getConstructor();

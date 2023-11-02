@@ -11,8 +11,9 @@ import javax.persistence.Transient;
 import com.estivate.util.FieldUtils;
 
 import lombok.SneakyThrows;
+import lombok.experimental.SuperBuilder;
 
-
+@SuperBuilder
 public abstract class CachedEntity {
 	
 	@Transient
