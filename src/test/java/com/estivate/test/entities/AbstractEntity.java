@@ -7,9 +7,13 @@ import javax.persistence.Id;
 import com.estivate.entity.CachedEntity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@SuperBuilder
+@NoArgsConstructor
 @FieldNameConstants
 public class AbstractEntity extends CachedEntity {
 	

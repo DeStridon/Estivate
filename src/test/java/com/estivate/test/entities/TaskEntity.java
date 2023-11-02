@@ -15,15 +15,15 @@ import com.estivate.test.entities.misc.Language;
 import com.estivate.test.entities.misc.LanguageConverter;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants

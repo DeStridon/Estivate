@@ -10,9 +10,11 @@ import javax.persistence.Transient;
 
 import com.estivate.util.FieldUtils;
 
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.SuperBuilder;
 
+@NoArgsConstructor
 @SuperBuilder
 public abstract class CachedEntity {
 	
