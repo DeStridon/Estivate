@@ -36,6 +36,7 @@ public class Query extends Aggregator{
 	public Query like (Class entity, String attribute, String value)	    { super.like  (entity, attribute, value);  return this; }
 	
 	public Query eqIfNotNull   (Class entity, String attribute, Object value)        { super.eqIfNotNull   (entity, attribute, value);  return this; }
+	public Query notEqIfNotNull(Class entity, String attribute, Object value)        { super.notEqIfNotNull(entity, attribute, value);  return this; }
 	public Query ltIfNotNull   (Class entity, String attribute, Object value)        { super.ltIfNotNull   (entity, attribute, value);  return this; }
 	public Query gtIfNotNull   (Class entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
 	public Query lteIfNotNull  (Class entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }

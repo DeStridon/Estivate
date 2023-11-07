@@ -19,11 +19,11 @@ import lombok.experimental.SuperBuilder;
 public abstract class CachedEntity {
 	
 	@Transient
-	Map<String, Integer> __cache = new HashMap<>();
+	final Map<String, Integer> __cache = new HashMap<>();
 	
 	@SneakyThrows
 	public void saveState() {
-		
+
 		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
 			field.setAccessible(true);
 			Object object = field.get(this);

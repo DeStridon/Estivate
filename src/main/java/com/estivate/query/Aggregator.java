@@ -38,6 +38,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator like	(Class entity, String attribute, String value)        { return like(new Entity(entity), attribute, value); }
 	
 	public Aggregator eqIfNotNull    (Class entity, String attribute, Object value)        { return eqIfNotNull(new Entity(entity), attribute, value); }
+	public Aggregator notEqIfNotNull (Class entity, String attribute, Object value)        { return notEqIfNotNull(new Entity(entity), attribute, value); }
 	public Aggregator ltIfNotNull    (Class entity, String attribute, Object value)        { return ltIfNotNull(new Entity(entity), attribute, value); }
 	public Aggregator gtIfNotNull    (Class entity, String attribute, Object value)        { return gtIfNotNull(new Entity(entity), attribute, value); }
 	public Aggregator lteIfNotNull   (Class entity, String attribute, Object value)        { return lteIfNotNull(new Entity(entity), attribute, value); }
@@ -66,6 +67,7 @@ public class Aggregator implements EstivateNode {
 	
 	
 	public Aggregator eqIfNotNull   (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Eq,  value));} return this; }
+	public Aggregator notEqIfNotNull(Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.NotEq,  value));} return this; }
 	public Aggregator ltIfNotNull   (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Lt,  value));} return this; }
 	public Aggregator gtIfNotNull   (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Gt,  value));} return this; }
 	public Aggregator lteIfNotNull  (Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Lte, value));} return this; }
