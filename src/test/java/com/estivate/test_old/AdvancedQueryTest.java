@@ -62,20 +62,7 @@
 //	}
 //	
 //	
-//	@Test
-//	public void taskEnumTest() {
-//		
-//		Query query = new Query(TaskEntity.class);
-//		
-//		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1, 2, 3, 4);
-//		
-//		query.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Language.en_GB, Language.fr_FR);
-//		
-//		query.in(TaskEntity.class, TaskEntity.Fields.status, MacroState.Analysis, MacroState.Translation);
-//		
-//		Context ce = new Context(connection);
-//		
-//		System.out.println(Statement.toStatement(connection, query).query());
+
 //		
 //		
 //		

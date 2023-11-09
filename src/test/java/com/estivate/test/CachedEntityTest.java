@@ -1,6 +1,8 @@
 package com.estivate.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,8 +27,13 @@ public class CachedEntityTest {
 		taskA.setName("new name");
 		taskB.setExternalName("new external name");
 		
+		assertTrue(taskA.isFieldUpdated(TaskEntity.Fields.name));
+		assertFalse(taskA.isFieldUpdated(TaskEntity.Fields.externalName));
+		
+		
 		context.saveOrUpdate(taskA);
 		context.saveOrUpdate(taskB);
+		
 		
 		
 		TaskEntity taskC = context.uniqueResult(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
@@ -34,8 +41,7 @@ public class CachedEntityTest {
 		assertEquals(taskA.getName(), taskC.getName());
 		assertEquals(taskB.getExternalName(), taskC.getExternalName());
 		
-		
-		
 	}
+	
 	
 }

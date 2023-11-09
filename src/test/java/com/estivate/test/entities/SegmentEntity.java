@@ -7,10 +7,12 @@ import com.estivate.test.entities.TaskEntity.MacroState;
 import com.estivate.test.entities.misc.Language;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,6 +30,7 @@ public class SegmentEntity extends AbstractEntity {
 	
 	@VirtualForeignKey(entity = TaskEntity.class)
 	long taskId;
+	
 	
 	String sourceContent;
 	

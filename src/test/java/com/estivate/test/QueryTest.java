@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
 import com.estivate.Result;
+import com.estivate.Statement;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.TaskEntity.MacroState;
+import com.estivate.test.entities.misc.Language;
 
 public class QueryTest {
 
@@ -39,7 +42,7 @@ public class QueryTest {
 	
 	
 	@Test 
-	public void joinTest() {
+	public void automatedJoinTest() {
 		
 		TaskEntity task2 = context.saveOrUpdate(TaskEntity.builder().projectId(1).name("task 2").build());
 
@@ -84,11 +87,18 @@ public class QueryTest {
 		
 	}
 	
-	
 	@Test
-	public void groupTest() {
+	public void taskEnumTest() {
 		
+		Query query = new Query(TaskEntity.class);
+		
+		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1, 2, 3, 4);
+		
+		query.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Language.en_GB, Language.fr_FR);
+		
+		query.in(TaskEntity.class, TaskEntity.Fields.status, MacroState.Analysis, MacroState.Translation);
+		
+		System.out.println(context.queryAsString(query));
+	
 	}
-	
-	
 }

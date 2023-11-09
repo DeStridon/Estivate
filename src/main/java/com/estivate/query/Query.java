@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
+import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -83,7 +84,7 @@ public class Query extends Aggregator{
 	Set<Join> joins = new LinkedHashSet<>();
 	
 	@Getter
-	Set<String> selects = new TreeSet<>();
+	Set<Select> selects = new TreeSet<>();
 	
 	@Getter
 	Set<String> orders = new TreeSet<>();
@@ -159,6 +160,7 @@ public class Query extends Aggregator{
 		
 		// 1. list all classes needed for query
 		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
+		targetEntities.addAll(selects.stream().map(x -> x.entity).collect(Collectors.toSet()));
 		
 		while(true) { 
 			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
@@ -262,17 +264,20 @@ public class Query extends Aggregator{
 	public Query select(Class c, String attribute) { return select(new Entity(c), attribute); }
 	
 	public Query select(Entity c, String attribute) {
-		selects.add(c.getName() + "." + nameMapper.mapAttribute(attribute)+" as `"+c.getName()+"."+attribute+"`");
+		//selects.add(c.getName() + "." + nameMapper.mapAttribute(attribute)+" as `"+c.getName()+"."+attribute+"`");
+		selects.add(Select.builder().entity(c).attribute(attribute).build());
 		return this;
 	}
 	
 	public Query selectCount() {
-		selects.add("COUNT(*)");
+//		selects.add("COUNT(*)");
+		selects.add(Select.builder().method(SelectMethod.Count).build());
 		return this;
 	}
 	
 	public Query selectCount(Class c, String attribute) {
-		selects.add("COUNT(distinct "+nameMapper.mapEntityAttribute(c, attribute)+")");
+//		selects.add("COUNT(distinct "+nameMapper.mapEntityAttribute(c, attribute)+")");
+		selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).build());
 		return this;
 	}
 	

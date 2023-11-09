@@ -50,6 +50,27 @@ public abstract class CachedEntity {
 		
 	}
 	
+	public Boolean isFieldUpdated(String fieldName) {
+		
+		Field field = FieldUtils.getEntityFields(this.getClass()).stream().filter(x -> fieldName.equals(x.getName())).findFirst().orElse(null);
+		
+		if(field == null) {
+			return null;
+		}
+		
+		try {
+			field.setAccessible(true);
+			Object object = field.get(this);
+			return !(__cache.containsKey(field.getName()) && equals(__cache.get(field.getName()), hashCode(object)));
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	
+	}
+	
 	public boolean equals(Integer hashLeft, Integer hashRight) {
 		if(hashLeft == null && hashRight == null) {
 			return true;
