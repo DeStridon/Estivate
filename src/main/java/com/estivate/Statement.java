@@ -124,7 +124,7 @@ public class Statement {
 					}
 				}
 				catch(Exception e) {
-					log.error("Error while creating statement ",e);
+					log.error("Error while creating statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(x -> x.toString()).collect(Collectors.joining(", "))+"\n",e);
 				}
 			}
 						
