@@ -101,4 +101,23 @@ public class QueryTest {
 		System.out.println(context.queryAsString(query));
 	
 	}
+	
+	@Test
+	public void inTest() {
+		
+		TaskEntity task1 = context.saveOrUpdate(TaskEntity.builder().projectId(1234).name("task 1").build());
+		
+		
+		Query query = new Query(TaskEntity.class);
+		
+		
+		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1234, 234, 34, 4);
+		
+		System.out.println(context.queryAsString(query));
+		
+		List<Result> results = context.list(query);
+		
+		assertEquals(1, results.size());
+		
+	}
 }

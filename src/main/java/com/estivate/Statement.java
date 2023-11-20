@@ -232,9 +232,6 @@ public class Statement {
 			statement.appendQuery(" in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
-			for(Object value : in.getValues()) {
-				statement.appendValue(in.entity.entity, in.attribute, value);
-			}
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
