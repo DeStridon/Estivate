@@ -124,7 +124,7 @@ public class Statement {
 					}
 				}
 				catch(Exception e) {
-					log.error("Error while creating statement ",e);
+					log.error("Error while creating statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(x -> x.toString()).collect(Collectors.joining(", "))+"\n",e);
 				}
 			}
 						
@@ -232,9 +232,6 @@ public class Statement {
 			statement.appendQuery(" in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
-			for(Object value : in.getValues()) {
-				statement.appendValue(in.entity.entity, in.attribute, value);
-			}
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
