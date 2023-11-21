@@ -166,9 +166,9 @@ public class Statement {
 			joinQuery.select(joinQuery.getBaseClass());
 		}
 		
-		if(joinQuery.getSelects().stream().map(x -> x.toString()).allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
-			statement.appendQuery("distinct");
-		}
+//		if(joinQuery.getSelects().stream().map(x -> x.toString()).allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
+//			statement.appendQuery("distinct");
+//		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toSet()))+"\n");
 		statement.appendQuery("FROM "+Query.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");

@@ -149,7 +149,7 @@ public class Context {
 			if(field.isAnnotationPresent(Id.class)) {
 				continue;
 			}
-			else if((field.isAnnotationPresent(InsertDate.class) || field.isAnnotationPresent(UpdateDate.class)) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+			else if(field.isAnnotationPresent(InsertDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
 				field.set(object, new Date());
 			}
 			

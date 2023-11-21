@@ -3,6 +3,7 @@ package com.estivate;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,8 +16,8 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.PostLoad;
 
-import com.estivate.entity.CachedEntity;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.util.FieldUtils;
@@ -91,10 +92,10 @@ public class Result {
 				currentClazz = currentClazz.getSuperclass();
 			}
 			
-			if(obj instanceof CachedEntity) {
-				((CachedEntity) obj).saveState();
+			for(Method method : FieldUtils.findMethodWithAnnotation(obj.getClass(), PostLoad.class)) {
+				method.invoke(obj);
 			}
-
+			
 			return obj;
 		}
 		catch(Exception e) {

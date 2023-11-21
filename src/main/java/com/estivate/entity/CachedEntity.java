@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
 import com.estivate.util.FieldUtils;
@@ -22,6 +23,7 @@ public abstract class CachedEntity {
 	final Map<String, Integer> __cache = new HashMap<>();
 	
 	@SneakyThrows
+	@PostLoad
 	public void saveState() {
 
 		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
@@ -69,6 +71,19 @@ public abstract class CachedEntity {
 		}
 		return null;
 	
+	}
+	
+	@SneakyThrows
+	public Boolean isAnyFieldUpdated() {
+		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
+			field.setAccessible(true);
+			Object object = field.get(this);
+			if(__cache.containsKey(field.getName()) && equals(__cache.get(field.getName()), hashCode(object))) {
+				continue;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	public boolean equals(Integer hashLeft, Integer hashRight) {
