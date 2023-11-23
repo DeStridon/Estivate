@@ -160,7 +160,7 @@ public class Query extends Aggregator{
 		
 		// 1. list all classes needed for query
 		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
-		targetEntities.addAll(selects.stream().map(x -> x.entity).collect(Collectors.toSet()));
+		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
 		
 		while(true) { 
 			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
@@ -270,7 +270,6 @@ public class Query extends Aggregator{
 	}
 	
 	public Query selectCount() {
-//		selects.add("COUNT(*)");
 		selects.add(Select.builder().method(SelectMethod.Count).build());
 		return this;
 	}

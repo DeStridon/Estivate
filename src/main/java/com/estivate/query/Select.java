@@ -21,12 +21,14 @@ public class Select implements Comparable {
 	
 	public String toString() {
 		
-		if(method == SelectMethod.Count && entity != null && attribute != null) {
+		if(method == SelectMethod.Count) {
+			if (entity == null) {
+				return "COUNT(*)";
+			}
 			return "COUNT(distinct "+entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+")";
 		}
 		
 		return entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+" as `"+entity.getName()+"."+attribute+"`";
-		
 		
 	}
 	
@@ -52,11 +54,7 @@ public class Select implements Comparable {
 		else if(this.method == null && select.method != null) {
 			return 1;
 		}
-		else if(StringUtils.compare(this.entity.getName(), select.entity.getName()) != 0) {
-			return StringUtils.compare(this.entity.getName(), select.entity.getName());
-		}
-		return StringUtils.compare(this.attribute, select.attribute);
-		
+		return StringUtils.compare(this.toString(), select.toString());
 		
 	}
 
