@@ -120,4 +120,16 @@ public class QueryTest {
 		assertEquals(1, results.size());
 		
 	}
+	
+	
+	@Test
+	public void countTest() {
+		Query query = new Query(TaskEntity.class);
+		
+		query.selectCount();
+		
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
 }
