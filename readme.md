@@ -16,13 +16,13 @@ Estivate is a framework complementing Hibernate, helping developers to create SQ
 
 ### 3. Empower entities
 
-### 3.1. VirtualForeignKey
+#### 3.1. VirtualForeignKey
 
-### 3.2. CachedEntity
+#### 3.2. CachedEntity
 
-### 3.3. @InsertDate & @UpdateDate
+#### 3.3. @InsertDate & @UpdateDate
 
-### 3.4. PreXXX & PostXXX annotations
+#### 3.4. PreXXX & PostXXX annotations
 
 
 ### 4. Advanced

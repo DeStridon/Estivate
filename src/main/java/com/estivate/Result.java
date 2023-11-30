@@ -108,7 +108,7 @@ public class Result {
 		Type type = field.getGenericType();
 		field.setAccessible(true);
 		
-		String value = arguments.get(entity.getName()+"."+Query.nameMapper.mapAttribute(field.getName()));
+		String value = arguments.get(entity.getName()+"."+field.getName());
 
 		if(value == null) {
 			return;
