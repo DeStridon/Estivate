@@ -102,7 +102,7 @@ public class Query extends Aggregator{
 	IndexHint indexHint;
 
 	@Getter
-	List<String> indexNames;
+	Set<String> indexNames;
 	
 	public Query(Class baseClass) {
 		super(GroupType.AND);
@@ -282,10 +282,18 @@ public class Query extends Aggregator{
 	
 	public Query clone() {
 		Query joinQuery = new Query(baseClass);
-		joinQuery.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		
 		joinQuery.selects = new LinkedHashSet<>(this.selects);
+		joinQuery.joins = new LinkedHashSet<>(this.joins);
+
+		joinQuery.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		
+		joinQuery.indexHint = this.indexHint;
+		joinQuery.indexNames = new LinkedHashSet<>(this.indexNames);
+
+		joinQuery.orders = new LinkedHashSet<>(this.orders);
+		joinQuery.groupBys = new LinkedHashSet<>(this.groupBys);
+
 		joinQuery.limit = this.limit;
 		joinQuery.offset = this.offset;
 		
@@ -306,7 +314,7 @@ public class Query extends Aggregator{
 	
 	public Query setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
 		this.indexHint = indexHint;
-		this.indexNames = new ArrayList<>(Arrays.asList(mainIndex));
+		this.indexNames = new LinkedHashSet<>(Arrays.asList(mainIndex));
 		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
