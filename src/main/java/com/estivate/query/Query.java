@@ -102,7 +102,7 @@ public class Query extends Aggregator{
 	IndexHint indexHint;
 
 	@Getter
-	Set<String> indexNames;
+	Set<String> indexNames = new LinkedHashSet<>();
 	
 	public Query(Class baseClass) {
 		super(GroupType.AND);
