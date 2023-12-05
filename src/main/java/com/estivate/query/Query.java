@@ -156,11 +156,15 @@ public class Query extends Aggregator{
 
 		// 0. initiate
 		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(new Entity(baseClass)));
-		List<Join> classJoins = new ArrayList<>(joins);
+		List<Join> classJoins = new ArrayList<>();
 		
 		// 1. list all classes needed for query
 		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
 		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
+		for(Join join : joins) {
+			targetEntities.add(join.joinerEntity);
+			targetEntities.add(join.joinedEntity);
+		}
 		
 		while(true) { 
 			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
@@ -198,14 +202,14 @@ public class Query extends Aggregator{
 			}
 			
 			// joining strategy #1 : manual joins
-//			for(Entity joinedClass : joined) {
-//				Join manualJoin = joins.stream()
-//						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
-//						.findFirst().orElse(null);
-//				if(manualJoin != null) {
-//					return manualJoin;
-//				}
-//			}
+			for(Entity joinedClass : joined) {
+				Join manualJoin = joins.stream()
+						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
+						.findFirst().orElse(null);
+				if(manualJoin != null) {
+					return manualJoin;
+				}
+			}
 			
 			// joining strategy #2 : VirtualKey
 			for(Entity joinedClass : joined) {
