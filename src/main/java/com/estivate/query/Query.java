@@ -258,7 +258,9 @@ public class Query extends Aggregator{
 			String[] fields = args.length == 0 ? FieldUtils.getEntityFields(currentClazz).stream().map( x -> x.getName() ).toArray(String[]::new) : args;
 			
 			for(String field : fields){
-				select(c, field);
+				if(selects.stream().noneMatch(x -> x.entity.equals(c) && x.attribute.equals(field))) {
+					select(c, field);
+				}
 			}
 			currentClazz = currentClazz.getSuperclass();
 		}
@@ -268,7 +270,10 @@ public class Query extends Aggregator{
 	public Query select(Class c, String attribute) { return select(new Entity(c), attribute); }
 	
 	public Query select(Entity c, String attribute) {
-		//selects.add(c.getName() + "." + nameMapper.mapAttribute(attribute)+" as `"+c.getName()+"."+attribute+"`");
+		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
+		if(select != null) {
+			selects.remove(select);
+		}
 		selects.add(Select.builder().entity(c).attribute(attribute).build());
 		return this;
 	}
@@ -283,6 +288,35 @@ public class Query extends Aggregator{
 		selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).build());
 		return this;
 	}
+	
+	public Query selectDistinct(Class c, String attribute) {
+		
+		Select select = selects.stream().filter(x -> x.entity.equals(new Entity(c)) && x.attribute.equals(attribute)).findAny().orElse(null);
+		if(select != null) {
+			selects.remove(select);
+		}
+		
+		
+		selects.add(Select.builder().method(SelectMethod.Distinct).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	public Query selectMin(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	public Query selectMax(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	public Query selectSum(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	
 	
 	public Query clone() {
 		Query joinQuery = new Query(baseClass);
@@ -341,5 +375,7 @@ public class Query extends Aggregator{
 			return Query.nameMapper.mapEntity(entity);
 		}
 	}
+
+
 	
 }

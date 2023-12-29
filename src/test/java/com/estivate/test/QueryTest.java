@@ -57,6 +57,7 @@ public class QueryTest {
 		
 		Query query = new Query(SegmentEntity.class)
 				.select(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
 				.eq(TaskEntity.class, TaskEntity.Fields.name, "task 2");
 		
 		List<Result> results = context.list(query);
@@ -131,5 +132,36 @@ public class QueryTest {
 		System.out.println(context.queryAsString(query));
 		
 	}
+	
+	@Test
+	public void selectDistinctTest() {
+		Query query = new Query(TaskEntity.class)
+				.select(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id);
+		
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
+	@Test
+	public void selectDistinctTest2() {
+		Query query = new Query(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
+				.select(TaskEntity.class);
+		
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
+	@Test
+	public void selectDistinctTest3() {
+		Query query = new Query(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
+				.select(TaskEntity.class, AbstractEntity.Fields.id);
+
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
 	
 }
