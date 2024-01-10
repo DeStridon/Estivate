@@ -13,6 +13,9 @@ import com.estivate.query.Query;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class JoinTest {
 
 	Context context = DatabaseGenerator.getContext();
@@ -31,7 +34,7 @@ public class JoinTest {
 		
 		List<Result> results = context.list(query);
 		
-		System.out.println(context.queryAsString(query));
+		log.debug(context.queryAsString(query));
 		
 		assertEquals(2, results.size());
 	}
