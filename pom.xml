@@ -81,7 +81,7 @@
         <dependency>
 		    <groupId>com.github.DeStridon</groupId>
 		    <artifactId>RegexBuilder</artifactId>
-		    <version>master-SNAPSHOT</version>
+		    <version>alpha-2024.01.10</version>
 		</dependency>
 
 	</dependencies>
