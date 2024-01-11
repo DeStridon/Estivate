@@ -27,17 +27,30 @@ public class Select implements Comparable {
 			}
 			return "COUNT(distinct "+entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+")";
 		}
+		else if(method == SelectMethod.Max) {
+			return "MAX("+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+")";
+		}
+		else if(method == SelectMethod.Min) {
+			return "MIN("+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+")";
+		}
+		else if(method == SelectMethod.Sum) {
+			return "SUM("+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+")";
+		}
+		else if(method == SelectMethod.Distinct) {
+			return "DISTINCT "+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+" as `"+entity.getName()+"."+attribute+"`";
+		}
 		
 		return entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+" as `"+entity.getName()+"."+attribute+"`";
 		
 	}
 	
 	
-	public static enum SelectMethod{
+	public enum SelectMethod{
 		Count,
 		Max,
 		Min,
-		Sum
+		Sum,
+		Distinct
 	}
 
 

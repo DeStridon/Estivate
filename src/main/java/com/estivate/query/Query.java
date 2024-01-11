@@ -102,7 +102,7 @@ public class Query extends Aggregator{
 	IndexHint indexHint;
 
 	@Getter
-	List<String> indexNames;
+	Set<String> indexNames = new LinkedHashSet<>();
 	
 	public Query(Class baseClass) {
 		super(GroupType.AND);
@@ -161,6 +161,10 @@ public class Query extends Aggregator{
 		// 1. list all classes needed for query
 		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
 		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
+		for(Join join : joins) {
+			targetEntities.add(join.joinerEntity);
+			targetEntities.add(join.joinedEntity);
+		}
 		
 		while(true) { 
 			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
@@ -254,7 +258,9 @@ public class Query extends Aggregator{
 			String[] fields = args.length == 0 ? FieldUtils.getEntityFields(currentClazz).stream().map( x -> x.getName() ).toArray(String[]::new) : args;
 			
 			for(String field : fields){
-				select(c, field);
+				if(selects.stream().noneMatch(x -> x.entity.equals(c) && x.attribute.equals(field))) {
+					select(c, field);
+				}
 			}
 			currentClazz = currentClazz.getSuperclass();
 		}
@@ -264,7 +270,10 @@ public class Query extends Aggregator{
 	public Query select(Class c, String attribute) { return select(new Entity(c), attribute); }
 	
 	public Query select(Entity c, String attribute) {
-		//selects.add(c.getName() + "." + nameMapper.mapAttribute(attribute)+" as `"+c.getName()+"."+attribute+"`");
+		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
+		if(select != null) {
+			selects.remove(select);
+		}
 		selects.add(Select.builder().entity(c).attribute(attribute).build());
 		return this;
 	}
@@ -280,12 +289,49 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
+	public Query selectDistinct(Class c, String attribute) {
+		
+		Select select = selects.stream().filter(x -> x.entity.equals(new Entity(c)) && x.attribute.equals(attribute)).findAny().orElse(null);
+		if(select != null) {
+			selects.remove(select);
+		}
+		
+		
+		selects.add(Select.builder().method(SelectMethod.Distinct).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	public Query selectMin(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	public Query selectMax(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	public Query selectSum(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
+	
+	
+	
 	public Query clone() {
 		Query joinQuery = new Query(baseClass);
-		joinQuery.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		
 		joinQuery.selects = new LinkedHashSet<>(this.selects);
+		joinQuery.joins = new LinkedHashSet<>(this.joins);
+
+		joinQuery.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		
+		joinQuery.indexHint = this.indexHint;
+		joinQuery.indexNames = new LinkedHashSet<>(this.indexNames);
+
+		joinQuery.orders = new LinkedHashSet<>(this.orders);
+		joinQuery.groupBys = new LinkedHashSet<>(this.groupBys);
+
 		joinQuery.limit = this.limit;
 		joinQuery.offset = this.offset;
 		
@@ -306,7 +352,7 @@ public class Query extends Aggregator{
 	
 	public Query setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
 		this.indexHint = indexHint;
-		this.indexNames = new ArrayList<>(Arrays.asList(mainIndex));
+		this.indexNames = new LinkedHashSet<>(Arrays.asList(mainIndex));
 		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
@@ -329,5 +375,7 @@ public class Query extends Aggregator{
 			return Query.nameMapper.mapEntity(entity);
 		}
 	}
+
+
 	
 }
