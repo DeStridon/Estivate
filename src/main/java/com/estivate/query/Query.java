@@ -26,52 +26,66 @@ public class Query extends Aggregator{
 	
 	// Method wrappers
 	
-	public Query eq   (Class entity, String attribute, Object value)        { super.eq    (entity, attribute, value);  return this; }
-	public Query notEq(Class entity, String attribute, Object value)        { super.notEq (entity, attribute, value);  return this; }
-	public Query lt   (Class entity, String attribute, Object value)        { super.lt    (entity, attribute, value);  return this; }
-	public Query gt   (Class entity, String attribute, Object value)        { super.gt    (entity, attribute, value);  return this; }
-	public Query lte  (Class entity, String attribute, Object value)        { super.lte   (entity, attribute, value);  return this; }
-	public Query gte  (Class entity, String attribute, Object value)        { super.gte   (entity, attribute, value);  return this; }
-	public Query in   (Class entity, String attribute, Object... values)    { super.in    (entity, attribute, values); return this; }
-	public Query in   (Class entity, String attribute, Collection<Object> values) { super.in    (entity, attribute, values); return this; }
-	public Query like (Class entity, String attribute, String value)	    { super.like  (entity, attribute, value);  return this; }
+	public Query eq   	(Class entity, String attribute, Object value)        { super.eq    (entity, attribute, value);  return this; }
+	public Query notEq	(Class entity, String attribute, Object value)        { super.notEq (entity, attribute, value);  return this; }
+	public Query lt   	(Class entity, String attribute, Object value)        { super.lt    (entity, attribute, value);  return this; }
+	public Query gt   	(Class entity, String attribute, Object value)        { super.gt    (entity, attribute, value);  return this; }
+	public Query lte  	(Class entity, String attribute, Object value)        { super.lte   (entity, attribute, value);  return this; }
+	public Query gte  	(Class entity, String attribute, Object value)        { super.gte   (entity, attribute, value);  return this; }
+	public Query in   	(Class entity, String attribute, Object... values)    { super.in    (entity, attribute, values); return this; }
+	public Query in   	(Class entity, String attribute, Collection<Object> values) { super.in    (entity, attribute, values); return this; }
+	public Query notIn  (Class entity, String attribute, Object... values)    { super.notIn    (entity, attribute, values); return this; }
+	public Query notIn  (Class entity, String attribute, Collection<Object> values) { super.notIn    (entity, attribute, values); return this; }
+	public Query like 	(Class entity, String attribute, String value)	    { super.like  (entity, attribute, value);  return this; }
+	public Query notLike(Class entity, String attribute, String value)	    { super.notLike  (entity, attribute, value);  return this; }
 	
-	public Query eqIfNotNull   (Class entity, String attribute, Object value)        { super.eqIfNotNull   (entity, attribute, value);  return this; }
-	public Query notEqIfNotNull(Class entity, String attribute, Object value)        { super.notEqIfNotNull(entity, attribute, value);  return this; }
-	public Query ltIfNotNull   (Class entity, String attribute, Object value)        { super.ltIfNotNull   (entity, attribute, value);  return this; }
-	public Query gtIfNotNull   (Class entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
-	public Query lteIfNotNull  (Class entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }
-	public Query gteIfNotNull  (Class entity, String attribute, Object value)        { super.gteIfNotNull  (entity, attribute, value);  return this; }
-	public Query inIfNotNull   (Class entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
-	public Query inIfNotNull   (Class entity, String attribute, List<Object> values) { super.inIfNotNull   (entity, attribute, values); return this; }
-	public Query likeIfNotNull (Class entity, String attribute, String value)        { super.likeIfNotNull (entity, attribute, value);  return this; }
+	public Query eqIfNotNull   		(Class entity, String attribute, Object value)        { super.eqIfNotNull   (entity, attribute, value);  return this; }
+	public Query notEqIfNotNull		(Class entity, String attribute, Object value)        { super.notEqIfNotNull(entity, attribute, value);  return this; }
+	public Query ltIfNotNull   		(Class entity, String attribute, Object value)        { super.ltIfNotNull   (entity, attribute, value);  return this; }
+	public Query gtIfNotNull   		(Class entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
+	public Query lteIfNotNull  		(Class entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }
+	public Query gteIfNotNull  		(Class entity, String attribute, Object value)        { super.gteIfNotNull  (entity, attribute, value);  return this; }
+	public Query inIfNotNull   		(Class entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
+	public Query inIfNotNull   		(Class entity, String attribute, List<Object> values) { super.inIfNotNull   (entity, attribute, values); return this; }
+	public Query notInIfNotNull   	(Class entity, String attribute, Object... values)    { super.notInIfNotNull   (entity, attribute, values); return this; }
+	public Query notInIfNotNull   	(Class entity, String attribute, List<Object> values) { super.notInIfNotNull   (entity, attribute, values); return this; }
+	public Query likeIfNotNull 		(Class entity, String attribute, String value)        { super.likeIfNotNull (entity, attribute, value);  return this; }
+	public Query notLikeIfNotNull 	(Class entity, String attribute, String value)        { super.notLikeIfNotNull (entity, attribute, value);  return this; }
+	
 	
 	public Query isNotNull(Class entity, String attribute) {super.isNotNull(entity, attribute); return this;}
 	public Query isNull(Class entity, String attribute) {super.isNull(entity, attribute); return this;}
 	public Query eqOrNull(Class entity, String attribute, Object value) { super.eqOrNull(entity, attribute, value); return this;	}
 	
-	public Query eq   (Entity entity, String attribute, Object value)        { super.eq    (entity, attribute, value);  return this; }
-	public Query notEq(Entity entity, String attribute, Object value)        { super.notEq (entity, attribute, value);  return this; }
-	public Query lt   (Entity entity, String attribute, Object value)        { super.lt    (entity, attribute, value);  return this; }
-	public Query gt   (Entity entity, String attribute, Object value)        { super.gt    (entity, attribute, value);  return this; }
-	public Query lte  (Entity entity, String attribute, Object value)        { super.lte   (entity, attribute, value);  return this; }
-	public Query gte  (Entity entity, String attribute, Object value)        { super.gte   (entity, attribute, value);  return this; }
-	public Query in   (Entity entity, String attribute, Object... values)    { super.in    (entity, attribute, values); return this; }
-	public Query in   (Entity entity, String attribute, List<Object> values) { super.in    (entity, attribute, values); return this; }
-	public Query like (Entity entity, String attribute, String value)	    { super.like  (entity, attribute, value);  return this; }
+	public Query eq   	(Entity entity, String attribute, Object value)        { super.eq    (entity, attribute, value);  return this; }
+	public Query notEq	(Entity entity, String attribute, Object value)        { super.notEq (entity, attribute, value);  return this; }
+	public Query lt   	(Entity entity, String attribute, Object value)        { super.lt    (entity, attribute, value);  return this; }
+	public Query gt   	(Entity entity, String attribute, Object value)        { super.gt    (entity, attribute, value);  return this; }
+	public Query lte  	(Entity entity, String attribute, Object value)        { super.lte   (entity, attribute, value);  return this; }
+	public Query gte  	(Entity entity, String attribute, Object value)        { super.gte   (entity, attribute, value);  return this; }
+	public Query in   	(Entity entity, String attribute, Object... values)    { super.in    (entity, attribute, values); return this; }
+	public Query in   	(Entity entity, String attribute, List<Object> values) { super.in    (entity, attribute, values); return this; }
+	public Query notIn  (Entity entity, String attribute, Object... values)    { super.notIn    (entity, attribute, values); return this; }
+	public Query notIn  (Entity entity, String attribute, List<Object> values) { super.notIn    (entity, attribute, values); return this; }
+	public Query like 	(Entity entity, String attribute, String value)	    { super.like  (entity, attribute, value);  return this; }
+	public Query notLike(Entity entity, String attribute, String value)	    { super.notLike  (entity, attribute, value);  return this; }
 	
-	public Query eqIfNotNull   (Entity entity, String attribute, Object value)        { super.eqIfNotNull   (entity, attribute, value);  return this; }
-	public Query ltIfNotNull   (Entity entity, String attribute, Object value)        { super.ltIfNotNull   (entity, attribute, value);  return this; }
-	public Query gtIfNotNull   (Entity entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
-	public Query lteIfNotNull  (Entity entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }
-	public Query gteIfNotNull  (Entity entity, String attribute, Object value)        { super.gteIfNotNull  (entity, attribute, value);  return this; }
-	public Query inIfNotNull   (Entity entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
-	public Query inIfNotNull   (Entity entity, String attribute, List<Object> values) { super.inIfNotNull   (entity, attribute, values); return this; }
-	public Query likeIfNotNull (Entity entity, String attribute, String value)        { super.likeIfNotNull (entity, attribute, value);  return this; }
 	
-	public Query isNotNull(Entity entity, String attribute) {super.isNotNull(entity, attribute); return this;}
-	public Query isNull(Entity entity, String attribute) {super.isNull(entity, attribute); return this;}
-	public Query eqOrNull(Entity entity, String attribute, Object value) { super.eqOrNull(entity, attribute, value); return this;	}
+	public Query eqIfNotNull   		(Entity entity, String attribute, Object value)        { super.eqIfNotNull   (entity, attribute, value);  return this; }
+	public Query ltIfNotNull   		(Entity entity, String attribute, Object value)        { super.ltIfNotNull   (entity, attribute, value);  return this; }
+	public Query gtIfNotNull   		(Entity entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
+	public Query lteIfNotNull  		(Entity entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }
+	public Query gteIfNotNull  		(Entity entity, String attribute, Object value)        { super.gteIfNotNull  (entity, attribute, value);  return this; }
+	public Query inIfNotNull   		(Entity entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
+	public Query inIfNotNull   		(Entity entity, String attribute, List<Object> values) { super.inIfNotNull   (entity, attribute, values); return this; }
+	public Query notInIfNotNull   	(Entity entity, String attribute, Object... values)    { super.notInIfNotNull   (entity, attribute, values); return this; }
+	public Query notInIfNotNull   	(Entity entity, String attribute, List<Object> values) { super.notInIfNotNull   (entity, attribute, values); return this; }
+	public Query likeIfNotNull 		(Entity entity, String attribute, String value)        { super.likeIfNotNull (entity, attribute, value);  return this; }
+	public Query notLikeIfNotNull 	(Entity entity, String attribute, String value)        { super.notLikeIfNotNull (entity, attribute, value);  return this; }
+	
+	public Query isNotNull			(Entity entity, String attribute) {super.isNotNull(entity, attribute); return this;}
+	public Query isNull				(Entity entity, String attribute) {super.isNull(entity, attribute); return this;}
+	public Query eqOrNull			(Entity entity, String attribute, Object value) { super.eqOrNull(entity, attribute, value); return this;	}
 	
 	
 	@Getter

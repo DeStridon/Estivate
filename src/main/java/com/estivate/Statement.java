@@ -233,6 +233,13 @@ public class Statement {
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
+		else if(node instanceof Criterion.NotIn) {
+			Criterion.NotIn in = (Criterion.NotIn) node;
+			statement.appendQuery(in.entity.getName()+"."+Query.nameMapper.mapAttribute(in.attribute));
+			statement.appendQuery(" not in (");
+			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			statement.appendQuery(")");
+		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
 			statement.appendQuery(between.entity.getName()+"."+Query.nameMapper.mapAttribute(between.attribute));

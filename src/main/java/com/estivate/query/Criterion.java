@@ -34,7 +34,8 @@ public abstract class Criterion implements EstivateNode{
 			Lte("<="),
 			Gt(">"),
 			Gte(">="),
-			Like("like");
+			Like("like"),
+			NotLike("not like");
 			
 			public String symbol;
 			
@@ -89,16 +90,30 @@ public abstract class Criterion implements EstivateNode{
 			this.values = new ArrayList<>(values) ; 
 		}
 		
-//		@Override
-//		public String compile() {
-//			if(values.size() == 0) {
-//				return null;
-//			}
-//			return entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+" in "+values.stream().map(x -> EstivateUtil.compileAttribute(entity.entity, attribute, x)).collect(Collectors.joining(",\n ", "(", ")"));
-//		}
-		
 		public In clone() {
 			In in = new In();
+			in.entity = entity;
+			in.attribute = attribute;
+			in.values = values.stream().collect(Collectors.toList());
+			return in;
+		}
+
+	}
+	
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class NotIn extends Criterion {
+		
+		@Getter
+		List<Object> values;
+
+		public NotIn(Entity entity, String attribute, Collection<Object> values) {
+			this.entity = entity;
+			this.attribute = attribute;
+			this.values = new ArrayList<>(values) ; 
+		}
+		
+		public NotIn clone() {
+			NotIn in = new NotIn();
 			in.entity = entity;
 			in.attribute = attribute;
 			in.values = values.stream().collect(Collectors.toList());
