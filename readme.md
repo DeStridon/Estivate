@@ -21,8 +21,16 @@ Estivate is a framework complementing Hibernate, helping developers to create SQ
 #### 3.2. CachedEntity
 
 #### 3.3. @InsertDate & @UpdateDate
+Field with @InsertDate annotation will be filled with current date when inserted.
+Field with @UpdateDate annotation will be filled with current date when updated.
 
-#### 3.4. PreXXX & PostXXX annotations
+#### 3.4. Legacy annotations management
+Following legacy annotations are handled by Estivate 
+- PrePersist  
+- PreUpdate
+- PostPersist
+- PostUpdate 
+
 
 
 ### 4. Advanced
