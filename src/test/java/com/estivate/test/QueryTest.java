@@ -1,8 +1,8 @@
 package com.estivate.test;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Date;
 import java.util.List;
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
 import com.estivate.Result;
-import com.estivate.Statement;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.SegmentEntity;

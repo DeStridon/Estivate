@@ -124,14 +124,14 @@ public class Statement {
 					}
 				}
 				catch(Exception e) {
-					log.error("Error while creating statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(x -> x.toString()).collect(Collectors.joining(", "))+"\n",e);
+					log.error("Error while creating statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(Object::toString).collect(Collectors.joining(", "))+"\n",e);
 				}
 			}
 						
 			return statement.execute();
 		
 		} catch (SQLException e) {
-			log.error("Error executing statement", e);
+			log.error("Error executing statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(Object::toString).collect(Collectors.joining(", "))+"\n",e);
 		}
 		return false;
 	}

@@ -110,6 +110,12 @@ public class Context {
 		return output;
 	}
 	
+	public <U> List<U> listAsParallel(Query joinQuery, Class<U> clazz) {
+		List<Result> results = list(joinQuery);
+		List<U> output = results.stream().parallel().map(x -> x.mapAs(clazz)).collect(Collectors.toList());
+		return output;
+	}
+	
 	@SneakyThrows
 	public <U> U saveOrUpdate(U object) {
 		
