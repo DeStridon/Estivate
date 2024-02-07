@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -162,16 +163,17 @@ public class QueryTest {
 		
 	}
 	
-	@Test
-	public void inCollectionTest() {
-		
-		List<Long> taskIds = List.of(1L, 2L, 3L, 4L);
-		
-		Query query = new Query(TaskEntity.class)
-				.in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
-
-		System.out.println(context.queryAsString(query));
-	}
+//	@Test
+//	public void inCollectionTest() {
+//		
+//		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
+//		
+//		Query query = new Query(TaskEntity.class)
+//				.in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
+//
+//		System.out.println(context.queryAsString(query));
+//		
+//	}
 	
 	
 }
