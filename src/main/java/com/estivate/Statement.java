@@ -24,6 +24,7 @@ import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.util.FieldUtils;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -82,7 +83,7 @@ public class Statement {
 
 	}
 
-	public boolean execute() {
+	public boolean execute() throws SQLException {
 		try {
 			
 			statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
@@ -90,69 +91,54 @@ public class Statement {
 				
 				Object object = parameters.get(i);
 				
-				try {
-					if(object instanceof String) {
-						String s = (String) object;
-						statement.setString(i+1, s);
-					}
-					else if(object instanceof Integer) {
-						Integer n = (Integer) object;
-						statement.setInt(i+1, n);
-					}
-					else if(object instanceof Long) {
-						Long l = (Long) object;
-						statement.setLong(i+1, l);
-					}
-					else if(object instanceof Float) {
-						Float f = (Float) object;
-						statement.setFloat(i+1, f);
-					}
-					else if(object instanceof Double) {
-						Double f = (Double) object;
-						statement.setDouble(i+1, f);
-					}
-					else if(object instanceof Boolean) {
-						Boolean b = (Boolean) object;
-						statement.setBoolean(i+1, b);
-					}
-					else if(object instanceof Date) {
-						Date d = (Date) object;
-						statement.setDate(i+1, new java.sql.Date(d.getTime()));
-					}
-					else {
-						log.error("Cannot map object of type "+object.getClass());
-					}
+				if(object instanceof String) {
+					String s = (String) object;
+					statement.setString(i+1, s);
 				}
-				catch(Exception e) {
-					log.error("Error while creating statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(Object::toString).collect(Collectors.joining(", "))+"\n",e);
+				else if(object instanceof Integer) {
+					Integer n = (Integer) object;
+					statement.setInt(i+1, n);
 				}
+				else if(object instanceof Long) {
+					Long l = (Long) object;
+					statement.setLong(i+1, l);
+				}
+				else if(object instanceof Float) {
+					Float f = (Float) object;
+					statement.setFloat(i+1, f);
+				}
+				else if(object instanceof Double) {
+					Double f = (Double) object;
+					statement.setDouble(i+1, f);
+				}
+				else if(object instanceof Boolean) {
+					Boolean b = (Boolean) object;
+					statement.setBoolean(i+1, b);
+				}
+				else if(object instanceof Date) {
+					Date d = (Date) object;
+					statement.setDate(i+1, new java.sql.Date(d.getTime()));
+				}
+				else {
+					log.error("Cannot map object of type "+object.getClass());
+				}
+
 			}
 						
 			return statement.execute();
 		
 		} catch (SQLException e) {
 			log.error("Error executing statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(Object::toString).collect(Collectors.joining(", "))+"\n",e);
+			throw e;
 		}
-		return false;
 	}
 
-	public ResultSet getGeneratedKeys() {
-		try {
-			return statement.getGeneratedKeys();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+	public ResultSet getGeneratedKeys() throws SQLException{
+		return statement.getGeneratedKeys();
 	}
 	
-	public ResultSet getResultSet() {
-		try {
-			return statement.getResultSet();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public ResultSet getResultSet() throws SQLException{
+		return statement.getResultSet();
 	}
 
 	public static Statement toStatement(Connection connection, Query joinQuery) {
@@ -294,8 +280,7 @@ public class Statement {
 
 		}
 		catch(Exception e) {
-			log.error("Exception while trying to map field "+entity.getSimpleName()+"."+attribute);
-			e.printStackTrace();
+			log.error("Exception while trying to map field "+entity.getSimpleName()+"."+attribute, e);
 		}
 		
 		log.warn("Could not determine type of field "+entity.getSimpleName()+"."+attribute);

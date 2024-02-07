@@ -167,11 +167,11 @@ public class Context {
 				
 				fieldValueList.add(Query.nameMapper.mapAttribute(field.getName()));
 				statement.appendValue(object.getClass(), field.getName(), field.get(object));
-				//EstivateUtil.compileAttribute(entity.getClass(), field.getName(), field.get(entity)));
 				
 			}
 			catch(Exception e) {
 				log.error("Cannot map field "+field.getName(), e);
+				throw e;
 			}
 			
 		}

@@ -162,5 +162,16 @@ public class QueryTest {
 		
 	}
 	
+	@Test
+	public void inCollectionTest() {
+		
+		List<Long> taskIds = List.of(1L, 2L, 3L, 4L);
+		
+		Query query = new Query(TaskEntity.class)
+				.in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
+
+		System.out.println(context.queryAsString(query));
+	}
+	
 	
 }

@@ -23,6 +23,7 @@ import com.estivate.query.Query.Entity;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -76,32 +77,29 @@ public class Result {
 	}
 	
 	
+	@SneakyThrows
 	public static <U> U generateObject(Class<U> clazz, Map<String, String> arguments) {
-		try {
-			Constructor<U> constructor = clazz.getConstructor();
-			U obj = constructor.newInstance();
 
-			Class<?> currentClazz = clazz;
-			Entity entity = new Entity(clazz);
+		Constructor<U> constructor = clazz.getConstructor();
+		U obj = constructor.newInstance();
 
-			while(currentClazz != Object.class) {
+		Class<?> currentClazz = clazz;
+		Entity entity = new Entity(clazz);
 
-				for(Field field : FieldUtils.getEntityFields(currentClazz)) {
-					setGeneratedField(entity, arguments, field, obj);
-				}
-				currentClazz = currentClazz.getSuperclass();
+		while(currentClazz != Object.class) {
+
+			for(Field field : FieldUtils.getEntityFields(currentClazz)) {
+				setGeneratedField(entity, arguments, field, obj);
 			}
-			
-			for(Method method : FieldUtils.findMethodWithAnnotation(obj.getClass(), PostLoad.class)) {
-				method.invoke(obj);
-			}
-			
-			return obj;
+			currentClazz = currentClazz.getSuperclass();
 		}
-		catch(Exception e) {
-			e.printStackTrace();
-			return null;
+		
+		for(Method method : FieldUtils.findMethodWithAnnotation(obj.getClass(), PostLoad.class)) {
+			method.invoke(obj);
 		}
+		
+		return obj;
+	
 	}
 
 	public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
