@@ -23,7 +23,7 @@ public class FieldUtils {
 	
 	static Map<Integer, String> fieldNames = new HashMap<>();
 	
-	public static Set<Field> getEntityFields(Class<? extends Object> objectClass){
+	public static Set<Field> getEntityFields(Class<?> objectClass){
 		
 		if(objectClass == null) {
 			return new HashSet<>();
