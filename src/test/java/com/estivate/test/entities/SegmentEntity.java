@@ -2,6 +2,9 @@ package com.estivate.test.entities;
 
 import java.util.Date;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+
 import com.estivate.entity.VirtualForeignKey;
 import com.estivate.test.entities.TaskEntity.MacroState;
 import com.estivate.test.entities.misc.Language;
@@ -36,12 +39,16 @@ public class SegmentEntity extends AbstractEntity {
 	
 	String targetContent;
 	
+	@Enumerated(EnumType.STRING)
 	Language sourceLanguage;
 	
+	@Enumerated(EnumType.STRING)
 	Language targetLanguage;
 	
+	@Enumerated
 	MacroState macroStatus;
 	
+	@Enumerated
 	MicroState microStatus;
 	
 	Date archived;

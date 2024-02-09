@@ -83,6 +83,12 @@
 		    <artifactId>RegexBuilder</artifactId>
 		    <version>alpha-2024.01.10</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>com.google.guava</groupId>
+		    <artifactId>guava</artifactId>
+		    <version>27.1-jre</version>
+		</dependency>
 
 	</dependencies>
 

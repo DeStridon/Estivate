@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.directory.AttributeInUseException;
 import javax.persistence.AttributeConverter;
@@ -20,6 +21,7 @@ import javax.persistence.PostLoad;
 
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
+import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -82,32 +84,35 @@ public class Result {
 
 		Constructor<U> constructor = clazz.getConstructor();
 		U obj = constructor.newInstance();
-
+		
 		Class<?> currentClazz = clazz;
 		Entity entity = new Entity(clazz);
-
+		
+		
 		while(currentClazz != Object.class) {
 
-			for(Field field : FieldUtils.getEntityFields(currentClazz)) {
+			Set<Field> fields = FieldUtils.getEntityFields(currentClazz);
+			for(Field field : fields) {
 				setGeneratedField(entity, arguments, field, obj);
 			}
 			currentClazz = currentClazz.getSuperclass();
 		}
 		
-		for(Method method : FieldUtils.findMethodWithAnnotation(obj.getClass(), PostLoad.class)) {
+		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
+		for(Method method : methods) {
 			method.invoke(obj);
 		}
 		
 		return obj;
 	
 	}
+	
 
 	public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
 		Type type = field.getGenericType();
-		field.setAccessible(true);
 		
-		String value = arguments.get(entity.getName()+"."+field.getName());
-
+		String value = arguments.get(FieldUtils.getFieldName(entity, field));
+		
 		if(value == null) {
 			return;
 		}
@@ -179,7 +184,6 @@ public class Result {
 			}
 			else {
 				int ordinal = Integer.parseInt(value);
-				Object finalValue = field.getType().getEnumConstants()[ordinal];
 				field.set(obj, field.getType().getEnumConstants()[ordinal]);
 			}
 		}
