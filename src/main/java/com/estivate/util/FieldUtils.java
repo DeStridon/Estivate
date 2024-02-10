@@ -17,9 +17,9 @@ import com.estivate.query.Query.Entity;
 
 public class FieldUtils {
 	
-	static Map<Class<? extends Object>, Set<Method>> classPostLoadMethods = new HashMap<>();
+	static Map<Class<?>, Set<Method>> classPostLoadMethods = new HashMap<>();
 	
-	static Map<Class<? extends Object>, Set<Field>> classFields = new HashMap<>();
+	static Map<Class<?>, Set<Field>> classFields = new HashMap<>();
 	
 	static Map<Integer, String> fieldNames = new HashMap<>();
 	
