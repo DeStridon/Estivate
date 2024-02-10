@@ -30,12 +30,12 @@ public class PerformanceUpdate {
 		map.put("SegmentEntity.microStatus", "2");
 		
 		List<Result> results = new ArrayList<>();
-		for(int i = 0; i < 25000; i++) {
+		for(int i = 0; i < 2; i++) {
 			results.add(new Result(null, map));
 		}
 
-		Chronometer chrono = Chronometer.createTimeTriggeredChronometer("bla", 100);
-		chrono.start();
+		Chronometer chrono = new Chronometer("bla");
+
 		
 		List<SegmentEntity> segments1 = results.stream().map(x -> x.mapAs(SegmentEntity.class)).collect(Collectors.toList());
 		

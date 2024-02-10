@@ -8,7 +8,6 @@ import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,133 +17,57 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 
-import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Result {
+public class Mapper<U> {
+	
+	final Class<?> targetClass;
+	final Constructor<U> constructor;
 
-	@Getter Query query;
-	@Getter Map<String, String> columns;
+	final Set<Field> fields;
+	final Set<Method> postLoadMethods;
 	
-	public Result(Query query, Map<String, String> columns) {
-		this.query = query;
-		this.columns = columns;
-	}
-	
-	private Map<String, Object> cache = new HashMap<>();
-	
-	public <U> U mapAs(Class<U> clazz) throws SecurityException, IllegalArgumentException {
-		
-		if(!cache.containsKey(clazz.getSimpleName())) {
-			cache.put(clazz.getSimpleName(), generateObject(clazz, columns));
-		}
-		
-		return (U) cache.get(clazz.getSimpleName());
-		
-	}
-	
-	protected <U> U mapAs(Class<U> clazz, Chronometer chronometer) throws SecurityException, IllegalArgumentException {
-		
-		if(!cache.containsKey(clazz.getSimpleName())) {
-			cache.put(clazz.getSimpleName(), generateObject(clazz, columns, chronometer));
-		}
-		
-		return (U) cache.get(clazz.getSimpleName());
-		
-	}
-	
-	public String mapAsString(Class c, String attribute) {
-		return columns.get(Query.nameMapper.mapEntityAttribute(c, attribute));
-	}
-	
-	public Integer mapAsInteger(Class c, String attribute) {
-		return Integer.valueOf(columns.get(Query.nameMapper.mapEntityAttribute(c, attribute)));		
-	}
-	
-	public Long mapAsLong(Class c, String attribute) {
-		return Long.valueOf(columns.get(Query.nameMapper.mapEntityAttribute(c, attribute)));		
-	}
-	
-	
-	public Long mapCount() {
-		if(columns.containsKey("COUNT(*)")) {
-			return Long.valueOf(columns.get("COUNT(*)"));			
-		}
-		return null;
-	}
-	
-	public Long mapCount(Class<? extends Object> c, String attribute) {
-		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapEntityAttribute(c, attribute)+")")) {
-			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapEntityAttribute(c, attribute)+")"));
-		}
-		return null;
-	}
-	
+	final Chronometer chronometer;
 	
 	@SneakyThrows
-	public static <U> U generateObject(Class<U> clazz, Map<String, String> arguments) {
+	public Mapper(Class<U> targetClass) {
+		chronometer = new Chronometer("Mapper "+targetClass.getSimpleName()).timeThreshold(null);
+		
+		this.targetClass = targetClass;
 
-		Constructor<U> constructor = clazz.getConstructor();
+		constructor = targetClass.getConstructor();
+		
+		fields = FieldUtils.getEntityFields(targetClass);
+		postLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
+		
+		chronometer.step("mapper constructor");
+	}
+	
+	@SneakyThrows
+	public Object map(Map<String, String> arguments)  {
 		U obj = constructor.newInstance();
+		Entity entity = new Entity(targetClass);
+		chronometer.step("constructor & entity");
 		
-		Class<?> currentClazz = clazz;
-		Entity entity = new Entity(clazz);
-		
-		
-		while(currentClazz != Object.class) {
-
-			Set<Field> fields = FieldUtils.getEntityFields(currentClazz);
-			for(Field field : fields) {
-				setGeneratedField(entity, arguments, field, obj);
-			}
-			currentClazz = currentClazz.getSuperclass();
+		for(Field field : fields) {
+			setGeneratedField(entity, arguments, field, obj);
 		}
 		
-		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
-		for(Method method : methods) {
+		for(Method method : postLoadMethods) {
 			method.invoke(obj);
 		}
 		
 		return obj;
-	
+		
 	}
 	
-	@SneakyThrows
-	protected static <U> U generateObject(Class<U> clazz, Map<String, String> arguments, Chronometer chronometer) {
-
-		Constructor<U> constructor = clazz.getConstructor();
-		U obj = constructor.newInstance();
-		
-		Class<?> currentClazz = clazz;
-		Entity entity = new Entity(clazz);
-		
-		
-		while(currentClazz != Object.class) {
-
-			Set<Field> fields = FieldUtils.getEntityFields(currentClazz);
-			for(Field field : fields) {
-				setGeneratedField(entity, arguments, field, obj);
-			}
-			currentClazz = currentClazz.getSuperclass();
-		}
-		
-		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
-		for(Method method : methods) {
-			method.invoke(obj);
-		}
-		
-		return obj;
 	
-	}
-	
-
 	public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
 		Type type = field.getGenericType();
 		
@@ -229,5 +152,5 @@ public class Result {
 			throw new AttributeInUseException("This type is not mapped yet : "+type);
 		}
 	}
-	
+
 }

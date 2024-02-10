@@ -7,161 +7,107 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Chronometer is class that can be instantiate to have the time between the start and the end.
- * The current time limit is 5 000 ms. So if the time take more than this limit, it will show in the console. 
- * 
- * @Autowired Chronometer chronomter and @Autowired @Qualifier(Config.CHRONO) Chronometer chrono
- * "chronomter" and "chrono" are two different different beans. 
- * - The first one call the bean "chronometer". It will be used for each HTTP request. Each time we call this
- * 	 bean, the data will be reset to null.
- * - The second one call the bean "chrono". It will be used if we want to send to performance database. To have
- *   more information, see the class : com.datawords.framework.annotation.Performance.
- *   When you call this object, it will be the same reference for one class.
- * Do not used @Autowired Chronometer chrono, it's the same as @Autowired @Qualifier(Config.CHRONO) Chronometer chrono.
- * Prefer use @Qualifier to call the exact bean and prevent errors. 
- * If you don't know which @Autowired use, do not used it in your class. It will prevent for errors.
- * 
- * Example of case if you are using Qualifier :
- * - You are using a class with a main method that will call many private/public method, like scheduler. 
- * 	 You want to have the chronometer of the main method and also, the private method.
- * 		1. Start the chrono before calling the all private method
- * 		2. Create a new Chronometer in each private method you want with Chronometer.createTimeTriggeredChronometer
- * 		3. At the end of theses new chronometers, add in the details of the chrono, the chronometer log.
- * - You are using a class that was not invoked by http. This class call a method in RestController using Chronometer.
- * 		1. In the method of the RestController, add the chronometer at the parameters to use the reference of the exact chronometer.
- * - You have multiple private method and there is no main method.
- * 		1. Do not use Autowired. Create a chronometer like before with Chronometer.createTimeTriggeredChronometer
- */
+@Data
+@Builder
+@AllArgsConstructor
 @Slf4j
 public class Chronometer {
 	
-	long begin = System.currentTimeMillis();
-	long lastStep = begin;
-	protected List<Pair<String, Float>> steps = new ArrayList<>();
-	boolean activated = true;
-	public boolean doLog = true;
-	
-	Map<String, String> details = new LinkedHashMap<>();
+	public static int defaultThreshold = 5000;
 	
 	
-	private Integer timeLimit = 5000;
+	final String name;
 	
-	@Getter String name;
+	private boolean active = true;
+	private Integer timeThreshold = 5000;
 	
-	public static Chronometer createTimeTriggeredChronometer(String name, int millisecondsTimeLimit) {
-		Chronometer chrono = new Chronometer(name);
-		chrono.doLog = false;
-		chrono.timeLimit = millisecondsTimeLimit;
-		return chrono;
-	}
+	private long begin = System.currentTimeMillis();
+	private long lastStep = begin;
 	
-	public static Chronometer createTimeTriggeredChronometer(String name) {
-		return createTimeTriggeredChronometer(name, 5000);
-	}
+	private List<Pair<String, Float>> steps = new ArrayList<>();
+	private Map<String, String> details = new LinkedHashMap<>();
+	
 	
 	public Chronometer(String name){
-		this.name = name;
+		this(name, true);
 	}
 	
 	public Chronometer(String name, boolean activated){
 		this.name = name;
-		this.activated = activated;
+		this.active = activated;
+		
+		this.begin = System.currentTimeMillis();
+		this.lastStep = begin;
+		this.timeThreshold = defaultThreshold;
 	}
 	
-	public Chronometer(String name, boolean activated, boolean doLog){
-		this.name = name;
-		this.activated = activated;
-		this.doLog = doLog;
+	public Chronometer active(boolean active) {
+		this.active = active;
+		return this;
 	}
 	
-	public long getBeginTime() {
-		return this.begin;
+	public Chronometer timeThreshold(Integer timeThreshold) {
+		this.timeThreshold = timeThreshold;
+		return this;
 	}
 	
-	public Chronometer setDetail(String key, String value) {
+	
+	public Chronometer addDetail(String key, String value) {
 		this.details.put(key, value);
 		return this;
 	}
 	
-	public Chronometer setDetail(String key, Object value) {
+	public Chronometer addDetail(String key, Object value) {
 		if(value != null) {
-			return setDetail(key, value.toString());
+			return addDetail(key, value.toString());
 		}
 		return this;
 	}
 
 	
-	public Chronometer start(){
-		if(this.activated){
+	public Chronometer reset(){
+		if(this.active){
 			this.begin = System.currentTimeMillis();
 		}
 		return this;
 	}
 
-	public Chronometer start(String name) {
-		this.name = name;
-		this.begin = System.currentTimeMillis();
-		this.lastStep = begin;
-		this.steps = new ArrayList<>();
-		this.details = new HashMap<>();
-		this.activated = true;
-		this.doLog = false;
-		return this.start();
-	}
-	
-	public Chronometer start(String name, int millisecondsTimeLimit) {
-		this.doLog = false;
-		this.timeLimit = millisecondsTimeLimit;
-		return this.start(name);
-	}
-	
-	public Chronometer start(String name, boolean doLog) {
-		this.name = name;
-		this.begin = System.currentTimeMillis();
-		this.lastStep = begin;
-		this.steps = new ArrayList<>();
-		this.details = new HashMap<>();
-		this.activated = true;
-		this.doLog = doLog;
-		return this.start();
-	}
 	
 	public Chronometer step(String stepName){
 		
-		if(!this.activated){
+		if(!this.active){
 			return this;
 		}
 
 		long currentStep = System.currentTimeMillis();
 		float spentTime = (currentStep - this.lastStep) / 1000f;
 		
-		if(this.doLog == false && this.timeLimit != null && (currentStep - this.begin) > this.timeLimit) {
-			
+		if(this.timeThreshold != null && (currentStep - this.begin) > this.timeThreshold) {
 			log.warn("! Chronometer [ "+name+" ] Logger time limit triggered ! Step: " + stepName);
-			this.doLog = true;
 		}
 			
 		this.steps.add(new Pair<String, Float>(stepName, spentTime));
-
 		this.lastStep = currentStep;
 	
 		return this;
 	}
 
-	public void end(String finalStepName) {
-		
+	public Chronometer end(String finalStepName) {
 		this.step(finalStepName);
-
-		if(!this.doLog) {
-			return;
+		
+		if(this.timeThreshold != null && (this.lastStep - this.begin) > this.timeThreshold) {
+			System.out.println(getLog());
 		}
-		
-		System.out.println(getLog());
-		
+		return this;
 	}
 	
 	public String getLog() {
