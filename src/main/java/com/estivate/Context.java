@@ -30,6 +30,7 @@ import com.estivate.entity.CachedEntity;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.query.Query;
+import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
 
@@ -75,26 +76,40 @@ public class Context {
 	
 	@SneakyThrows
 	public List<Result> list(Query joinQuery){
+		Chronometer chronometer = new Chronometer("list");
+		chronometer.timeThreshold(100);
 		
 		Statement statement = Statement.toStatement(connection, joinQuery);
+		chronometer.step("statement creation");
 		
         statement.execute();
+        chronometer.step("execute");
         
         ResultSet resultSet = statement.getResultSet();
-        
+        chronometer.step("get resultset");
         
         List<Result> results = new ArrayList<>();
         
+        
         while(resultSet.next()) {
+        	chronometer.step("resultset next");
+            
         	Map<String, String> map = new HashMap<>();
-        	ResultSetMetaData metadata = resultSet.getMetaData();
 
+            ResultSetMetaData metadata = resultSet.getMetaData();
+            chronometer.step("get metadata");
+            
         	for(int i = 1; i <= metadata.getColumnCount(); i++) {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
+        	chronometer.step("insert in map");
+            
         	Result result = new Result(joinQuery, map);
         	results.add(result);
+        	chronometer.step("create result");
+            
         }
+        chronometer.end("end");
         
         return results;
 		
