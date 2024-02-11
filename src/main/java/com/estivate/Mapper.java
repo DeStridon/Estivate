@@ -50,17 +50,19 @@ public class Mapper<U> {
 	}
 	
 	@SneakyThrows
-	public Object map(Map<String, String> arguments)  {
+	public U map(Map<String, String> arguments)  {
 		U obj = constructor.newInstance();
 		Entity entity = new Entity(targetClass);
 		chronometer.step("constructor & entity");
 		
 		for(Field field : fields) {
 			setGeneratedField(entity, arguments, field, obj);
+			chronometer.step("set generated field "+field.getName());
 		}
 		
 		for(Method method : postLoadMethods) {
 			method.invoke(obj);
+			chronometer.step("invoke method "+method.getName());
 		}
 		
 		return obj;
@@ -68,7 +70,7 @@ public class Mapper<U> {
 	}
 	
 	
-	public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
+	public void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
 		Type type = field.getGenericType();
 		
 		String value = arguments.get(FieldUtils.getFieldName(entity, field));
@@ -151,6 +153,10 @@ public class Mapper<U> {
 			log.error("This type is not mapped yet : "+type);
 			throw new AttributeInUseException("This type is not mapped yet : "+type);
 		}
+	}
+
+	public String getStats() {
+		return chronometer.getLog();
 	}
 
 }
