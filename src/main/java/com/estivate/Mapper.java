@@ -74,7 +74,6 @@ public class Mapper<U> {
 		Type type = field.getGenericType();
 		
 		String value = arguments.get(FieldUtils.getFieldName(entity, field));
-		chronometer.step("get value");
 		if(value == null) {
 			return;
 		}
@@ -128,18 +127,13 @@ public class Mapper<U> {
 		// @Convert (might be enum, this condition should be tested before classic enum)
 		else if(field.getDeclaredAnnotation(Convert.class) != null) {
 			Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
-			chronometer.step("convert annotation");
 			Object converter = convertAnnotation.converter().getConstructor().newInstance();
-			chronometer.step("converter");
 			if(!(converter instanceof AttributeConverter)) {
 				log.error("Cannot convert with converter "+converter.getClass());
 				return;
 			}
-			chronometer.step("test attribute converter");
 			AttributeConverter attributeConverter = (AttributeConverter) converter;
-			chronometer.step("cast");
 			Object attributeValue = attributeConverter.convertToEntityAttribute(value);
-			chronometer.step("convert to value");
 			field.set(obj, attributeValue);
 		}
 		// @Enumerated
@@ -158,7 +152,6 @@ public class Mapper<U> {
 			log.error("This type is not mapped yet : "+type);
 			throw new AttributeInUseException("This type is not mapped yet : "+type);
 		}
-		chronometer.step("set value");
 	}
 
 	public String getStats() {
