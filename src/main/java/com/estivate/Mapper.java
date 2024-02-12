@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.sql.ResultSetMetaData;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,7 +57,10 @@ public class Mapper<U> {
 		chronometer.step("constructor & entity");
 		
 		for(Field field : fields) {
-			setGeneratedField(entity, arguments, field, obj);
+			String value = arguments.get(FieldUtils.getFieldName(entity, field));
+			chronometer.step("get field value"+field.getName());
+			
+			setGeneratedField(entity, value, field, obj);
 			chronometer.step("set generated field "+field.getName());
 		}
 		
@@ -70,10 +74,10 @@ public class Mapper<U> {
 	}
 	
 	
-	public void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
+	public void setGeneratedField(Entity entity, String value, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {
 		Type type = field.getGenericType();
 		
-		String value = arguments.get(FieldUtils.getFieldName(entity, field));
+//		
 		if(value == null) {
 			return;
 		}
@@ -156,6 +160,16 @@ public class Mapper<U> {
 
 	public String getStats() {
 		return chronometer.getLog();
+	}
+
+
+	public void attachMetadata(ResultSetMetaData metadata) {
+		
+	}
+
+	//
+	public U map(Object[] result) {
+		return null;
 	}
 
 }

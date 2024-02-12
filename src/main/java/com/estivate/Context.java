@@ -88,6 +88,9 @@ public class Context {
         ResultSet resultSet = statement.getResultSet();
         chronometer.step("get resultset");
         
+        
+        ResultSetMetaData metadata = resultSet.getMetaData();
+        
         List<Result> results = new ArrayList<>();
         
         
@@ -95,11 +98,8 @@ public class Context {
         	chronometer.step("resultset next");
             
         	Map<String, String> map = new HashMap<>();
-
-            ResultSetMetaData metadata = resultSet.getMetaData();
-            chronometer.step("get metadata");
             
-        	for(int i = 1; i <= metadata.getColumnCount(); i++) {
+        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
         	chronometer.step("insert in map");
@@ -133,6 +133,52 @@ public class Context {
 		List<U> output = new ArrayList<>();
 		for(Result result : results) {
 			output.add(mapper.map(result.getColumns()));
+		}
+		System.out.println(mapper.getStats());
+		return output;
+	}
+	
+	@SneakyThrows
+	public <U> List<U> listAsNew(Query joinQuery, Class<U> clazz) {
+		
+		Chronometer chronometer = new Chronometer("list");
+		chronometer.timeThreshold(100);
+		
+		Statement statement = Statement.toStatement(connection, joinQuery);
+		chronometer.step("statement creation");
+		
+        statement.execute();
+        chronometer.step("execute");
+        
+        ResultSet resultSet = statement.getResultSet();
+        chronometer.step("get resultset");
+        
+        Mapper<U> mapper = new Mapper<>(clazz);
+        
+        ResultSetMetaData metadata = resultSet.getMetaData();
+        mapper.attachMetadata(metadata);
+        
+        List<Object[]> rows = new ArrayList<>();
+        
+        while(resultSet.next()) {
+        	chronometer.step("resultset next");
+            
+        	Object[] values = new Object[metadata.getColumnCount()-1];
+            
+        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
+        		values[i-1] = resultSet.getString(i);
+        		
+        	}
+            
+        	chronometer.step("create result");
+        	rows.add(values);
+      
+            
+        }
+        
+		List<U> output = new ArrayList<>();
+		for(Object[] result : rows) {
+			output.add(mapper.map(result));
 		}
 		System.out.println(mapper.getStats());
 		return output;
