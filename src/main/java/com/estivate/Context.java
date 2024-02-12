@@ -158,27 +158,25 @@ public class Context {
         ResultSetMetaData metadata = resultSet.getMetaData();
         mapper.attachMetadata(metadata);
         
-        List<Object[]> rows = new ArrayList<>();
+        List<String[]> rows = new ArrayList<>();
         
         while(resultSet.next()) {
         	chronometer.step("resultset next");
             
-        	Object[] values = new Object[metadata.getColumnCount()-1];
+        	String[] values = new String[metadata.getColumnCount()];
             
-        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
-        		values[i-1] = resultSet.getString(i);
-        		
+        	for(int i = 0; i < metadata.getColumnCount(); i++) { 
+        		values[i] = resultSet.getString(i+1);
         	}
             
         	chronometer.step("create result");
         	rows.add(values);
-      
-            
+        	
         }
         
 		List<U> output = new ArrayList<>();
-		for(Object[] result : rows) {
-			output.add(mapper.map(result));
+		for(String[] row : rows) {
+			output.add(mapper.map(row));
 		}
 		System.out.println(mapper.getStats());
 		return output;

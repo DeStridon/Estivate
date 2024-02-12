@@ -14,6 +14,7 @@ import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
 import com.estivate.entity.CachedEntity;
+import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 
 public class FieldUtils {
@@ -110,7 +111,7 @@ public class FieldUtils {
 		int hash = Objects.hash(entity, field);
 		String fieldName = fieldNames.get(hash);
 		if(fieldName == null) {
-			fieldName = entity.getName()+"."+field.getName();
+			fieldName = entity.getName() + "." + Query.nameMapper.mapAttribute(field.getName());
 			fieldNames.put(hash, fieldName);
 		}
 		return fieldName;

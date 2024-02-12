@@ -8,7 +8,9 @@ import java.lang.reflect.Type;
 import java.sql.ResultSetMetaData;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,11 +40,14 @@ public class Mapper<U> {
 	
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
+	List<Field> columnFields = new ArrayList<>();
+	
 	@SneakyThrows
 	public Mapper(Class<U> targetClass) {
 		chronometer = new Chronometer("Mapper "+targetClass.getSimpleName()).timeThreshold(null);
 		
 		this.targetClass = targetClass;
+		
 
 		constructor = targetClass.getConstructor();
 		
@@ -73,6 +78,43 @@ public class Mapper<U> {
 		
 		return obj;
 		
+	}
+	
+	@SneakyThrows
+	public void attachMetadata(ResultSetMetaData metadata) {
+		Entity entity = new Entity(targetClass);
+		columnFields = new ArrayList<>();
+		for(int i = 0; i < metadata.getColumnCount(); i++) {
+			
+			String columnLabel = metadata.getColumnLabel(i+1);
+			Field field = fields.stream().filter(x -> columnLabel.equals(FieldUtils.getFieldName(entity, x))).findFirst().orElse(null);
+			if(field != null) {
+				while(columnFields.size() <= i) {
+					columnFields.add(null);
+				}
+				columnFields.set(i, field);
+			}
+			
+			
+		}
+	}
+	
+	@SneakyThrows
+	public U map(String[] row) {
+		U obj = constructor.newInstance();
+		Entity entity = new Entity(targetClass);
+		chronometer.step("constructor & entity");
+		
+		for(int i = 0; i < row.length; i++) {
+			if(i >= columnFields.size()) {
+				continue;
+			}
+			Field field = columnFields.get(i);
+			if(field != null) {
+				setGeneratedField(entity, row[i], field, obj);
+			}
+		}
+		return obj;
 	}
 	
 	
@@ -165,13 +207,8 @@ public class Mapper<U> {
 	}
 
 
-	public void attachMetadata(ResultSetMetaData metadata) {
-		
-	}
 
-	//
-	public U map(Object[] result) {
-		return null;
-	}
+
+
 
 }

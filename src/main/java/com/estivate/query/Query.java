@@ -298,7 +298,6 @@ public class Query extends Aggregator{
 	}
 	
 	public Query selectCount(Class c, String attribute) {
-//		selects.add("COUNT(distinct "+nameMapper.mapEntityAttribute(c, attribute)+")");
 		selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).build());
 		return this;
 	}
