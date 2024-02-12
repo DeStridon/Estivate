@@ -154,9 +154,11 @@ public class Context {
         chronometer.step("get resultset");
         
         Mapper<U> mapper = new Mapper<>(clazz);
+        chronometer.step("create mapper");
         
         ResultSetMetaData metadata = resultSet.getMetaData();
         mapper.attachMetadata(metadata);
+        chronometer.step("get and attach metadata");
         
         List<String[]> rows = new ArrayList<>();
         
@@ -168,16 +170,16 @@ public class Context {
         	for(int i = 0; i < metadata.getColumnCount(); i++) { 
         		values[i] = resultSet.getString(i+1);
         	}
-            
-        	chronometer.step("create result");
         	rows.add(values);
-        	
+            
+        	chronometer.step("create row");
         }
         
 		List<U> output = new ArrayList<>();
 		for(String[] row : rows) {
 			output.add(mapper.map(row));
 		}
+		chronometer.end("map rows");
 		System.out.println(mapper.getStats());
 		return output;
 	}
