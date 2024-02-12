@@ -36,6 +36,8 @@ public class Mapper<U> {
 	
 	final Chronometer chronometer;
 	
+	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	@SneakyThrows
 	public Mapper(Class<U> targetClass) {
 		chronometer = new Chronometer("Mapper "+targetClass.getSimpleName()).timeThreshold(null);
@@ -126,7 +128,7 @@ public class Mapper<U> {
 		}
 		else if(type == Date.class) {
 			// TODO : check date format is the right one
-			field.set(obj, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value));
+			field.set(obj, dateFormat.parse(value));
 		}
 		// @Convert (might be enum, this condition should be tested before classic enum)
 		else if(field.getDeclaredAnnotation(Convert.class) != null) {
