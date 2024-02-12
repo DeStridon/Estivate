@@ -58,7 +58,7 @@ public class Mapper<U> {
 		
 		for(Field field : fields) {
 			String value = arguments.get(FieldUtils.getFieldName(entity, field));
-			chronometer.step("get field value"+field.getName());
+			chronometer.step("get field value");
 			
 			setGeneratedField(entity, value, field, obj);
 			chronometer.step("set generated field "+field.getName());
