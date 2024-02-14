@@ -14,6 +14,6 @@ public class PropertyValue {
 	}
 	
 	public String toString() {
-		return entity.getName() + "." + Query.nameMapper.mapAttribute(attributeName);
+		return Query.nameMapper.mapEntity(entity, attributeName);
 	}
 }

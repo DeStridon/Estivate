@@ -51,6 +51,8 @@ public class SegmentEntity extends AbstractEntity {
 	@Enumerated
 	MicroState microStatus;
 	
+	int wordcount;
+	
 	Date archived;
 
 	public static enum MicroState{

@@ -25,22 +25,22 @@ public class Select implements Comparable {
 			if (entity == null) {
 				return "COUNT(*)";
 			}
-			return "COUNT(distinct "+entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+")";
+			return "COUNT(distinct "+Query.nameMapper.mapDatabase(entity, attribute)+")";
 		}
 		else if(method == SelectMethod.Max) {
-			return "MAX("+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+")";
+			return "MAX("+Query.nameMapper.mapDatabase(entity, attribute)+")";
 		}
 		else if(method == SelectMethod.Min) {
-			return "MIN("+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+")";
+			return "MIN("+Query.nameMapper.mapDatabase(entity, attribute)+")";
 		}
 		else if(method == SelectMethod.Sum) {
-			return "SUM("+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+")";
+			return "SUM("+Query.nameMapper.mapDatabase(entity, attribute)+")";
 		}
 		else if(method == SelectMethod.Distinct) {
-			return "DISTINCT "+entity.getName()+"."+Query.nameMapper.mapAttribute(attribute)+" as `"+entity.getName()+"."+attribute+"`";
+			return "DISTINCT "+Query.nameMapper.mapDatabase(entity, attribute)+" as `"+Query.nameMapper.mapEntity(entity, attribute)+"`";
 		}
 		
-		return entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+" as `"+entity.getName()+"."+attribute+"`";
+		return Query.nameMapper.mapDatabase(entity, attribute)+" as `"+Query.nameMapper.mapEntity(entity, attribute)+"`";
 		
 	}
 	

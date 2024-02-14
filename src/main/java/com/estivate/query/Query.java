@@ -245,11 +245,11 @@ public class Query extends Aggregator{
 
 	public Query join(Join classJoin) { joins.add(classJoin); return this; }
 	
-	public Query orderAsc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapAttribute(attribute) + " ASC"); return this; }
+	public Query orderAsc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapEntityField(attribute) + " ASC"); return this; }
 	public Query orderAsc(Class c, String attribute) { return orderAsc(new Entity(c), attribute); }
 	
 	
-	public Query orderDesc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapAttribute(attribute) + " DESC"); return this; }
+	public Query orderDesc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapEntityField(attribute) + " DESC"); return this; }
 	public Query orderDesc(Class c, String attribute) { return orderDesc(new Entity(c), attribute); }
 	
 	public Query limit(Integer limit) {
@@ -385,7 +385,7 @@ public class Query extends Aggregator{
 			if(alias != null) {
 				return alias;
 			}
-			return Query.nameMapper.mapEntity(entity);
+			return Query.nameMapper.mapEntityClass(entity);
 		}
 	}
 

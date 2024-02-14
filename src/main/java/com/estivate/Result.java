@@ -61,15 +61,15 @@ public class Result {
 	}
 	
 	public String mapAsString(Class c, String attribute) {
-		return columns.get(Query.nameMapper.mapEntityAttribute(c, attribute));
+		return columns.get(Query.nameMapper.mapEntity(c, attribute));
 	}
 	
 	public Integer mapAsInteger(Class c, String attribute) {
-		return Integer.valueOf(columns.get(Query.nameMapper.mapEntityAttribute(c, attribute)));		
+		return Integer.valueOf(columns.get(Query.nameMapper.mapEntity(c, attribute)));		
 	}
 	
 	public Long mapAsLong(Class c, String attribute) {
-		return Long.valueOf(columns.get(Query.nameMapper.mapEntityAttribute(c, attribute)));		
+		return Long.valueOf(columns.get(Query.nameMapper.mapEntity(c, attribute)));		
 	}
 	
 	
@@ -81,8 +81,8 @@ public class Result {
 	}
 	
 	public Long mapCount(Class<? extends Object> c, String attribute) {
-		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapEntityAttribute(c, attribute)+")")) {
-			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapEntityAttribute(c, attribute)+")"));
+		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapEntity(c, attribute)+")")) {
+			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapEntity(c, attribute)+")"));
 		}
 		return null;
 	}

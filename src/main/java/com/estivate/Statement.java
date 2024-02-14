@@ -157,7 +157,7 @@ public class Statement {
 //		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toSet()))+"\n");
-		statement.appendQuery("FROM "+Query.nameMapper.mapEntity(joinQuery.getBaseClass())+"\n");
+		statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getBaseClass())+"\n");
 		
 		if(joinQuery.getIndexHint() != null && joinQuery.getIndexNames() != null && !joinQuery.getIndexNames().isEmpty()) {
 			statement.appendQuery(joinQuery.getIndexHint()+ " INDEX ("+joinQuery.getIndexNames().stream().collect(Collectors.joining(", "))+")");
@@ -208,28 +208,27 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.Operator) {
 			Criterion.Operator operator = (Criterion.Operator) node;
-			statement.appendQuery(operator.entity.getName()+"."+Query.nameMapper.mapAttribute(operator.attribute));
+			statement.appendQuery(Query.nameMapper.mapEntity(operator.entity, operator.attribute));
 			statement.appendQuery(operator.type.symbol);
 			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
-			statement.appendQuery(in.entity.getName()+"."+Query.nameMapper.mapAttribute(in.attribute));
+			statement.appendQuery(Query.nameMapper.mapEntity(in.entity, in.attribute));
 			statement.appendQuery(" in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
-			statement.appendQuery(in.entity.getName()+"."+Query.nameMapper.mapAttribute(in.attribute));
+			statement.appendQuery(Query.nameMapper.mapEntity(in.entity, in.attribute));
 			statement.appendQuery(" not in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
-			statement.appendQuery(between.entity.getName()+"."+Query.nameMapper.mapAttribute(between.attribute));
-			statement.appendQuery(between.entity.getName()+"."+ Query.nameMapper.mapAttribute(between.attribute));
+			statement.appendQuery(Query.nameMapper.mapEntity(between.entity, between.attribute));
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
 			statement.appendQuery(" and ");
 			statement.appendParameter(between.entity.entity, between.attribute, between.max);
@@ -237,7 +236,7 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
-			statement.appendQuery(nullcheck.entity.getName() + "." + Query.nameMapper.mapAttribute(nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+			statement.appendQuery(Query.nameMapper.mapEntity(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());

@@ -220,7 +220,7 @@ public class Context {
 
 		Statement statement = new Statement(connection)
 				.appendQuery("INSERT INTO ")
-				.appendQuery(Query.nameMapper.mapEntity(object.getClass()));
+				.appendQuery(Query.nameMapper.mapEntityClass(object.getClass()));
 
 		
 		for(Field field : FieldUtils.getEntityFields(object.getClass())) {
@@ -239,7 +239,7 @@ public class Context {
 					continue;
 				}
 				
-				fieldValueList.add(Query.nameMapper.mapAttribute(field.getName()));
+				fieldValueList.add(Query.nameMapper.mapEntityField(field.getName()));
 				statement.appendValue(object.getClass(), field.getName(), field.get(object));
 				
 			}
@@ -286,7 +286,7 @@ public class Context {
 			StringPipe fieldCreation = new StringPipe();
 			fieldCreation.separator(" ");
 			
-			fieldCreation.append(Query.nameMapper.mapAttribute(field.getName()));
+			fieldCreation.append(Query.nameMapper.mapDatabaseField(field.getName()));
 			
 			Class returnClass = field.getType();
 			
@@ -345,7 +345,7 @@ public class Context {
 		}
 		
 		
-		String result = "CREATE TABLE "+Query.nameMapper.mapEntity(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
+		String result = "CREATE TABLE "+Query.nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
 		
 		PreparedStatement statement = connection.prepareStatement(result);
 		
@@ -418,20 +418,20 @@ public class Context {
 		// 1. Create query
 		Statement statement = new Statement(connection)
 				.appendQuery("UPDATE ")
-				.appendQuery(Query.nameMapper.mapEntity(entity.getClass()))
+				.appendQuery(Query.nameMapper.mapDatabaseClass(entity.getClass()))
 				.appendQuery(" SET ");
 				
 				//String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
 
 		// 2. List updated fields
-		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapAttribute(x.getName()) + " = ?").collect(Collectors.joining(", ")));
+		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
 		
 		for(Field field : updatedFields) {
 			statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
 		}
 		
 		
-		statement.appendQuery(" WHERE "+Query.nameMapper.mapAttribute(idField.getName())+" = ?");
+		statement.appendQuery(" WHERE "+Query.nameMapper.mapDatabaseField(idField.getName())+" = ?");
 		statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 		
 		
