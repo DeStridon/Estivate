@@ -245,11 +245,11 @@ public class Query extends Aggregator{
 
 	public Query join(Join classJoin) { joins.add(classJoin); return this; }
 	
-	public Query orderAsc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapEntityField(attribute) + " ASC"); return this; }
+	public Query orderAsc(Entity c, String attribute) { orders.add(nameMapper.mapDatabase(c, attribute) + " ASC"); return this; }
 	public Query orderAsc(Class c, String attribute) { return orderAsc(new Entity(c), attribute); }
 	
 	
-	public Query orderDesc(Entity c, String attribute) { orders.add(c.getName()+"."+ nameMapper.mapEntityField(attribute) + " DESC"); return this; }
+	public Query orderDesc(Entity c, String attribute) { orders.add(nameMapper.mapDatabase(c, attribute) + " DESC"); return this; }
 	public Query orderDesc(Class c, String attribute) { return orderDesc(new Entity(c), attribute); }
 	
 	public Query limit(Integer limit) {
@@ -351,14 +351,14 @@ public class Query extends Aggregator{
 		return joinQuery;
 	}
 
-	public Query groupBy(Class c, String attribute) {
+	public Query groupBy(Class c, String field) {
 		
 		// Create entity object
 		Entity entity = new Entity(c);
 		
 		// Add to select
-		select(entity, attribute);
-		groupBys.add("`"+entity.getName()+"."+attribute+"`");
+		select(entity, field);
+		groupBys.add(nameMapper.mapDatabase(c, field));
 		
 		return this;
 	}

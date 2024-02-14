@@ -208,27 +208,27 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.Operator) {
 			Criterion.Operator operator = (Criterion.Operator) node;
-			statement.appendQuery(Query.nameMapper.mapEntity(operator.entity, operator.attribute));
+			statement.appendQuery(Query.nameMapper.mapDatabase(operator.entity, operator.attribute));
 			statement.appendQuery(operator.type.symbol);
 			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
-			statement.appendQuery(Query.nameMapper.mapEntity(in.entity, in.attribute));
+			statement.appendQuery(Query.nameMapper.mapDatabase(in.entity, in.attribute));
 			statement.appendQuery(" in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
-			statement.appendQuery(Query.nameMapper.mapEntity(in.entity, in.attribute));
+			statement.appendQuery(Query.nameMapper.mapDatabase(in.entity, in.attribute));
 			statement.appendQuery(" not in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
-			statement.appendQuery(Query.nameMapper.mapEntity(between.entity, between.attribute));
+			statement.appendQuery(Query.nameMapper.mapDatabase(between.entity, between.attribute));
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
 			statement.appendQuery(" and ");
 			statement.appendParameter(between.entity.entity, between.attribute, between.max);
@@ -236,7 +236,7 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
-			statement.appendQuery(Query.nameMapper.mapEntity(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+			statement.appendQuery(Query.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());
