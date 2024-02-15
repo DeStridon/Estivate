@@ -158,6 +158,7 @@ public class Context {
         
         Mapper<U> mapper = new Mapper<>(clazz);
         chronometer.step("create mapper");
+        mapper.chronometer.active(tracePerformances);
         
         ResultSetMetaData metadata = resultSet.getMetaData();
         mapper.attachMetadata(metadata);
@@ -179,8 +180,13 @@ public class Context {
         }
         
 		List<U> output = new ArrayList<>();
-		for(String[] row : rows) {
-			output.add(mapper.map(row));
+		if(tracePerformances) {
+			for(String[] row : rows) {
+				output.add(mapper.map(row));
+			}
+		}
+		else {
+			output = rows.stream().parallel().map(x -> mapper.map(x)).collect(Collectors.toList());
 		}
 		chronometer.end("map rows");
 		
