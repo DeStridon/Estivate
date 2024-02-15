@@ -110,8 +110,10 @@ public class Mapper<U> {
 				continue;
 			}
 			Field field = columnFields.get(i);
+			chronometer.step("get field");
 			if(field != null) {
 				setGeneratedField(entity, row[i], field, obj);
+				chronometer.step("generate field "+field.getName());
 			}
 		}
 		return obj;

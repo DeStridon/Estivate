@@ -42,6 +42,8 @@ public class Context {
 	
 	final public Connection connection;
 	
+	public boolean tracePerformances = false;
+	
 	public Context(Connection connection) {
 		this.connection = connection;
 	}
@@ -143,6 +145,7 @@ public class Context {
 		
 		Chronometer chronometer = new Chronometer("list");
 		chronometer.timeThreshold(100);
+		chronometer.active(tracePerformances);
 		
 		Statement statement = Statement.toStatement(connection, joinQuery);
 		chronometer.step("statement creation");
@@ -180,7 +183,11 @@ public class Context {
 			output.add(mapper.map(row));
 		}
 		chronometer.end("map rows");
-		System.out.println(mapper.getStats());
+		
+		if(tracePerformances) {
+			System.out.println(mapper.getStats());
+		}
+
 		return output;
 	}
 	
