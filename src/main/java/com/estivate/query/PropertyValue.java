@@ -12,8 +12,5 @@ public class PropertyValue {
 	public PropertyValue(Class entityClass, String attributeName) {
 		this(new Entity(entityClass), attributeName);
 	}
-	
-	public String toString() {
-		return Query.nameMapper.mapEntity(entity, attributeName);
-	}
+
 }

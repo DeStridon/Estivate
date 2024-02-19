@@ -381,12 +381,12 @@ public class Query extends Aggregator{
 			this(entity, null);
 		}
 		
-		public String getName() {
-			if(alias != null) {
-				return alias;
-			}
-			return Query.nameMapper.mapEntityClass(entity);
-		}
+//		public String getName() {
+//			if(alias != null) {
+//				return alias;
+//			}
+//			return Query.nameMapper.mapEntityClass(entity);
+//		}
 	}
 
 

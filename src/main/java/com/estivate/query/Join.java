@@ -36,13 +36,15 @@ public class Join {
 		StringPipe sb = new StringPipe().separator(" ")
 				.append  (joinType.toString())
 				.append  ("JOIN")
-				.append  (Query.nameMapper.mapEntityClass(joinedEntity.entity))
+				//.append  (Query.nameMapper.mapEntityClass(joinedEntity.entity))
+				.append  (Query.nameMapper.mapDatabaseClass(joinedEntity.entity))
 				.appendIf(joinedEntity.alias != null, joinedEntity.alias);
 		if(indexHint != null && indexNames != null && !indexNames.isEmpty()) {
 			sb	.append  (indexHint.toString()+ " INDEX ("+indexNames.stream().collect(Collectors.joining(", "))+")");
 		}
 		sb		.append  ("ON")
-				.append  (joins.stream().map(x -> Query.nameMapper.mapEntity(joinerEntity, x.getLeft()) + " = " + Query.nameMapper.mapEntity(joinedEntity, x.getRight())).collect(Collectors.joining(" and ")));
+				//.append  (joins.stream().map(x -> Query.nameMapper.mapEntity(joinerEntity, x.getLeft()) + " = " + Query.nameMapper.mapEntity(joinedEntity, x.getRight())).collect(Collectors.joining(" and ")));
+				.append  (joins.stream().map(x -> Query.nameMapper.mapDatabase(joinerEntity, x.getLeft()) + " = " + Query.nameMapper.mapDatabase(joinedEntity, x.getRight())).collect(Collectors.joining(" and ")));
 		return sb.toString();
 		
 	}

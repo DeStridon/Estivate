@@ -8,8 +8,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
+import com.estivate.NameMapper.TestNameMapper;
 import com.estivate.Result;
+import com.estivate.query.Join;
 import com.estivate.query.Query;
+import com.estivate.query.Query.Entity;
+import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
@@ -55,6 +59,25 @@ public class JoinTest {
 		
 		assertTrue(queryString.indexOf("JOIN") > 0);
 	
+	}
+	
+	@Test
+	public void nameMappingTest() {
+		
+		Query.nameMapper = new TestNameMapper();
+		
+		Entity sourceSegment = new Entity(SegmentEntity.class, "sourceSegment");
+		Entity targetSegment = new Entity(SegmentEntity.class, "targetSegment");
+		
+		
+		Query query = new Query(TaskEntity.class)
+			.join(new Join(TaskEntity.class, sourceSegment, AbstractEntity.Fields.id, SegmentEntity.Fields.taskId))
+			.join(new Join(sourceSegment, targetSegment, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.targetContent))
+			.eq(sourceSegment, SegmentEntity.Fields.sourceLanguage, "en-FR")
+			.eq(TaskEntity.class, AbstractEntity.Fields.id, 35);
+		
+		System.out.println(context.queryAsString(query));
+		
 	}
 
 }

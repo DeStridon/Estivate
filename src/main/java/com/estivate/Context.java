@@ -434,8 +434,6 @@ public class Context {
 				.appendQuery(Query.nameMapper.mapDatabaseClass(entity.getClass()))
 				.appendQuery(" SET ");
 				
-				//String query = "UPDATE "+EstivateQuery.nameMapper.mapEntity(entity.getClass())+" SET ";
-
 		// 2. List updated fields
 		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
 		
