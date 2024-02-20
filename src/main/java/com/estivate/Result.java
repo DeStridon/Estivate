@@ -81,8 +81,8 @@ public class Result {
 	}
 	
 	public Long mapCount(Class<? extends Object> c, String attribute) {
-		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapEntity(c, attribute)+")")) {
-			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapEntity(c, attribute)+")"));
+		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapDatabase(c, attribute)+")")) {
+			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapDatabase(c, attribute)+")"));
 		}
 		return null;
 	}
