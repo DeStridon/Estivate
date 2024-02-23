@@ -116,6 +116,10 @@ public class Mapper<U> {
 				chronometer.step("generate field "+field.getName());
 			}
 		}
+		for(Method method : postLoadMethods) {
+			method.invoke(obj);
+			chronometer.step("invoke method "+method.getName());
+		}
 		return obj;
 	}
 	
