@@ -12,7 +12,7 @@ public abstract class NameMapper {
 	public String mapEntity(Class c, String field) { return mapEntityClass(c)+"."+mapEntityField(field); }
 	public String mapEntity(Entity e, String field) { return  (e.alias != null ? e.alias : mapEntityClass(e.entity)) + "." + mapEntityField(field); }
 	public String mapDatabase(Class c, String field) { return mapDatabaseClass(c)+"."+mapDatabaseField(field); }
-	public String mapDatabase(Entity c, String field) { return mapDatabaseClass(c.entity)+"."+mapDatabaseField(field); }
+	public String mapDatabase(Entity e, String field) { return (e.alias != null ? e.alias : mapDatabaseClass(e.entity) )+"."+mapDatabaseField(field); }
 	
 
 	

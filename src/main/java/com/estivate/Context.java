@@ -127,18 +127,18 @@ public class Context {
 		return output;
 	}
 	
-	public <U> List<U> listAs2(Query joinQuery, Class<U> clazz) {
-		
-		List<Result> results = list(joinQuery);
-		Mapper<U> mapper = new Mapper<>(clazz);
-		
-		List<U> output = new ArrayList<>();
-		for(Result result : results) {
-			output.add(mapper.map(result.getColumns()));
-		}
-		System.out.println(mapper.getStats());
-		return output;
-	}
+//	public <U> List<U> listAs2(Query joinQuery, Class<U> clazz) {
+//		
+//		List<Result> results = list(joinQuery);
+//		Mapper<U> mapper = new Mapper<>(clazz);
+//		
+//		List<U> output = new ArrayList<>();
+//		for(Result result : results) {
+//			output.add(mapper.map(result.getColumns()));
+//		}
+//		System.out.println(mapper.getStats());
+//		return output;
+//	}
 	
 	@SneakyThrows
 	public <U> List<U> listAsNew(Query joinQuery, Class<U> clazz) {

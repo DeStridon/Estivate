@@ -24,7 +24,6 @@ import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.util.FieldUtils;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -62,7 +61,7 @@ public class Statement {
 	public Statement appendParameter(Class entity, String attribute, Object parameter) {
 		if(parameter instanceof PropertyValue) {
 			PropertyValue field = (PropertyValue) parameter;
-			appendQuery(field.toString());
+			appendQuery(Query.nameMapper.mapDatabase(field.entity, field.attributeName));
 		}
 		else {
 			appendQuery("?");

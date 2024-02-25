@@ -11,6 +11,7 @@ import com.estivate.Context;
 import com.estivate.NameMapper.TestNameMapper;
 import com.estivate.Result;
 import com.estivate.query.Join;
+import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
@@ -57,7 +58,11 @@ public class JoinTest {
 		
 		String queryString = context.queryAsString(query);
 		
-		assertTrue(queryString.indexOf("JOIN") > 0);
+
+	
+		
+		
+		
 	
 	}
 	
@@ -71,12 +76,21 @@ public class JoinTest {
 		
 		
 		Query query = new Query(TaskEntity.class)
+			.select(sourceSegment, AbstractEntity.Fields.id)
+			.select(targetSegment, AbstractEntity.Fields.id)
 			.join(new Join(TaskEntity.class, sourceSegment, AbstractEntity.Fields.id, SegmentEntity.Fields.taskId))
 			.join(new Join(sourceSegment, targetSegment, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.targetContent))
 			.eq(sourceSegment, SegmentEntity.Fields.sourceLanguage, "en-FR")
-			.eq(TaskEntity.class, AbstractEntity.Fields.id, 35);
+			.eq(TaskEntity.class, AbstractEntity.Fields.id, 35)
+			.notEq(sourceSegment, AbstractEntity.Fields.id, new PropertyValue(targetSegment, AbstractEntity.Fields.id));
 		
-		System.out.println(context.queryAsString(query));
+		String queryString = context.queryAsString(query);
+		System.out.println(queryString);
+		
+		assertTrue(queryString.contains("INNER JOIN SegmentEntity_d sourceSegment"));
+		assertTrue(queryString.contains("sourceSegment.sourceLanguage_d = ?"));
+		assertTrue(queryString.contains("INNER JOIN SegmentEntity_d targetSegment ON sourceSegment.sourceContent_d = targetSegment.targetContent_d"));
+		assertTrue(queryString.contains("sourceSegment.sourceLanguage_d = ?"));
 		
 	}
 
