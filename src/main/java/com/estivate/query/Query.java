@@ -352,13 +352,14 @@ public class Query extends Aggregator{
 	}
 
 	public Query groupBy(Class c, String field) {
-		
-		// Create entity object
-		Entity entity = new Entity(c);
+		return groupBy(new Entity(c), field);
+	}
+	
+	public Query groupBy(Entity entity, String field) {
 		
 		// Add to select
 		select(entity, field);
-		groupBys.add(nameMapper.mapDatabase(c, field));
+		groupBys.add(nameMapper.mapDatabase(entity, field));
 		
 		return this;
 	}
