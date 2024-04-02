@@ -116,32 +116,10 @@ public class Context {
         return results;
 		
 	}
-	
-	
-	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
-		List<Result> results = list(joinQuery);
-		List<U> output = new ArrayList<>();
-		for(Result result : results) {
-			output.add(result.mapAs(clazz));
-		}
-		return output;
-	}
-	
-//	public <U> List<U> listAs2(Query joinQuery, Class<U> clazz) {
-//		
-//		List<Result> results = list(joinQuery);
-//		Mapper<U> mapper = new Mapper<>(clazz);
-//		
-//		List<U> output = new ArrayList<>();
-//		for(Result result : results) {
-//			output.add(mapper.map(result.getColumns()));
-//		}
-//		System.out.println(mapper.getStats());
-//		return output;
-//	}
+
 	
 	@SneakyThrows
-	public <U> List<U> listAsNew(Query joinQuery, Class<U> clazz) {
+	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
 		
 		Chronometer chronometer = new Chronometer("list");
 		chronometer.timeThreshold(100);

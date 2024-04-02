@@ -39,6 +39,9 @@ public class Select implements Comparable {
 		else if(method == SelectMethod.Distinct) {
 			return "DISTINCT "+Query.nameMapper.mapDatabase(entity, attribute)+" as `"+Query.nameMapper.mapEntity(entity, attribute)+"`";
 		}
+		else if(method == SelectMethod.GroupConcat) {
+			return "GROUP_CONCAT("+Query.nameMapper.mapDatabase(entity, attribute)+")";
+		}
 		
 		return Query.nameMapper.mapDatabase(entity, attribute)+" as `"+Query.nameMapper.mapEntity(entity, attribute)+"`";
 		
@@ -50,7 +53,8 @@ public class Select implements Comparable {
 		Max,
 		Min,
 		Sum,
-		Distinct
+		Distinct,
+		GroupConcat
 	}
 
 

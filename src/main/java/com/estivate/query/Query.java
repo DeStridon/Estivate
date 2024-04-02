@@ -329,6 +329,10 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
+	public Query selectGroupConcat(Class c, String attribute) {
+		selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity(c)).attribute(attribute).build());
+		return this;
+	}
 	
 	
 	public Query clone() {

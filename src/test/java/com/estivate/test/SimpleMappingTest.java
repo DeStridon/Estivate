@@ -29,7 +29,7 @@ public class SimpleMappingTest {
 		Query query = new Query(SegmentEntity.class)
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 2);
 		
-		List<SegmentEntity> results = context.listAsNew(query, SegmentEntity.class);
+		List<SegmentEntity> results = context.listAs(query, SegmentEntity.class);
 		
 		assertEquals(2, results.size());
 		
