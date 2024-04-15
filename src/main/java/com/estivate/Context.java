@@ -317,7 +317,7 @@ public class Context {
 				fieldCreation.append("DATETIME");
 			}
 			else {
-				throw new RuntimeException("Cannot map type "+field.getType());
+				throw new RuntimeException("Cannot map field "+entityClass.getSimpleName()+"."+field.getName()+" type="+field.getType());
 			}
 			
 			if(field.isAnnotationPresent(Id.class)) {

@@ -125,10 +125,10 @@ public abstract class Criterion implements EstivateNode{
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Between extends Criterion{
 
-		public Long min;
-		public Long max;
+		public Object min;
+		public Object max;
 		
-		public Between(Entity entity, String attribute, long min, long max) {
+		public Between(Entity entity, String attribute, Object min, Object max) {
 			this.entity = entity;
 			this.attribute = attribute;
 			this.min = min;

@@ -53,7 +53,7 @@ public class Result {
 	protected <U> U mapAs(Class<U> clazz, Chronometer chronometer) throws SecurityException, IllegalArgumentException {
 		
 		if(!cache.containsKey(clazz.getSimpleName())) {
-			cache.put(clazz.getSimpleName(), generateObject(clazz, columns, chronometer));
+			cache.put(clazz.getSimpleName(), generateObject(clazz, columns));
 		}
 		
 		return (U) cache.get(clazz.getSimpleName());
@@ -116,33 +116,7 @@ public class Result {
 	
 	}
 	
-	@SneakyThrows
-	protected static <U> U generateObject(Class<U> clazz, Map<String, String> arguments, Chronometer chronometer) {
 
-		Constructor<U> constructor = clazz.getConstructor();
-		U obj = constructor.newInstance();
-		
-		Class<?> currentClazz = clazz;
-		Entity entity = new Entity(clazz);
-		
-		
-		while(currentClazz != Object.class) {
-
-			Set<Field> fields = FieldUtils.getEntityFields(currentClazz);
-			for(Field field : fields) {
-				setGeneratedField(entity, arguments, field, obj);
-			}
-			currentClazz = currentClazz.getSuperclass();
-		}
-		
-		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
-		for(Method method : methods) {
-			method.invoke(obj);
-		}
-		
-		return obj;
-	
-	}
 	
 
 	public static <U> void setGeneratedField(Entity entity, Map<String, String> arguments, Field field, U obj) throws IllegalAccessException, AttributeInUseException, NoSuchMethodException, ParseException, InvocationTargetException, InstantiationException {

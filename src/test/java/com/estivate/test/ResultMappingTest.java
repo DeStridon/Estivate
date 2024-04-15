@@ -12,7 +12,7 @@ import com.estivate.Result;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.util.Chronometer;
 
-public class PerformanceUpdate {
+public class ResultMappingTest {
 	
 	@Test
 	public void testPerf() {

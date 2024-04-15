@@ -44,6 +44,10 @@ public class FieldUtils {
 			
 			for(Field field : objectClass.getDeclaredFields()) {
 				
+				// avoid synthetic fields
+				if(field.isSynthetic()) {
+					continue;
+				}
 				if(field.isAnnotationPresent(Transient.class)) {
 					continue;
 				}

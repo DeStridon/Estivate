@@ -32,6 +32,8 @@ public class Query extends Aggregator{
 	public Query gt   	(Class entity, String attribute, Object value)        { super.gt    (entity, attribute, value);  return this; }
 	public Query lte  	(Class entity, String attribute, Object value)        { super.lte   (entity, attribute, value);  return this; }
 	public Query gte  	(Class entity, String attribute, Object value)        { super.gte   (entity, attribute, value);  return this; }
+	public Query between(Class entity, String attribute, Object left, Object right) {super.between(entity, attribute, left, right); return this; }
+	
 	public Query in   	(Class entity, String attribute, Object... values)    { super.in    (entity, attribute, values); return this; }
 	public Query in   	(Class entity, String attribute, Collection<Object> values) { super.in    (entity, attribute, values); return this; }
 	public Query notIn  (Class entity, String attribute, Object... values)    { super.notIn    (entity, attribute, values); return this; }
@@ -45,6 +47,7 @@ public class Query extends Aggregator{
 	public Query gtIfNotNull   		(Class entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
 	public Query lteIfNotNull  		(Class entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }
 	public Query gteIfNotNull  		(Class entity, String attribute, Object value)        { super.gteIfNotNull  (entity, attribute, value);  return this; }
+	public Query betweenIfNotNull	(Class entity, String attribute, Object left, Object right) { super.betweenIfNotNull(entity, attribute, left, right); return this; }
 	public Query inIfNotNull   		(Class entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
 	public Query inIfNotNull   		(Class entity, String attribute, List<Object> values) { super.inIfNotNull   (entity, attribute, values); return this; }
 	public Query notInIfNotNull   	(Class entity, String attribute, Object... values)    { super.notInIfNotNull   (entity, attribute, values); return this; }
@@ -63,6 +66,7 @@ public class Query extends Aggregator{
 	public Query gt   	(Entity entity, String attribute, Object value)        { super.gt    (entity, attribute, value);  return this; }
 	public Query lte  	(Entity entity, String attribute, Object value)        { super.lte   (entity, attribute, value);  return this; }
 	public Query gte  	(Entity entity, String attribute, Object value)        { super.gte   (entity, attribute, value);  return this; }
+	public Query between(Entity entity, String attribute, Object left, Object right) { super.between(entity, attribute, left, right); return this; }
 	public Query in   	(Entity entity, String attribute, Object... values)    { super.in    (entity, attribute, values); return this; }
 	public Query in   	(Entity entity, String attribute, List<Object> values) { super.in    (entity, attribute, values); return this; }
 	public Query notIn  (Entity entity, String attribute, Object... values)    { super.notIn    (entity, attribute, values); return this; }
@@ -76,7 +80,8 @@ public class Query extends Aggregator{
 	public Query gtIfNotNull   		(Entity entity, String attribute, Object value)        { super.gtIfNotNull   (entity, attribute, value);  return this; }
 	public Query lteIfNotNull  		(Entity entity, String attribute, Object value)        { super.lteIfNotNull  (entity, attribute, value);  return this; }
 	public Query gteIfNotNull  		(Entity entity, String attribute, Object value)        { super.gteIfNotNull  (entity, attribute, value);  return this; }
-	public Query inIfNotNull   		(Entity entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
+	public Query betweenIfNotNull	(Entity entity, String attribute, Object left, Object right) { super.betweenIfNotNull (entity, attribute, left, right); return this; }
+ 	public Query inIfNotNull   		(Entity entity, String attribute, Object... values)    { super.inIfNotNull   (entity, attribute, values); return this; }
 	public Query inIfNotNull   		(Entity entity, String attribute, List<Object> values) { super.inIfNotNull   (entity, attribute, values); return this; }
 	public Query notInIfNotNull   	(Entity entity, String attribute, Object... values)    { super.notInIfNotNull   (entity, attribute, values); return this; }
 	public Query notInIfNotNull   	(Entity entity, String attribute, List<Object> values) { super.notInIfNotNull   (entity, attribute, values); return this; }
@@ -375,7 +380,7 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
-	@ToString
+
 	@EqualsAndHashCode
 	@AllArgsConstructor
 	public static class Entity{
@@ -384,6 +389,17 @@ public class Query extends Aggregator{
 		
 		public Entity(Class entity) {
 			this(entity, null);
+		}
+		
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Entity[");
+			if(alias != null) {
+				sb.append("alias = ").append(alias).append(", ");
+			}
+			sb.append("entity = ").append(entity.getSimpleName()).append("]");
+			
+			return sb.toString();
 		}
 		
 //		public String getName() {

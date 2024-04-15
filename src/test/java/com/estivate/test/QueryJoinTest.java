@@ -21,12 +21,31 @@ import com.estivate.test.entities.TaskEntity;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JoinTest {
+public class QueryJoinTest {
 
+	
 	Context context = DatabaseGenerator.getContext();
+	
 	
 	@Test
 	public void selectJoiningTest() {
+		
+		
+		
+		context.saveOrUpdate(SegmentEntity.builder().projectId(1).taskId(2).sourceContent("source content 1").wordcount(3).sourceFragmentId(5).build());
+		context.saveOrUpdate(SegmentEntity.builder().projectId(1).taskId(2).sourceContent("source content 2").wordcount(3).sourceFragmentId(6).build());
+		
+		Query query = new Query(SegmentEntity.class)
+				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 2);
+		
+		List<SegmentEntity> results = context.listAs(query, SegmentEntity.class);
+		
+		assertEquals(2, results.size());
+		
+	}
+	
+	@Test
+	public void selectJoiningTest2() {
 		
 		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("join test name 1").build());
 		

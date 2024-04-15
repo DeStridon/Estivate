@@ -118,6 +118,9 @@ public class Statement {
 					Date d = (Date) object;
 					statement.setDate(i+1, new java.sql.Date(d.getTime()));
 				}
+				else if(object == null) {
+					statement.setObject(i+1, null);
+				}
 				else {
 					log.error("Cannot map object of type "+object.getClass());
 				}
