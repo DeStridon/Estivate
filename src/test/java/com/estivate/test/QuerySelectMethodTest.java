@@ -30,7 +30,12 @@ public class QuerySelectMethodTest {
 	@Test
 	public void selectMaxTest() {
 		
-		
+		Query query = new Query(TaskEntity.class)
+				.selectMax(TaskEntity.class, AbstractEntity.Fields.id, "maxTaskId")
+				.selectCount(TaskEntity.class, AbstractEntity.Fields.id, "countTaskId")
+				.selectMin(TaskEntity.class, AbstractEntity.Fields.id, "minTaskId")
+				;
+				
 		
 		
 	}

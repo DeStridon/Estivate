@@ -103,6 +103,11 @@ public class Mapper<U> {
 	
 	public void setGeneratedField(Entity entity, String value, Field field, U obj) throws EstivateException {
 		try {
+			
+			if(value == null) {
+				return;
+			}
+			
 			Type type = field.getGenericType();
 			
 			if(type == String.class) {

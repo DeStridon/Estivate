@@ -103,10 +103,10 @@ public class Query extends Aggregator{
 	Set<Join> joins = new LinkedHashSet<>();
 	
 	@Getter
-	Set<Select> selects = new TreeSet<>();
+	Set<Select> selects = new LinkedHashSet<>();
 	
 	@Getter
-	Set<String> orders = new TreeSet<>();
+	Set<String> orders = new LinkedHashSet<>();
 	
 	@Getter
 	Set<String> groupBys = new LinkedHashSet<>();
@@ -297,15 +297,7 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
-	public Query selectCount() {
-		selects.add(Select.builder().method(SelectMethod.Count).build());
-		return this;
-	}
 	
-	public Query selectCount(Class c, String attribute) {
-		selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).build());
-		return this;
-	}
 	
 	public Query selectDistinct(Class c, String attribute) {
 		
@@ -319,25 +311,35 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
-	public Query selectMin(Class c, String attribute) {
-		selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).build());
-		return this;
-	}
 	
-	public Query selectMax(Class c, String attribute) {
-		selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).build());
-		return this;
-	}
-	
-	public Query selectSum(Class c, String attribute) {
-		selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).build());
-		return this;
-	}
-	
-	public Query selectGroupConcat(Class c, String attribute) {
-		selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity(c)).attribute(attribute).build());
-		return this;
-	}
+	// Select count
+	public Query selectCount() { selects.add(Select.builder().method(SelectMethod.Count).build()); return this; }
+	public Query selectCount(String alias) { selects.add(Select.builder().method(SelectMethod.Count).alias(alias).build()); return this; }
+	// Select count field
+	public Query selectCount(Class c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).build()); return this; }
+	public Query selectCount(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectCount(Entity c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.Count).entity(c).attribute(attribute).build()); return this; }
+	public Query selectCount(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Count).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	// Select min
+	public Query selectMin(Class c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).build()); return this; }
+	public Query selectMin(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectMin(Entity c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Min).entity(c).attribute(attribute).build()); return this; }
+	public Query selectMin(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Min).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	// Select max
+	public Query selectMax(Class c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).build()); return this; }
+	public Query selectMax(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectMax(Entity c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Max).entity(c).attribute(attribute).build()); return this; }
+	public Query selectMax(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Max).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	// Select Sum
+	public Query selectSum(Class c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).build()); return this; }
+	public Query selectSum(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectSum(Entity c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Sum).entity(c).attribute(attribute).build()); return this; }
+	public Query selectSum(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Sum).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	// Select Group Concat
+	public Query selectGroupConcat(Class c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity(c)).attribute(attribute).build()); return this; }
+	public Query selectGroupConcat(Class c, String attribute, String alias) { selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectGroupConcat(Entity c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).build()); return this; }
+	public Query selectGroupConcat(Entity c, String attribute, String alias){ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).alias(alias).build()); return this; }
 	
 	
 	public Query clone() {

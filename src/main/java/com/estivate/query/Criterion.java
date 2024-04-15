@@ -55,18 +55,7 @@ public abstract class Criterion implements EstivateNode{
 			this.value = value;
 		}
 
-//		@Override
-//		public String compile() {
-//			
-//			StringPipe sb = new StringPipe().separator(" ")
-//					.append(entity.getName() + "." + Query.nameMapper.mapAttribute(attribute))
-//					.append(type.symbol)
-//					.append(EstivateUtil.compileAttribute(entity.entity, attribute, value));
-//
-//			return sb.toString();
-//			
-//		}
-		
+
 		public Operator clone() {
 			Operator op = new Operator();
 			op.entity = entity;
@@ -134,11 +123,6 @@ public abstract class Criterion implements EstivateNode{
 			this.min = min;
 			this.max = max;
 		}
-		
-//		@Override
-//		public String compile() {
-//			return entity.getName()+"."+ Query.nameMapper.mapAttribute(attribute)+" between "+min+" and "+max;
-//		}
 		
 		public Between clone() {
 			Between b = new Between();

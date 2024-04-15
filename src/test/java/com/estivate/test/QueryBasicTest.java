@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -56,13 +57,14 @@ public class QueryBasicTest {
 		SegmentEntity segment32 = context.saveOrUpdate(SegmentEntity.builder().taskId(task3.getId()).sourceContent("source content 3.2").build());
 		
 		Query query = new Query(SegmentEntity.class)
-				.select(TaskEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
+				.select(TaskEntity.class)
+				
 				.eq(TaskEntity.class, TaskEntity.Fields.name, "task 2");
 		
 		List<Result> results = context.list(query);
 		
-		assertEquals(3, results.size());
+		assertEquals(1, results.size());
 		
 		for(Result result : results) {
 			SegmentEntity segment = result.mapAs(SegmentEntity.class);
@@ -87,30 +89,33 @@ public class QueryBasicTest {
 		
 		Query query = new Query(TaskEntity.class)
 				.eq(TaskEntity.class, TaskEntity.Fields.name, "queryTest test task")
+				.lt(TaskEntity.class, TaskEntity.Fields.projectId, 5)
+				.lte(TaskEntity.class, TaskEntity.Fields.projectId, 4)
+				.gt(TaskEntity.class, TaskEntity.Fields.projectId, 1)
+				.gte(TaskEntity.class,  TaskEntity.Fields.projectId, 4)
+				.between(TaskEntity.class, TaskEntity.Fields.projectId, 3, 7)
+				.notEq(TaskEntity.class, TaskEntity.Fields.externalName, "external Name 2")
+				.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
+				.notIn(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
+				
+				
 				.eqIfNotNull(TaskEntity.class, TaskEntity.Fields.created, null)
 				.ltIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 5)
 				.lteIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 4)
 				.gtIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 1)
 				.gteIfNotNull(TaskEntity.class,  TaskEntity.Fields.projectId, 4)
+				.betweenIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 3, 7)
 				.notEqIfNotNull(TaskEntity.class, TaskEntity.Fields.externalName, "external Name 2")
-				.inIfNotNull(TaskEntity.class, TaskEntity.Fields.sourceLanguage, List.of(Language.ar_KW, Language.ar_BH, Language.ar_QA))
-				.notInIfNotNull(TaskEntity.class, TaskEntity.Fields.targetLanguage, List.of(Language.ar_AE, Language.ar_BH, Language.ar_EG))
-			
-				
-				.lt(TaskEntity.class, TaskEntity.Fields.projectId, 5)
-				.lte(TaskEntity.class, TaskEntity.Fields.projectId, 4)
-				.gt(TaskEntity.class, TaskEntity.Fields.projectId, 1)
-				.gte(TaskEntity.class,  TaskEntity.Fields.projectId, 4)
-				.notEq(TaskEntity.class, TaskEntity.Fields.externalName, "external Name 2")
-				.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, List.of(Language.ar_KW, Language.ar_BH, Language.ar_QA))
-				.notIn(TaskEntity.class, TaskEntity.Fields.targetLanguage, List.of(Language.ar_AE, Language.ar_BH, Language.ar_EG))
-			
+				.inIfNotNull(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
+				.notInIfNotNull(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
 				;
-		
 		
 		List<TaskEntity> tasks = context.listAs(query, TaskEntity.class);
 		
 		Assert.assertEquals(1, tasks.size());		
+	
+		
+	
 	}
 	
 	@Test

@@ -158,7 +158,7 @@ public class Statement {
 //			statement.appendQuery("distinct");
 //		}
 		
-		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toSet()))+"\n");
+		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toList()))+"\n");
 		statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getBaseClass())+"\n");
 		
 		if(joinQuery.getIndexHint() != null && joinQuery.getIndexNames() != null && !joinQuery.getIndexNames().isEmpty()) {
@@ -231,6 +231,7 @@ public class Statement {
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
 			statement.appendQuery(Query.nameMapper.mapDatabase(between.entity, between.attribute));
+			statement.appendQuery(" between ");
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
 			statement.appendQuery(" and ");
 			statement.appendParameter(between.entity.entity, between.attribute, between.max);
