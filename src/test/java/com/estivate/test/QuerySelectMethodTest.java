@@ -1,21 +1,14 @@
 package com.estivate.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
-import com.estivate.NameMapper.TestNameMapper;
 import com.estivate.Result;
-import com.estivate.query.Join;
-import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
-import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +27,16 @@ public class QuerySelectMethodTest {
 				.selectMax(TaskEntity.class, AbstractEntity.Fields.id, "maxTaskId")
 				.selectCount(TaskEntity.class, AbstractEntity.Fields.id, "countTaskId")
 				.selectMin(TaskEntity.class, AbstractEntity.Fields.id, "minTaskId")
+				.selectGroupConcat(TaskEntity.class, AbstractEntity.Fields.id, "groupTaskId")
+				.selectSum(TaskEntity.class, AbstractEntity.Fields.id, "sumTaskId")
 				;
-				
+
+		System.out.println(context.queryAsString(query));
 		
+		List<Result> results = context.list(query);
+		
+		
+		Assert.assertEquals(1, results.size());
 		
 	}
 
