@@ -2,16 +2,17 @@ package com.estivate;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.ResultSetMetaData;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.naming.directory.AttributeInUseException;
@@ -39,7 +40,7 @@ public class Mapper<U> {
 	
 	final Chronometer chronometer;
 	
-	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 	
 	List<Field> columnFields = new ArrayList<>();
 	
@@ -153,8 +154,13 @@ public class Mapper<U> {
 				field.set(obj, Short.parseShort(value));
 			}
 			else if(type == Date.class) {
+				LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
+				field.set(obj, Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant()));
+
+				// field.set(obj, dateFormat.parse(value));
+				
 				// TODO : check date format is the right one
-				field.set(obj, dateFormat.parse(value));
+				
 			}
 			// @Convert (might be enum, this condition should be tested before classic enum)
 			else if(field.getDeclaredAnnotation(Convert.class) != null) {
