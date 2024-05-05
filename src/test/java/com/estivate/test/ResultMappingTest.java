@@ -1,6 +1,7 @@
 package com.estivate.test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,11 +9,16 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Context;
 import com.estivate.Result;
+import com.estivate.query.Query;
 import com.estivate.test.entities.SegmentEntity;
+import com.estivate.test.entities.TaskEntity;
 import com.estivate.util.Chronometer;
 
 public class ResultMappingTest {
+	
+	Context context = DatabaseGenerator.getContext();
 	
 	@Test
 	public void testPerf() {
@@ -40,6 +46,28 @@ public class ResultMappingTest {
 		List<SegmentEntity> segments1 = results.stream().map(x -> x.mapAs(SegmentEntity.class)).collect(Collectors.toList());
 		
 		chrono.end("end");
+		
+	}
+	
+	@Test
+	public void testParallel() {
+		
+		TaskEntity task = TaskEntity.builder()
+				.projectId(10)
+				.name("parallel test task")
+				.updated(new Date())
+				.build();
+		
+		for(int i = 0; i < 5000; i++) {
+			 context.saveOrUpdate(task);
+			 task.setId(0);
+		}
+		
+		Query query = new Query(TaskEntity.class);
+		query.eq(TaskEntity.class, TaskEntity.Fields.name, "parallel test task");
+		
+		List<TaskEntity> tasks = context.listAs(query, TaskEntity.class);
+		
 		
 	}
 
