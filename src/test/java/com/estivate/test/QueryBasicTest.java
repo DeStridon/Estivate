@@ -212,7 +212,7 @@ public class QueryBasicTest {
 	public void eqOrNullTest() {
 		
 		Query query = new Query(TaskEntity.class)
-				.in(TaskEntity.class, TaskEntity.Fields.projectId, List.of(1, 3, 5))
+				.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1, 3, 5))
 				.eqOrNull(TaskEntity.class, TaskEntity.Fields.created, new Date());
 		
 		System.out.println(context.queryAsString(query));
