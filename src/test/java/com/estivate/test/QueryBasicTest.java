@@ -193,17 +193,31 @@ public class QueryBasicTest {
 		
 	}
 	
-//	@Test
-//	public void inCollectionTest() {
-//		
-//		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
-//		
-//		Query query = new Query(TaskEntity.class)
-//				.in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
-//
-//		System.out.println(context.queryAsString(query));
-//		
-//	}
 	
+	
+	@Test
+	public void inCollectionTest() {
+		
+		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
+		
+		Query query = new Query(TaskEntity.class)
+				.in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
+
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
+	
+	@Test
+	public void eqOrNullTest() {
+		
+		Query query = new Query(TaskEntity.class)
+				.in(TaskEntity.class, TaskEntity.Fields.projectId, List.of(1, 3, 5))
+				.eqOrNull(TaskEntity.class, TaskEntity.Fields.created, new Date());
+		
+		System.out.println(context.queryAsString(query));
+		
+		
+	}
 	
 }

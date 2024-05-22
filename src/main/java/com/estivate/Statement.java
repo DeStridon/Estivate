@@ -41,7 +41,7 @@ public class Statement {
 	}
 	
 	public Statement appendQuery(String queryContent) {
-		if(query.length() > 0) {
+		if(query.length() > 0 && !List.of(" ", "(").contains(query.substring(query.length() - 1)) && !queryContent.equals(")")) {
 			query.append(" ");
 		}
 		query.append(queryContent);
@@ -171,7 +171,7 @@ public class Statement {
         
         if(!joinQuery.getCriterions().isEmpty()) {
         	statement.appendQuery("WHERE");
-        	attachWhere(statement, joinQuery);
+        	attachWhere(statement, joinQuery, true);
         }
         
 		// Append group bys (if any)
@@ -196,15 +196,21 @@ public class Statement {
         
 	}
 	
-	public static void attachWhere(Statement statement, EstivateNode node) {
+	public static void attachWhere(Statement statement, EstivateNode node, boolean rootNode) {
 		
 		if(node instanceof Aggregator) {
 			Aggregator aggregator = (Aggregator) node;
+			if(!rootNode && aggregator.getCriterions().size() > 1) {
+				statement.appendQuery("(");
+			}
 			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
 				if(i > 0) {
-					statement.appendQuery(" "+aggregator.getGroupType().toString()+" ");
+					statement.appendQuery(aggregator.getGroupType().toString());
 				}
-				attachWhere(statement, aggregator.getCriterions().get(i));
+				attachWhere(statement, aggregator.getCriterions().get(i), false);
+			}
+			if(!rootNode && aggregator.getCriterions().size() > 1) {
+				statement.appendQuery(")");
 			}
 			
 		}
@@ -217,23 +223,23 @@ public class Statement {
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
 			statement.appendQuery(Query.nameMapper.mapDatabase(in.entity, in.attribute));
-			statement.appendQuery(" in (");
+			statement.appendQuery("in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
 			statement.appendQuery(Query.nameMapper.mapDatabase(in.entity, in.attribute));
-			statement.appendQuery(" not in (");
+			statement.appendQuery("not in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
 			statement.appendQuery(Query.nameMapper.mapDatabase(between.entity, between.attribute));
-			statement.appendQuery(" between ");
+			statement.appendQuery("between");
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
-			statement.appendQuery(" and ");
+			statement.appendQuery("and");
 			statement.appendParameter(between.entity.entity, between.attribute, between.max);
 			
 		}
