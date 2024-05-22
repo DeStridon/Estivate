@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +42,7 @@ public class Statement {
 	}
 	
 	public Statement appendQuery(String queryContent) {
-		if(query.length() > 0 && !List.of(" ", "(").contains(query.substring(query.length() - 1)) && !queryContent.equals(")")) {
+		if(query.length() > 0 && !Arrays.asList(" ", "(").contains(query.substring(query.length() - 1)) && !queryContent.equals(")")) {
 			query.append(" ");
 		}
 		query.append(queryContent);
