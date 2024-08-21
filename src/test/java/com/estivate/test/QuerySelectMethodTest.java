@@ -2,6 +2,8 @@ package com.estivate.test;
 
 import java.util.List;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +16,7 @@ import com.estivate.test.entities.TaskEntity;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NotThreadSafe
 public class QuerySelectMethodTest {
 
 	
@@ -37,6 +40,46 @@ public class QuerySelectMethodTest {
 		
 		
 		Assert.assertEquals(1, results.size());
+		
+	}
+	
+	@Test
+	public void countTest() {
+		Query query = new Query(TaskEntity.class);
+		
+		query.selectCount();
+		
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
+	@Test
+	public void selectDistinctTest() {
+		Query query = new Query(TaskEntity.class)
+				.select(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id);
+		
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
+	@Test
+	public void selectDistinctTest2() {
+		Query query = new Query(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
+				.select(TaskEntity.class);
+		
+		System.out.println(context.queryAsString(query));
+		
+	}
+	
+	@Test
+	public void selectDistinctTest3() {
+		Query query = new Query(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
+				.select(TaskEntity.class, AbstractEntity.Fields.id);
+
+		System.out.println(context.queryAsString(query));
 		
 	}
 

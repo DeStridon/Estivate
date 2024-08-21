@@ -40,8 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Context {
 	
-	final public Connection connection;
-	
+	public final Connection connection;
 	public boolean tracePerformances = false;
 	
 	public Context(Connection connection) {
@@ -175,11 +174,6 @@ public class Context {
 		return output;
 	}
 	
-//	public <U> List<U> listAsParallel(Query joinQuery, Class<U> clazz) {
-//		List<Result> results = list(joinQuery);
-//		List<U> output = results.stream().parallel().map(x -> x.mapAs(clazz)).collect(Collectors.toList());
-//		return output;
-//	}
 	
 	@SneakyThrows
 	public <U> U saveOrUpdate(U object) {
@@ -211,7 +205,7 @@ public class Context {
 
 		Statement statement = new Statement(connection)
 				.appendQuery("INSERT INTO ")
-				.appendQuery(Query.nameMapper.mapEntityClass(object.getClass()));
+				.appendQuery(Query.nameMapper.mapDatabaseClass(object.getClass()));
 
 		
 		for(Field field : FieldUtils.getEntityFields(object.getClass())) {
@@ -230,7 +224,7 @@ public class Context {
 					continue;
 				}
 				
-				fieldValueList.add(Query.nameMapper.mapEntityField(field.getName()));
+				fieldValueList.add(Query.nameMapper.mapDatabaseField(field.getName()));
 				statement.appendValue(object.getClass(), field.getName(), field.get(object));
 				
 			}
@@ -267,10 +261,13 @@ public class Context {
 		
 		return object;
 	}
+	
+	
+	
 
 	
 	@SneakyThrows
-	public boolean create(Class<? extends Object> entityClass) {
+	public <U> boolean create(Class<U> entityClass) {
 		
 		List<String> fields = new ArrayList<>();
 		for(Field field : FieldUtils.getEntityFields(entityClass)) {
@@ -366,72 +363,108 @@ public class Context {
 	
 	
 	@SneakyThrows
-	public void update(Object entity) {
+	public <U> void update(U entity) {
+		update(List.of(entity));
+	}
+	
+	@SneakyThrows
+	public <U> void update(List<U> entities) {
 
-		
-		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PreUpdate.class)) {
-			method.invoke(entity);
-		}
-		
-		Long id = null;
-		Field idField = null;
-		
-		Set<Field> updatedFields = FieldUtils.getEntityFields(entity.getClass());
-
-		
-		for(Field field : updatedFields) {
-			field.setAccessible(true);
-
-			if(field.isAnnotationPresent(Id.class)) {
-				idField = field;
-				id = field.getLong(entity);
+		Statement statement = new Statement(connection);
+				
+		for(Object entity : entities) {
+			
+			for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PreUpdate.class)) {
+				method.invoke(entity);
 			}
-			else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
-				field.set(entity, new Date());
+			
+			Long id = null;
+			Field idField = null;
+			
+			Set<Field> updatedFields = FieldUtils.getEntityFields(entity.getClass());
+
+			
+			for(Field field : updatedFields) {
+				field.setAccessible(true);
+
+				if(field.isAnnotationPresent(Id.class)) {
+					idField = field;
+					id = field.getLong(entity);
+				}
+				else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+					field.set(entity, new Date());
+				}
+				
 			}
+			
+			if(entity instanceof CachedEntity) {
+				updatedFields = ((CachedEntity) entity).updatedFields();
+			}
+			
+			// No change to entity
+			if(updatedFields.isEmpty()) {
+				continue;
+			}
+			
+			
+			if(idField == null || id == null || id == 0) {
+				log.error("No id with value found, no update possible");
+				continue;
+			}
+			
+			// 1. Create query
+			
+			statement.appendQuery("UPDATE ")
+					.appendQuery(Query.nameMapper.mapDatabaseClass(entity.getClass()))
+					.appendQuery(" SET ");
+					
+			// 2. List updated fields
+			statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
+			
+			for(Field field : updatedFields) {
+				statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
+			}
+			
+			
+			statement.appendQuery(" WHERE "+Query.nameMapper.mapDatabaseField(idField.getName())+" = ?;");
+			statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
+			
 			
 		}
 		
-		if(entity instanceof CachedEntity) {
-			updatedFields = ((CachedEntity) entity).updatedFields();
-		}
-		
-		// No change to entity
-		if(updatedFields.isEmpty()) {
-			return;
-		}
-		
-		
-		if(idField == null || id == null || id == 0) {
-			log.error("No id with value found, no update possible");
-		}
-		
-		// 1. Create query
-		Statement statement = new Statement(connection)
-				.appendQuery("UPDATE ")
-				.appendQuery(Query.nameMapper.mapDatabaseClass(entity.getClass()))
-				.appendQuery(" SET ");
-				
-		// 2. List updated fields
-		statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
-		
-		for(Field field : updatedFields) {
-			statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
-		}
-		
-		
-		statement.appendQuery(" WHERE "+Query.nameMapper.mapDatabaseField(idField.getName())+" = ?");
-		statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
-		
-		
-		
 		boolean check = statement.execute();
 		
-		for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PostUpdate.class)) {
-			method.invoke(entity);
+		for(Object entity : entities) {
+			for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PostUpdate.class)) {
+				method.invoke(entity);
+			}
 		}
+	}
+	
+	@SneakyThrows
+	public List<String> showTables(){
+		Statement statement = new Statement(connection).appendQuery("SHOW TABLES;");
 		
+		
+		ResultSet resultSet = statement.getResultSet();
+		
+		List<String> rows = new ArrayList<>();
+        
+        while(resultSet.next()) {
+        	rows.add(resultSet.getString(1));        	
+        }
+        
+        return rows;
+
+	}
+	
+	@SneakyThrows
+	public boolean truncateTable(Class c) {
+		Statement statement = new Statement(connection).appendQuery("TRUNCATE TABLE ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
+		return statement.execute();
 	}
 
+	
+	
 
 }

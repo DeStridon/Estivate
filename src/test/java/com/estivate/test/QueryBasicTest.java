@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Context;
 import com.estivate.Result;
 import com.estivate.query.Query;
+import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
@@ -137,61 +138,47 @@ public class QueryBasicTest {
 	public void inTest() {
 		
 		TaskEntity task1 = context.saveOrUpdate(TaskEntity.builder().projectId(1234).name("task 1").build());
-		
+		TaskEntity task2 = context.saveOrUpdate(TaskEntity.builder().projectId(1235).name("task 2").build());
 		
 		Query query = new Query(TaskEntity.class);
-		
-		
-		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1234, 234, 34, 4);
-		
-		System.out.println(context.queryAsString(query));
-		
-		List<Result> results = context.list(query);
-		
-		assertEquals(1, results.size());
-		
-	}
-	
-	
-	@Test
-	public void countTest() {
-		Query query = new Query(TaskEntity.class);
-		
-		query.selectCount();
-		
-		System.out.println(context.queryAsString(query));
-		
-	}
-	
-	@Test
-	public void selectDistinctTest() {
-		Query query = new Query(TaskEntity.class)
-				.select(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id);
-		
-		System.out.println(context.queryAsString(query));
-		
-	}
-	
-	@Test
-	public void selectDistinctTest2() {
-		Query query = new Query(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.select(TaskEntity.class);
-		
-		System.out.println(context.queryAsString(query));
-		
-	}
-	
-	@Test
-	public void selectDistinctTest3() {
-		Query query = new Query(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.select(TaskEntity.class, AbstractEntity.Fields.id);
 
-		System.out.println(context.queryAsString(query));
+		Entity taskEntity = new Query.Entity(TaskEntity.class);
+		
+		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1234, 1235);
+		assertEquals(2, context.list(query).size());
+		
+		Query query2 = query.clone().in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
+		assertEquals(1, context.list(query2).size());
+
+		Query query3 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, 1235);
+		assertEquals(1, context.list(query3).size());
+
+		Query query4 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
+		assertEquals(1, context.list(query4).size());
 		
 	}
+	
+	@Test
+	public void in2Test() {
+		
+		TaskEntity task1 = context.saveOrUpdate(TaskEntity.builder().projectId(2234).name("task 1").build());
+		TaskEntity task2 = context.saveOrUpdate(TaskEntity.builder().projectId(2235).name("task 2").build());
+		
+		Query query = new Query(TaskEntity.class);
+
+		Entity taskEntity = new Query.Entity(TaskEntity.class);
+		
+		query.in(taskEntity, TaskEntity.Fields.projectId, 2234, 2235);
+		assertEquals(2, context.list(query).size());
+		
+		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
+		assertEquals(1, context.list(query).size());
+		
+		query.notIn(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
+		assertEquals(0, context.list(query).size());
+		
+	}
+
 	
 	
 	
@@ -219,5 +206,6 @@ public class QueryBasicTest {
 		
 		
 	}
+	
 	
 }

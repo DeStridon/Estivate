@@ -127,19 +127,11 @@ public class Query extends Aggregator{
 		super(GroupType.AND);
 		this.baseClass = baseClass;
 	}
-	
-
-	// TODO : how to implement count ?
-	// should not be implemented on query but on executor: query is made for filtering, executor for specific results fetching
-	// add sum, min and other potential projections ?
-	// set new field method ? yes, similar to projection
-
 
 	public Query and(EstivateNode... nodes) {
 		criterions.add(EstivateNode.add(nodes));
 		return this;
 	}
-	
 	
 	// nested search of the different classes used in criterions and to be added in joins
 	public Set<Entity> digClasses(Aggregator aggregator){
@@ -242,29 +234,16 @@ public class Query extends Aggregator{
 		
 		return null;
 	}
-	
-	
-	
-	//public EstivateQuery join(Entity c) { joinedClasses.add(c); return this; }
-	//public EstivateQuery join(Class c) { return join(new Entity(c)); }
 
+	
 	public Query join(Join classJoin) { joins.add(classJoin); return this; }
 	
-	public Query orderAsc(Entity c, String attribute) { orders.add(nameMapper.mapDatabase(c, attribute) + " ASC"); return this; }
-	public Query orderAsc(Class c, String attribute) { return orderAsc(new Entity(c), attribute); }
-	
-	
-	public Query orderDesc(Entity c, String attribute) { orders.add(nameMapper.mapDatabase(c, attribute) + " DESC"); return this; }
-	public Query orderDesc(Class c, String attribute) { return orderDesc(new Entity(c), attribute); }
-	
-	public Query limit(Integer limit) {
-		this.limit = limit;
-		return this;
-	}
-	public Query offset(Integer offset) {
-		this.offset = offset;
-		return this;
-	}
+	public Query orderAsc(Entity c, String attribute) 	{ orders.add(nameMapper.mapDatabase(c, attribute) + " ASC"); return this; }
+	public Query orderAsc(Class c, String attribute) 	{ return orderAsc(new Entity(c), attribute); }
+	public Query orderDesc(Entity c, String attribute) 	{ orders.add(nameMapper.mapDatabase(c, attribute) + " DESC"); return this; }
+	public Query orderDesc(Class c, String attribute) 	{ return orderDesc(new Entity(c), attribute); }
+	public Query limit(Integer limit) 		{ this.limit = limit; return this; }
+	public Query offset(Integer offset) 	{ this.offset = offset; return this;}
 	
 	
 	public Query select(Class c, String...fields) { return select(new Entity(c), fields); }
@@ -404,12 +383,6 @@ public class Query extends Aggregator{
 			return sb.toString();
 		}
 		
-//		public String getName() {
-//			if(alias != null) {
-//				return alias;
-//			}
-//			return Query.nameMapper.mapEntityClass(entity);
-//		}
 	}
 
 

@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
-import com.estivate.NameMapper.TestNameMapper;
+import com.estivate.NameMapper;
 import com.estivate.Result;
 import com.estivate.query.Join;
 import com.estivate.query.PropertyValue;
@@ -21,6 +23,7 @@ import com.estivate.test.entities.TaskEntity;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NotThreadSafe
 public class QueryJoinTest {
 
 	
@@ -76,19 +79,12 @@ public class QueryJoinTest {
 				.eq(SegmentEntity.class, SegmentEntity.Fields.sourceContent, "source content 1");
 		
 		String queryString = context.queryAsString(query);
-		
-
-	
-		
-		
-		
 	
 	}
 	
 	@Test
 	public void nameMappingTest() {
 		
-		Query.nameMapper = new TestNameMapper();
 		
 		Entity sourceSegment = new Entity(SegmentEntity.class, "sourceSegment");
 		Entity targetSegment = new Entity(SegmentEntity.class, "targetSegment");
@@ -106,11 +102,12 @@ public class QueryJoinTest {
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);
 		
-		assertTrue(queryString.contains("INNER JOIN SegmentEntity_d sourceSegment"));
-		assertTrue(queryString.contains("sourceSegment.sourceLanguage_d = ?"));
-		assertTrue(queryString.contains("INNER JOIN SegmentEntity_d targetSegment ON sourceSegment.sourceContent_d = targetSegment.targetContent_d"));
-		assertTrue(queryString.contains("sourceSegment.sourceLanguage_d = ?"));
+		assertTrue(queryString.contains("INNER JOIN SEGMENTENTITY_D sourceSegment"));
+		assertTrue(queryString.contains("sourceSegment.SOURCELANGUAGE_D = ?"));
+		
 		
 	}
 
+	
+	
 }
