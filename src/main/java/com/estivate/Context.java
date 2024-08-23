@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -364,7 +365,7 @@ public class Context {
 	
 	@SneakyThrows
 	public <U> void update(U entity) {
-		updateAll(List.of(entity));
+		updateAll(Arrays.asList(entity));
 	}
 	
 	@SneakyThrows
