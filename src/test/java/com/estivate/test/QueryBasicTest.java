@@ -124,11 +124,13 @@ public class QueryBasicTest {
 		
 		Query query = new Query(TaskEntity.class);
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1, 2, 3, 4);
+		query.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1, 2, 3, 4));
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Language.en_GB, Language.fr_FR);
+		query.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.en_GB, Language.fr_FR));
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.status, MacroState.Analysis, MacroState.Translation);
+		query.in(TaskEntity.class, TaskEntity.Fields.status, Arrays.asList(MacroState.Analysis, MacroState.Translation));
+		
+		context.list(query);
 		
 		System.out.println(context.queryAsString(query));
 	
@@ -144,13 +146,13 @@ public class QueryBasicTest {
 
 		Entity taskEntity = new Query.Entity(TaskEntity.class);
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.projectId, 1234, 1235);
+		query.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1234, 1235));
 		assertEquals(2, context.list(query).size());
 		
 		Query query2 = query.clone().in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
 		assertEquals(1, context.list(query2).size());
 
-		Query query3 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, 1235);
+		Query query3 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
 		assertEquals(1, context.list(query3).size());
 
 		Query query4 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
@@ -168,7 +170,7 @@ public class QueryBasicTest {
 
 		Entity taskEntity = new Query.Entity(TaskEntity.class);
 		
-		query.in(taskEntity, TaskEntity.Fields.projectId, 2234, 2235);
+		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2234, 2235));
 		assertEquals(2, context.list(query).size());
 		
 		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
@@ -192,7 +194,7 @@ public class QueryBasicTest {
 		String queryString = context.queryAsString(query);
 		context.list(query);
 		
-		Assert.assertTrue(queryString.contains(" in (?)"));
+		Assert.assertTrue(queryString.contains(" in (?, ?, ?, ?)"));
 		
 	}
 	

@@ -71,9 +71,9 @@ public abstract class Criterion implements EstivateNode{
 	public static class In extends Criterion {
 		
 		@Getter
-		List<Object> values;
+		List<?> values;
 
-		public In(Entity entity, String attribute, Collection<Object> values) {
+		public In(Entity entity, String attribute, Collection<?> values) {
 			this.entity = entity;
 			this.attribute = attribute;
 			this.values = new ArrayList<>(values) ; 
@@ -93,9 +93,9 @@ public abstract class Criterion implements EstivateNode{
 	public static class NotIn extends Criterion {
 		
 		@Getter
-		List<Object> values;
+		List<?> values;
 
-		public NotIn(Entity entity, String attribute, Collection<Object> values) {
+		public NotIn(Entity entity, String attribute, Collection<?> values) {
 			this.entity = entity;
 			this.attribute = attribute;
 			this.values = new ArrayList<>(values) ; 

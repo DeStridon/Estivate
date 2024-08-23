@@ -34,10 +34,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator lte   	(Class entity, String attribute, Object value)        { return lte(new Entity(entity), attribute, value); }
 	public Aggregator gte   	(Class entity, String attribute, Object value)        { return gte(new Entity(entity), attribute, value); }
 	public Aggregator between	(Class entity, String attribute, Object left, Object right) { return between(new Entity(entity), attribute, left, right); }
-	public Aggregator in    	(Class entity, String attribute, Object... values)    { return in(new Entity(entity), attribute, values); }
-	public Aggregator in    	(Class entity, String attribute, Collection<Object> values) { return in(new Entity(entity), attribute, values); }
-	public Aggregator notIn    	(Class entity, String attribute, Object... values)    { return notIn(new Entity(entity), attribute, values); }
-	public Aggregator notIn    	(Class entity, String attribute, Collection<Object> values) { return notIn(new Entity(entity), attribute, values); }
+	public Aggregator in    	(Class entity, String attribute, Collection<?> values) { return in(new Entity(entity), attribute, values); }
+	public Aggregator notIn    	(Class entity, String attribute, Collection<?> values) { return notIn(new Entity(entity), attribute, values); }
 	public Aggregator like		(Class entity, String attribute, String value)        { return like(new Entity(entity), attribute, value); }
 	public Aggregator notLike	(Class entity, String attribute, String value)        { return notLike(new Entity(entity), attribute, value); }
 	
@@ -48,10 +46,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator lteIfNotNull   	(Class entity, String attribute, Object value)        { return lteIfNotNull(new Entity(entity), attribute, value); }
 	public Aggregator gteIfNotNull   	(Class entity, String attribute, Object value)        { return gteIfNotNull(new Entity(entity), attribute, value); }
 	public Aggregator betweenIfNotNull	(Class entity, String attribute, Object min, Object max) { return betweenIfNotNull(new Entity(entity), attribute, min, max); } 
-	public Aggregator inIfNotNull    	(Class entity, String attribute, Object... values)    { return inIfNotNull(new Entity(entity), attribute, values); }
 	public Aggregator inIfNotNull    	(Class entity, String attribute, List<Object> values) { return inIfNotNull(new Entity(entity), attribute, values); }
-	public Aggregator notInIfNotNull    	(Class entity, String attribute, Object... values)    { return notInIfNotNull(new Entity(entity), attribute, values); }
-	public Aggregator notInIfNotNull    	(Class entity, String attribute, List<Object> values) { return notInIfNotNull(new Entity(entity), attribute, values); }
+	public Aggregator notInIfNotNull    (Class entity, String attribute, List<Object> values) { return notInIfNotNull(new Entity(entity), attribute, values); }
 	public Aggregator likeIfNotNull		(Class entity, String attribute, String value)        { return likeIfNotNull(new Entity(entity), attribute, value); }
 	public Aggregator notLikeIfNotNull	(Class entity, String attribute, String value)        { return notLikeIfNotNull(new Entity(entity), attribute, value); }
 	
@@ -70,10 +66,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator lte   	(Entity entity, String attribute, Object value)     { criterions.add(new Operator(entity, attribute, CriterionType.Lte,    value)); return this; }
 	public Aggregator gte   	(Entity entity, String attribute, Object value)     { criterions.add(new Operator(entity, attribute, CriterionType.Gte,    value)); return this; }
 	public Aggregator between 	(Entity entity, String attribute, Object min, Object max) { criterions.add(new Criterion.Between(entity, attribute, min, max )); return this; }
-	public Aggregator in    	(Entity entity, String attribute, Object... values) { criterions.add(new Criterion.In(entity, attribute, Arrays.asList(values))); return this; }
-	public Aggregator in    	(Entity entity, String attribute, Collection<Object> values) { criterions.add(new Criterion.In(entity, attribute, values)); return this; }
-	public Aggregator notIn    	(Entity entity, String attribute, Object... values) { criterions.add(new Criterion.NotIn(entity, attribute, Arrays.asList(values))); return this; }
-	public Aggregator notIn    	(Entity entity, String attribute, Collection<Object> values) { criterions.add(new Criterion.NotIn(entity, attribute, values)); return this; }
+	public Aggregator in    	(Entity entity, String attribute, Collection<?> values) { criterions.add(new Criterion.In(entity, attribute, values)); return this; }
+	public Aggregator notIn    	(Entity entity, String attribute, Collection<?> values) { criterions.add(new Criterion.NotIn(entity, attribute, values)); return this; }
 	public Aggregator like		(Entity entity, String attribute, String value)     { criterions.add(new Operator(entity, attribute, CriterionType.Like,   value)); return this; }
 	public Aggregator notLike	(Entity entity, String attribute, String value)     { criterions.add(new Operator(entity, attribute, CriterionType.NotLike,   value)); return this; }
 	
@@ -85,9 +79,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator lteIfNotNull  	(Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Lte, value));} return this; }
 	public Aggregator gteIfNotNull  	(Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Gte, value));} return this; }
 	public Aggregator betweenIfNotNull	(Entity entity, String attribute, Object min, Object max) {if(min != null && max != null) { criterions.add(new Criterion.Between(entity, attribute, min, max));} return this; }
-	public Aggregator inIfNotNull   	(Entity entity, String attribute, Object... values) {	if(values != null) {criterions.add(new Criterion.In(entity, attribute, Arrays.asList(values)));} return this; }
 	public Aggregator inIfNotNull   	(Entity entity, String attribute, List<Object> values) {	if(values != null) {criterions.add(new Criterion.In(entity, attribute, values));} return this; }
-	public Aggregator notInIfNotNull   	(Entity entity, String attribute, Object... values) {	if(values != null) {criterions.add(new Criterion.NotIn(entity, attribute, Arrays.asList(values)));} return this; }
 	public Aggregator notInIfNotNull   	(Entity entity, String attribute, List<Object> values) {	if(values != null) {criterions.add(new Criterion.NotIn(entity, attribute, values));} return this; }
 	public Aggregator likeIfNotNull 	(Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.Like, value));} return this; }
 	public Aggregator notLikeIfNotNull 	(Entity entity, String attribute, Object value) { if(value != null) {criterions.add(new Operator(entity, attribute, CriterionType.NotLike, value));} return this; }
