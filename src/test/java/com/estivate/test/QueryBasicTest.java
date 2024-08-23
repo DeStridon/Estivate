@@ -187,10 +187,60 @@ public class QueryBasicTest {
 		
 		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
 		
-		Query query = new Query(TaskEntity.class)
-				.in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
+		Query query = new Query(TaskEntity.class).in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
 
-		System.out.println(context.queryAsString(query));
+		String queryString = context.queryAsString(query);
+		context.list(query);
+		
+		Assert.assertTrue(queryString.contains(" in (?)"));
+		
+	}
+	
+	@Test
+	public void isNullTest() {
+		
+		Query query = new Query(TaskEntity.class).isNull(TaskEntity.class, AbstractEntity.Fields.id);
+
+		String queryString = context.queryAsString(query);
+		context.list(query);
+		
+		Assert.assertTrue(queryString.contains(" is null"));
+		
+	}
+	
+	@Test
+	public void isNotNullTest() {
+		
+		Query query = new Query(TaskEntity.class).isNotNull(TaskEntity.class, AbstractEntity.Fields.id);
+
+		String queryString = context.queryAsString(query);
+		context.list(query);
+		
+		Assert.assertTrue(queryString.contains(" is not null"));
+		
+	}
+	
+	@Test
+	public void likeTest() {
+		
+		Query query = new Query(TaskEntity.class).like(TaskEntity.class, TaskEntity.Fields.name, "task%");
+		
+		String queryString = context.queryAsString(query);
+		context.list(query);
+
+		Assert.assertTrue(queryString.contains(" like ?"));
+		
+	}
+	
+	@Test
+	public void notLikeTest() {
+		
+		Query query = new Query(TaskEntity.class).notLike(TaskEntity.class, TaskEntity.Fields.name, "task%");
+		
+		String queryString = context.queryAsString(query);
+		context.list(query);
+
+		Assert.assertTrue(queryString.contains(" not like ?"));
 		
 	}
 	

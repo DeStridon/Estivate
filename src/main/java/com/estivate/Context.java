@@ -364,11 +364,11 @@ public class Context {
 	
 	@SneakyThrows
 	public <U> void update(U entity) {
-		update(List.of(entity));
+		updateAll(List.of(entity));
 	}
 	
 	@SneakyThrows
-	public <U> void update(List<U> entities) {
+	public <U> void updateAll(List<U> entities) {
 
 		Statement statement = new Statement(connection);
 				

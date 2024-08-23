@@ -44,8 +44,6 @@ public class DatabaseGenerator {
 	
 	public static TaskEntity createRandomTask() {
 		
-		Random random = new Random();
-		
 		TaskEntity taskEntity = new TaskEntity();
 		taskEntity.setProjectId((long) randomInt(1, 100));
 		taskEntity.setName("Random Task "+randomInt(1, 1000));
