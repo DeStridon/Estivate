@@ -445,6 +445,7 @@ public class Context {
 	public List<String> showTables(){
 		Statement statement = new Statement(connection).appendQuery("SHOW TABLES;");
 		
+		statement.execute();
 		
 		ResultSet resultSet = statement.getResultSet();
 		
