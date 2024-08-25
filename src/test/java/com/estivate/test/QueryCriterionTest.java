@@ -21,7 +21,7 @@ import com.estivate.test.entities.TaskEntity;
 import com.estivate.test.entities.TaskEntity.MacroState;
 import com.estivate.test.entities.misc.Language;
 
-public class QueryBasicTest {
+public class QueryCriterionTest {
 
 	Context context = DatabaseGenerator.getContext();
 	

@@ -19,6 +19,8 @@ public class ContextTest {
 	@Test
 	public void contextTest() {
 		
+		context.truncateTable(TaskEntity.class);
+		
 		TaskEntity task1 = context.saveOrUpdate(DatabaseGenerator.createRandomTask());
 		TaskEntity task2 = context.saveOrUpdate(DatabaseGenerator.createRandomTask());
 		TaskEntity task3 = context.saveOrUpdate(DatabaseGenerator.createRandomTask());
