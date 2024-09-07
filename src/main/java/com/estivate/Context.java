@@ -467,6 +467,33 @@ public class Context {
 	}
 
 	
+	@SneakyThrows
+	public List<String> listIndexes(Class<?> c) {
+		Statement statement = new Statement(connection).appendQuery("SHOW INDEX FROM ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
+		statement.execute();
+		
+		ResultSet resultSet = statement.getResultSet();
+		
+		List<String> rows = new ArrayList<>();
+        
+        while(resultSet.next()) {
+        	rows.add(resultSet.getString(1));        	
+        }
+        
+        return rows;
+	}
+
+	@SneakyThrows
+	public boolean addIndex(Class<?> c, String name, List<String> columns) {
+		
+		//CREATE INDEX IDXNAME ON TEST(NAME)
+		Statement statement = new Statement(connection).appendQuery("CREATE INDEX").appendQuery(name).appendQuery("ON");
+		
+		statement.appendQuery(Query.nameMapper.mapDatabaseClass(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
+		
+		return statement.execute();
+		
+	}
 	
 
 }
