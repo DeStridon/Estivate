@@ -3,6 +3,7 @@ package com.estivate.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -48,7 +49,7 @@ public class QueryJoinTest {
 	}
 	
 	@Test
-	public void selectJoiningTest2() {
+	public void selectJoiningTest2() throws SQLException {
 		
 		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("join test name 1").build());
 		
@@ -68,7 +69,7 @@ public class QueryJoinTest {
 	
 
 	@Test
-	public void whereJoiningTest() {
+	public void whereJoiningTest() throws SQLException {
 		
 		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("join test name 2").build());
 		
@@ -83,7 +84,7 @@ public class QueryJoinTest {
 	}
 	
 	@Test
-	public void nameMappingTest() {
+	public void nameMappingTest() throws SQLException {
 		
 		
 		Entity sourceSegment = new Entity(SegmentEntity.class, "sourceSegment");

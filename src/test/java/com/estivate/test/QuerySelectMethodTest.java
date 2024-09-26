@@ -1,5 +1,6 @@
  package com.estivate.test;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -24,7 +25,7 @@ public class QuerySelectMethodTest {
 	
 	
 	@Test
-	public void selectMaxTest() {
+	public void selectMaxTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class)
 				.selectMax(TaskEntity.class, AbstractEntity.Fields.id, "maxTaskId")
@@ -44,7 +45,7 @@ public class QuerySelectMethodTest {
 	}
 	
 	@Test
-	public void countTest() {
+	public void countTest() throws SQLException {
 		Query query = new Query(TaskEntity.class);
 		
 		query.selectCount();
@@ -54,7 +55,7 @@ public class QuerySelectMethodTest {
 	}
 	
 	@Test
-	public void selectDistinctTest() {
+	public void selectDistinctTest() throws SQLException {
 		Query query = new Query(TaskEntity.class)
 				.select(TaskEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id);
@@ -64,7 +65,7 @@ public class QuerySelectMethodTest {
 	}
 	
 	@Test
-	public void selectDistinctTest2() {
+	public void selectDistinctTest2() throws SQLException {
 		Query query = new Query(TaskEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
 				.select(TaskEntity.class);
@@ -74,7 +75,7 @@ public class QuerySelectMethodTest {
 	}
 	
 	@Test
-	public void selectDistinctTest3() {
+	public void selectDistinctTest3() throws SQLException {
 		Query query = new Query(TaskEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
 				.select(TaskEntity.class, AbstractEntity.Fields.id);

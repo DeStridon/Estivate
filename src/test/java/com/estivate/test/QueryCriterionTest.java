@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -120,7 +121,7 @@ public class QueryCriterionTest {
 	}
 	
 	@Test
-	public void taskEnumTest() {
+	public void taskEnumTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class);
 		
@@ -185,7 +186,7 @@ public class QueryCriterionTest {
 	
 	
 	@Test
-	public void inCollectionTest() {
+	public void inCollectionTest() throws SQLException {
 		
 		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
 		
@@ -199,7 +200,7 @@ public class QueryCriterionTest {
 	}
 	
 	@Test
-	public void isNullTest() {
+	public void isNullTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class).isNull(TaskEntity.class, AbstractEntity.Fields.id);
 
@@ -211,7 +212,7 @@ public class QueryCriterionTest {
 	}
 	
 	@Test
-	public void isNotNullTest() {
+	public void isNotNullTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class).isNotNull(TaskEntity.class, AbstractEntity.Fields.id);
 
@@ -223,7 +224,7 @@ public class QueryCriterionTest {
 	}
 	
 	@Test
-	public void likeTest() {
+	public void likeTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class).like(TaskEntity.class, TaskEntity.Fields.name, "task%");
 		
@@ -235,7 +236,7 @@ public class QueryCriterionTest {
 	}
 	
 	@Test
-	public void notLikeTest() {
+	public void notLikeTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class).notLike(TaskEntity.class, TaskEntity.Fields.name, "task%");
 		
@@ -248,7 +249,7 @@ public class QueryCriterionTest {
 	
 	
 	@Test
-	public void eqOrNullTest() {
+	public void eqOrNullTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class)
 				.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1, 3, 5))

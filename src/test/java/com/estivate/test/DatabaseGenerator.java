@@ -1,7 +1,5 @@
 package com.estivate.test;
 
-import java.sql.DriverManager;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import com.estivate.Context;
@@ -23,8 +21,10 @@ public class DatabaseGenerator {
 	static Context getContext() {
 		
 		if(context == null) {
-		
-			context = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
+			
+			//context = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
+			context = new Context(DatasourceGenerator.datasource());
+			
 			Query.nameMapper = new TestNameMapper();
 			
 			context.create(TaskEntity.class);

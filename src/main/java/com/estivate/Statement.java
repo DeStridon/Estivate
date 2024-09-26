@@ -16,6 +16,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.sql.DataSource;
 
 import com.estivate.query.Aggregator;
 import com.estivate.query.Criterion;
@@ -83,67 +84,74 @@ public class Statement {
 
 	}
 
+	
 	public boolean execute() throws SQLException {
-		try {
-			
-			statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
-			for(int i = 0; i < parameters.size(); i++) {
-				
-				Object object = parameters.get(i);
-				
-				if(object instanceof String) {
-					String s = (String) object;
-					statement.setString(i+1, s);
-				}
-				else if(object instanceof Integer) {
-					Integer n = (Integer) object;
-					statement.setInt(i+1, n);
-				}
-				else if(object instanceof Long) {
-					Long l = (Long) object;
-					statement.setLong(i+1, l);
-				}
-				else if(object instanceof Float) {
-					Float f = (Float) object;
-					statement.setFloat(i+1, f);
-				}
-				else if(object instanceof Double) {
-					Double f = (Double) object;
-					statement.setDouble(i+1, f);
-				}
-				else if(object instanceof Boolean) {
-					Boolean b = (Boolean) object;
-					statement.setBoolean(i+1, b);
-				}
-				else if(object instanceof Date) {
-					Date d = (Date) object;
-					statement.setDate(i+1, new java.sql.Date(d.getTime()));
-				}
-				else if(object == null) {
-					statement.setObject(i+1, null);
-				}
-				else {
-					log.error("Cannot map object of type "+object.getClass());
-				}
-
-			}
-						
-			return statement.execute();
+		//TODO : insert here the comment
+		query.insert(0, "-- Comment \n");
 		
-		} catch (SQLException e) {
-			log.error("Error executing statement \n query = "+query.toString()+"\n parameters = "+parameters.stream().map(Object::toString).collect(Collectors.joining(", "))+"\n",e);
-			throw e;
+		statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
+		for(int i = 0; i < parameters.size(); i++) {
+			
+			Object object = parameters.get(i);
+			
+			if(object instanceof String) {
+				String s = (String) object;
+				statement.setString(i+1, s);
+			}
+			else if(object instanceof Integer) {
+				Integer n = (Integer) object;
+				statement.setInt(i+1, n);
+			}
+			else if(object instanceof Long) {
+				Long l = (Long) object;
+				statement.setLong(i+1, l);
+			}
+			else if(object instanceof Float) {
+				Float f = (Float) object;
+				statement.setFloat(i+1, f);
+			}
+			else if(object instanceof Double) {
+				Double f = (Double) object;
+				statement.setDouble(i+1, f);
+			}
+			else if(object instanceof Boolean) {
+				Boolean b = (Boolean) object;
+				statement.setBoolean(i+1, b);
+			}
+			else if(object instanceof Date) {
+				Date d = (Date) object;
+				statement.setDate(i+1, new java.sql.Date(d.getTime()));
+			}
+			else if(object == null) {
+				statement.setObject(i+1, null);
+			}
+			else {
+				log.error("Cannot map object of type "+object.getClass());
+			}
+
 		}
+					
+		return statement.execute();
+	
+	
 	}
 
 	public ResultSet getGeneratedKeys() throws SQLException{
+		if(statement == null) {
+			execute();
+		}
 		return statement.getGeneratedKeys();
 	}
 	
-	public ResultSet getResultSet() throws SQLException{
+	
+	
+	public ResultSet getResultSet() throws SQLException {
+		if(statement == null) {
+			execute();
+		}
 		return statement.getResultSet();
 	}
-
+	
 	public static Statement toStatement(Connection connection, Query joinQuery) {
 		
 		Statement statement = new Statement(connection);
