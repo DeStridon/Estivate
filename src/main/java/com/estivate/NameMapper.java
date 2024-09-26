@@ -6,18 +6,26 @@ public abstract class NameMapper {
 	
 	// database mapping : maps names in query to find table
 	public abstract String mapDatabaseClass(Class c);
+	public String mapDatabaseClass(Entity e) {
+		return e.alias != null ? e.alias : mapDatabaseClass(e.entity);
+	}
+	
 	public abstract String mapDatabaseField(String field);
 
-	public String mapDatabase(Class c, String field) { return mapDatabaseClass(c)+"."+mapDatabaseField(field); }
-	public String mapDatabase(Entity e, String field) { return (e.alias != null ? e.alias : mapDatabaseClass(e.entity) )+"."+mapDatabaseField(field); }
+	public String mapDatabase(Class c, String field) 	{ return mapDatabaseClass(c)+"."+mapDatabaseField(field); }
+	public String mapDatabase(Entity e, String field) 	{ return mapDatabaseClass(e)+"."+mapDatabaseField(field); }
 
 
 	// entity mapping : maps names in query to aliases
 	public abstract String mapEntityClass(Class c);
+	public String mapEntityClass(Entity e) {
+		return e.alias != null ? e.alias : mapEntityClass(e.entity);
+	}
+	
 	public abstract String mapEntityField(String field);
 
-	public String mapEntity(Class c, String field) { return mapEntityClass(c)+"."+mapEntityField(field); }
-	public String mapEntity(Entity e, String field) { return  (e.alias != null ? e.alias : mapEntityClass(e.entity)) + "." + mapEntityField(field); }
+	public String mapEntity(Class c, String field) 	{ return mapEntityClass(c) + "." + mapEntityField(field); }
+	public String mapEntity(Entity e, String field) { return mapEntityClass(e) + "." + mapEntityField(field); }
 
 	
 	

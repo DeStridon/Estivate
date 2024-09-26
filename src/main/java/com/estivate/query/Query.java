@@ -357,8 +357,8 @@ public class Query extends Aggregator{
 
 	@EqualsAndHashCode
 	@AllArgsConstructor
-	public static class Entity{
-		public final Class<? extends Object> entity;
+	public static class Entity<U>{
+		public final Class<U> entity;
 		public final String alias;
 		
 		public Entity(Class entity) {

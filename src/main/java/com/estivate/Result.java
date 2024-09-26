@@ -42,21 +42,31 @@ public class Result {
 	
 	public <U> U mapAs(Class<U> clazz) throws SecurityException, IllegalArgumentException {
 		
-		if(!cache.containsKey(clazz.getSimpleName())) {
-			cache.put(clazz.getSimpleName(), generateObject(clazz, columns));
+		if(!cache.containsKey(Query.nameMapper.mapEntityClass(clazz))) {
+			cache.put(Query.nameMapper.mapEntityClass(clazz), generateObject(clazz, columns));
 		}
 		
-		return (U) cache.get(clazz.getSimpleName());
+		return (U) cache.get(Query.nameMapper.mapEntityClass(clazz));
+		
+	}
+	
+	public <U> U mapAs(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
+		
+		if(!cache.containsKey(Query.nameMapper.mapEntityClass(clazz))) {
+			cache.put(Query.nameMapper.mapEntityClass(clazz), generateObject(clazz.entity, columns));
+		}
+		
+		return (U) cache.get(Query.nameMapper.mapEntityClass(clazz));
 		
 	}
 	
 	protected <U> U mapAs(Class<U> clazz, Chronometer chronometer) throws SecurityException, IllegalArgumentException {
 		
-		if(!cache.containsKey(clazz.getSimpleName())) {
-			cache.put(clazz.getSimpleName(), generateObject(clazz, columns));
+		if(!cache.containsKey(Query.nameMapper.mapEntityClass(clazz))) {
+			cache.put(Query.nameMapper.mapEntityClass(clazz), generateObject(clazz, columns));
 		}
 		
-		return (U) cache.get(clazz.getSimpleName());
+		return (U) cache.get(Query.nameMapper.mapEntityClass(clazz));
 		
 	}
 	
@@ -64,12 +74,24 @@ public class Result {
 		return columns.get(Query.nameMapper.mapEntity(c, attribute));
 	}
 	
+	public String mapAsString(Entity e, String attribute) {
+		return columns.get(Query.nameMapper.mapEntity(e, attribute));
+	}
+	
 	public Integer mapAsInteger(Class c, String attribute) {
 		return Integer.valueOf(columns.get(Query.nameMapper.mapEntity(c, attribute)));		
 	}
 	
+	public Integer mapAsInteger(Entity e, String attribute) {
+		return Integer.valueOf(columns.get(Query.nameMapper.mapEntity(e, attribute)));		
+	}
+	
 	public Long mapAsLong(Class c, String attribute) {
 		return Long.valueOf(columns.get(Query.nameMapper.mapEntity(c, attribute)));		
+	}
+	
+	public Long mapAsLong(Entity e, String attribute) {
+		return Long.valueOf(columns.get(Query.nameMapper.mapEntity(e, attribute)));
 	}
 	
 	

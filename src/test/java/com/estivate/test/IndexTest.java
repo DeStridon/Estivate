@@ -38,8 +38,25 @@ public class IndexTest {
 		
 		List<Index> indexes = id.getCodeIndex();
 		Assert.assertEquals(2, indexes.size());
+	
+		for(Index index : indexes) {
+			//context.addIndex(TaskEntity.class, index);
+		}
+		
+	}
+	
+	@Test
+	public void alignIndexes() {
+		// 1. Get table indexes
+		
+		
+		// 2. Get entity indexes
+
+		
 		
 		
 	}
+	
+	
 	
 }
