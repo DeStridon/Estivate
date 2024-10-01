@@ -485,8 +485,23 @@ public class Context {
 	
 	@SneakyThrows
 	public List<String> listIndexes(Class<?> c) {
+//		try (Connection connection = datasource.getConnection()){
+//			Statement statement = new Statement(connection).appendQuery("SHOW INDEX FROM ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
+//			statement.execute();
+//			
+//			ResultSet resultSet = statement.getResultSet();
+//			
+//			List<String> rows = new ArrayList<>();
+//	        
+//	        while(resultSet.next()) {
+//	        	rows.add(resultSet.getString(1));        	
+//	        }
+//	        
+//	        return rows;
+//		}
+		
 		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(connection).appendQuery("SHOW INDEX FROM ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
+			Statement statement = new Statement(connection).appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name='").appendQuery(Query.nameMapper.mapDatabaseClass(c)).appendQuery("'");
 			statement.execute();
 			
 			ResultSet resultSet = statement.getResultSet();
@@ -499,7 +514,7 @@ public class Context {
 	        
 	        return rows;
 		}
-	}
+    }
 
 	@SneakyThrows
 	public boolean addIndex(Class<?> c, String name, List<String> columns) {

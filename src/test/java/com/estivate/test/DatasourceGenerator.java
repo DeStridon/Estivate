@@ -46,7 +46,7 @@ public class DatasourceGenerator {
           
           
 //          JdbcConnectionPool ds = JdbcConnectionPool.create("jdbc:h2:./data/db;FILE_LOCK=NO;DB_CLOSE_ON_EXIT=TRUE", "sa", "sasasa");
-          JdbcConnectionPool ds = JdbcConnectionPool.create("jdbc:h2:mem:test;FILE_LOCK=NO;DB_CLOSE_ON_EXIT=TRUE", "sa", "sasasa");
+          JdbcConnectionPool ds = JdbcConnectionPool.create("jdbc:h2:mem:test;FILE_LOCK=NO;MODE=MySQL;DB_CLOSE_ON_EXIT=TRUE", "sa", "sasasa");
 
           // Construct DataSource
           // OracleConnectionPoolDataSource ds = new
