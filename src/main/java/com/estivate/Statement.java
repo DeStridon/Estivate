@@ -152,7 +152,7 @@ public class Statement {
 		
 		//TODO : avoid modifying joinQuery
 		if(joinQuery.getSelects().isEmpty()) {
-			joinQuery.select(joinQuery.getBaseClass());
+			joinQuery.select(joinQuery.getEntity());
 		}
 		
 //		if(joinQuery.getSelects().stream().map(x -> x.toString()).allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
@@ -160,7 +160,7 @@ public class Statement {
 //		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toList()))+"\n");
-		statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getBaseClass())+"\n");
+		statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
 		
 		if(joinQuery.getIndexHint() != null && joinQuery.getIndexNames() != null && !joinQuery.getIndexNames().isEmpty()) {
 			statement.appendQuery(joinQuery.getIndexHint()+ " INDEX ("+joinQuery.getIndexNames().stream().collect(Collectors.joining(", "))+")");

@@ -87,7 +87,7 @@ public class Query extends Aggregator{
 	
 	
 	@Getter
-	final Class baseClass;
+	final Entity entity;
 
 	public static NameMapper nameMapper = new DefaultNameMapper();
 	
@@ -118,7 +118,12 @@ public class Query extends Aggregator{
 	
 	public Query(Class baseClass) {
 		super(GroupType.AND);
-		this.baseClass = baseClass;
+		this.entity = new Entity<>(baseClass);
+	}
+	
+	public Query(Entity entity) {
+		super(GroupType.AND);
+		this.entity = entity;
 	}
 
 	public Query and(EstivateNode... nodes) {
@@ -159,7 +164,7 @@ public class Query extends Aggregator{
 	public List<Join> buildJoins() {
 
 		// 0. initiate
-		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(new Entity(baseClass)));
+		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(entity));
 		List<Join> classJoins = new ArrayList<>();
 		
 		// 1. list all classes needed for query
@@ -315,7 +320,7 @@ public class Query extends Aggregator{
 	
 	
 	public Query clone() {
-		Query joinQuery = new Query(baseClass);
+		Query joinQuery = new Query(entity);
 		
 		joinQuery.selects = new LinkedHashSet<>(this.selects);
 		joinQuery.joins = new LinkedHashSet<>(this.joins);
