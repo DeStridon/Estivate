@@ -78,8 +78,9 @@ public class Context {
 	
 	@SneakyThrows
 	public List<Result> list(Query joinQuery){
-		Chronometer chronometer = new Chronometer("list");
+		Chronometer chronometer = new Chronometer("list", tracePerformances);
 		chronometer.timeThreshold(100);
+
 		
 		Statement statement = Statement.toStatement(connection, joinQuery);
 		chronometer.step("statement creation");
@@ -121,9 +122,9 @@ public class Context {
 	@SneakyThrows
 	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
 		
-		Chronometer chronometer = new Chronometer("list");
+		Chronometer chronometer = new Chronometer("listAs", tracePerformances);
 		chronometer.timeThreshold(100);
-		chronometer.active(tracePerformances);
+		
 		
 		Statement statement = Statement.toStatement(connection, joinQuery);
 		chronometer.step("statement creation");
