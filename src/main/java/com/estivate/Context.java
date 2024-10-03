@@ -81,9 +81,10 @@ public class Context {
 	
 	@SneakyThrows
 	public List<Result> list(Query joinQuery){
-		
-		Chronometer chronometer = new Chronometer("list");
+
+		Chronometer chronometer = new Chronometer("list", tracePerformances);
 		chronometer.timeThreshold(100);
+
 		
 		try(Connection connection = datasource.getConnection()){
 		
@@ -126,9 +127,9 @@ public class Context {
 	@SneakyThrows
 	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
 		
-		Chronometer chronometer = new Chronometer("list");
+		Chronometer chronometer = new Chronometer("listAs", tracePerformances);
 		chronometer.timeThreshold(100);
-		chronometer.active(tracePerformances);
+		
 		
 		try(Connection connection = datasource.getConnection()){
 			Statement statement = Statement.toStatement(connection, joinQuery);
