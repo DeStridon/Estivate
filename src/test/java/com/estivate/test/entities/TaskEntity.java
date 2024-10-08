@@ -8,6 +8,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.PostPersist;
 import javax.persistence.PrePersist;
 
+import com.estivate.entity.CompositeIndex;
+import com.estivate.entity.CompositeIndex.ColumnIndex;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.entity.VirtualForeignKey;
@@ -27,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
+@CompositeIndex(name = "created", columns= {
+		@ColumnIndex(name=TaskEntity.Fields.created),
+})
 public class TaskEntity extends AbstractEntity {
 	
 	@VirtualForeignKey(entity = ProjectEntity.class)

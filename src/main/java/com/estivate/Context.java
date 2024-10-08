@@ -1,6 +1,7 @@
 package com.estivate;
 
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -30,6 +31,8 @@ import javax.persistence.PreUpdate;
 import javax.sql.DataSource;
 
 import com.estivate.entity.CachedEntity;
+import com.estivate.entity.CompositeIndex;
+import com.estivate.entity.CompositeIndex.ColumnIndex;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.query.Query;
@@ -68,7 +71,7 @@ public class Context {
 	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
 	        	}
 	
-	        	Result result = new Result(query, map);
+	        	Result result = new Result(map);
 	        	U object = result.mapAs(clazz);
 	        	
 	        	return object;
@@ -110,7 +113,7 @@ public class Context {
 	        	}
 	        	chronometer.step("insert in map");
 	            
-	        	Result result = new Result(joinQuery, map);
+	        	Result result = new Result(map);
 	        	results.add(result);
 	        	chronometer.step("create result");
 	            
@@ -121,6 +124,30 @@ public class Context {
 		}
 		
 		
+	}
+	
+	private List<Result> list(Statement statement) throws SQLException{
+		
+		ResultSet resultSet = statement.getResultSet();
+        ResultSetMetaData metadata = resultSet.getMetaData();
+        
+        List<Result> results = new ArrayList<>();
+        
+        
+        while(resultSet.next()) {
+            
+        	Map<String, String> map = new HashMap<>();
+            
+        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
+        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
+        	}
+            
+        	Result result = new Result(map);
+        	results.add(result);
+            
+        }
+        
+        return results;
 	}
 
 	
@@ -483,9 +510,9 @@ public class Context {
 		}
 	}
 
-	
+	// Should be removed
 	@SneakyThrows
-	public List<String> listIndexes(Class<?> c) {
+	public List<CompositeIndex> listIndexes(Class<?> c) {
 //		try (Connection connection = datasource.getConnection()){
 //			Statement statement = new Statement(connection).appendQuery("SHOW INDEX FROM ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
 //			statement.execute();
@@ -501,19 +528,23 @@ public class Context {
 //	        return rows;
 //		}
 		
+		List<CompositeIndex> indexes = new ArrayList<>();
+		
 		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(connection).appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name='").appendQuery(Query.nameMapper.mapDatabaseClass(c)).appendQuery("'");
-			statement.execute();
+			Statement indexQueryStatement = new Statement(connection).appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+Query.nameMapper.mapDatabaseClass(c)+"'");
+			Statement indexColumnQueryStatement = new Statement(connection).appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+Query.nameMapper.mapDatabaseClass(c)+"'");
 			
-			ResultSet resultSet = statement.getResultSet();
+			List<Result> indexResults = list(indexQueryStatement);
+			List<Result> columnResults = list(indexColumnQueryStatement);
 			
-			List<String> rows = new ArrayList<>();
-	        
-	        while(resultSet.next()) {
-	        	rows.add(resultSet.getString(1));        	
-	        }
-	        
-	        return rows;
+			for(Result indexResult : indexResults) {
+				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.getAsString("INDEX_NAME").equals(indexResult.getAsString("INDEX_NAME"))).collect(Collectors.toList());
+				List<ColumnIndex> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(x.getAsString("COLUMN_NAME"), null)).collect(Collectors.toList());
+				CompositeIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), indexColumns);
+				indexes.add(ci);
+			}
+			
+			return indexes;
 		}
     }
 
@@ -527,6 +558,45 @@ public class Context {
 			return statement.execute();
 		}
 		
+	}
+	
+	public CompositeIndex CompositeIndex(String name, List<ColumnIndex> columns) {
+		
+		ColumnIndex[] array = new ColumnIndex[columns.size()];
+		columns.toArray(array);
+		
+		CompositeIndex index = new CompositeIndex() {
+			@Override
+			public String name() { return name; }
+
+			@Override
+			public Class<? extends Annotation> annotationType() { return null; }
+
+			@Override
+			public ColumnIndex[] columns() { return array; }
+		};
+		
+		return index;
+	
+	}
+	
+	public ColumnIndex ColumnIndex(String name, Integer length) {
+		
+		ColumnIndex index = new ColumnIndex() {
+
+			@Override
+			public Class<? extends Annotation> annotationType() { return null; }
+
+			@Override
+			public String name() { return name; }
+
+			@Override
+			public int length() { return length; }
+			
+		};
+		
+		return index;
+	
 	}
 	
 

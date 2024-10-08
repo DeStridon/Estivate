@@ -37,7 +37,7 @@ public class ResultMappingTest {
 		
 		List<Result> results = new ArrayList<>();
 		for(int i = 0; i < 2; i++) {
-			results.add(new Result(null, map));
+			results.add(new Result(map));
 		}
 
 		Chronometer chrono = new Chronometer("bla");

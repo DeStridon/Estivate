@@ -30,11 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Result {
 
-	@Getter Query query;
 	@Getter Map<String, String> columns;
 	
-	public Result(Query query, Map<String, String> columns) {
-		this.query = query;
+	public Result(Map<String, String> columns) {
 		this.columns = columns;
 	}
 	
@@ -107,6 +105,16 @@ public class Result {
 			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapDatabase(c, attribute)+")"));
 		}
 		return null;
+	}
+	
+	public String getAsString(String column) {
+		return columns.get(column);
+	}
+	public Integer getAsInteger(String column) {
+		return Integer.valueOf(columns.get(column));
+	}
+	public Long getAsLong(String column) {
+		return Long.valueOf(columns.get(column));
 	}
 	
 	

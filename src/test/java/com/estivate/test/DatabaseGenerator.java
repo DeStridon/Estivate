@@ -2,6 +2,8 @@ package com.estivate.test;
 
 import java.util.stream.Collectors;
 
+import org.h2.tools.Server;
+
 import com.estivate.Context;
 import com.estivate.NameMapper;
 import com.estivate.query.Query;
@@ -24,6 +26,7 @@ public class DatabaseGenerator {
 			
 			//context = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
 			context = new Context(DatasourceGenerator.datasource());
+			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
 			
 			Query.nameMapper = new TestNameMapper();
 			
