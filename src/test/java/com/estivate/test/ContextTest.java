@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
 import com.estivate.query.Query;
+import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.TaskEntity;
 
@@ -39,6 +40,16 @@ public class ContextTest {
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 2")));
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 3")));
 		
+		
+	}
+	
+	@Test
+	public void queryAliasTest() {
+		
+		Entity<TaskEntity> taskEntity = new Entity(TaskEntity.class, "myTask");
+		
+		Query query = new Query(taskEntity).in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
+		List<TaskEntity> resultQueries = context.listAs(query, TaskEntity.class);
 		
 	}
 	

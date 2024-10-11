@@ -160,8 +160,13 @@ public class Statement {
 //		}
 		
 		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toList()))+"\n");
-		statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
-		
+
+		//statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
+		statement.appendQuery("FROM").appendQuery(Query.nameMapper.mapDatabaseClass(joinQuery.getEntity().entity));
+		if(joinQuery.getEntity().alias != null) {
+			statement.appendQuery(joinQuery.getEntity().alias);
+		}
+
 		if(joinQuery.getIndexHint() != null && joinQuery.getIndexNames() != null && !joinQuery.getIndexNames().isEmpty()) {
 			statement.appendQuery(joinQuery.getIndexHint()+ " INDEX ("+joinQuery.getIndexNames().stream().collect(Collectors.joining(", "))+")");
 		}
