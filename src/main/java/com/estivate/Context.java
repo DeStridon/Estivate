@@ -539,7 +539,8 @@ public class Context {
 			
 			for(Result indexResult : indexResults) {
 				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.getAsString("INDEX_NAME").equals(indexResult.getAsString("INDEX_NAME"))).collect(Collectors.toList());
-				List<ColumnIndex> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(x.getAsString("COLUMN_NAME"), null)).collect(Collectors.toList());
+				
+				List<ColumnIndex> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.getAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
 				CompositeIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), indexColumns);
 				indexes.add(ci);
 			}
@@ -547,6 +548,15 @@ public class Context {
 			return indexes;
 		}
     }
+	
+	public String findEntityName(Class<?> c, String columnName) {
+		for(Field field : FieldUtils.getEntityFields(c)) {
+			if(columnName.equals(Query.nameMapper.mapDatabaseField(field.getName()))){
+				return field.getName();
+			}
+		}
+		return null;
+	}
 
 	@SneakyThrows
 	public boolean addIndex(Class<?> c, String name, List<String> columns) {

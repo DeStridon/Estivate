@@ -5,12 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.Index;
-import javax.persistence.Table;
-
 import com.estivate.Context;
-import com.estivate.Result;
 import com.estivate.entity.CompositeIndex;
+import com.estivate.entity.CompositeIndex.ColumnIndex;
 import com.estivate.query.Query;
 
 
@@ -36,11 +33,12 @@ public class IndexDiff {
 		List<CompositeIndex> resultIndexes = new ArrayList<>();
 		
 		for(CompositeIndex entityIndex : entityIndexes) {
-			CompositeIndex databaseIndex = databaseIndexes.stream().filter(x -> x.equals(entityIndex)).findFirst().orElse(null);
+			CompositeIndex databaseIndex = databaseIndexes.stream().filter(x -> indexEquals(x, entityIndex)).findFirst().orElse(null);
 			if(databaseIndex == null) {
 				resultIndexes.add(entityIndex);
 			}
 		}
+		
 		
 		// 3. Do the difference
 		return resultIndexes;
@@ -59,6 +57,24 @@ public class IndexDiff {
 	
 	}
 	
+	boolean indexEquals(CompositeIndex left, CompositeIndex right) {
+		if(!left.name().toUpperCase().equals(right.name().toUpperCase())) {
+			return false;
+		}
+		if(left.columns().length != right.columns().length) {
+			return false;
+		}
+		for(int i = 0; i < left.columns().length; i++) {
+			ColumnIndex leftColumn = left.columns()[i];
+			ColumnIndex rightColumn = right.columns()[i];
+			
+			if(!leftColumn.name().equals(rightColumn.name())) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public void applyIndex(CompositeIndex index) {
 		
 		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> Query.nameMapper.mapDatabaseField(x.name())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
@@ -69,8 +85,6 @@ public class IndexDiff {
 
 	public List<CompositeIndex> getDatabaseIndexes(){
 		List<CompositeIndex> indexStrings = context.listIndexes(c);
-		
-		
 		
 		System.out.println(indexStrings);
 		
