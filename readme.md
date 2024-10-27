@@ -6,13 +6,16 @@ Estivate is a framework complementing Hibernate, helping developers to create SQ
 ### 0. Foreword
 
 
-### 1. Building Query
+### 1. Building Select Query
+
 
 ### 2. Getting result
 
 #### 2.1. Context
+You can execute your query in the context, enabling you to get your results
 
 #### 2.2. Result
+
 
 ### 3. Empower entities
 

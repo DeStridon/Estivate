@@ -57,7 +57,7 @@ public class QueryJoinTest {
 		context.saveOrUpdate(SegmentEntity.builder().taskId(task.getId()).sourceContent("source content 2").build());
 		
 		Query query = new Query(TaskEntity.class)
-				.select(SegmentEntity.class)
+				.selectAll(SegmentEntity.class)
 				.eq(TaskEntity.class, TaskEntity.Fields.name, task.getName());
 		
 		List<Result> results = context.list(query);

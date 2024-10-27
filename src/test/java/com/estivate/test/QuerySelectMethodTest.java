@@ -28,11 +28,11 @@ public class QuerySelectMethodTest {
 	public void selectMaxTest() throws SQLException {
 		
 		Query query = new Query(TaskEntity.class)
-				.selectMax(TaskEntity.class, AbstractEntity.Fields.id, "maxTaskId")
-				.selectCount(TaskEntity.class, AbstractEntity.Fields.id, "countTaskId")
-				.selectMin(TaskEntity.class, AbstractEntity.Fields.id, "minTaskId")
-				.selectGroupConcat(TaskEntity.class, AbstractEntity.Fields.id, "groupTaskId")
-				.selectSum(TaskEntity.class, AbstractEntity.Fields.id, "sumTaskId")
+				.selectMaxAs(TaskEntity.class, AbstractEntity.Fields.id, "maxTaskId")
+				.selectCountAs(TaskEntity.class, AbstractEntity.Fields.id, "countTaskId")
+				.selectMinAs(TaskEntity.class, AbstractEntity.Fields.id, "minTaskId")
+				.selectGroupConcatAs(TaskEntity.class, AbstractEntity.Fields.id, "groupTaskId")
+				.selectSumAs(TaskEntity.class, AbstractEntity.Fields.id, "sumTaskId")
 				;
 
 		System.out.println(context.queryAsString(query));
@@ -57,7 +57,7 @@ public class QuerySelectMethodTest {
 	@Test
 	public void selectDistinctTest() throws SQLException {
 		Query query = new Query(TaskEntity.class)
-				.select(TaskEntity.class)
+				.selectAll(TaskEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id);
 		
 		System.out.println(context.queryAsString(query));
@@ -68,7 +68,7 @@ public class QuerySelectMethodTest {
 	public void selectDistinctTest2() throws SQLException {
 		Query query = new Query(TaskEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.select(TaskEntity.class);
+				.selectAll(TaskEntity.class);
 		
 		System.out.println(context.queryAsString(query));
 		

@@ -160,7 +160,7 @@ public class Statement {
 		
 		//TODO : avoid modifying joinQuery
 		if(joinQuery.getSelects().isEmpty()) {
-			joinQuery.select(joinQuery.getEntity());
+			joinQuery.selectAll(joinQuery.getEntity());
 		}
 		
 //		if(joinQuery.getSelects().stream().map(x -> x.toString()).allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {

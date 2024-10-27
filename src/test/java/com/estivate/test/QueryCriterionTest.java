@@ -60,7 +60,7 @@ public class QueryCriterionTest {
 		
 		Query query = new Query(SegmentEntity.class)
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.select(TaskEntity.class)
+				.selectAll(TaskEntity.class)
 				
 				.eq(TaskEntity.class, TaskEntity.Fields.name, "task 2");
 		

@@ -7,6 +7,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +39,9 @@ public class Result {
 	public Result(Map<String, String> columns) {
 		this.columns = columns;
 	}
-	
+
+	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+
 	private Map<String, Object> cache = new HashMap<>();
 	
 	public <U> U mapAs(Class<U> clazz) throws SecurityException, IllegalArgumentException {
@@ -90,6 +96,44 @@ public class Result {
 	
 	public Long mapAsLong(Entity e, String attribute) {
 		return Long.valueOf(columns.get(Query.nameMapper.mapEntity(e, attribute)));
+	}
+
+	public Date mapAsDate(Class c, String attribute){
+		String value = columns.get(Query.nameMapper.mapEntity(c, attribute));
+		LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
+		return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
+	}
+
+	public Date mapAsDate(Entity e, String attribute){
+		String value = columns.get(Query.nameMapper.mapEntity(e, attribute));
+		LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
+		return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
+	}
+
+	// @Enumerated
+	public Enum mapAsEnum(Class c, String attribute) {
+		
+		try {
+			Field[] fields = c.getDeclaredFields();
+			Field field = c.getDeclaredField(attribute);
+			Type type = field.getGenericType();
+			
+			if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
+	
+				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
+					return Enum.valueOf((Class)type, mapAsString(c, attribute));
+				}
+				else {
+					return (Enum) field.getType().getEnumConstants()[mapAsInteger(c, attribute)];
+				}
+			}
+		}
+		catch(Exception e) {
+			log.error("Didn't manage to mapAsEnum", e);
+		}
+		return null;
+		
 	}
 	
 	

@@ -47,6 +47,9 @@ public class TaskEntity extends AbstractEntity {
 	
 	@Enumerated(EnumType.ORDINAL)
 	MacroState status;
+	
+	@Enumerated(EnumType.STRING)
+	StringEnum stringEnum;
 
 	@Convert(converter=LanguageConverter.class)
 	Language sourceLanguage;
@@ -86,5 +89,11 @@ public class TaskEntity extends AbstractEntity {
 		Delivered; 		//11 (8)
 
 		
+	}
+	
+	public static enum StringEnum{
+		ABC,
+		DEF,
+		GHI
 	}
 }

@@ -1,5 +1,7 @@
 package com.estivate.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,8 +14,11 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Context;
 import com.estivate.Result;
 import com.estivate.query.Query;
+import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.TaskEntity.MacroState;
+import com.estivate.test.entities.TaskEntity.StringEnum;
 import com.estivate.util.Chronometer;
 
 public class ResultMappingTest {
@@ -70,5 +75,36 @@ public class ResultMappingTest {
 		
 		
 	}
+	
+	@Test
+	public void testMapEnum() {
+		
+		TaskEntity task = TaskEntity.builder()
+				.projectId(10)
+				.name("parallel test task")
+				.updated(new Date())
+				.status(MacroState.Correction)
+				.stringEnum(StringEnum.DEF)
+				.build();
+		
+		context.saveOrUpdate(task);
+		
+		Query query = new Query(TaskEntity.class);
+		query.eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId());
+		
+		Result results = context.list(query).get(0);
+		
+		MacroState status = (MacroState) results.mapAsEnum(TaskEntity.class, TaskEntity.Fields.status);
+		assertEquals(MacroState.Correction, status);
+		
+		StringEnum stringEnum = (StringEnum) results.mapAsEnum(TaskEntity.class, TaskEntity.Fields.stringEnum);
+		assertEquals(StringEnum.DEF, stringEnum);
+		
+		
+	}
+	
+	
+	
+	
 
 }
