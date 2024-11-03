@@ -21,7 +21,7 @@ import com.estivate.test.entities.TaskEntity.MacroState;
 import com.estivate.test.entities.TaskEntity.StringEnum;
 import com.estivate.util.Chronometer;
 
-public class ResultMappingTest {
+public class ResultTest {
 	
 	Context context = DatabaseGenerator.getContext();
 	
@@ -48,7 +48,7 @@ public class ResultMappingTest {
 		Chronometer chrono = new Chronometer("bla");
 
 		
-		List<SegmentEntity> segments1 = results.stream().map(x -> x.mapAs(SegmentEntity.class)).collect(Collectors.toList());
+		List<SegmentEntity> segments1 = results.stream().map(x -> x.mapTo(SegmentEntity.class)).collect(Collectors.toList());
 		
 		chrono.end("end");
 		
@@ -94,14 +94,19 @@ public class ResultMappingTest {
 		
 		Result results = context.list(query).get(0);
 		
-		MacroState status = (MacroState) results.mapAsEnum(TaskEntity.class, TaskEntity.Fields.status);
+		MacroState status = (MacroState) results.getAsEnum(TaskEntity.class, TaskEntity.Fields.status);
 		assertEquals(MacroState.Correction, status);
 		
-		StringEnum stringEnum = (StringEnum) results.mapAsEnum(TaskEntity.class, TaskEntity.Fields.stringEnum);
+		StringEnum stringEnum = (StringEnum) results.getAsEnum(TaskEntity.class, TaskEntity.Fields.stringEnum);
 		assertEquals(StringEnum.DEF, stringEnum);
+	
+		Date taskDate = results.getAsDate(TaskEntity.class, TaskEntity.Fields.updated);
+		
 		
 		
 	}
+	
+	
 	
 	
 	

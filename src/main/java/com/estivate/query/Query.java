@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.estivate.NameMapper;
@@ -18,7 +17,6 @@ import com.estivate.util.FieldUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -171,14 +169,14 @@ public class Query extends Aggregator{
 		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
 		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
 		for(Join join : joins) {
-			targetEntities.add(join.joinerEntity);
-			targetEntities.add(join.joinedEntity);
+			targetEntities.add(join.leftEntity);
+			targetEntities.add(join.rightEntity);
 		}
 		
 		while(true) { 
 			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
 			if(cj != null) {
-				joinedEntities.add(cj.joinedEntity);
+				joinedEntities.add(cj.rightEntity);
 				classJoins.add(cj);
 			}
 			else {
@@ -213,7 +211,7 @@ public class Query extends Aggregator{
 			// joining strategy #1 : manual joins
 			for(Entity joinedClass : joined) {
 				Join manualJoin = joins.stream()
-						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
+						.filter(x -> x.leftEntity.equals(joinedClass) && x.rightEntity.equals(candidate))
 						.findFirst().orElse(null);
 				if(manualJoin != null) {
 					return manualJoin;

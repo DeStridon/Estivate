@@ -69,8 +69,8 @@ public class QueryCriterionTest {
 		assertEquals(1, results.size());
 		
 		for(Result result : results) {
-			SegmentEntity segment = result.mapAs(SegmentEntity.class);
-			TaskEntity task = result.mapAs(TaskEntity.class);
+			SegmentEntity segment = result.mapTo(SegmentEntity.class);
+			TaskEntity task = result.mapTo(TaskEntity.class);
 		}
 		
 	}

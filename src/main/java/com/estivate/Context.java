@@ -72,7 +72,7 @@ public class Context {
 	        	}
 	
 	        	Result result = new Result(map);
-	        	U object = result.mapAs(clazz);
+	        	U object = result.mapTo(clazz);
 	        	
 	        	return object;
 	        }

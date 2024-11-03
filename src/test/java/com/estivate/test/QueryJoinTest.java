@@ -94,8 +94,8 @@ public class QueryJoinTest {
 		Query query = new Query(TaskEntity.class)
 			.select(sourceSegment, AbstractEntity.Fields.id)
 			.select(targetSegment, AbstractEntity.Fields.id)
-			.join(new Join(TaskEntity.class, sourceSegment, AbstractEntity.Fields.id, SegmentEntity.Fields.taskId))
-			.join(new Join(sourceSegment, targetSegment, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.targetContent))
+			.join(Join.Inner(TaskEntity.class, sourceSegment, AbstractEntity.Fields.id, SegmentEntity.Fields.taskId))
+			.join(Join.Inner(sourceSegment, targetSegment, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.targetContent))
 			.eq(sourceSegment, SegmentEntity.Fields.sourceLanguage, "en-FR")
 			.eq(TaskEntity.class, AbstractEntity.Fields.id, 35)
 			.notEq(sourceSegment, AbstractEntity.Fields.id, new PropertyValue(targetSegment, AbstractEntity.Fields.id));

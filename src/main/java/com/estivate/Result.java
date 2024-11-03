@@ -44,7 +44,7 @@ public class Result {
 
 	private Map<String, Object> cache = new HashMap<>();
 	
-	public <U> U mapAs(Class<U> clazz) throws SecurityException, IllegalArgumentException {
+	public <U> U mapTo(Class<U> clazz) throws SecurityException, IllegalArgumentException {
 		
 		if(!cache.containsKey(Query.nameMapper.mapEntityClass(clazz))) {
 			cache.put(Query.nameMapper.mapEntityClass(clazz), generateObject(clazz, columns));
@@ -54,7 +54,7 @@ public class Result {
 		
 	}
 	
-	public <U> U mapAs(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
+	public <U> U mapTo(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
 		
 		if(!cache.containsKey(Query.nameMapper.mapEntityClass(clazz))) {
 			cache.put(Query.nameMapper.mapEntityClass(clazz), generateObject(clazz.entity, columns));
@@ -63,55 +63,39 @@ public class Result {
 		return (U) cache.get(Query.nameMapper.mapEntityClass(clazz));
 		
 	}
-	
-	protected <U> U mapAs(Class<U> clazz, Chronometer chronometer) throws SecurityException, IllegalArgumentException {
-		
-		if(!cache.containsKey(Query.nameMapper.mapEntityClass(clazz))) {
-			cache.put(Query.nameMapper.mapEntityClass(clazz), generateObject(clazz, columns));
-		}
-		
-		return (U) cache.get(Query.nameMapper.mapEntityClass(clazz));
-		
-	}
-	
-	public String mapAsString(Class c, String attribute) {
-		return columns.get(Query.nameMapper.mapEntity(c, attribute));
-	}
-	
-	public String mapAsString(Entity e, String attribute) {
-		return columns.get(Query.nameMapper.mapEntity(e, attribute));
-	}
-	
-	public Integer mapAsInteger(Class c, String attribute) {
-		return Integer.valueOf(columns.get(Query.nameMapper.mapEntity(c, attribute)));		
-	}
-	
-	public Integer mapAsInteger(Entity e, String attribute) {
-		return Integer.valueOf(columns.get(Query.nameMapper.mapEntity(e, attribute)));		
-	}
-	
-	public Long mapAsLong(Class c, String attribute) {
-		return Long.valueOf(columns.get(Query.nameMapper.mapEntity(c, attribute)));		
-	}
-	
-	public Long mapAsLong(Entity e, String attribute) {
-		return Long.valueOf(columns.get(Query.nameMapper.mapEntity(e, attribute)));
-	}
 
-	public Date mapAsDate(Class c, String attribute){
-		String value = columns.get(Query.nameMapper.mapEntity(c, attribute));
+	
+	public String 	getAsString(String column) { return columns.get(column); }
+	public Short 	getAsShort(String column) 	 { return Short.valueOf(columns.get(column)); }
+	public Integer 	getAsInteger(String column) { return Integer.valueOf(columns.get(column)); }
+	public Long 	getAsLong(String column) { return Long.valueOf(columns.get(column)); }
+	public Boolean 	getAsBoolean(String column) { return Boolean.valueOf(columns.get(column)); }
+	
+	public Date getAsDate(String column) {
+		String value = columns.get(column);
 		LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
 		return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
 	}
+	
+	
+	public String 	getAsString(Class c, String attribute) 	{ return getAsString(Query.nameMapper.mapEntity(c, attribute)); }
+	public String 	getAsString(Entity e, String attribute)	{ return getAsString(Query.nameMapper.mapEntity(e, attribute)); }
+	public Short 	getAsShort(Class c, String attribute) 	{ return getAsShort(Query.nameMapper.mapEntity(c, attribute)); }
+	public Short 	getAsShort(Entity e, String attribute)	{ return getAsShort(Query.nameMapper.mapEntity(e, attribute)); }
+	public Integer 	getAsInteger(Class c, String attribute) { return getAsInteger(Query.nameMapper.mapEntity(c, attribute)); }
+	public Integer 	getAsInteger(Entity e, String attribute){ return getAsInteger(Query.nameMapper.mapEntity(e, attribute)); }
+	public Boolean 	getAsBoolean(Class c, String attribute) { return getAsBoolean(Query.nameMapper.mapEntity(c, attribute)); }
+	public Boolean 	getAsBoolean(Entity e, String attribute){ return getAsBoolean(Query.nameMapper.mapEntity(e, attribute)); }
+	public Long 	getAsLong(Class c, String attribute) 	{ return getAsLong(Query.nameMapper.mapEntity(c, attribute)); }
+	public Long 	getAsLong(Entity e, String attribute) 	{ return getAsLong(Query.nameMapper.mapEntity(e, attribute)); }
+	public Date 	getAsDate(Class c, String attribute)	{ return getAsDate(Query.nameMapper.mapEntity(c, attribute)); }
+	public Date 	getAsDate(Entity e, String attribute)	{ return getAsDate(Query.nameMapper.mapEntity(e, attribute)); }
 
-	public Date mapAsDate(Entity e, String attribute){
-		String value = columns.get(Query.nameMapper.mapEntity(e, attribute));
-		LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
-		return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
-	}
+	
+	
 
 	// @Enumerated
-	public Enum mapAsEnum(Class c, String attribute) {
+	public Enum getAsEnum(Class c, String attribute) {
 		
 		try {
 			Field[] fields = c.getDeclaredFields();
@@ -122,10 +106,10 @@ public class Result {
 	
 				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
-					return Enum.valueOf((Class)type, mapAsString(c, attribute));
+					return Enum.valueOf((Class)type, getAsString(c, attribute));
 				}
 				else {
-					return (Enum) field.getType().getEnumConstants()[mapAsInteger(c, attribute)];
+					return (Enum) field.getType().getEnumConstants()[getAsInteger(c, attribute)];
 				}
 			}
 		}
@@ -137,29 +121,21 @@ public class Result {
 	}
 	
 	
-	public Long mapCount() {
+	public Long getCount() {
 		if(columns.containsKey("COUNT(*)")) {
 			return Long.valueOf(columns.get("COUNT(*)"));			
 		}
 		return null;
 	}
 	
-	public Long mapCount(Class<? extends Object> c, String attribute) {
+	public Long getCount(Class<? extends Object> c, String attribute) {
 		if(columns.containsKey("COUNT(distinct "+Query.nameMapper.mapDatabase(c, attribute)+")")) {
 			return Long.valueOf(columns.get("COUNT(distinct "+Query.nameMapper.mapDatabase(c, attribute)+")"));
 		}
 		return null;
 	}
 	
-	public String getAsString(String column) {
-		return columns.get(column);
-	}
-	public Integer getAsInteger(String column) {
-		return Integer.valueOf(columns.get(column));
-	}
-	public Long getAsLong(String column) {
-		return Long.valueOf(columns.get(column));
-	}
+	
 	
 	
 	@SneakyThrows
