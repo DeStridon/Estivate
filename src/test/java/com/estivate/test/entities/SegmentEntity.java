@@ -53,6 +53,8 @@ public class SegmentEntity extends AbstractEntity {
 	
 	int wordcount;
 	
+	Date updated;
+	
 	Date archived;
 
 	public static enum MicroState{

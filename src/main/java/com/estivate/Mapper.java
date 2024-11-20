@@ -5,14 +5,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.ResultSetMetaData;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.naming.directory.AttributeInUseException;
@@ -40,7 +42,8 @@ public class Mapper<U> {
 	
 	final Chronometer chronometer;
 	
-	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]").withZone(ZoneId.systemDefault());
+	//final DateTimeFormatter dateTimeFormater2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 	
 	List<Field> columnFields = new ArrayList<>();
 	
@@ -101,6 +104,33 @@ public class Mapper<U> {
 		return obj;
 	}
 	
+	@SneakyThrows
+	public U map(Map<String, String> arguments) {
+		
+		U obj = constructor.newInstance();
+		
+		Entity entity = new Entity(targetClass);
+		
+		Class<?> currentClass = targetClass;
+		while(currentClass != Object.class) {
+
+			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
+			for(Field field : fields) {
+				String value = arguments.get(FieldUtils.getFieldName(entity, field));
+				setGeneratedField(entity, value, field, obj);
+			}
+			currentClass = currentClass.getSuperclass();
+		}
+		
+		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
+		for(Method method : methods) {
+			method.invoke(obj);
+		}
+		
+		return obj;
+		
+	}
+	
 	
 	public void setGeneratedField(Entity entity, String value, Field field, U obj) throws EstivateException {
 		try {
@@ -154,9 +184,20 @@ public class Mapper<U> {
 				field.set(obj, Short.parseShort(value));
 			}
 			else if(type == Date.class) {
-				LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
-				field.set(obj, Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant()));
-
+				
+				
+				LocalDateTime dateTime;
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]");
+				TemporalAccessor temporalAccessor = formatter.parseBest(value, LocalDateTime::from, LocalDate::from);
+				if (temporalAccessor instanceof LocalDateTime) {
+				  dateTime = (LocalDateTime)temporalAccessor;
+				} else {
+				  dateTime = ((LocalDate)temporalAccessor).atStartOfDay();
+				}
+				//LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
+				//field.set(obj, Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant()));
+				field.set(obj, Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()));
+				
 				// field.set(obj, dateFormat.parse(value));
 				
 				// TODO : check date format is the right one

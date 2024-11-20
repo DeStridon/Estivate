@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Context;
+import com.estivate.NameMapper;
 import com.estivate.Result;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
@@ -28,17 +29,24 @@ public class ResultTest {
 	@Test
 	public void testPerf() {
 		
+		
+		
 		Map<String, String> map = new HashMap<>();
-		map.put("SegmentEntity.projectId", "1");
-		map.put("SegmentEntity.sourceFragmentId", "2");
-		map.put("SegmentEntity.targetFragmentId", "45");
-		map.put("SegmentEntity.taskId", "555");
-		map.put("SegmentEntity.sourceContent", "blablablablablabla");
-		map.put("SegmentEntity.targetContent", "pihiphiphpih");
-		map.put("SegmentEntity.sourceLanguage", "en_GB");
-		map.put("SegmentEntity.targetLanguage", "fr_FR");
-		map.put("SegmentEntity.macroStatus", "4");
-		map.put("SegmentEntity.microStatus", "2");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.projectId), "1");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceFragmentId), "2");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetFragmentId), "45");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.taskId), "555");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceContent), "blablablablablabla");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetContent), "pihiphiphpih");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage), "en_GB");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetLanguage), "fr_FR");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.macroStatus), "4");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.microStatus), "2");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.updated), "2024-11-19 22:02:03.254");
+		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.archived), "2023-11-19 22:02:03");
+		
+		
+		
 		
 		List<Result> results = new ArrayList<>();
 		for(int i = 0; i < 2; i++) {
@@ -56,6 +64,7 @@ public class ResultTest {
 	
 	@Test
 	public void testParallel() {
+		
 		
 		TaskEntity task = TaskEntity.builder()
 				.projectId(10)
@@ -100,7 +109,7 @@ public class ResultTest {
 		StringEnum stringEnum = (StringEnum) results.getAsEnum(TaskEntity.class, TaskEntity.Fields.stringEnum);
 		assertEquals(StringEnum.DEF, stringEnum);
 	
-		Date taskDate = results.getAsDate(TaskEntity.class, TaskEntity.Fields.updated);
+		Date taskDate = results.mapToDate(TaskEntity.class, TaskEntity.Fields.updated);
 		
 		
 		
