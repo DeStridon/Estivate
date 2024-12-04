@@ -1,4 +1,4 @@
-package com.estivate;
+package com.estivate.context;
 
 
 import java.lang.annotation.Annotation;
@@ -30,6 +30,9 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.sql.DataSource;
 
+import com.estivate.Mapper;
+import com.estivate.Result;
+import com.estivate.Statement;
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.CompositeIndex;
 import com.estivate.entity.CompositeIndex.ColumnIndex;
@@ -44,7 +47,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Context {
+public abstract class Context {
 	
 	public final DataSource datasource;
 	public boolean tracePerformances = false;
@@ -126,7 +129,7 @@ public class Context {
 		
 	}
 	
-	private List<Result> list(Statement statement) throws SQLException{
+	protected List<Result> list(Statement statement) throws SQLException{
 		
 		ResultSet resultSet = statement.getResultSet();
         ResultSetMetaData metadata = resultSet.getMetaData();
@@ -167,7 +170,7 @@ public class Context {
 	        
 	        Mapper<U> mapper = new Mapper<>(clazz);
 	        chronometer.step("create mapper");
-	        mapper.chronometer.active(tracePerformances);
+	        //mapper.chronometer.active(tracePerformances);
 	        
 	        ResultSetMetaData metadata = resultSet.getMetaData();
 	        mapper.attachMetadata(metadata);
@@ -510,44 +513,7 @@ public class Context {
 		}
 	}
 
-	// Should be removed
-	@SneakyThrows
-	public List<CompositeIndex> listIndexes(Class<?> c) {
-//		try (Connection connection = datasource.getConnection()){
-//			Statement statement = new Statement(connection).appendQuery("SHOW INDEX FROM ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
-//			statement.execute();
-//			
-//			ResultSet resultSet = statement.getResultSet();
-//			
-//			List<String> rows = new ArrayList<>();
-//	        
-//	        while(resultSet.next()) {
-//	        	rows.add(resultSet.getString(1));        	
-//	        }
-//	        
-//	        return rows;
-//		}
-		
-		List<CompositeIndex> indexes = new ArrayList<>();
-		
-		try (Connection connection = datasource.getConnection()){
-			Statement indexQueryStatement = new Statement(connection).appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+Query.nameMapper.mapDatabaseClass(c)+"'");
-			Statement indexColumnQueryStatement = new Statement(connection).appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+Query.nameMapper.mapDatabaseClass(c)+"'");
-			
-			List<Result> indexResults = list(indexQueryStatement);
-			List<Result> columnResults = list(indexColumnQueryStatement);
-			
-			for(Result indexResult : indexResults) {
-				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.getAsString("INDEX_NAME").equals(indexResult.getAsString("INDEX_NAME"))).collect(Collectors.toList());
-				
-				List<ColumnIndex> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.getAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
-				CompositeIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), indexColumns);
-				indexes.add(ci);
-			}
-			
-			return indexes;
-		}
-    }
+
 	
 	public String findEntityName(Class<?> c, String columnName) {
 		for(Field field : FieldUtils.getEntityFields(c)) {
@@ -608,6 +574,10 @@ public class Context {
 		return index;
 	
 	}
+	
+	public abstract List<CompositeIndex> listIndexes(Class<?> c);
+		
+	
 	
 
 }

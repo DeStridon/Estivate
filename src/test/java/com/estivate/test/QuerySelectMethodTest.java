@@ -8,8 +8,8 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Context;
 import com.estivate.Result;
+import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.TaskEntity;

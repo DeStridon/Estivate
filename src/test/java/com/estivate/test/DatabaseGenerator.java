@@ -4,8 +4,9 @@ import java.util.stream.Collectors;
 
 import org.h2.tools.Server;
 
-import com.estivate.Context;
 import com.estivate.NameMapper;
+import com.estivate.context.Context;
+import com.estivate.context.H2Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.SegmentEntity;
@@ -25,7 +26,7 @@ public class DatabaseGenerator {
 		if(context == null) {
 			
 			//context = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
-			context = new Context(DatasourceGenerator.datasource());
+			context = new H2Context(DatasourceGenerator.datasource());
 			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
 			
 			Query.nameMapper = new TestNameMapper();

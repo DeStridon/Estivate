@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Context;
+import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.Context;
+import com.estivate.context.Context;
 import com.estivate.entity.CompositeIndex;
 import com.estivate.entity.CompositeIndex.ColumnIndex;
 import com.estivate.query.Query;
@@ -21,6 +21,12 @@ public class IndexDiff {
 	public IndexDiff(Context context, Class<?> c) {
 		this.context = context;
 		this.c = c;
+	}
+	
+	public void addMissingDatabaseIndex() {
+		for(CompositeIndex index : getMissingDatabaseIndex()) {
+			applyIndex(index);
+		}
 	}
 	
 	public List<CompositeIndex> getMissingDatabaseIndex(){
@@ -57,6 +63,12 @@ public class IndexDiff {
 	
 	}
 	
+	public List<CompositeIndex> getDatabaseIndexes(){
+		List<CompositeIndex> indexStrings = context.listIndexes(c);
+		return indexStrings;
+	}
+	
+	
 	boolean indexEquals(CompositeIndex left, CompositeIndex right) {
 		if(!left.name().toUpperCase().equals(right.name().toUpperCase())) {
 			return false;
@@ -83,13 +95,9 @@ public class IndexDiff {
 		
 	}
 
-	public List<CompositeIndex> getDatabaseIndexes(){
-		List<CompositeIndex> indexStrings = context.listIndexes(c);
-		
-		System.out.println(indexStrings);
-		
-		return indexStrings;
-	}
+	
+	
+	
 	
 	
 

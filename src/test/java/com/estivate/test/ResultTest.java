@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Context;
 import com.estivate.NameMapper;
 import com.estivate.Result;
+import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.SegmentEntity;

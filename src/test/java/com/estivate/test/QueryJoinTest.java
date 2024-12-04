@@ -10,9 +10,9 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Context;
 import com.estivate.NameMapper;
 import com.estivate.Result;
+import com.estivate.context.Context;
 import com.estivate.query.Join;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
