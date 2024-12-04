@@ -16,7 +16,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class MySQLContext extends Context {
+public class MySQLContext extends Context {
 	
 	
 	public boolean tracePerformances = false;
