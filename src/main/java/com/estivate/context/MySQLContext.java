@@ -9,7 +9,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import com.estivate.Statement;
-import com.estivate.entity.CompositeIndex;
+import com.estivate.entity.Index.CompositeIndex;
 import com.estivate.query.Query;
 
 import lombok.SneakyThrows;

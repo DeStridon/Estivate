@@ -6,9 +6,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Result;
 import com.estivate.context.Context;
-import com.estivate.entity.CompositeIndex;
+import com.estivate.entity.Index.CompositeIndex;
 import com.estivate.query.Query;
 import com.estivate.test.entities.TaskEntity;
 import com.estivate.util.IndexDiff;
@@ -40,7 +39,7 @@ public class IndexTest {
 		
 		id.applyIndex(indexes.get(0));
 		
-		List<CompositeIndex> missingDbIndexes = id.getMissingDatabaseIndex();
+		List<CompositeIndex> missingDbIndexes = id.getMissingIndexes();
 		Assert.assertEquals(0, missingDbIndexes.size());
 	}
 	

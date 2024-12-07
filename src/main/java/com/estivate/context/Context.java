@@ -34,8 +34,8 @@ import com.estivate.Mapper;
 import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.entity.CachedEntity;
-import com.estivate.entity.CompositeIndex;
-import com.estivate.entity.CompositeIndex.ColumnIndex;
+import com.estivate.entity.Index.ColumnIndex;
+import com.estivate.entity.Index.CompositeIndex;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.query.Query;
@@ -556,7 +556,7 @@ public abstract class Context {
 	
 	}
 	
-	public ColumnIndex ColumnIndex(String name, Integer length) {
+	public ColumnIndex ColumnIndex(String value, Integer length) {
 		
 		ColumnIndex index = new ColumnIndex() {
 
@@ -564,7 +564,7 @@ public abstract class Context {
 			public Class<? extends Annotation> annotationType() { return null; }
 
 			@Override
-			public String name() { return name; }
+			public String value() { return value; }
 
 			@Override
 			public int length() { return length; }

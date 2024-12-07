@@ -5,9 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.context.Context;
-import com.estivate.entity.CompositeIndex;
-import com.estivate.entity.CompositeIndex.ColumnIndex;
+import com.estivate.entity.Index.ColumnIndex;
+import com.estivate.entity.Index.CompositeIndex;
 import com.estivate.query.Query;
 
 
@@ -23,13 +25,13 @@ public class IndexDiff {
 		this.c = c;
 	}
 	
-	public void addMissingDatabaseIndex() {
-		for(CompositeIndex index : getMissingDatabaseIndex()) {
+	public void addMissingIndexes() {
+		for(CompositeIndex index : getMissingIndexes()) {
 			applyIndex(index);
 		}
 	}
 	
-	public List<CompositeIndex> getMissingDatabaseIndex(){
+	public List<CompositeIndex> getMissingIndexes(){
 	
 		// 1. List indexes of class
 		List<CompositeIndex> entityIndexes = getEntityIndexes();
@@ -48,6 +50,28 @@ public class IndexDiff {
 		
 		// 3. Do the difference
 		return resultIndexes;
+	}
+	
+	public List<CompositeIndex> getUndefinedIndexes(){
+		// 1. List indexes of class
+		List<CompositeIndex> entityIndexes = getEntityIndexes();
+		// 2. List indexes in database
+		List<CompositeIndex> databaseIndexes = getDatabaseIndexes();
+		
+		List<CompositeIndex> resultIndexes = new ArrayList<>();
+		
+		for(CompositeIndex databaseIndex : databaseIndexes) {
+			CompositeIndex entityIndex = entityIndexes.stream().filter(x -> indexEquals(x, databaseIndex)).findFirst().orElse(null);
+			if(entityIndex == null) {
+				resultIndexes.add(databaseIndex);
+			}
+		}
+		
+		
+		// 3. Do the difference
+		return resultIndexes;
+		
+		
 	}
 	
 	public List<CompositeIndex> getEntityIndexes(){
@@ -80,7 +104,7 @@ public class IndexDiff {
 			ColumnIndex leftColumn = left.columns()[i];
 			ColumnIndex rightColumn = right.columns()[i];
 			
-			if(!leftColumn.name().equals(rightColumn.name())) {
+			if(!leftColumn.value().equals(rightColumn.value())) {
 				return false;
 			}
 		}
@@ -89,9 +113,12 @@ public class IndexDiff {
 	
 	public void applyIndex(CompositeIndex index) {
 		
-		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> Query.nameMapper.mapDatabaseField(x.name())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-		
-		context.addIndex(c, index.name(), columns);
+		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> Query.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
+		String indexName = index.name();
+		if(StringUtils.isBlank(indexName)) {
+			indexName = Arrays.asList(index.columns()).stream().map(x -> x.value()).collect(Collectors.joining("_"));
+		}
+		context.addIndex(c, indexName, columns);
 		
 	}
 
