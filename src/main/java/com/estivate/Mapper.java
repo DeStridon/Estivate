@@ -13,8 +13,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.naming.directory.AttributeInUseException;
@@ -23,6 +25,7 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+import com.estivate.context.Context;
 import com.estivate.query.Query.Entity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
@@ -34,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Mapper<U> {
 	
-	final Class<?> targetClass;
+	final Class<U> targetClass;
 	final Constructor<U> constructor;
 
 	final Set<Field> fields;
@@ -42,15 +45,20 @@ public class Mapper<U> {
 	
 	final Chronometer chronometer;
 	
+	final Context context;
+	
+	Map<Integer, String> fieldNames = new HashMap<>();
+	
 	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]").withZone(ZoneId.systemDefault());
 	//final DateTimeFormatter dateTimeFormater2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 	
 	List<Field> columnFields = new ArrayList<>();
 	
 	@SneakyThrows
-	public Mapper(Class<U> targetClass) {
+	public Mapper(Class<U> targetClass, Context context) {
 		chronometer = new Chronometer("Mapper "+targetClass.getSimpleName()).timeThreshold(null);
 		
+		this.context = context;
 		this.targetClass = targetClass;
 		
 
@@ -61,6 +69,8 @@ public class Mapper<U> {
 		
 		chronometer.step("mapper constructor");
 	}
+	
+	
 
 	
 	@SneakyThrows
@@ -70,7 +80,7 @@ public class Mapper<U> {
 		for(int i = 0; i < metadata.getColumnCount(); i++) {
 			
 			String columnLabel = metadata.getColumnLabel(i+1);
-			Field field = fields.stream().filter(x -> columnLabel.equals(FieldUtils.getFieldName(entity, x))).findFirst().orElse(null);
+			Field field = fields.stream().filter(x -> columnLabel.equals(getFieldName(entity, x))).findFirst().orElse(null);
 			if(field != null) {
 				while(columnFields.size() <= i) {
 					columnFields.add(null);
@@ -116,7 +126,7 @@ public class Mapper<U> {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
 			for(Field field : fields) {
-				String value = arguments.get(FieldUtils.getFieldName(entity, field));
+				String value = arguments.get(getFieldName(entity, field));
 				setGeneratedField(entity, value, field, obj);
 			}
 			currentClass = currentClass.getSuperclass();
@@ -128,6 +138,17 @@ public class Mapper<U> {
 		}
 		
 		return obj;
+		
+	}
+	
+	public String getFieldName(Entity entity, Field field) {
+		int hash = Objects.hash(entity, field);
+		String fieldName = fieldNames.get(hash);
+		if(fieldName == null) {
+			fieldName = context.nameMapper.mapEntity(entity, field.getName());
+			fieldNames.put(hash, fieldName);
+		}
+		return fieldName;
 		
 	}
 	

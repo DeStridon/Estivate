@@ -40,7 +40,7 @@ public class MySQLContext extends Context {
 		List<CompositeIndex> indexes = new ArrayList<>();
 
 		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(connection).appendQuery("SHOW INDEX FROM ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
+			Statement statement = new Statement(this, connection).appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.mapDatabaseClass(c));
 			
 			List<Result> results = this.list(statement);
 			List<IndexRow> indexRows = new ArrayList<>();

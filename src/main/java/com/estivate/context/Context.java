@@ -31,8 +31,10 @@ import javax.persistence.PreUpdate;
 import javax.sql.DataSource;
 
 import com.estivate.Mapper;
+import com.estivate.NameMapper;
 import com.estivate.Result;
 import com.estivate.Statement;
+import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.Index.ColumnIndex;
 import com.estivate.entity.Index.CompositeIndex;
@@ -51,6 +53,8 @@ public abstract class Context {
 	
 	public final DataSource datasource;
 	public boolean tracePerformances = false;
+	public NameMapper nameMapper = new DefaultNameMapper();
+	
 	
 	public Context(DataSource datasource) {
 		this.datasource = datasource;
@@ -61,10 +65,8 @@ public abstract class Context {
 	public <U> U uniqueResult(Query query, Class<U> clazz) {
 		
 		try(Connection connection = datasource.getConnection()){
-			Statement statement = Statement.toStatement(connection, query);
-			
-			statement.execute();
-	        ResultSet resultSet = statement.getResultSet();
+			Statement statement = Statement.toStatement(this, connection, query);
+	        ResultSet resultSet = statement.executeForResultSet();
 	    	ResultSetMetaData metadata = resultSet.getMetaData();
 	        
 	        if(resultSet.next()) {
@@ -74,7 +76,7 @@ public abstract class Context {
 	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
 	        	}
 	
-	        	Result result = new Result(map);
+	        	Result result = new Result(statement, map);
 	        	U object = result.mapTo(clazz);
 	        	
 	        	return object;
@@ -88,16 +90,14 @@ public abstract class Context {
 	@SneakyThrows
 	public List<Result> list(Query joinQuery){
 
-		Chronometer chronometer = new Chronometer("list", tracePerformances);
-		chronometer.timeThreshold(100);
-
-		
 		try(Connection connection = datasource.getConnection()){
-		
-			Statement statement = Statement.toStatement(connection, joinQuery);
+			Chronometer chronometer = new Chronometer("list", tracePerformances);
+			chronometer.timeThreshold(100);
+	
+			Statement statement = Statement.toStatement(this, connection, joinQuery);
 			chronometer.step("statement creation");
 			
-	        ResultSet resultSet = statement.getResultSet();
+	        ResultSet resultSet = statement.executeForResultSet();
 	        chronometer.step("get resultset");
 	        
 	        
@@ -116,7 +116,7 @@ public abstract class Context {
 	        	}
 	        	chronometer.step("insert in map");
 	            
-	        	Result result = new Result(map);
+	        	Result result = new Result(statement, map);
 	        	results.add(result);
 	        	chronometer.step("create result");
 	            
@@ -131,7 +131,7 @@ public abstract class Context {
 	
 	protected List<Result> list(Statement statement) throws SQLException{
 		
-		ResultSet resultSet = statement.getResultSet();
+		ResultSet resultSet = statement.executeForResultSet();
         ResultSetMetaData metadata = resultSet.getMetaData();
         
         List<Result> results = new ArrayList<>();
@@ -145,7 +145,7 @@ public abstract class Context {
         		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
         	}
             
-        	Result result = new Result(map);
+        	Result result = new Result(statement, map);
         	results.add(result);
             
         }
@@ -157,18 +157,18 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
 		
-		Chronometer chronometer = new Chronometer("listAs", tracePerformances);
-		chronometer.timeThreshold(100);
-		
-		
 		try(Connection connection = datasource.getConnection()){
-			Statement statement = Statement.toStatement(connection, joinQuery);
+			
+			Chronometer chronometer = new Chronometer("listAs", tracePerformances);
+			chronometer.timeThreshold(100);
+			
+			Statement statement = Statement.toStatement(this, connection, joinQuery);
 			chronometer.step("statement creation");
 			
-	        ResultSet resultSet = statement.getResultSet();
+	        ResultSet resultSet = statement.executeForResultSet();
 	        chronometer.step("get resultset");
 	        
-	        Mapper<U> mapper = new Mapper<>(clazz);
+	        Mapper<U> mapper = new Mapper<>(clazz, this);
 	        chronometer.step("create mapper");
 	        //mapper.chronometer.active(tracePerformances);
 	        
@@ -205,9 +205,10 @@ public abstract class Context {
 			if(tracePerformances) {
 				System.out.println(mapper.getStats());
 			}
-
+	
 			return output;
 		}
+		
 		
 	}
 	
@@ -234,18 +235,17 @@ public abstract class Context {
 	@SneakyThrows
 	private <U> U insert(U object) {
 		
-		for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class)) {
-			method.invoke(object);
-		}
-
-		List<String> fieldValueList = new ArrayList<>();
-		
 		try(Connection connection = datasource.getConnection()){
-	
-			Statement statement = new Statement(connection)
+			for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class)) {
+				method.invoke(object);
+			}
+
+			List<String> fieldValueList = new ArrayList<>();
+			
+			Statement statement = new Statement(this, connection)
 					.appendQuery("INSERT INTO ")
-					.appendQuery(Query.nameMapper.mapDatabaseClass(object.getClass()));
-	
+					.appendQuery(nameMapper.mapDatabaseClass(object.getClass()));
+
 			
 			for(Field field : FieldUtils.getEntityFields(object.getClass())) {
 				field.setAccessible(true);
@@ -263,7 +263,7 @@ public abstract class Context {
 						continue;
 					}
 					
-					fieldValueList.add(Query.nameMapper.mapDatabaseField(field.getName()));
+					fieldValueList.add(nameMapper.mapDatabaseField(field.getName()));
 					statement.appendValue(object.getClass(), field.getName(), field.get(object));
 					
 				}
@@ -280,11 +280,7 @@ public abstract class Context {
 					.appendQuery(fieldValueList.stream().map(x -> "?").collect(Collectors.joining(", ")))
 					.appendQuery(")");
 			
-			
-					
-			statement.execute();
-			
-			ResultSet rs = statement.getGeneratedKeys();
+			ResultSet rs = statement.executeForGeneratedKeys();
 			if (rs.next()) {
 				Field field = getIdField(object.getClass());
 				field.setAccessible(true);
@@ -293,13 +289,15 @@ public abstract class Context {
 			else {
 				return null;
 			}
+			
+			
+			for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PostPersist.class)) {
+				method.invoke(object);
+			}
+			
+			return object;
 		}
 		
-		for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PostPersist.class)) {
-			method.invoke(object);
-		}
-		
-		return object;
 	}
 	
 	
@@ -314,7 +312,7 @@ public abstract class Context {
 			StringPipe fieldCreation = new StringPipe();
 			fieldCreation.separator(" ");
 			
-			fieldCreation.append(Query.nameMapper.mapDatabaseField(field.getName()));
+			fieldCreation.append(nameMapper.mapDatabaseField(field.getName()));
 			
 			Class returnClass = field.getType();
 			
@@ -373,7 +371,7 @@ public abstract class Context {
 		}
 		
 		
-		String result = "CREATE TABLE "+Query.nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
+		String result = "CREATE TABLE "+nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
 		
 		try (Connection connection = datasource.getConnection()){
 			PreparedStatement statement = connection.prepareStatement(result);
@@ -385,7 +383,7 @@ public abstract class Context {
 	
 	public String queryAsString(Query query) throws SQLException {
 		try (Connection connection = datasource.getConnection()){
-			return Statement.toStatement(connection, query).query();
+			return Statement.toStatement(this, connection, query).query();
 		}
 	}
 	
@@ -414,7 +412,7 @@ public abstract class Context {
 	public <U> void updateAll(List<U> entities) {
 
 		try(Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(connection);
+			Statement statement = new Statement(this, connection);
 					
 			for(Object entity : entities) {
 				
@@ -459,24 +457,24 @@ public abstract class Context {
 				// 1. Create query
 				
 				statement.appendQuery("UPDATE ")
-						.appendQuery(Query.nameMapper.mapDatabaseClass(entity.getClass()))
+						.appendQuery(nameMapper.mapDatabaseClass(entity.getClass()))
 						.appendQuery(" SET ");
 						
 				// 2. List updated fields
-				statement.appendQuery(updatedFields.stream().map(x-> Query.nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
+				statement.appendQuery(updatedFields.stream().map(x-> nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
 				
 				for(Field field : updatedFields) {
 					statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
 				}
 				
 				
-				statement.appendQuery(" WHERE "+Query.nameMapper.mapDatabaseField(idField.getName())+" = ?;");
+				statement.appendQuery(" WHERE "+nameMapper.mapDatabaseField(idField.getName())+" = ?;");
 				statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 				
 				
 			}
 			
-			boolean check = statement.execute();
+			boolean check = statement.executeForValidation();
 			
 			for(Object entity : entities) {
 				for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), PostUpdate.class)) {
@@ -489,10 +487,8 @@ public abstract class Context {
 	@SneakyThrows
 	public List<String> showTables(){
 		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(connection).appendQuery("SHOW TABLES;");
-			
-			statement.execute();
-			ResultSet resultSet = statement.getResultSet();
+			Statement statement = new Statement(this, connection).appendQuery("SHOW TABLES;");
+			ResultSet resultSet = statement.executeForResultSet();
 			
 			List<String> rows = new ArrayList<>();
 	        
@@ -508,8 +504,8 @@ public abstract class Context {
 	@SneakyThrows
 	public boolean truncateTable(Class c) {
 		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(connection).appendQuery("TRUNCATE TABLE ").appendQuery(Query.nameMapper.mapDatabaseClass(c));
-			return statement.execute();
+			Statement statement = new Statement(this, connection).appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.mapDatabaseClass(c));
+			return statement.executeForValidation();
 		}
 	}
 
@@ -517,7 +513,7 @@ public abstract class Context {
 	
 	public String findEntityName(Class<?> c, String columnName) {
 		for(Field field : FieldUtils.getEntityFields(c)) {
-			if(columnName.equals(Query.nameMapper.mapDatabaseField(field.getName()))){
+			if(columnName.equals(nameMapper.mapDatabaseField(field.getName()))){
 				return field.getName();
 			}
 		}
@@ -528,10 +524,10 @@ public abstract class Context {
 	public boolean addIndex(Class<?> c, String name, List<String> columns) {
 		try (Connection connection = datasource.getConnection()){
 		//CREATE INDEX IDXNAME ON TEST(NAME)
-			Statement statement = new Statement(connection).appendQuery("CREATE INDEX").appendQuery(name).appendQuery("ON");
-			statement.appendQuery(Query.nameMapper.mapDatabaseClass(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
+			Statement statement = new Statement(this, connection).appendQuery("CREATE INDEX").appendQuery(name).appendQuery("ON");
+			statement.appendQuery(nameMapper.mapDatabaseClass(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
 			
-			return statement.execute();
+			return statement.executeForValidation();
 		}
 		
 	}

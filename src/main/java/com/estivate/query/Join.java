@@ -19,33 +19,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Join {
 
-	Query.Entity leftEntity;
+	public Query.Entity leftEntity;
 
-	Query.Entity rightEntity;
+	public Query.Entity rightEntity;
 
 	
-	List<Pair<String, String>> joins = new ArrayList<>();
+	public List<Pair<String, String>> joins = new ArrayList<>();
 	
-	JoinType joinType = JoinType.INNER;
+	public JoinType joinType = JoinType.INNER;
 	
-	IndexHint indexHint = null;
-	List<String> indexNames;
+	public IndexHint indexHint = null;
+	public List<String> indexNames;
 
-	public String toString() {
-		
-		StringPipe sb = new StringPipe().separator(" ")
-				.append  (joinType.toString())
-				.append  ("JOIN")
-				.append  (Query.nameMapper.mapDatabaseClass(rightEntity.entity))
-				.appendIf(rightEntity.alias != null, rightEntity.alias);
-		if(indexHint != null && indexNames != null && !indexNames.isEmpty()) {
-			sb	.append  (indexHint.toString()+ " INDEX ("+indexNames.stream().collect(Collectors.joining(", "))+")");
-		}
-		sb		.append  ("ON")
-				.append  (joins.stream().map(x -> Query.nameMapper.mapDatabase(leftEntity, x.getLeft()) + " = " + Query.nameMapper.mapDatabase(rightEntity, x.getRight())).collect(Collectors.joining(" and ")));
-		return sb.toString();
-		
-	}
+
 
 	public Join(Query.Entity leftEntity, Query.Entity rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
 		this.leftEntity = leftEntity;

@@ -29,7 +29,7 @@ public class MapperTest {
 		
 		System.out.println(tasks.get(0).getCreated());
 		
-		Mapper mapper = new Mapper(TaskEntity.class);
+		Mapper mapper = new Mapper<>(TaskEntity.class, context);
 		
 		//ResultSetMetaData rsmd
 		

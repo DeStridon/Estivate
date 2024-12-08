@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.estivate.NameMapper;
-import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 
@@ -87,7 +85,6 @@ public class Query extends Aggregator{
 	@Getter
 	final Entity entity;
 
-	public static NameMapper nameMapper = new DefaultNameMapper();
 	
 	@Getter
 	String name;
@@ -99,10 +96,10 @@ public class Query extends Aggregator{
 	Set<Select> selects = new LinkedHashSet<>();
 	
 	@Getter
-	Set<String> orders = new LinkedHashSet<>();
+	List<Order> orders = new ArrayList<>();
 	
 	@Getter
-	Set<String> groupBys = new LinkedHashSet<>();
+	List<Group> groupBys = new ArrayList<>();
 	
 	@Getter
 	Integer offset;
@@ -241,14 +238,26 @@ public class Query extends Aggregator{
 	
 	public Query join(Join classJoin) { joins.add(classJoin); return this; }
 	
-	public Query orderAsc(Entity c, String attribute) 	{ orders.add(nameMapper.mapDatabase(c, attribute) + " ASC"); return this; }
+	public Query orderAsc(Entity c, String attribute) 	{ orders.add(new Order(c, attribute, true)); return this; }
 	public Query orderAsc(Class c, String attribute) 	{ return orderAsc(new Entity(c), attribute); }
-	public Query orderDesc(Entity c, String attribute) 	{ orders.add(nameMapper.mapDatabase(c, attribute) + " DESC"); return this; }
+	public Query orderDesc(Entity c, String attribute) 	{ orders.add(new Order(c, attribute, false)); return this; }
 	public Query orderDesc(Class c, String attribute) 	{ return orderDesc(new Entity(c), attribute); }
 	public Query limit(Integer limit) 		{ this.limit = limit; return this; }
 	public Query offset(Integer offset) 	{ this.offset = offset; return this;}
 	
 
+	@AllArgsConstructor
+	public static class Order{
+		public Entity entity;
+		public String attribute;
+		public Boolean asc;
+	}
+	
+	@AllArgsConstructor
+	public static class Group{
+		public Entity entity;
+		public String attribute;
+	}
 	
 
 	
@@ -352,8 +361,8 @@ public class Query extends Aggregator{
 		joinQuery.indexHint = this.indexHint;
 		joinQuery.indexNames = new LinkedHashSet<>(this.indexNames);
 
-		joinQuery.orders = new LinkedHashSet<>(this.orders);
-		joinQuery.groupBys = new LinkedHashSet<>(this.groupBys);
+		joinQuery.orders = new ArrayList<>(this.orders);
+		joinQuery.groupBys = new ArrayList<>(this.groupBys);
 
 		joinQuery.limit = this.limit;
 		joinQuery.offset = this.offset;
@@ -369,7 +378,7 @@ public class Query extends Aggregator{
 		
 		// Add to select
 		select(entity, field);
-		groupBys.add(nameMapper.mapDatabase(entity, field));
+		groupBys.add(new Group(entity, field));
 		
 		return this;
 	}

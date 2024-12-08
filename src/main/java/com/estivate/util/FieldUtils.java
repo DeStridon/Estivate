@@ -111,15 +111,4 @@ public class FieldUtils {
 	
 	}
 	
-	public static String getFieldName(Entity entity, Field field) {
-		int hash = Objects.hash(entity, field);
-		String fieldName = fieldNames.get(hash);
-		if(fieldName == null) {
-			fieldName = Query.nameMapper.mapEntity(entity, field.getName());
-			fieldNames.put(hash, fieldName);
-		}
-		return fieldName;
-		
-	}
-
 }

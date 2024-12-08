@@ -29,7 +29,7 @@ public class DatabaseGenerator {
 			context = new H2Context(DatasourceGenerator.datasource());
 			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
 			
-			Query.nameMapper = new TestNameMapper();
+			context.nameMapper = new TestNameMapper();
 			
 			context.create(TaskEntity.class);
 			context.create(SegmentEntity.class);

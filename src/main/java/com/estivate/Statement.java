@@ -16,25 +16,36 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Criterion;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
+import com.estivate.query.Query.Group;
+import com.estivate.query.Query.Order;
+import com.estivate.query.Select;
+import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StackLog;
+import com.estivate.util.StringPipe;
 
 import lombok.extern.slf4j.Slf4j;
 
+
+/*
+ * Wrapper for java.sql.PreparedStatement
+ * doesn't hold any connection, it just helps using statement
+ */
 @Slf4j
 public class Statement {
 
-	Connection connection;
+	final Context context;
+	final Connection connection;
 	
 	String queryName;
 	
@@ -43,7 +54,8 @@ public class Statement {
 	
 	PreparedStatement statement = null;
 	
-	public Statement(Connection connection){
+	public Statement(Context context, Connection connection){
+		this.context = context;
 		this.connection = connection;
 	}
 	
@@ -68,7 +80,7 @@ public class Statement {
 	public Statement appendParameter(Class entity, String attribute, Object parameter) {
 		if(parameter instanceof PropertyValue) {
 			PropertyValue field = (PropertyValue) parameter;
-			appendQuery(Query.nameMapper.mapDatabase(field.entity, field.attributeName));
+			appendQuery(context.nameMapper.mapDatabase(field.entity, field.attributeName));
 		}
 		else {
 			appendQuery("?");
@@ -83,20 +95,38 @@ public class Statement {
 			return field.toString();
 		}
 		
-
 		appendValue(entity, attribute, parameter);
 		return "?";
-
 	}
 
+	public boolean executeForValidation() throws SQLException{
+		return execute(connection);
+	}
+
+	public ResultSet executeForGeneratedKeys() throws SQLException{
+		if(statement == null) {
+			execute(connection);
+		}
+		return statement.getGeneratedKeys();
+	}
 	
-	public boolean execute() throws SQLException {
+	public ResultSet executeForResultSet() throws SQLException {
+		if(statement == null) {
+			execute(connection);
+		}
+		return statement.getResultSet();	
+	}
+	
+	private boolean execute(Connection connection) throws SQLException {
 		query.insert(0, "-- Stack = "+StackLog.create().subList(0, 3).stream().collect(Collectors.joining(", "))+"\n"); 
 		if(!StringUtils.isBlank(queryName)) {
 			query.insert(0, "-- "+queryName+"\n");
 		}
 		
+		
 		statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
+	
+
 		for(int i = 0; i < parameters.size(); i++) {
 			
 			Object object = parameters.get(i);
@@ -137,31 +167,18 @@ public class Statement {
 			}
 
 		}
-					
-		return statement.execute();
-	
-	
-	}
-
-	public ResultSet getGeneratedKeys() throws SQLException{
-		if(statement == null) {
-			execute();
-		}
-		return statement.getGeneratedKeys();
-	}
-	
-	
-	
-	public ResultSet getResultSet() throws SQLException {
-		if(statement == null) {
-			execute();
-		}
-		return statement.getResultSet();
-	}
-	
-	public static Statement toStatement(Connection connection, Query query) {
 		
-		Statement statement = new Statement(connection);
+		return statement.execute();
+						
+		
+	
+	}
+	
+	
+	
+	public static Statement toStatement(Context context, Connection connection, Query query) {
+		
+		Statement statement = new Statement(context, connection);
 		statement.queryName = query.getName();
 		
 		statement.appendQuery("SELECT ");
@@ -175,10 +192,10 @@ public class Statement {
 //			statement.appendQuery("distinct");
 //		}
 		
-		statement.appendQuery(String.join(", ", query.getSelects().stream().map(Object::toString).collect(Collectors.toList()))+"\n");
+		statement.appendQuery(String.join(", ", query.getSelects().stream().map(x -> statement.selectString(x)).collect(Collectors.toList()))+"\n");
 
 		//statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
-		statement.appendQuery("FROM").appendQuery(Query.nameMapper.mapDatabaseClass(query.getEntity().entity));
+		statement.appendQuery("FROM").appendQuery(context.nameMapper.mapDatabaseClass(query.getEntity().entity));
 		if(query.getEntity().alias != null) {
 			statement.appendQuery(query.getEntity().alias);
 		}
@@ -188,7 +205,7 @@ public class Statement {
 		}
 		
         for(Join join : query.buildJoins()) {
-        	statement.appendQuery(join.toString()+'\n');
+        	statement.appendQuery(statement.joinString(join)+'\n');
         }
         
         if(!query.getCriterions().isEmpty()) {
@@ -197,13 +214,14 @@ public class Statement {
         }
         
 		// Append group bys (if any)
+        
 		if(!query.getGroupBys().isEmpty()) {
-			statement.appendQuery(query.getGroupBys().stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+			statement.appendQuery(query.getGroupBys().stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}
 		
 		// Append order
 		if(!query.getOrders().isEmpty()) {
-			statement.appendQuery(query.getOrders().stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+			statement.appendQuery(query.getOrders().stream().map(x -> statement.orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
 		}
 		
 		// Append limit & offset
@@ -216,6 +234,58 @@ public class Statement {
         
         return statement;
         
+	}
+	
+	public String joinString(Join join) {
+		
+		StringPipe sb = new StringPipe().separator(" ")
+				.append  (join.joinType.toString())
+				.append  ("JOIN")
+				.append  (context.nameMapper.mapDatabaseClass(join.rightEntity.entity))
+				.appendIf(join.rightEntity.alias != null, join.rightEntity.alias);
+		if(join.indexHint != null && join.indexNames != null && !join.indexNames.isEmpty()) {
+			sb	.append  (join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
+		}
+		sb		.append  ("ON")
+				.append  (join.joins.stream().map(x -> context.nameMapper.mapDatabase(join.leftEntity, x.getLeft()) + " = " + context.nameMapper.mapDatabase(join.rightEntity, x.getRight())).collect(Collectors.joining(" and ")));
+		return sb.toString();
+		
+	}
+	
+	public String orderString(Order order) {
+		return context.nameMapper.mapDatabase(order.entity, order.attribute) + (order.asc ? " ASC" : " DESC");
+	}
+	
+	public String groupString(Group group) {
+		return context.nameMapper.mapDatabase(group.entity, group.attribute);
+	}
+	
+	public String selectString(Select select) {
+		if(select.method == SelectMethod.Distinct) {
+			return "DISTINCT "+context.nameMapper.mapDatabase(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
+		}
+		else if(select.method == SelectMethod.Count) {
+			if (select.entity == null) {
+				return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
+			}
+			return "COUNT(distinct "+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		}
+		else if(select.method == SelectMethod.Max) {
+			return "MAX("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		}
+		else if(select.method == SelectMethod.Min) {
+			return "MIN("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		}
+		else if(select.method == SelectMethod.Sum) {
+			return "SUM("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		}
+		else if(select.method == SelectMethod.GroupConcat) {
+			return "GROUP_CONCAT("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		}
+		
+		return context.nameMapper.mapDatabase(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
+		
+	
 	}
 	
 	public static void attachWhere(Statement statement, EstivateNode node, boolean rootNode) {
@@ -238,27 +308,27 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.Operator) {
 			Criterion.Operator operator = (Criterion.Operator) node;
-			statement.appendQuery(Query.nameMapper.mapDatabase(operator.entity, operator.attribute));
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(operator.entity, operator.attribute));
 			statement.appendQuery(operator.type.symbol);
 			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
-			statement.appendQuery(Query.nameMapper.mapDatabase(in.entity, in.attribute));
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(in.entity, in.attribute));
 			statement.appendQuery("in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
-			statement.appendQuery(Query.nameMapper.mapDatabase(in.entity, in.attribute));
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(in.entity, in.attribute));
 			statement.appendQuery("not in (");
 			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			statement.appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
-			statement.appendQuery(Query.nameMapper.mapDatabase(between.entity, between.attribute));
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(between.entity, between.attribute));
 			statement.appendQuery("between");
 			statement.appendParameter(between.entity.entity, between.attribute, between.min);
 			statement.appendQuery("and");
@@ -267,7 +337,7 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
-			statement.appendQuery(Query.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());

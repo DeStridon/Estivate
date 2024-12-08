@@ -113,7 +113,7 @@ public class IndexDiff {
 	
 	public void applyIndex(CompositeIndex index) {
 		
-		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> Query.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
+		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
 		String indexName = index.name();
 		if(StringUtils.isBlank(indexName)) {
 			indexName = Arrays.asList(index.columns()).stream().map(x -> x.value()).collect(Collectors.joining("_"));

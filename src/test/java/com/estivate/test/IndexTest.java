@@ -21,7 +21,7 @@ public class IndexTest {
 	public void contextTest() {
 		
 			
-		context.addIndex(TaskEntity.class, "yo", Arrays.asList(Query.nameMapper.mapDatabaseField(TaskEntity.Fields.projectId)+" ASC"));
+		context.addIndex(TaskEntity.class, "yo", Arrays.asList(context.nameMapper.mapDatabaseField(TaskEntity.Fields.projectId)+" ASC"));
 		
 		List<CompositeIndex> indexes = context.listIndexes(TaskEntity.class);
 		
@@ -35,7 +35,7 @@ public class IndexTest {
 		IndexDiff id = new IndexDiff(context, TaskEntity.class);
 		
 		List<CompositeIndex> indexes = id.getEntityIndexes();
-		Assert.assertEquals(1, indexes.size());
+		Assert.assertEquals(2, indexes.size());
 		
 		id.applyIndex(indexes.get(0));
 		

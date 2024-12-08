@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.NameMapper;
 import com.estivate.Result;
+import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
@@ -32,25 +32,26 @@ public class ResultTest {
 		
 		
 		Map<String, String> map = new HashMap<>();
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.projectId), "1");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceFragmentId), "2");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetFragmentId), "45");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.taskId), "555");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceContent), "blablablablablabla");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetContent), "pihiphiphpih");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage), "en_GB");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetLanguage), "fr_FR");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.macroStatus), "4");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.microStatus), "2");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.updated), "2024-11-19 22:02:03.254");
-		map.put(Query.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.archived), "2023-11-19 22:02:03");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.projectId), "1");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceFragmentId), "2");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetFragmentId), "45");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.taskId), "555");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceContent), "blablablablablabla");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetContent), "pihiphiphpih");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage), "en_GB");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetLanguage), "fr_FR");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.macroStatus), "4");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.microStatus), "2");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.updated), "2024-11-19 22:02:03.254");
+		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.archived), "2023-11-19 22:02:03");
 		
+		Statement statement = new Statement(context, null);
 		
 		
 		
 		List<Result> results = new ArrayList<>();
 		for(int i = 0; i < 2; i++) {
-			results.add(new Result(map));
+			results.add(new Result(statement, map));
 		}
 
 		Chronometer chrono = new Chronometer("bla");
