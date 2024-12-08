@@ -40,6 +40,7 @@ public class QueryJoinTest {
 		context.saveOrUpdate(SegmentEntity.builder().projectId(1).taskId(2).sourceContent("source content 2").wordcount(3).sourceFragmentId(6).build());
 		
 		Query query = new Query(SegmentEntity.class)
+				.name("Query Join Test")
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 2);
 		
 		List<SegmentEntity> results = context.listAs(query, SegmentEntity.class);

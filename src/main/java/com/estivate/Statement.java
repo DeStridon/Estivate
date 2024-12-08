@@ -18,6 +18,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.query.Aggregator;
 import com.estivate.query.Criterion;
 import com.estivate.query.EstivateNode;
@@ -25,6 +27,7 @@ import com.estivate.query.Join;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.util.FieldUtils;
+import com.estivate.util.StackLog;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +35,8 @@ import lombok.extern.slf4j.Slf4j;
 public class Statement {
 
 	Connection connection;
+	
+	String queryName;
 	
 	StringBuilder query = new StringBuilder();
 	List<Object> parameters = new ArrayList<>();
@@ -86,8 +91,10 @@ public class Statement {
 
 	
 	public boolean execute() throws SQLException {
-		//TODO : insert here the comment
-		query.insert(0, "-- Comment \n");
+		query.insert(0, "-- Stack = "+StackLog.create().subList(0, 3).stream().collect(Collectors.joining(", "))+"\n"); 
+		if(!StringUtils.isBlank(queryName)) {
+			query.insert(0, "-- "+queryName+"\n");
+		}
 		
 		statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
 		for(int i = 0; i < parameters.size(); i++) {
@@ -152,58 +159,59 @@ public class Statement {
 		return statement.getResultSet();
 	}
 	
-	public static Statement toStatement(Connection connection, Query joinQuery) {
+	public static Statement toStatement(Connection connection, Query query) {
 		
 		Statement statement = new Statement(connection);
+		statement.queryName = query.getName();
 		
 		statement.appendQuery("SELECT ");
 		
 		//TODO : avoid modifying joinQuery
-		if(joinQuery.getSelects().isEmpty()) {
-			joinQuery.selectAll(joinQuery.getEntity());
+		if(query.getSelects().isEmpty()) {
+			query.selectAll(query.getEntity());
 		}
 		
 //		if(joinQuery.getSelects().stream().map(x -> x.toString()).allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
 //			statement.appendQuery("distinct");
 //		}
 		
-		statement.appendQuery(String.join(", ", joinQuery.getSelects().stream().map(x -> x.toString()).collect(Collectors.toList()))+"\n");
+		statement.appendQuery(String.join(", ", query.getSelects().stream().map(Object::toString).collect(Collectors.toList()))+"\n");
 
 		//statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
-		statement.appendQuery("FROM").appendQuery(Query.nameMapper.mapDatabaseClass(joinQuery.getEntity().entity));
-		if(joinQuery.getEntity().alias != null) {
-			statement.appendQuery(joinQuery.getEntity().alias);
+		statement.appendQuery("FROM").appendQuery(Query.nameMapper.mapDatabaseClass(query.getEntity().entity));
+		if(query.getEntity().alias != null) {
+			statement.appendQuery(query.getEntity().alias);
 		}
 
-		if(joinQuery.getIndexHint() != null && joinQuery.getIndexNames() != null && !joinQuery.getIndexNames().isEmpty()) {
-			statement.appendQuery(joinQuery.getIndexHint()+ " INDEX ("+joinQuery.getIndexNames().stream().collect(Collectors.joining(", "))+")");
+		if(query.getIndexHint() != null && query.getIndexNames() != null && !query.getIndexNames().isEmpty()) {
+			statement.appendQuery(query.getIndexHint()+ " INDEX ("+query.getIndexNames().stream().collect(Collectors.joining(", "))+")");
 		}
 		
-        for(Join join : joinQuery.buildJoins()) {
+        for(Join join : query.buildJoins()) {
         	statement.appendQuery(join.toString()+'\n');
         }
         
-        if(!joinQuery.getCriterions().isEmpty()) {
+        if(!query.getCriterions().isEmpty()) {
         	statement.appendQuery("WHERE");
-        	attachWhere(statement, joinQuery, true);
+        	attachWhere(statement, query, true);
         }
         
 		// Append group bys (if any)
-		if(!joinQuery.getGroupBys().isEmpty()) {
-			statement.appendQuery(joinQuery.getGroupBys().stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+		if(!query.getGroupBys().isEmpty()) {
+			statement.appendQuery(query.getGroupBys().stream().collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}
 		
 		// Append order
-		if(!joinQuery.getOrders().isEmpty()) {
-			statement.appendQuery(joinQuery.getOrders().stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+		if(!query.getOrders().isEmpty()) {
+			statement.appendQuery(query.getOrders().stream().collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
 		}
 		
 		// Append limit & offset
-		if(joinQuery.getLimit() != null) {
-			statement.appendQuery("LIMIT "+joinQuery.getLimit()+"\n");
+		if(query.getLimit() != null) {
+			statement.appendQuery("LIMIT "+query.getLimit()+"\n");
 		}
-		if(joinQuery.getOffset() != null) {
-			statement.appendQuery("OFFSET "+ joinQuery.getOffset() +"\n");
+		if(query.getOffset() != null) {
+			statement.appendQuery("OFFSET "+ query.getOffset() +"\n");
 		}
         
         return statement;

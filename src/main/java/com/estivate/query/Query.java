@@ -89,6 +89,8 @@ public class Query extends Aggregator{
 
 	public static NameMapper nameMapper = new DefaultNameMapper();
 	
+	@Getter
+	String name;
 	
 	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
 	Set<Join> joins = new LinkedHashSet<>();
@@ -122,6 +124,11 @@ public class Query extends Aggregator{
 	public Query(Entity entity) {
 		super(GroupType.AND);
 		this.entity = entity;
+	}
+	
+	public Query name(String name) {
+		this.name = name;
+		return this;
 	}
 
 	public Query and(EstivateNode... nodes) {
