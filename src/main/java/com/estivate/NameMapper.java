@@ -1,5 +1,11 @@
 package com.estivate;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.estivate.entity.Index.CompositeIndex;
 import com.estivate.query.Query.Entity;
 
 public abstract class NameMapper {
@@ -29,6 +35,14 @@ public abstract class NameMapper {
 
 	
 	
+	public String mapIndex(CompositeIndex compositeIndex) {
+		if(StringUtils.isNotBlank(compositeIndex.name())) {
+			return compositeIndex.name();
+		}
+		return Arrays.asList(compositeIndex.columns()).stream().map(x -> x.value()).collect(Collectors.joining("_"));
+	}
+
+	
 	public static class DefaultNameMapper extends NameMapper{
 		public String mapEntityClass(Class c) { return c.getSimpleName(); }
 		public String mapEntityField(String field) { return field; }
@@ -42,6 +56,8 @@ public abstract class NameMapper {
 		public String mapDatabaseClass(Class c) { return c.getSimpleName().toUpperCase(); }
 		public String mapDatabaseField(String field) { return field.toUpperCase(); }
 	}
+	
+	
 	
 
 }
