@@ -532,7 +532,7 @@ public abstract class Context {
 		
 	}
 	
-	public CompositeIndex CompositeIndex(String name, List<ColumnIndex> columns) {
+	public static CompositeIndex CompositeIndex(String name, List<ColumnIndex> columns) {
 		
 		ColumnIndex[] array = new ColumnIndex[columns.size()];
 		columns.toArray(array);

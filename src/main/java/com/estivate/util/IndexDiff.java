@@ -80,7 +80,7 @@ public class IndexDiff {
 		
 		List<CompositeIndex> indexes = new ArrayList<>();
 		for(CompositeIndex index : compositeIndex) {
-			indexes.add(index);
+			indexes.add(Context.CompositeIndex(context.nameMapper.mapIndex(index), Arrays.asList(index.columns())));
 		}
 		
 		return indexes;
@@ -112,9 +112,8 @@ public class IndexDiff {
 	}
 	
 	public void applyIndex(CompositeIndex index) {
-		String indexName = context.nameMapper.mapIndex(index);
 		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-		context.addIndex(c, indexName, columns);
+		context.addIndex(c, index.name(), columns);
 	}
 
 	
