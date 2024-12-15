@@ -40,7 +40,7 @@ public class IndexTest {
 		id.applyIndex(indexes.get(0));
 		
 		List<CompositeIndex> missingDbIndexes = id.getMissingIndexes();
-		Assert.assertEquals(0, missingDbIndexes.size());
+		Assert.assertEquals(1, missingDbIndexes.size());
 	}
 	
 }

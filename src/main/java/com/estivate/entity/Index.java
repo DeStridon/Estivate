@@ -8,23 +8,25 @@ import java.lang.annotation.Target;
 
 public class Index {
 	
-	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)
-	@Repeatable(TableCompositeIndex.class)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface TableIndexes {
+		CompositeIndex[] value();
+	}
+	
+	@Repeatable(TableIndexes.class)
+	@Retention(RetentionPolicy.RUNTIME)
 	public @interface CompositeIndex {
 		String name() default "";
 		ColumnIndex[] columns() default {};	
 	}
 	
+	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface ColumnIndex{
 		String value();
 		int length() default 0;
 	}
 	
-	@Target(ElementType.TYPE)
-	@Retention(RetentionPolicy.RUNTIME)
-	public @interface TableCompositeIndex {
-		CompositeIndex[] value();
-	}
+	
 
 }

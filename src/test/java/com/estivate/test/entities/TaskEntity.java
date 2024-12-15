@@ -10,6 +10,7 @@ import javax.persistence.PrePersist;
 
 import com.estivate.entity.Index.ColumnIndex;
 import com.estivate.entity.Index.CompositeIndex;
+import com.estivate.entity.Index.TableIndexes;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.entity.VirtualForeignKey;
@@ -29,8 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
-@CompositeIndex(name="created", columns= {@ColumnIndex(TaskEntity.Fields.created)})
-@CompositeIndex(name="updated", columns= {@ColumnIndex(TaskEntity.Fields.updated)})
+@TableIndexes({
+	@CompositeIndex(name="created", columns= {@ColumnIndex(TaskEntity.Fields.created)}),
+	@CompositeIndex(name="updated", columns= {@ColumnIndex(TaskEntity.Fields.updated)})
+})
 public class TaskEntity extends AbstractEntity {
 	
 	@VirtualForeignKey(entity = ProjectEntity.class)
