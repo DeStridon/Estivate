@@ -339,6 +339,17 @@ public class Statement {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
 			statement.appendQuery(statement.context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
+		else if(node instanceof Criterion.InSubQuery) {
+			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(subQuery.entity, subQuery.attribute)+(subQuery.include ? " in ":" not in "));
+			Statement subStatement = Statement.toStatement(statement.context, statement.connection, subQuery.subQuery);
+			statement.appendQuery("("+subStatement.query()+")");
+			statement.parameters.addAll(subStatement.parameters);
+		}
+		else if(node instanceof Criterion.ExistsSubQuery){
+			Criterion.ExistsSubQuery subQuery = (Criterion.ExistsSubQuery) node;
+			Statement subStatement = Statement.toStatement(statement.context, statement.connection, subQuery.subQuery);
+		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());
 		}

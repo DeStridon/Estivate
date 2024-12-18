@@ -40,18 +40,42 @@ public class Join {
 		joins.add(Pair.of(leftAttribute, rightAttribute));
 	}
 
+	public static Join Inner(Query.Entity leftEntity, 	Query.Entity rightEntity)	{ return find(leftEntity, rightEntity, JoinType.INNER); }
+	public static Join Inner(Query.Entity leftEntity, 	Class rightClass)			{ return Join.Inner(leftEntity, new Query.Entity(rightClass)); }
+	public static Join Inner(Class leftClass, 			Query.Entity rightEntity)	{ return Join.Inner(new Query.Entity(leftClass), rightEntity); }
+	public static Join Inner(Class joinerEntity, 		Class joinedEntity)			{ return Join.Inner(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity)); }
+
+	public static Join Outer(Query.Entity leftEntity, 	Query.Entity rightEntity)	{ return find(leftEntity, rightEntity, JoinType.OUTER); }
+	public static Join Outer(Query.Entity leftEntity, 	Class rightClass)			{ return Join.Outer(leftEntity, new Query.Entity(rightClass)); }
+	public static Join Outer(Class leftClass, 			Query.Entity rightEntity)	{ return Join.Outer(new Query.Entity(leftClass), rightEntity); }
+	public static Join Outer(Class joinerEntity, 		Class joinedEntity)			{ return Join.Outer(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity)); }
+
+	public static Join Left	(Query.Entity leftEntity, 	Query.Entity rightEntity)	{ return find(leftEntity, rightEntity, JoinType.LEFT); }
+	public static Join Left	(Query.Entity leftEntity, 	Class rightClass)			{ return Join.Left(leftEntity, new Query.Entity(rightClass)); }
+	public static Join Left	(Class leftClass, 			Query.Entity rightEntity)	{ return Join.Left(new Query.Entity(leftClass), rightEntity); }
+	public static Join Left	(Class joinerEntity, 		Class joinedEntity)			{ return Join.Left(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity)); }
+
+	public static Join Right(Query.Entity leftEntity, 	Query.Entity rightEntity)	{ return find(leftEntity, rightEntity, JoinType.RIGHT); }
+	public static Join Right(Query.Entity leftEntity, 	Class rightClass)			{ return Join.Right(leftEntity, new Query.Entity(rightClass)); }
+	public static Join Right(Class leftClass, 			Query.Entity rightEntity)	{ return Join.Right(new Query.Entity(leftClass), rightEntity); }
+	public static Join Right(Class joinerEntity, 		Class joinedEntity)			{ return Join.Right(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity)); }
+
+
 	public static Join Inner(Query.Entity leftEntity, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightEntity, leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join Inner(Query.Entity leftEntity, Class rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Query.Entity(rightClass), leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join Inner(Class leftClass, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Query.Entity(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join Inner(Class joinerEntity, Class joinedEntity, String joinerAttribute, String joinedAttribute){ return new Join(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity), joinerAttribute, joinedAttribute, JoinType.INNER); }
+
 	public static Join Outer(Query.Entity leftEntity, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightEntity, leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join Outer(Query.Entity leftEntity, Class rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Query.Entity(rightClass), leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join Outer(Class leftClass, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Query.Entity(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join Outer(Class joinerEntity, Class joinedEntity, String joinerAttribute, String joinedAttribute){ return new Join(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity), joinerAttribute, joinedAttribute, JoinType.OUTER); }
+
 	public static Join Left(Query.Entity leftEntity, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightEntity, leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join Left(Query.Entity leftEntity, Class rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Query.Entity(rightClass), leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join Left(Class leftClass, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Query.Entity(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join Left(Class joinerEntity, Class joinedEntity, String joinerAttribute, String joinedAttribute){ return new Join(new Query.Entity(joinerEntity), new Query.Entity(joinedEntity), joinerAttribute, joinedAttribute, JoinType.LEFT); }
+
 	public static Join Right(Query.Entity leftEntity, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightEntity, leftAttribute, rightAttribute, JoinType.RIGHT); }
 	public static Join Right(Query.Entity leftEntity, Class rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Query.Entity(rightClass), leftAttribute, rightAttribute, JoinType.RIGHT); }
 	public static Join Right(Class leftClass, Query.Entity rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Query.Entity(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.RIGHT); }
@@ -59,7 +83,7 @@ public class Join {
 
 
 
-	public static Join find(Query.Entity internal, Query.Entity external) {
+	private static Join find(Query.Entity internal, Query.Entity external, JoinType joinType) {
 
 		// try doing the join from external class to internal class
 		for(Field externalField : FieldUtils.getEntityFields(external.entity)) {
@@ -74,6 +98,7 @@ public class Join {
 			cj.leftEntity = internal;
 			cj.rightEntity = external;
 			cj.on(StringUtils.isBlank(reference.attribute()) ? "id" : reference.attribute(), externalField.getName());
+			cj.joinType = joinType;
 
 			return cj;
 		}
@@ -89,6 +114,7 @@ public class Join {
 			cj.leftEntity = internal;
 			cj.rightEntity = external;
 			cj.on(internalField.getName(), StringUtils.isBlank(reference.attribute()) ? "id" : reference.attribute());
+			cj.joinType = joinType;
 
 			return cj;
 		}

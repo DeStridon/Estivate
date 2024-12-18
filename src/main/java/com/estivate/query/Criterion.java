@@ -27,7 +27,7 @@ public abstract class Criterion implements EstivateNode{
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Operator extends Criterion{
 		
-		public enum CriterionType{
+		public enum OperatorType{
 			Eq("="),
 			NotEq("!="),
 			Lt("<"),
@@ -39,16 +39,16 @@ public abstract class Criterion implements EstivateNode{
 			
 			public String symbol;
 			
-			CriterionType(String symbol) {
+			OperatorType(String symbol) {
 				this.symbol = symbol;
 			}
 		}
 		
-		public CriterionType type;
+		public OperatorType type;
 
 		public Object value;
 		
-		public Operator(Entity entity, String attribute, CriterionType type, Object value) {
+		public Operator(Entity entity, String attribute, OperatorType type, Object value) {
 			this.entity = entity;
 			this.attribute = attribute;
 			this.type = type;
@@ -79,13 +79,7 @@ public abstract class Criterion implements EstivateNode{
 			this.values = new ArrayList<>(values) ; 
 		}
 		
-		public In clone() {
-			In in = new In();
-			in.entity = entity;
-			in.attribute = attribute;
-			in.values = values.stream().collect(Collectors.toList());
-			return in;
-		}
+		public In clone() { return new In(entity, attribute, values.stream().collect(Collectors.toList())); }
 
 	}
 	
@@ -100,14 +94,8 @@ public abstract class Criterion implements EstivateNode{
 			this.attribute = attribute;
 			this.values = new ArrayList<>(values) ; 
 		}
-		
-		public NotIn clone() {
-			NotIn in = new NotIn();
-			in.entity = entity;
-			in.attribute = attribute;
-			in.values = values.stream().collect(Collectors.toList());
-			return in;
-		}
+
+		public NotIn clone() { return new NotIn(entity, attribute, values.stream().collect(Collectors.toList())); }
 
 	}
 	
@@ -124,21 +112,12 @@ public abstract class Criterion implements EstivateNode{
 			this.max = max;
 		}
 		
-		public Between clone() {
-			Between b = new Between();
-			b.entity = entity;
-			b.attribute = attribute;
-			b.min = min;
-			b.max = max;
-			
-			return b;
-		}
-
-
+		public Between clone() { return new Between(entity, attribute, min, max); }
 	}
 	
 	
 	public static class NullCheck extends Criterion{
+		
 		public boolean isNull;
 		
 		public NullCheck(Entity entity, String attribute, boolean isNull) {
@@ -146,16 +125,38 @@ public abstract class Criterion implements EstivateNode{
 			this.attribute = attribute;
 			this.isNull = isNull;
 		}
-		
-//		@Override
-//		public String compile() {
-//			return entity.getName() + "." + Query.nameMapper.mapAttribute(attribute)+(isNull ? " is null":" is not null");
-//		}
-		
-		public NullCheck clone() {
-			return new NullCheck(entity, attribute, isNull);
+
+		public NullCheck clone() { return new NullCheck(entity, attribute, isNull); }
+
+	}
+
+	public static class InSubQuery extends Criterion{
+
+		public Query subQuery;
+		public boolean include;
+
+		public InSubQuery(Entity<?> entity, String attribute, Query subQuery, boolean include){
+			this.entity = entity;
+			this.attribute = attribute;
+			this.subQuery = subQuery;
+			this.include = include;
 		}
 
+		public InSubQuery clone() {return new InSubQuery(entity, attribute, subQuery, include);}
+
+	}
+
+	public static class ExistsSubQuery extends Criterion{
+
+		public Query subQuery;
+		public boolean include;
+
+		public ExistsSubQuery(Query subQuery, boolean include){
+			this.subQuery = subQuery;
+			this.include = include;
+		}
+
+		public ExistsSubQuery clone(){return new ExistsSubQuery(subQuery, include);}
 
 
 	}

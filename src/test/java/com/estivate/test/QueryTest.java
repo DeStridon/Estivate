@@ -25,13 +25,6 @@ public class QueryTest {
 
 	Context context = DatabaseGenerator.getContext();
 	
-	@Test
-	public void cloneTest() {
-		
-		
-		
-		
-	}
 	
 	@Test
 	void orderLimitTest(){
