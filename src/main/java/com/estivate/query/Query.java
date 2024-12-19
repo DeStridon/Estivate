@@ -127,6 +127,8 @@ public class Query extends Aggregator{
 	public Query lteOrNull			(Entity<?> entity, String attribute, Object value) { super.lteOrNull(entity, attribute, value); return this;	}
 	public Query gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return this;	}
 
+	public Query and(EstivateNode... nodes) { criterions.add(EstivateNode.and(nodes)); return this; }
+	public Query or(EstivateNode... nodes) 	{ criterions.add(EstivateNode.or(nodes));  return this; }
 	
 	@Getter
 	final Entity<?> entity;
@@ -174,10 +176,7 @@ public class Query extends Aggregator{
 		return this;
 	}
 
-	public Query and(EstivateNode... nodes) {
-		criterions.add(EstivateNode.and(nodes));
-		return this;
-	}
+	
 	
 	// nested search of the different classes used in criterions and to be added in joins
 	public Set<Entity> digClasses(Aggregator aggregator){

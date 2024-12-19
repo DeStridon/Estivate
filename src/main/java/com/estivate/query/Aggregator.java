@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.Criterion.NullCheck;
 import com.estivate.query.Criterion.Operator;
 import com.estivate.query.Criterion.Operator.OperatorType;
@@ -143,12 +144,14 @@ public class Aggregator implements EstivateNode {
 		return this;
 	}
 	
-
+	
 
 	public Aggregator clone() {
 		Aggregator joinAggregator = new Aggregator(this.groupType);
 		joinAggregator.criterions = criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		return joinAggregator;
 	}
+	
+	
 
 }
