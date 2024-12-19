@@ -79,9 +79,6 @@ public abstract class Criterion implements EstivateNode{
 	public static Criterion notInSubQuery(Class<?> entity, String attribute, Query subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
 	
 	
-		
-	@Data
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class Operator extends Criterion{
 		
 		public enum OperatorType{
@@ -113,18 +110,11 @@ public abstract class Criterion implements EstivateNode{
 		}
 
 
-		public Operator clone() {
-			Operator op = new Operator();
-			op.entity = entity;
-			op.attribute = attribute;
-			op.type = type;
-			op.value = value;
-			return op;
-		}
+		public Operator clone() { return new Operator(entity, attribute, type, value); }
 
 	}
 	
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	
 	public static class In extends Criterion {
 		
 		@Getter
@@ -140,7 +130,7 @@ public abstract class Criterion implements EstivateNode{
 
 	}
 	
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	
 	public static class NotIn extends Criterion {
 		
 		@Getter
@@ -156,7 +146,7 @@ public abstract class Criterion implements EstivateNode{
 
 	}
 	
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	
 	public static class Between extends Criterion{
 
 		public Object min;
