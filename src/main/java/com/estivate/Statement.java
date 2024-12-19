@@ -349,6 +349,9 @@ public class Statement {
 		else if(node instanceof Criterion.ExistsSubQuery){
 			Criterion.ExistsSubQuery subQuery = (Criterion.ExistsSubQuery) node;
 			Statement subStatement = Statement.toStatement(statement.context, statement.connection, subQuery.subQuery);
+			statement.appendQuery(subQuery.include ? "EXISTS": "NOT EXISTS");
+			statement.appendQuery("("+subStatement.query()+")");
+			statement.parameters.addAll(subStatement.parameters);
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());

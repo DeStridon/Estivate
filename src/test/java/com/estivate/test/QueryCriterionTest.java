@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Result;
 import com.estivate.context.Context;
+import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
@@ -59,6 +60,7 @@ public class QueryCriterionTest {
 		SegmentEntity segment32 = context.saveOrUpdate(SegmentEntity.builder().taskId(task3.getId()).sourceContent("source content 3.2").build());
 		
 		Query query = new Query(SegmentEntity.class)
+				.join(Join.Inner(SegmentEntity.class, TaskEntity.class))
 				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
 				.selectAll(TaskEntity.class)
 				
