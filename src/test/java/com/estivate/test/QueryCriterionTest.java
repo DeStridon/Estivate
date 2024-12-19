@@ -110,8 +110,8 @@ public class QueryCriterionTest {
 				.gteIfNotNull(TaskEntity.class,  TaskEntity.Fields.projectId, 4)
 				.betweenIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 3, 7)
 				.notEqIfNotNull(TaskEntity.class, TaskEntity.Fields.externalName, "external Name 2")
-				.inIfNotNull(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
-				.notInIfNotNull(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
+				.inIfNotEmpty(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
+				.notInIfNotEmpty(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
 				;
 		
 		List<TaskEntity> tasks = context.listAs(query, TaskEntity.class);

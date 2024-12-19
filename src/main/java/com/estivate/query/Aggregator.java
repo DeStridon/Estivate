@@ -58,14 +58,21 @@ public class Aggregator implements EstivateNode {
 	public Aggregator gteIfNotNull  	(Entity<?> entity, String attribute, Object value) { if(value != null) {return gte(entity, attribute, value);} return this; }
 	public Aggregator betweenIfNotNull	(Entity<?> entity, String attribute, Object min, Object max) {if(min != null && max != null) { return between(entity, attribute, min, max);} return this; }
 
-	public Aggregator inIfNotNull   	(Entity<?> entity, String attribute, Collection<?> values) { if(values != null) {return in(entity, attribute, values);} return this; }
-	public Aggregator notInIfNotNull   	(Entity<?> entity, String attribute, Collection<?> values) { if(values != null) {return notIn(entity, attribute, values);} return this; }
+	public Aggregator inIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) { if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return this; }
+	public Aggregator notInIfNotEmpty  	(Entity<?> entity, String attribute, Collection<?> values) { if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return this; }
 
+	
 	public Aggregator likeIfNotNull 			(Entity<?> entity, String attribute, String value) { if(value != null) {return like(entity, attribute, value);} return this; }
 	public Aggregator likeStartsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeStartsWith(entity, attribute, value);} return this; }
 	public Aggregator likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeEndsWith(entity, attribute, value);} return this; }
 	public Aggregator likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeContains(entity, attribute, value);} return this; }
 
+	public Aggregator likeInIfNotEmpty 			(Entity<?> entity, String attribute, Collection<String> values) { add(Criterion.likeInIfNotEmpty(entity, attribute, values)); return this; }
+	public Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { add(Criterion.likeStartsWithInIfNotEmpty(entity, attribute, values)); return this; }
+	public Aggregator likeEndsWithInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { add(Criterion.likeEndsWithInIfNotEmpty(entity, attribute, values)); return this; }
+	public Aggregator likeContainsInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { add(Criterion.likeContainsInIfNotEmpty(entity, attribute, values)); return this; }
+	
+	
 	public Aggregator notLikeIfNotNull 			(Entity<?> entity, String attribute, String value) { if(value != null) {return notLike(entity, attribute, value);} return this; }
 	public Aggregator notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeStartsWith(entity, attribute, value);} return this; }
 	public Aggregator notLikeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeEndsWith(entity, attribute, value);} return this; }
@@ -115,14 +122,22 @@ public class Aggregator implements EstivateNode {
 	public Aggregator lteIfNotNull   	(Class<?> entity, String attribute, Object value)        	{ return lteIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gteIfNotNull   	(Class<?> entity, String attribute, Object value)        	{ return gteIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator betweenIfNotNull	(Class<?> entity, String attribute, Object min, Object max)	{ return betweenIfNotNull(new Entity<>(entity), attribute, min, max); }
-	public Aggregator inIfNotNull    	(Class<?> entity, String attribute, Collection<?> values) 	{ return inIfNotNull(new Entity<>(entity), attribute, values); }
-	public Aggregator notInIfNotNull    (Class<?> entity, String attribute, Collection<?> values) 	{ return notInIfNotNull(new Entity<>(entity), attribute, values); }
 
+	public Aggregator inIfNotEmpty    	(Class<?> entity, String attribute, Collection<?> values) 	{ return inIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public Aggregator notInIfNotEmpty   (Class<?> entity, String attribute, Collection<?> values) 	{ return notInIfNotEmpty(new Entity<>(entity), attribute, values); }
+
+	
 	public Aggregator likeIfNotNull				(Class<?> entity, String attribute, String value)	{ return likeIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator likeStartsWithIfNotNull	(Class<?> entity, String attribute, String value)	{ return likeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator likeEndsWithIfNotNull		(Class<?> entity, String attribute, String value)	{ return likeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator likeContainsIfNotNull		(Class<?> entity, String attribute, String value)	{ return likeContainsIfNotNull(new Entity<>(entity), attribute, value); }
 
+	public Aggregator likeInIfNotEmpty 			(Class<?> entity, String attribute, Collection<String> values) { return likeInIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public Aggregator likeStartsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { return likeStartsWithInIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public Aggregator likeEndsWithInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { return likeEndsWithInIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public Aggregator likeContainsInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { return likeContainsInIfNotEmpty(new Entity<>(entity), attribute, values); }
+
+	
 	public Aggregator notLikeIfNotNull			(Class<?> entity, String attribute, String value)  { return notLikeIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator notLikeEndsWithIfNotNull	(Class<?> entity, String attribute, String value)	{ return notLikeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
@@ -151,6 +166,12 @@ public class Aggregator implements EstivateNode {
 		joinAggregator.criterions = criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		return joinAggregator;
 	}
+
+
+
+
+
+	
 	
 	
 

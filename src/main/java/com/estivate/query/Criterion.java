@@ -47,6 +47,11 @@ public abstract class Criterion implements EstivateNode{
 	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.NotLike, "%"+value);	}
 	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.NotLike, "%"+value+"%");	}
 
+	public static Aggregator likeInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 			{ if(values != null && !values.isEmpty()) { return EstivateNode.or(values.stream().map(x -> like(entity, attribute, x)).collect(Collectors.toList()));} return null; }
+	public static Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return EstivateNode.or(values.stream().map(x -> likeStartsWith(entity, attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator likeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return EstivateNode.or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator likeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return EstivateNode.or(values.stream().map(x -> likeContains(entity, attribute, x)).collect(Collectors.toList())); } return null; }
+	
 	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return new NullCheck(entity, attribute, true);}
 	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return new NullCheck(entity, attribute, false);}
 	
@@ -78,6 +83,7 @@ public abstract class Criterion implements EstivateNode{
 	public static Criterion notLikeStartsWith(Class<?> entity, String attribute, String value)	{ return notLikeStartsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeEndsWith	(Class<?> entity, String attribute, String value)	{ return notLikeEndsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeContains	(Class<?> entity, String attribute, String value)	{ return notLikeContains(new Entity<>(entity), attribute, value); }
+	
 
 	public static Criterion isNull		(Class<?> entity, String attribute) 						{ return isNull(new Entity<>(entity), attribute);}
 	public static Criterion isNotNull	(Class<?> entity, String attribute) 						{ return isNotNull(new Entity<>(entity), attribute);}
@@ -214,5 +220,7 @@ public abstract class Criterion implements EstivateNode{
 
 
 	}
+
+	
 
 }
