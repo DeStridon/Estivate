@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.estivate.query.Query.Entity;
+import com.estivate.Estivate;
 import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 
@@ -44,6 +44,16 @@ public class Query extends Aggregator{
 	public Query notLikeEndsWith 	(Class<?> entity, String attribute, String value)	{ super.notLikeEndsWith(entity, attribute, value);  return this; }
 	public Query notLikeContains 	(Class<?> entity, String attribute, String value)	{ super.notLikeContains(entity, attribute, value);  return this; }
 
+	public Query likeIn 			(Class<?> entity, String attribute, Collection<String> value)	{ super.likeIn(entity, attribute, value);  return this; }
+	public Query likeStartsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeStartsWithIn(entity, attribute, value);  return this; }
+	public Query likeEndsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeEndsWithIn(entity, attribute, value);  return this; }
+	public Query likeContainsIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeContainsIn(entity, attribute, value);  return this; }
+	public Query notLikeIn			(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeIn(entity, attribute, value);  return this; }
+	public Query notLikeStartsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeStartsWithIn(entity, attribute, value);  return this; }
+	public Query notLikeEndsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeEndsWithIn(entity, attribute, value);  return this; }
+	public Query notLikeContainsIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeContainsIn(entity, attribute, value);  return this; }
+
+	
 	public Query inSubQuery			(Class<?> entity, String attribute, Query subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
 	public Query notInSubQuery		(Class<?> entity, String attribute, Query subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
 	public Query existsSubQuery		(Query subQuery){ super.existsSubQuery(subQuery); return this; }
@@ -98,14 +108,23 @@ public class Query extends Aggregator{
 
 	public Query like 	(Entity<?> entity, String attribute, String value)	    		{ super.like  	(entity, attribute, value);  		return this; }
 	public Query likeStartsWith(Entity<?> entity, String attribute, String value)		{ super.likeStartsWith(entity, attribute, value);	return this; }
-	public Query likeEndsWith(Entity<?> entity, String attribute, String value)		{ super.likeEndsWith(entity, attribute, value);		return this; }
-	public Query likeContains(Entity<?> entity, String attribute, String value)		{ super.likeContains(entity, attribute, value);		return this; }
+	public Query likeEndsWith(Entity<?> entity, String attribute, String value)			{ super.likeEndsWith(entity, attribute, value);		return this; }
+	public Query likeContains(Entity<?> entity, String attribute, String value)			{ super.likeContains(entity, attribute, value);		return this; }
 
 	public Query notLike(Entity<?> entity, String attribute, String value)	    		{ super.notLike (entity, attribute, value);  		return this; }
 	public Query notLikeStartsWith(Entity<?> entity, String attribute, String value)	{ super.notLikeStartsWith(entity, attribute, value);return this; }
 	public Query notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ super.notLikeEndsWith(entity, attribute, value);	return this; }
 	public Query notLikeContains(Entity<?> entity, String attribute, String value)		{ super.notLikeContains(entity, attribute, value);	return this; }
 
+	public Query likeIn 	(Entity<?> entity, String attribute, Collection<String> values)	    	{ super.likeIn  	(entity, attribute, values);  		return this; }
+	public Query likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ super.likeStartsWithIn(entity, attribute, values);	return this; }
+	public Query likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ super.likeEndsWithIn(entity, attribute, values);		return this; }
+	public Query likeContainsIn(Entity<?> entity, String attribute, Collection<String> values)		{ super.likeContainsIn(entity, attribute, values);		return this; }
+
+	public Query notLikeIn(Entity<?> entity, String attribute, Collection<String> values)	    	{ super.notLikeIn (entity, attribute, values);  		return this; }
+	public Query notLikeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ super.notLikeStartsWithIn(entity, attribute, values);return this; }
+	public Query notLikeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ super.notLikeEndsWithIn(entity, attribute, values);	return this; }
+	public Query notLikeContainsIn(Entity<?> entity, String attribute, Collection<String> values)	{ super.notLikeContainsIn(entity, attribute, values);	return this; }
 
 	public Query eqIfNotNull   		(Entity<?> entity, String attribute, Object value)        	{ super.eqIfNotNull   (entity, attribute, value);  return this; }
 	public Query ltIfNotNull   		(Entity<?> entity, String attribute, Object value)        	{ super.ltIfNotNull   (entity, attribute, value);  return this; }
@@ -141,8 +160,10 @@ public class Query extends Aggregator{
 	public Query lteOrNull			(Entity<?> entity, String attribute, Object value) { super.lteOrNull(entity, attribute, value); return this;	}
 	public Query gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return this;	}
 
-	public Query and(EstivateNode... nodes) { criterions.add(EstivateNode.and(nodes)); return this; }
-	public Query or(EstivateNode... nodes) 	{ criterions.add(EstivateNode.or(nodes));  return this; }
+	public Query add(EstivateNode node) { super.add(node); return this; }
+	public Query addIfNotNull(EstivateNode node) { super.addIfNotNull(node); return this; }
+	public Query and(EstivateNode... nodes) { criterions.add(Estivate.and(nodes)); return this; }
+	public Query or(EstivateNode... nodes) 	{ criterions.add(Estivate.or(nodes));  return this; }
 	
 	@Getter
 	final Entity<?> entity;

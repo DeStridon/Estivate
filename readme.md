@@ -34,9 +34,72 @@ Following legacy annotations are handled by Estivate
 - PostPersist
 - PostUpdate 
 
+### 4. Criterions
+
+#### 4.1. Native SQL Criterions
+
+- Estivate::eq
+- Estivate::notEq
+
+- Estivate::lt : lower than "<"
+- Estivate::gt : greater than ">"
+- Estivate::lte : lower than or equals "<="
+- Estivate::gte : lower than or equals ">="
+- Estivate::between : between
+
+- Estivate::in
+- Estivate::notIn
+
+- Estivate::like
+- Estivate::notLike
+
+- Estivate::isNull
+- Estivate::isNotNull
+
+#### 4.2. Extended Criterions
+Criterions not supported natively by SQL, but wrapped by Estivate to feel like it does.
+
+- Estivate::eqOrNull
+- Estivate::ltOrNull
+- Estivate::gtOrNull
+- Estivate::lteOrNull
+- Estivate::gteOrNull
+
+- Estivate::likeStartsWith
+- Estivate::likeEndsWith
+- Estivate::likeContains
+- Estivate::notLikeStartsWith
+- Estivate::notLikeEndsWith
+- Estivate::notLikeContains
+
+- Estivate::likeIn
+- Estivate::notLikeIn
+
+#### 4.3. Optional Criterions
+Criterions that are activated only if the value is not null
+
+- Estivate::eqIfNotNull
+- Estivate::ltIfNotNull
+- Estivate::gtIfNotNull
+- Estivate::lteIfNotNull
+- Estivate::gteIfNotNull
+- Estivate::betweenIfNotNull
+
+- Estivate::likeIfNotNull
+- Estivate::likeStartsWithIfNotNull
+- Estivate::likeEndsWithIfNotNull
+- Estivate::likeContainsWithIfNotNull
+
+- Estivate::inIfNotEmpty
+- Estivate::notInIfNotEmpty
+
+- Estivate::likeInIfNotEmpty
+- Estivate::likeStartsWithInIfNotEmpty
+- Estivate::likeEndsWithInIfNotEmpty
+- Estivate::likeContainsInIfNotEmpty
 
 
-### 4. Advanced
+### 5. Advanced
 #### 4.1. NameMapper
 
 ### 5. License
