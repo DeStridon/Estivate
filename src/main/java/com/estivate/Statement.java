@@ -24,6 +24,7 @@ import com.estivate.query.Aggregator;
 import com.estivate.query.Criterion;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
+import com.estivate.query.Keyword;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Group;
@@ -352,6 +353,9 @@ public class Statement {
 			statement.appendQuery(subQuery.include ? "EXISTS": "NOT EXISTS");
 			statement.appendQuery("("+subStatement.query()+")");
 			statement.parameters.addAll(subStatement.parameters);
+		}
+		else if(node instanceof Keyword) {
+			statement.appendQuery(((Keyword) node).getValue().toString().toLowerCase());
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());

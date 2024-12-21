@@ -67,8 +67,9 @@ public class Query extends Aggregator{
 	public Query gteIfNotNull  		(Class<?> entity, String attribute, Object value)        	{ super.gteIfNotNull  (entity, attribute, value);  return this; }
 	public Query betweenIfNotNull	(Class<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull(entity, attribute, min, max); return this; }
 
-	public Query inIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmpty   (entity, attribute, values); return this; }
-	public Query notInIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return this; }
+	public Query inIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmpty    (entity, attribute, values); return this; }
+	public Query notInIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty (entity, attribute, values); return this; }
+	public Query inOrFalseIfEmpty	(Class<?> entity, String attribute, Collection<?> values)	{ super.inOrFalseIfEmpty(entity, attribute, values); return this; }
 	
 	public Query likeIfNotNull 				(Class<?> entity, String attribute, String value)        	{ super.likeIfNotNull (entity, attribute, value);  return this; }
 	public Query likeStartsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.likeStartsWithIfNotNull (entity, attribute, value);  return this; }
@@ -133,8 +134,9 @@ public class Query extends Aggregator{
 	public Query gteIfNotNull  		(Entity<?> entity, String attribute, Object value)        	{ super.gteIfNotNull  (entity, attribute, value);  return this; }
 	public Query betweenIfNotNull	(Entity<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull (entity, attribute, min, max); return this; }
 	
-	public Query inIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmpty   (entity, attribute, values); return this; }
-	public Query notInIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return this; }
+	public Query inIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmpty    (entity, attribute, values); return this; }
+	public Query notInIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty (entity, attribute, values); return this; }
+	public Query inOrFalseIfEmpty	(Entity<?> entity, String attribute, Collection<?> values)  { super.inOrFalseIfEmpty(entity, attribute, values); return this; }
 	
 	public Query likeIfNotNull 		(Entity<?> entity, String attribute, String value)        	{ super.likeIfNotNull (entity, attribute, value);  return this; }
 	public Query likeStartsWithIfNotNull(Entity<?> entity, String attribute, String value)		{ super.likeStartsWithIfNotNull(entity, attribute, value);	return this; }
@@ -161,7 +163,6 @@ public class Query extends Aggregator{
 	public Query gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return this;	}
 
 	public Query add(EstivateNode node) { super.add(node); return this; }
-	public Query addIfNotNull(EstivateNode node) { super.addIfNotNull(node); return this; }
 	public Query and(EstivateNode... nodes) { criterions.add(Estivate.and(nodes)); return this; }
 	public Query or(EstivateNode... nodes) 	{ criterions.add(Estivate.or(nodes));  return this; }
 	

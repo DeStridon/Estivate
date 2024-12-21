@@ -6,11 +6,6 @@ import com.estivate.query.Aggregator.GroupType;
 
 public interface EstivateNode {
 	
-	
-
-	
-	
-	
 	public EstivateNode clone();
 
 }
