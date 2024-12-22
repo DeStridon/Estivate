@@ -36,8 +36,8 @@ public class Estivate {
 	public static Criterion notIn   			(Entity<?> entity, String attribute, Collection<?> values){ return new NotIn(entity, attribute, values); }
 	public static Criterion inIfNotEmpty		(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return null; }
 	public static Criterion notInIfNotEmpty		(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return null; }
-	public static EstivateNode inOrFalseIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return keywordFalse(); }
-	
+	public static EstivateNode inOrFalseIfEmpty		(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return keywordFalse(); }
+	public static EstivateNode notInOrTrueIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return keywordTrue(); }
 
 	public static Criterion like 	(Entity<?> entity, String attribute, String value)	    		{ return new Operator(entity, attribute, OperatorType.Like, value); }
 	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.Like, value+"%");	}
@@ -106,9 +106,15 @@ public class Estivate {
 	public static Criterion lte   	(Class<?> entity, String attribute, Object value)        { return lte(new Entity<>(entity), attribute, value); }
 	public static Criterion gte   	(Class<?> entity, String attribute, Object value)        { return gte(new Entity<>(entity), attribute, value); }
 	public static Criterion between	(Class<?> entity, String attribute, Object left, Object right) { return between(new Entity<>(entity), attribute, left, right); }
+	
 	public static Criterion in    	(Class<?> entity, String attribute, Collection<?> values) { return in(new Entity<>(entity), attribute, values); }
 	public static Criterion notIn   (Class<?> entity, String attribute, Collection<?> values) { return notIn(new Entity<>(entity), attribute, values); }
-
+	public static Criterion inIfNotEmpty		(Class<?> entity, String attribute, Collection<?> values){ return inIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public static Criterion notInIfNotEmpty		(Class<?> entity, String attribute, Collection<?> values){ return notInIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public static EstivateNode inOrFalseIfEmpty		(Class<?> entity, String attribute, Collection<?> values){ return inOrFalseIfEmpty(new Entity<>(entity), attribute, values); }
+	public static EstivateNode notInOrTrueIfEmpty	(Class<?> entity, String attribute, Collection<?> values){ return notInOrTrueIfEmpty(new Entity<>(entity), attribute, values); }
+	
+	
 	public static Criterion like			(Class<?> entity, String attribute, String value)	{ return like(new Entity<>(entity), attribute, value); }
 	public static Criterion likeStartsWith	(Class<?> entity, String attribute, String value)	{ return likeStartsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion likeEndsWith	(Class<?> entity, String attribute, String value)	{ return likeEndsWith(new Entity<>(entity), attribute, value); }

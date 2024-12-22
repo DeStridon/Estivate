@@ -76,6 +76,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator inIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.inIfNotEmpty(entity, attribute, values)); return this; }
 	public Aggregator notInIfNotEmpty	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.notInIfNotEmpty(entity, attribute, values)); return this; }
 	public Aggregator inOrFalseIfEmpty	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.inOrFalseIfEmpty(entity, attribute, values)); return this; }
+	public Aggregator notInOrTrueIfEmpty(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.notInOrTrueIfEmpty(entity, attribute, values)); return this; }
 	
 	
 	public Aggregator likeIfNotNull 			(Entity<?> entity, String attribute, String value) { add(Estivate.likeIfNotNull(entity, attribute, value)); return this; }
@@ -154,6 +155,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator inIfNotEmpty    	(Class<?> entity, String attribute, Collection<?> values) 	{ return inIfNotEmpty(new Entity<>(entity), attribute, values); }
 	public Aggregator notInIfNotEmpty   (Class<?> entity, String attribute, Collection<?> values) 	{ return notInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	public Aggregator inOrFalseIfEmpty	(Class<?> entity, String attribute, Collection<?> values)	{ return inOrFalseIfEmpty(new Entity<>(entity), attribute, values); }
+	public Aggregator notInOrTrueIfEmpty(Class<?> entity, String attribute, Collection<?> values)	{ return notInOrTrueIfEmpty(new Entity<>(entity), attribute, values); }
 	
 	public Aggregator likeIfNotNull				(Class<?> entity, String attribute, String value)	{ return likeIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator likeStartsWithIfNotNull	(Class<?> entity, String attribute, String value)	{ return likeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
