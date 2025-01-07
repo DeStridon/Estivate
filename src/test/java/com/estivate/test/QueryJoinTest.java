@@ -89,8 +89,8 @@ public class QueryJoinTest {
 	public void nameMappingTest() throws SQLException {
 		
 		
-		Entity sourceSegment = new Entity(SegmentEntity.class, "sourceSegment");
-		Entity targetSegment = new Entity(SegmentEntity.class, "targetSegment");
+		Entity<SegmentEntity> sourceSegment = new Entity<>(SegmentEntity.class, "sourceSegment");
+		Entity<SegmentEntity> targetSegment = new Entity<>(SegmentEntity.class, "targetSegment");
 		
 		
 		Query query = new Query(TaskEntity.class)

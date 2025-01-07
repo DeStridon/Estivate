@@ -5,15 +5,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.query.Criterion.NullCheck;
-import com.estivate.query.Criterion.Operator;
-import com.estivate.query.Criterion.Operator.OperatorType;
 import com.estivate.query.Query.Entity;
 
-import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

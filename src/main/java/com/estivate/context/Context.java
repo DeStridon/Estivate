@@ -314,7 +314,7 @@ public abstract class Context {
 			
 			fieldCreation.append(nameMapper.mapDatabaseField(field.getName()));
 			
-			Class returnClass = field.getType();
+			Class<?> returnClass = field.getType();
 			
 			if(field.getDeclaredAnnotation(Convert.class) != null) {
 				returnClass = String.class;

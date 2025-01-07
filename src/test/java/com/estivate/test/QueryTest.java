@@ -1,25 +1,15 @@
 package com.estivate.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
-import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;
-import com.estivate.test.entities.TaskEntity.MacroState;
-import com.estivate.test.entities.misc.Language;
 
 public class QueryTest {
 

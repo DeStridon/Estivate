@@ -14,7 +14,6 @@ import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.entity.Index.ColumnIndex;
 import com.estivate.entity.Index.CompositeIndex;
-import com.estivate.query.Query;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -75,7 +75,7 @@ public class Mapper<U> {
 	
 	@SneakyThrows
 	public void attachMetadata(ResultSetMetaData metadata) {
-		Entity entity = new Entity(targetClass);
+		Entity<U> entity = new Entity<>(targetClass);
 		columnFields = new ArrayList<>();
 		for(int i = 0; i < metadata.getColumnCount(); i++) {
 			
@@ -93,7 +93,7 @@ public class Mapper<U> {
 	@SneakyThrows
 	public U map(String[] row) {
 		U obj = constructor.newInstance();
-		Entity entity = new Entity(targetClass);
+		Entity<U> entity = new Entity<>(targetClass);
 		chronometer.step("constructor & entity");
 		
 		for(int i = 0; i < row.length; i++) {
@@ -119,7 +119,7 @@ public class Mapper<U> {
 		
 		U obj = constructor.newInstance();
 		
-		Entity entity = new Entity(targetClass);
+		Entity<U> entity = new Entity<>(targetClass);
 		
 		Class<?> currentClass = targetClass;
 		while(currentClass != Object.class) {
@@ -141,7 +141,8 @@ public class Mapper<U> {
 		
 	}
 	
-	public String getFieldName(Entity entity, Field field) {
+	// can this method be used for several entities ?
+	public String getFieldName(Entity<?> entity, Field field) {
 		int hash = Objects.hash(entity, field);
 		String fieldName = fieldNames.get(hash);
 		if(fieldName == null) {
@@ -153,7 +154,7 @@ public class Mapper<U> {
 	}
 	
 	
-	public void setGeneratedField(Entity entity, String value, Field field, U obj) throws EstivateException {
+	public void setGeneratedField(Entity<?> entity, String value, Field field, U obj) throws EstivateException {
 		try {
 			
 			if(value == null) {

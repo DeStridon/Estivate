@@ -1,16 +1,12 @@
 package com.estivate.test;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.h2.jdbcx.JdbcDataSource;
 
 
 

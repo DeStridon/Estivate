@@ -2,6 +2,7 @@ package com.estivate.test.entities;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 

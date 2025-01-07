@@ -7,7 +7,6 @@ import org.h2.tools.Server;
 import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
-import com.estivate.query.Query;
 import com.estivate.test.entities.FragmentEntity;
 import com.estivate.test.entities.SegmentEntity;
 import com.estivate.test.entities.TaskEntity;

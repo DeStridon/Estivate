@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.estivate.Estivate;
-import com.estivate.query.Criterion.NullCheck;
-import com.estivate.query.Criterion.Operator;
-import com.estivate.query.Criterion.Operator.OperatorType;
 import com.estivate.query.Query.Entity;
 
 import lombok.Getter;

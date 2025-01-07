@@ -120,7 +120,7 @@ public class Query extends Aggregator{
 	public Query notLikeContains(Entity<?> entity, String attribute, String value)		{ super.notLikeContains(entity, attribute, value);	return this; }
 
 	public Query likeIn 	(Entity<?> entity, String attribute, Collection<String> values)	    	{ super.likeIn  	(entity, attribute, values);  		return this; }
-	public Query likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ super.likeStartsWithIn(entity, attribute, values);	return this; }
+	public Query likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ super.likeStartsWithIn(entity, attribute, values);	return this; }
 	public Query likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ super.likeEndsWithIn(entity, attribute, values);		return this; }
 	public Query likeContainsIn(Entity<?> entity, String attribute, Collection<String> values)		{ super.likeContainsIn(entity, attribute, values);		return this; }
 
@@ -200,12 +200,12 @@ public class Query extends Aggregator{
 	@Getter
 	Set<String> indexNames = new LinkedHashSet<>();
 	
-	public Query(Class baseClass) {
+	public Query(Class<?> baseClass) {
 		super(GroupType.AND);
 		this.entity = new Entity<>(baseClass);
 	}
 	
-	public Query(Entity entity) {
+	public Query(Entity<?> entity) {
 		super(GroupType.AND);
 		this.entity = entity;
 	}
@@ -218,9 +218,9 @@ public class Query extends Aggregator{
 	
 	
 	// nested search of the different classes used in criterions and to be added in joins
-	public Set<Entity> digClasses(Aggregator aggregator){
+	public Set<Entity<?>> digClasses(Aggregator aggregator){
 		
-		Set<Entity> classes = new HashSet<>();
+		Set<Entity<?>> classes = new HashSet<>();
 		for(EstivateNode node : aggregator.criterions) {
 			
 			if(node instanceof Criterion) {
@@ -250,11 +250,11 @@ public class Query extends Aggregator{
 	public List<Join> buildJoins() {
 
 		// 0. initiate
-		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(entity));
+		Set<Entity<?>> joinedEntities = new HashSet<>(Arrays.asList(entity));
 		List<Join> classJoins = new ArrayList<>();
 		
 		// 1. list all classes needed for query
-		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
+		Set<Entity<?>> targetEntities = new HashSet<>(digClasses(this));
 		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
 		for(Join join : joins) {
 			targetEntities.add(join.leftEntity);
@@ -288,8 +288,8 @@ public class Query extends Aggregator{
 
 	// links first suitable class of candidates to one of already joined classes
 	// return null if every class already joined or if all remaining classes cannot be joined
-	private Join tryAddingJoinedClass(Set<Entity> joined, Set<Entity> candidates) {
-		for(Entity candidate : candidates) {
+	private Join tryAddingJoinedClass(Set<Entity<?>> joined, Set<Entity<?>> candidates) {
+		for(Entity<?> candidate : candidates) {
 			
 			// if already joined, skip
 			if(joined.contains(candidate)) {
@@ -297,7 +297,7 @@ public class Query extends Aggregator{
 			}
 			
 			// joining strategy #1 : manual joins
-			for(Entity joinedClass : joined) {
+			for(Entity<?> joinedClass : joined) {
 				Join manualJoin = joins.stream()
 						.filter(x -> x.leftEntity.equals(joinedClass) && x.rightEntity.equals(candidate))
 						.findFirst().orElse(null);
@@ -364,33 +364,33 @@ public class Query extends Aggregator{
 
 
 
-	public Query orderAsc(Entity c, String attribute) 	{ orders.add(new Order(c, attribute, true)); return this; }
-	public Query orderAsc(Class c, String attribute) 	{ return orderAsc(new Entity(c), attribute); }
-	public Query orderDesc(Entity c, String attribute) 	{ orders.add(new Order(c, attribute, false)); return this; }
-	public Query orderDesc(Class c, String attribute) 	{ return orderDesc(new Entity(c), attribute); }
+	public Query orderAsc(Entity<?> c, String attribute) 	{ orders.add(new Order(c, attribute, true)); return this; }
+	public Query orderAsc(Class<?> c, String attribute) 	{ return orderAsc(new Entity<>(c), attribute); }
+	public Query orderDesc(Entity<?> c, String attribute) 	{ orders.add(new Order(c, attribute, false)); return this; }
+	public Query orderDesc(Class<?> c, String attribute) 	{ return orderDesc(new Entity<>(c), attribute); }
 	public Query limit(Integer limit) 		{ this.limit = limit; return this; }
 	public Query offset(Integer offset) 	{ this.offset = offset; return this;}
 	
 
 	@AllArgsConstructor
 	public static class Order{
-		public Entity entity;
+		public Entity<?> entity;
 		public String attribute;
 		public Boolean asc;
 	}
 	
 	@AllArgsConstructor
 	public static class Group{
-		public Entity entity;
+		public Entity<?> entity;
 		public String attribute;
 	}
 	
 
 	
 	
-	public Query select(Class c, String attribute) { return select(new Entity(c), attribute); }
+	public Query select(Class<?> c, String attribute) { return select(new Entity<>(c), attribute); }
 	
-	public Query select(Entity c, String attribute) {
+	public Query select(Entity<?> c, String attribute) {
 		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
 		if(select != null) {
 			selects.remove(select);
@@ -419,8 +419,8 @@ public class Query extends Aggregator{
 	}
 
 	
-	public Query selectAs(Class c, String field, String alias) { return selectAs(new Entity(c), field, alias); }
-	public Query selectAs(Entity c, String field, String alias) { 
+	public Query selectAs(Class<?> c, String field, String alias) { return selectAs(new Entity<>(c), field, alias); }
+	public Query selectAs(Entity<?> c, String field, String alias) { 
 
 		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(field)).findAny().orElse(null);
 		if(select != null) {
@@ -523,7 +523,7 @@ public class Query extends Aggregator{
 		public final Class<U> entity;
 		public final String alias;
 		
-		public Entity(Class entity) {
+		public Entity(Class<U> entity) {
 			this(entity, null);
 		}
 		

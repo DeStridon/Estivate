@@ -71,18 +71,18 @@ public class Result {
 	}
 	
 	
-	public String 	mapToString	(Class c, String attribute) 	{ return getAsString(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public String 	mapToString	(Entity e, String attribute)	{ return getAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Short 	mapToShort	(Class c, String attribute) 	{ return getAsShort(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Short 	mapToShort	(Entity e, String attribute)	{ return getAsShort(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Integer 	mapToInteger(Class c, String attribute) 	{ return getAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Integer 	mapToInteger(Entity e, String attribute)	{ return getAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Boolean 	mapToBoolean(Class c, String attribute) 	{ return getAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Boolean 	mapToBoolean(Entity e, String attribute)	{ return getAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Long 	mapToLong	(Class c, String attribute) 	{ return getAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Long 	mapToLong	(Entity e, String attribute) 	{ return getAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Date 	mapToDate	(Class c, String attribute)		{ return getAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Date 	mapToDate	(Entity e, String attribute)	{ return getAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public String 	mapToString	(Class<?> c, String attribute) 	{ return getAsString(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public String 	mapToString	(Entity<?> e, String attribute)	{ return getAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Short 	mapToShort	(Class<?> c, String attribute) 	{ return getAsShort(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Short 	mapToShort	(Entity<?> e, String attribute)	{ return getAsShort(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Integer 	mapToInteger(Class<?> c, String attribute) 	{ return getAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Integer 	mapToInteger(Entity<?> e, String attribute)	{ return getAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Boolean 	mapToBoolean(Class<?> c, String attribute) 	{ return getAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Boolean 	mapToBoolean(Entity<?> e, String attribute)	{ return getAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Long 	mapToLong	(Class<?> c, String attribute) 	{ return getAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Long 	mapToLong	(Entity<?> e, String attribute) { return getAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Date 	mapToDate	(Class<?> c, String attribute)	{ return getAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Date 	mapToDate	(Entity<?> e, String attribute)	{ return getAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
 
 	
 	

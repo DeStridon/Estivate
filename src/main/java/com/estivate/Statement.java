@@ -364,7 +364,7 @@ public class Statement {
 	}
 	
 	
-	Object compileObject(Class entity, String attribute, Object value) {
+	Object compileObject(Class<?> entity, String attribute, Object value) {
 		try {
 			Field field = FieldUtils.findField(entity, attribute);
 			
