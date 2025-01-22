@@ -25,7 +25,7 @@ public class Aggregator implements EstivateNode {
 	
 	public Aggregator(GroupType groupType, List<EstivateNode> criterions) {
 		this.groupType = groupType;
-		this.criterions = new ArrayList<>(criterions);
+		this.criterions = new ArrayList<>(criterions.stream().filter(x -> x != null).collect(Collectors.toList()));
 	}
 	
 	
@@ -209,7 +209,7 @@ public class Aggregator implements EstivateNode {
 	
 	
 	public Aggregator add(EstivateNode joinNode) { if(joinNode != null) { criterions.add(joinNode); } return this; }
-	public Aggregator addIf(boolean condition, EstivateNode joinNode) { if(condition && joinNode != null) { criterions.add(joinNode); } return this; }
+	public Aggregator addIf(boolean condition, EstivateNode joinNode) { if(condition) { add(joinNode); } return this; }
 	
 	
 	
