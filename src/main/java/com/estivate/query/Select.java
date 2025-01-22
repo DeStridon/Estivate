@@ -15,37 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Select implements Comparable {
 	public SelectMethod method;
-	public Entity entity;
+	public Entity<?> entity;
 	public String attribute;
 	public String alias;
-	
-//	public String toString() {
-//		
-//		if(method == SelectMethod.Distinct) {
-//			return "DISTINCT "+Query.nameMapper.mapDatabase(entity, attribute)+" as `"+(alias != null ? alias : Query.nameMapper.mapEntity(entity, attribute))+"`";
-//		}
-//		else if(method == SelectMethod.Count) {
-//			if (entity == null) {
-//				return "COUNT(*)"+(alias != null ? " as `"+alias+"`" : "");
-//			}
-//			return "COUNT(distinct "+Query.nameMapper.mapDatabase(entity, attribute)+")"+(alias != null ? " as `"+alias+"`" : "");
-//		}
-//		else if(method == SelectMethod.Max) {
-//			return "MAX("+Query.nameMapper.mapDatabase(entity, attribute)+")"+(alias != null ? " as `"+alias+"`" : "");
-//		}
-//		else if(method == SelectMethod.Min) {
-//			return "MIN("+Query.nameMapper.mapDatabase(entity, attribute)+")"+(alias != null ? " as `"+alias+"`" : "");
-//		}
-//		else if(method == SelectMethod.Sum) {
-//			return "SUM("+Query.nameMapper.mapDatabase(entity, attribute)+")"+(alias != null ? " as `"+alias+"`" : "");
-//		}
-//		else if(method == SelectMethod.GroupConcat) {
-//			return "GROUP_CONCAT("+Query.nameMapper.mapDatabase(entity, attribute)+")"+(alias != null ? " as `"+alias+"`" : "");
-//		}
-//		
-//		return Query.nameMapper.mapDatabase(entity, attribute)+" as `"+(alias != null ? alias : Query.nameMapper.mapEntity(entity, attribute))+"`";
-//		
-//	}
 	
 	
 	public enum SelectMethod{
