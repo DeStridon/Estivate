@@ -21,8 +21,8 @@ public class CachedEntityTest {
 		
 		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("intial name").externalName("initial external name").build());
 		
-		TaskEntity taskA = context.uniqueResult(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
-		TaskEntity taskB = context.uniqueResult(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
+		TaskEntity taskA = context.fetchSingleAs(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
+		TaskEntity taskB = context.fetchSingleAs(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
 		
 		taskA.setName("new name");
 		taskB.setExternalName("new external name");
@@ -36,7 +36,7 @@ public class CachedEntityTest {
 		
 		
 		
-		TaskEntity taskC = context.uniqueResult(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
+		TaskEntity taskC = context.fetchSingleAs(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
 		
 		assertEquals(taskA.getName(), taskC.getName());
 		assertEquals(taskB.getExternalName(), taskC.getExternalName());

@@ -5,12 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.estivate.context.Context;
 import com.estivate.entity.Index.ColumnIndex;
 import com.estivate.entity.Index.CompositeIndex;
-import com.estivate.query.Query;
+
 
 
 
@@ -25,19 +23,30 @@ public class IndexDiff {
 		this.c = c;
 	}
 	
-	public void addMissingIndexes() {
-		for(CompositeIndex index : getMissingIndexes()) {
-			applyIndex(index);
+	
+
+
+	public List<CompositeIndex> listToClean(){
+		
+		List<CompositeIndex> entityIndexes = getEntityIndexes();
+		List<CompositeIndex> databaseIndexes = getDatabaseIndexes();
+		List<CompositeIndex> resultIndexes = new ArrayList<>();
+
+		for(CompositeIndex databaseIndex : databaseIndexes) {
+			CompositeIndex entityIndex = entityIndexes.stream().filter(x -> indexEquals(x, databaseIndex)).findFirst().orElse(null);
+			if(entityIndex == null) {
+				resultIndexes.add(databaseIndex);
+			}
 		}
+
+		return resultIndexes;
+
 	}
 	
-	public List<CompositeIndex> getMissingIndexes(){
+	public List<CompositeIndex> listToApply(){
 	
-		// 1. List indexes of class
 		List<CompositeIndex> entityIndexes = getEntityIndexes();
-		// 2. List indexes in database
 		List<CompositeIndex> databaseIndexes = getDatabaseIndexes();
-		
 		List<CompositeIndex> resultIndexes = new ArrayList<>();
 		
 		for(CompositeIndex entityIndex : entityIndexes) {
@@ -47,32 +56,33 @@ public class IndexDiff {
 			}
 		}
 		
-		
-		// 3. Do the difference
 		return resultIndexes;
+		
+	}
+
+	public void clean() {
+		for(CompositeIndex index : listToClean()) {
+			cleanSpecific(index);
+		}
+	}
+
+	
+
+	public void apply() {
+		for(CompositeIndex index : listToApply()) {
+			applySpecific(index);
+		}
 	}
 	
-	public List<CompositeIndex> getUndefinedIndexes(){
-		// 1. List indexes of class
-		List<CompositeIndex> entityIndexes = getEntityIndexes();
-		// 2. List indexes in database
-		List<CompositeIndex> databaseIndexes = getDatabaseIndexes();
-		
-		List<CompositeIndex> resultIndexes = new ArrayList<>();
-		
-		for(CompositeIndex databaseIndex : databaseIndexes) {
-			CompositeIndex entityIndex = entityIndexes.stream().filter(x -> indexEquals(x, databaseIndex)).findFirst().orElse(null);
-			if(entityIndex == null) {
-				resultIndexes.add(databaseIndex);
-			}
-		}
-		
-		
-		// 3. Do the difference
-		return resultIndexes;
-		
-		
+	public boolean cleanSpecific(CompositeIndex index){
+		return context.removeIndex(c, index.name());
 	}
+
+	public boolean applySpecific(CompositeIndex index) {
+		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
+		return context.addIndex(c, index.name(), columns);
+	}
+	
 	
 	public List<CompositeIndex> getEntityIndexes(){
 		
@@ -110,18 +120,5 @@ public class IndexDiff {
 		}
 		return true;
 	}
-	
-	public void applyIndex(CompositeIndex index) {
-		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-		context.addIndex(c, index.name(), columns);
-	}
-
-	
-	
-	
-	
-	
-
-	
 	
 }

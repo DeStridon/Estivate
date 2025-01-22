@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.estivate.Estivate;
+import com.estivate.query.Query.Entity;
 import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 
@@ -23,32 +24,51 @@ public class Query extends Aggregator{
 	
 	// Method wrappers
 	
-	public Query eq   	(Class<?> entity, String attribute, Object value)        		{ super.eq    (entity, attribute, value);  return this; }
-	public Query notEq	(Class<?> entity, String attribute, Object value)        		{ super.notEq (entity, attribute, value);  return this; }
-	public Query lt   	(Class<?> entity, String attribute, Object value)        		{ super.lt    (entity, attribute, value);  return this; }
-	public Query gt   	(Class<?> entity, String attribute, Object value)        		{ super.gt    (entity, attribute, value);  return this; }
-	public Query lte  	(Class<?> entity, String attribute, Object value)        		{ super.lte   (entity, attribute, value);  return this; }
-	public Query gte  	(Class<?> entity, String attribute, Object value)        		{ super.gte   (entity, attribute, value);  return this; }
-	public Query between(Class<?> entity, String attribute, Object min, Object max) 	{ super.between(entity, attribute, min, max); return this; }
+	public Query eq   			(Class<?> entity, String attribute, Object value)	{ super.eq    (entity, attribute, value);  return this; }
+	public Query eqIfNotNull   	(Class<?> entity, String attribute, Object value)   { super.eqIfNotNull   (entity, attribute, value);  return this; }
+	public Query eqNullable		(Class<?> entity, String attribute, Object value)   { super.eqNullable (entity, attribute, value); return this; }
+	public Query notEq			(Class<?> entity, String attribute, Object value)   { super.notEq (entity, attribute, value);  return this; }
+	public Query notEqIfNotNull	(Class<?> entity, String attribute, Object value)   { super.notEqIfNotNull(entity, attribute, value);  return this; }
+	public Query notEqNullable	(Class<?> entity, String attribute, Object value)	{ super.notEqNullable(entity, attribute, value); return this; }
 	
-	public Query in   	(Class<?> entity, String attribute, Collection<?> values) 		{ super.in    	(entity, attribute, values); return this; }
-	public Query notIn  (Class<?> entity, String attribute, Collection<?> values) 		{ super.notIn   (entity, attribute, values); return this; }
+	public Query lt   			(Class<?> entity, String attribute, Object value)   { super.lt    (entity, attribute, value);  return this; }
+	public Query ltIfNotNull	(Class<?> entity, String attribute, Object value)   { super.ltIfNotNull   (entity, attribute, value);  return this; }
+	
+	public Query lte  			(Class<?> entity, String attribute, Object value)   { super.lte   (entity, attribute, value);  return this; }
+	public Query lteIfNotNull  	(Class<?> entity, String attribute, Object value)   { super.lteIfNotNull  (entity, attribute, value);  return this; }
+	
+	
+	public Query gt   	(Class<?> entity, String attribute, Object value)        		{ super.gt    (entity, attribute, value);  return this; }
+	public Query gtIfNotNull   		(Class<?> entity, String attribute, Object value)   { super.gtIfNotNull   (entity, attribute, value);  return this; }
+	public Query gte  	(Class<?> entity, String attribute, Object value)        		{ super.gte   (entity, attribute, value);  return this; }
+	public Query gteIfNotNull  		(Class<?> entity, String attribute, Object value)   { super.gteIfNotNull  (entity, attribute, value);  return this; }
+	
+	public Query between(Class<?> entity, String attribute, Object min, Object max) 	{ super.between(entity, attribute, min, max); return this; }
+	public Query betweenIfNotNull	(Class<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull(entity, attribute, min, max); return this; }
+
+	public Query in   		(Class<?> entity, String attribute, Collection<?> values) 		{ super.in    	(entity, attribute, values); return this; }
+	public Query inNullable (Class<?> entity, String attribute, Collection<?> values) 		{ super.inNullable(entity, attribute, values); return this; }
+	public Query notIn  	(Class<?> entity, String attribute, Collection<?> values) 		{ super.notIn   (entity, attribute, values); return this; }
 
 
 	public Query like 				(Class<?> entity, String attribute, String value)	{ super.like(entity, attribute, value);  return this; }
-	public Query likeStartsWith 	(Class<?> entity, String attribute, String value)	{ super.likeStartsWith(entity, attribute, value);  return this; }
-	public Query likeEndsWith 		(Class<?> entity, String attribute, String value)	{ super.likeEndsWith(entity, attribute, value);  return this; }
-	public Query likeContains 		(Class<?> entity, String attribute, String value)	{ super.likeContains(entity, attribute, value);  return this; }
+	public Query likeIn 			(Class<?> entity, String attribute, Collection<String> value)	{ super.likeIn(entity, attribute, value);  return this; }
 	public Query notLike			(Class<?> entity, String attribute, String value)	{ super.notLike(entity, attribute, value);  return this; }
+	public Query notLikeIn			(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeIn(entity, attribute, value);  return this; }
+	
+	
+	public Query likeStartsWith 	(Class<?> entity, String attribute, String value)	{ super.likeStartsWith(entity, attribute, value);  return this; }
+	public Query likeStartsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeStartsWithIn(entity, attribute, value);  return this; }
 	public Query notLikeStartsWith 	(Class<?> entity, String attribute, String value)	{ super.notLikeStartsWith(entity, attribute, value);  return this; }
+	
+	public Query likeEndsWith 		(Class<?> entity, String attribute, String value)	{ super.likeEndsWith(entity, attribute, value);  return this; }
 	public Query notLikeEndsWith 	(Class<?> entity, String attribute, String value)	{ super.notLikeEndsWith(entity, attribute, value);  return this; }
+	
+	public Query likeContains 		(Class<?> entity, String attribute, String value)	{ super.likeContains(entity, attribute, value);  return this; }
 	public Query notLikeContains 	(Class<?> entity, String attribute, String value)	{ super.notLikeContains(entity, attribute, value);  return this; }
 
-	public Query likeIn 			(Class<?> entity, String attribute, Collection<String> value)	{ super.likeIn(entity, attribute, value);  return this; }
-	public Query likeStartsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeStartsWithIn(entity, attribute, value);  return this; }
 	public Query likeEndsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeEndsWithIn(entity, attribute, value);  return this; }
 	public Query likeContainsIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.likeContainsIn(entity, attribute, value);  return this; }
-	public Query notLikeIn			(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeIn(entity, attribute, value);  return this; }
 	public Query notLikeStartsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeStartsWithIn(entity, attribute, value);  return this; }
 	public Query notLikeEndsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeEndsWithIn(entity, attribute, value);  return this; }
 	public Query notLikeContainsIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeContainsIn(entity, attribute, value);  return this; }
@@ -59,14 +79,7 @@ public class Query extends Aggregator{
 	public Query existsSubQuery		(Query subQuery){ super.existsSubQuery(subQuery); return this; }
 	public Query notExistsSubQuery	(Query subQuery){ super.notExistsSubQuery(subQuery); return this; }
 
-	public Query eqIfNotNull   		(Class<?> entity, String attribute, Object value)        	{ super.eqIfNotNull   (entity, attribute, value);  return this; }
-	public Query notEqIfNotNull		(Class<?> entity, String attribute, Object value)        	{ super.notEqIfNotNull(entity, attribute, value);  return this; }
-	public Query ltIfNotNull   		(Class<?> entity, String attribute, Object value)        	{ super.ltIfNotNull   (entity, attribute, value);  return this; }
-	public Query gtIfNotNull   		(Class<?> entity, String attribute, Object value)        	{ super.gtIfNotNull   (entity, attribute, value);  return this; }
-	public Query lteIfNotNull  		(Class<?> entity, String attribute, Object value)        	{ super.lteIfNotNull  (entity, attribute, value);  return this; }
-	public Query gteIfNotNull  		(Class<?> entity, String attribute, Object value)        	{ super.gteIfNotNull  (entity, attribute, value);  return this; }
-	public Query betweenIfNotNull	(Class<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull(entity, attribute, min, max); return this; }
-
+	
 	public Query inIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmpty      (entity, attribute, values); return this; }
 	public Query notInIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return this; }
 	public Query inOrFalseIfEmpty	(Class<?> entity, String attribute, Collection<?> values)	{ super.inOrFalseIfEmpty  (entity, attribute, values); return this; }
@@ -99,14 +112,18 @@ public class Query extends Aggregator{
 
 
 	public Query eq   	(Entity<?> entity, String attribute, Object value)        		{ super.eq    	(entity, attribute, value);  		return this; }
+	public Query eqNullable(Entity<?> entity, String attribute, Object value)			{ super.eqNullable(entity, attribute, value); 		return this; }
 	public Query notEq	(Entity<?> entity, String attribute, Object value)        		{ super.notEq 	(entity, attribute, value);  		return this; }
+	
 	public Query lt   	(Entity<?> entity, String attribute, Object value)        		{ super.lt    	(entity, attribute, value);  		return this; }
-	public Query gt   	(Entity<?> entity, String attribute, Object value)        		{ super.gt    	(entity, attribute, value);  		return this; }
 	public Query lte  	(Entity<?> entity, String attribute, Object value)        		{ super.lte   	(entity, attribute, value);  		return this; }
+	
+	public Query gt   	(Entity<?> entity, String attribute, Object value)        		{ super.gt    	(entity, attribute, value);  		return this; }
 	public Query gte  	(Entity<?> entity, String attribute, Object value)        		{ super.gte   	(entity, attribute, value);  		return this; }
 	public Query between(Entity<?> entity, String attribute, Object min, Object max) 	{ super.between	(entity, attribute, min, max); 		return this; }
 
 	public Query in   	(Entity<?> entity, String attribute, Collection<?> values) 		{ super.in    	(entity, attribute, values); 		return this; }
+	public Query inNullable(Entity<?> entity, String attribute, Collection<?> values)	{ super.inNullable(entity, attribute, values); 		return this; }
 	public Query notIn  (Entity<?> entity, String attribute, Collection<?> values) 		{ super.notIn   (entity, attribute, values); 		return this; }
 
 	public Query like 	(Entity<?> entity, String attribute, String value)	    		{ super.like  	(entity, attribute, value);  		return this; }
@@ -166,6 +183,7 @@ public class Query extends Aggregator{
 	public Query gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return this;	}
 
 	public Query add(EstivateNode node) { super.add(node); return this; }
+	public Query addIf(boolean condition, EstivateNode node) { super.addIf(condition, node); return this; }
 	public Query and(EstivateNode... nodes) { criterions.add(Estivate.and(nodes)); return this; }
 	public Query or(EstivateNode... nodes) 	{ criterions.add(Estivate.or(nodes));  return this; }
 	

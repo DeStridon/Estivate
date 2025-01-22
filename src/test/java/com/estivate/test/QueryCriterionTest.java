@@ -12,8 +12,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
+import com.estivate.query.Aggregator;
 import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
@@ -66,7 +68,7 @@ public class QueryCriterionTest {
 				
 				.eq(TaskEntity.class, TaskEntity.Fields.name, "task 2");
 		
-		List<Result> results = context.list(query);
+		List<Result> results = context.fetchList(query);
 		
 		assertEquals(1, results.size());
 		
@@ -114,7 +116,7 @@ public class QueryCriterionTest {
 				.notInIfNotEmpty(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
 				;
 		
-		List<TaskEntity> tasks = context.listAs(query, TaskEntity.class);
+		List<TaskEntity> tasks = context.fetchListAs(query, TaskEntity.class);
 		
 		Assert.assertEquals(1, tasks.size());		
 	
@@ -133,7 +135,7 @@ public class QueryCriterionTest {
 		
 		query.in(TaskEntity.class, TaskEntity.Fields.status, Arrays.asList(MacroState.Analysis, MacroState.Translation));
 		
-		context.list(query);
+		context.fetchList(query);
 		
 		System.out.println(context.queryAsString(query));
 	
@@ -150,16 +152,16 @@ public class QueryCriterionTest {
 		Entity taskEntity = new Query.Entity(TaskEntity.class);
 		
 		query.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1234, 1235));
-		assertEquals(2, context.list(query).size());
+		assertEquals(2, context.fetchList(query).size());
 		
 		Query query2 = query.clone().in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
-		assertEquals(1, context.list(query2).size());
+		assertEquals(1, context.fetchList(query2).size());
 
 		Query query3 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
-		assertEquals(1, context.list(query3).size());
+		assertEquals(1, context.fetchList(query3).size());
 
 		Query query4 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
-		assertEquals(1, context.list(query4).size());
+		assertEquals(1, context.fetchList(query4).size());
 		
 	}
 	
@@ -174,13 +176,13 @@ public class QueryCriterionTest {
 		Entity taskEntity = new Query.Entity(TaskEntity.class);
 		
 		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2234, 2235));
-		assertEquals(2, context.list(query).size());
+		assertEquals(2, context.fetchList(query).size());
 		
 		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
-		assertEquals(1, context.list(query).size());
+		assertEquals(1, context.fetchList(query).size());
 		
 		query.notIn(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
-		assertEquals(0, context.list(query).size());
+		assertEquals(0, context.fetchList(query).size());
 		
 	}
 
@@ -195,7 +197,7 @@ public class QueryCriterionTest {
 		Query query = new Query(TaskEntity.class).in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
 
 		String queryString = context.queryAsString(query);
-		context.list(query);
+		context.fetchList(query);
 		
 		Assert.assertTrue(queryString.contains(" in (?, ?, ?, ?)"));
 		
@@ -207,7 +209,7 @@ public class QueryCriterionTest {
 		Query query = new Query(TaskEntity.class).isNull(TaskEntity.class, AbstractEntity.Fields.id);
 
 		String queryString = context.queryAsString(query);
-		context.list(query);
+		context.fetchList(query);
 		
 		Assert.assertTrue(queryString.contains(" is null"));
 		
@@ -219,7 +221,7 @@ public class QueryCriterionTest {
 		Query query = new Query(TaskEntity.class).isNotNull(TaskEntity.class, AbstractEntity.Fields.id);
 
 		String queryString = context.queryAsString(query);
-		context.list(query);
+		context.fetchList(query);
 		
 		Assert.assertTrue(queryString.contains(" is not null"));
 		
@@ -231,7 +233,7 @@ public class QueryCriterionTest {
 		Query query = new Query(TaskEntity.class).like(TaskEntity.class, TaskEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
-		context.list(query);
+		context.fetchList(query);
 
 		Assert.assertTrue(queryString.contains(" like ?"));
 		
@@ -243,7 +245,7 @@ public class QueryCriterionTest {
 		Query query = new Query(TaskEntity.class).notLike(TaskEntity.class, TaskEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
-		context.list(query);
+		context.fetchList(query);
 
 		Assert.assertTrue(queryString.contains(" not like ?"));
 		
@@ -260,6 +262,13 @@ public class QueryCriterionTest {
 		System.out.println(context.queryAsString(query));
 		
 		
+	}
+	
+	@Test
+	public void orAggregatorTest() {
+		Aggregator or = Estivate.or();
+		or.add(Estivate.eq(TaskEntity.class, AbstractEntity.Fields.id, 1));
+		or.add(Estivate.eq(TaskEntity.class, TaskEntity.Fields.projectId, 2));
 	}
 	
 	

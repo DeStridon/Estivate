@@ -23,7 +23,7 @@ public class MapperTest {
 		Query query = new Query(TaskEntity.class)
 				.eq(TaskEntity.class, AbstractEntity.Fields.id, newTask.getId());
 				
-		List<TaskEntity> tasks = context.listAs(query, TaskEntity.class);
+		List<TaskEntity> tasks = context.fetchListAs(query, TaskEntity.class);
 		
 		Assert.assertEquals(1, tasks.size());
 		

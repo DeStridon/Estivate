@@ -81,7 +81,7 @@ public class ResultTest {
 		Query query = new Query(TaskEntity.class);
 		query.eq(TaskEntity.class, TaskEntity.Fields.name, "parallel test task");
 		
-		List<TaskEntity> tasks = context.listAs(query, TaskEntity.class);
+		List<TaskEntity> tasks = context.fetchListAs(query, TaskEntity.class);
 		
 		
 	}
@@ -102,7 +102,7 @@ public class ResultTest {
 		Query query = new Query(TaskEntity.class);
 		query.eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId());
 		
-		Result results = context.list(query).get(0);
+		Result results = context.fetchList(query).get(0);
 		
 		MacroState status = (MacroState) results.getAsEnum(TaskEntity.class, TaskEntity.Fields.status);
 		assertEquals(MacroState.Correction, status);

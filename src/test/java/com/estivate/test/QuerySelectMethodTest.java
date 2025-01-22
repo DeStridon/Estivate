@@ -37,7 +37,7 @@ public class QuerySelectMethodTest {
 
 		System.out.println(context.queryAsString(query));
 		
-		List<Result> results = context.list(query);
+		List<Result> results = context.fetchList(query);
 		
 		
 		Assert.assertEquals(1, results.size());
@@ -81,6 +81,17 @@ public class QuerySelectMethodTest {
 				.select(TaskEntity.class, AbstractEntity.Fields.id);
 
 		System.out.println(context.queryAsString(query));
+		
+	}
+
+	@Test
+	public void selectDistinctTest4() throws SQLException {
+		Query query = new Query(TaskEntity.class)
+				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
+				.selectDistinct(TaskEntity.class, TaskEntity.Fields.sourceLanguage)
+				.select(TaskEntity.class, AbstractEntity.Fields.id);
+
+		context.fetchList(query);
 		
 	}
 

@@ -41,7 +41,7 @@ public class MySQLContext extends Context {
 		try (Connection connection = datasource.getConnection()){
 			Statement statement = new Statement(this, connection).appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.mapDatabaseClass(c));
 			
-			List<Result> results = this.list(statement);
+			List<Result> results = this.fetchList(statement);
 			List<IndexRow> indexRows = new ArrayList<>();
 			for(Result result : results) {
 				

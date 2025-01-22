@@ -34,7 +34,7 @@ public class ContextTest {
 		
 		
 		Query query = new Query(TaskEntity.class).in(TaskEntity.class, AbstractEntity.Fields.id, Arrays.asList(task1.getId(), task2.getId(), task3.getId()));
-		List<TaskEntity> resultQueries = context.listAs(query, TaskEntity.class);
+		List<TaskEntity> resultQueries = context.fetchListAs(query, TaskEntity.class);
 		
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 1")));
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 2")));
@@ -49,7 +49,7 @@ public class ContextTest {
 		Entity<TaskEntity> taskEntity = new Entity(TaskEntity.class, "myTask");
 		
 		Query query = new Query(taskEntity).in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
-		List<TaskEntity> resultQueries = context.listAs(query, TaskEntity.class);
+		List<TaskEntity> resultQueries = context.fetchListAs(query, TaskEntity.class);
 		
 	}
 	

@@ -33,12 +33,12 @@ public class QueryTest {
 		
 		
 		Query projectIdAscOrderedTaskQuery = new Query(TaskEntity.class).orderAsc(TaskEntity.class, TaskEntity.Fields.projectId).limit(2);
-		List<TaskEntity> projectIdAscOrderedTasks = context.listAs(projectIdAscOrderedTaskQuery, TaskEntity.class);
+		List<TaskEntity> projectIdAscOrderedTasks = context.fetchListAs(projectIdAscOrderedTaskQuery, TaskEntity.class);
 		Assert.assertEquals(list.stream().mapToLong(x -> x.getProjectId()).min().orElse(0), projectIdAscOrderedTasks.get(0).getProjectId());
 		Assert.assertEquals(2, projectIdAscOrderedTasks.size());
 		
 		Query idDescOrderedTaskQuery = new Query(TaskEntity.class).orderDesc(TaskEntity.class, AbstractEntity.Fields.id);
-		List<TaskEntity> idDescOrderedTasks = context.listAs(idDescOrderedTaskQuery, TaskEntity.class);
+		List<TaskEntity> idDescOrderedTasks = context.fetchListAs(idDescOrderedTaskQuery, TaskEntity.class);
 		Assert.assertEquals(list.stream().mapToLong(x -> x.getId()).max().orElse(0), idDescOrderedTasks.get(0).getId());
 		
 	}

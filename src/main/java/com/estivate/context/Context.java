@@ -60,10 +60,8 @@ public abstract class Context {
 		this.datasource = datasource;
 	}
 	
-	
 	@SneakyThrows
-	public <U> U uniqueResult(Query query, Class<U> clazz) {
-		
+	public Result fetchSingle(Query query) {
 		try(Connection connection = datasource.getConnection()){
 			Statement statement = Statement.toStatement(this, connection, query);
 	        ResultSet resultSet = statement.executeForResultSet();
@@ -77,18 +75,27 @@ public abstract class Context {
 	        	}
 	
 	        	Result result = new Result(statement, map);
-	        	U object = result.mapTo(clazz);
-	        	
-	        	return object;
+				return result;
 	        }
 	        return null;
 		}
-		
 	}
+	
+	@SneakyThrows
+	public <U> U fetchSingleAs(Query query, Class<U> clazz) {
+		Result result = fetchSingle(query);
+		if(result != null){
+			U object = result.mapTo(clazz);
+	    	return object;
+		}
+		return null;
+	}
+
+	
 	
 	
 	@SneakyThrows
-	public List<Result> list(Query joinQuery){
+	public List<Result> fetchList(Query joinQuery){
 
 		try(Connection connection = datasource.getConnection()){
 			Chronometer chronometer = new Chronometer("list", tracePerformances);
@@ -129,7 +136,7 @@ public abstract class Context {
 		
 	}
 	
-	protected List<Result> list(Statement statement) throws SQLException{
+	protected List<Result> fetchList(Statement statement) throws SQLException{
 		
 		ResultSet resultSet = statement.executeForResultSet();
         ResultSetMetaData metadata = resultSet.getMetaData();
@@ -155,7 +162,7 @@ public abstract class Context {
 
 	
 	@SneakyThrows
-	public <U> List<U> listAs(Query joinQuery, Class<U> clazz) {
+	public <U> List<U> fetchListAs(Query joinQuery, Class<U> clazz) {
 		
 		try(Connection connection = datasource.getConnection()){
 			
@@ -520,7 +527,6 @@ public abstract class Context {
 		return null;
 	}
 
-	@SneakyThrows
 	public boolean addIndex(Class<?> c, String name, List<String> columns) {
 		try (Connection connection = datasource.getConnection()){
 		//CREATE INDEX IDXNAME ON TEST(NAME)
@@ -529,7 +535,23 @@ public abstract class Context {
 			
 			return statement.executeForValidation();
 		}
+		catch(SQLException e){
+			log.error("", e);
+			return false;
+		}
 		
+	}
+
+	public boolean removeIndex(Class<?> c, String name){
+		try (Connection connection = datasource.getConnection()){
+			//CREATE INDEX IDXNAME ON TEST(NAME)
+			Statement statement = new Statement(this, connection).appendQuery("DROP INDEX").appendQuery(name).appendQuery("ON").appendQuery(nameMapper.mapDatabaseClass(c));
+			return statement.executeForValidation();
+		}
+		catch(SQLException e){
+			log.error("", e);
+			return false;
+		}
 	}
 	
 	public static CompositeIndex CompositeIndex(String name, List<ColumnIndex> columns) {

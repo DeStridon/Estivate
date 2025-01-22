@@ -43,7 +43,7 @@ public class QueryJoinTest {
 				.name("Query Join Test")
 				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 2);
 		
-		List<SegmentEntity> results = context.listAs(query, SegmentEntity.class);
+		List<SegmentEntity> results = context.fetchListAs(query, SegmentEntity.class);
 		
 		assertEquals(2, results.size());
 		
@@ -62,7 +62,7 @@ public class QueryJoinTest {
 				.selectAll(SegmentEntity.class)
 				.eq(TaskEntity.class, TaskEntity.Fields.name, task.getName());
 		
-		List<Result> results = context.list(query);
+		List<Result> results = context.fetchList(query);
 		
 		log.debug(context.queryAsString(query));
 		
