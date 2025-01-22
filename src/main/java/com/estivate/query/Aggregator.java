@@ -64,7 +64,7 @@ public class Aggregator implements EstivateNode {
 	
 	
 	public Aggregator in    	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.in(entity, attribute, values)); return this; }
-	public Aggregator inNullable(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.inNullable(entity, attribute, values)); return this; }
+	public Aggregator inIfNotEmptyNullable(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.inIfNotEmptyNullable(entity, attribute, values)); return this; }
 	public Aggregator notIn    	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.notIn(entity, attribute, values)); return this; }
 
 	public Aggregator like				(Entity<?> entity, String attribute, String value)     { add(Estivate.like(entity, attribute, value)); return this; }
@@ -143,7 +143,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator between	(Class<?> entity, String attribute, Object left, Object right) { return between(new Entity<>(entity), attribute, left, right); }
 	
 	public Aggregator in    	(Class<?> entity, String attribute, Collection<?> values) { return in(new Entity<>(entity), attribute, values); }
-	public Aggregator inNullable(Class<?> entity, String attribute, Collection<?> values) { return inNullable(new Entity<>(entity), attribute, values); }
+	public Aggregator inIfNotEmptyNullable(Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmptyNullable(new Entity<>(entity), attribute, values); }
 	public Aggregator notIn    	(Class<?> entity, String attribute, Collection<?> values) { return notIn(new Entity<>(entity), attribute, values); }
 
 	public Aggregator like		(Class<?> entity, String attribute, String value)	{ return like(new Entity<>(entity), attribute, value); }

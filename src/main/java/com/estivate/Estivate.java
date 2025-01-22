@@ -67,7 +67,7 @@ public class Estivate {
 	// In
 	public static Criterion in   			(Entity<?> entity, String attribute, Collection<?> values){ return new In(entity, attribute, values); }
 	public static Criterion inIfNotEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return null; }
-	public static Aggregator inNullable		(Entity<?> entity, String attribute, Collection<?> values){ return Estivate.or(inIfNotEmpty(entity, attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(entity, attribute)); }
+	public static Aggregator inIfNotEmptyNullable		(Entity<?> entity, String attribute, Collection<?> values){ return Estivate.or(inIfNotEmpty(entity, attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(entity, attribute)); }
 	public static EstivateNode inOrFalseIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return keywordFalse(); }
 	
 	public static Criterion notIn   				(Entity<?> entity, String attribute, Collection<?> values){ return new NotIn(entity, attribute, values); }
@@ -163,7 +163,7 @@ public class Estivate {
 	
 	public static Criterion in    				(Class<?> entity, String attribute, Collection<?> values) { return in(new Entity<>(entity), attribute, values); }
 	public static Criterion inIfNotEmpty		(Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmpty(new Entity<>(entity), attribute, values); }
-	public static EstivateNode inNullabble 		(Class<?> entity, String attribute, Collection<?> values) { return inNullable(new Entity<>(entity), attribute, values); }
+	public static EstivateNode inIfNotEmptyNullable  (Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmptyNullable(new Entity<>(entity), attribute, values); }
 	public static EstivateNode inOrFalseIfEmpty	(Class<?> entity, String attribute, Collection<?> values) { return inOrFalseIfEmpty(new Entity<>(entity), attribute, values); }
 
 	public static Criterion notIn   (Class<?> entity, String attribute, Collection<?> values) { return notIn(new Entity<>(entity), attribute, values); }
