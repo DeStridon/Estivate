@@ -382,10 +382,15 @@ public class Query extends Aggregator{
 
 
 
-	public Query orderAsc(Entity<?> c, String attribute) 	{ orders.add(new Order(c, attribute, true)); return this; }
-	public Query orderAsc(Class<?> c, String attribute) 	{ return orderAsc(new Entity<>(c), attribute); }
-	public Query orderDesc(Entity<?> c, String attribute) 	{ orders.add(new Order(c, attribute, false)); return this; }
-	public Query orderDesc(Class<?> c, String attribute) 	{ return orderDesc(new Entity<>(c), attribute); }
+	public Query orderAsc(Entity<?> c, String attribute) 				{ orders.add(new Order(c, attribute, "", true)); return this; }
+	public Query orderAsc(Entity<?> c, String attribute, String option) { orders.add(new Order(c, attribute, option, true)); return this; }
+	public Query orderAsc(Class<?> c, String attribute) 				{ return orderAsc(new Entity<>(c), attribute); }
+	public Query orderAsc(Class<?> c, String attribute, String option) 	{ return orderAsc(new Entity<>(c), attribute, option); }
+	public Query orderDesc(Entity<?> c, String attribute) 				{ orders.add(new Order(c, attribute, "", false)); return this; }
+	public Query orderDesc(Entity<?> c, String attribute, String option){ orders.add(new Order(c, attribute, option, false)); return this; }
+	public Query orderDesc(Class<?> c, String attribute) 				{ return orderDesc(new Entity<>(c), attribute); }
+	public Query orderDesc(Class<?> c, String attribute, String option) { return orderDesc(new Entity<>(c), attribute, option); }
+	
 	public Query limit(Integer limit) 		{ this.limit = limit; return this; }
 	public Query offset(Integer offset) 	{ this.offset = offset; return this;}
 	
@@ -394,6 +399,7 @@ public class Query extends Aggregator{
 	public static class Order{
 		public Entity<?> entity;
 		public String attribute;
+		public String option;
 		public Boolean asc;
 	}
 	

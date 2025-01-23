@@ -254,7 +254,7 @@ public class Statement {
 	}
 	
 	public String orderString(Order order) {
-		return context.nameMapper.mapDatabase(order.entity, order.attribute) + (order.asc ? " ASC" : " DESC");
+		return context.nameMapper.mapDatabase(order.entity, order.attribute) + (StringUtils.isBlank(order.option) ? "" : " " + order.option) + (order.asc ? " ASC" : " DESC");
 	}
 	
 	public String groupString(Group group) {
