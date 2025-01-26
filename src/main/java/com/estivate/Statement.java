@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -104,6 +105,7 @@ public class Statement {
 		return execute(connection);
 	}
 
+
 	public ResultSet executeForGeneratedKeys() throws SQLException{
 		if(statement == null) {
 			execute(connection);
@@ -158,7 +160,7 @@ public class Statement {
 			}
 			else if(object instanceof Date) {
 				Date d = (Date) object;
-				statement.setDate(i+1, new java.sql.Date(d.getTime()));
+				statement.setTimestamp(i+1, new Timestamp(d.getTime()));
 			}
 			else if(object == null) {
 				statement.setObject(i+1, null);

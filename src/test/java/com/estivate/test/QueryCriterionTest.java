@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,7 @@ import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
+import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
@@ -270,6 +272,15 @@ public class QueryCriterionTest {
 		or.add(Estivate.eq(TaskEntity.class, AbstractEntity.Fields.id, 1));
 		or.add(Estivate.eq(TaskEntity.class, TaskEntity.Fields.projectId, 2));
 	}
+	
+	@Test
+	public void inIfNotEmptyNullableTest() {
+		List<String> names = new ArrayList<>();
+		names.add(null);
+		EstivateNode node = Estivate.inIfNotEmptyNullable(TaskEntity.class, TaskEntity.Fields.name, names);
+		System.out.println(node.toString());
+	}
+	
 	
 	
 }

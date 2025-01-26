@@ -24,6 +24,12 @@ import com.estivate.query.Query.Entity;
 
 public class Estivate {
 
+	// Query
+	public static Query query(Entity<?> entity) { return new Query(entity); }	
+	public static Query query(Class<?> entity) 	{ return new Query(entity); }
+	
+	
+	
 	// Eq methods
 	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return new Operator(entity, attribute, OperatorType.Eq, value); }
 	public static Criterion eqIfNotNull		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return null; }
