@@ -164,11 +164,11 @@ public class Query extends Aggregator{
 	public List<Join> buildJoins() {
 
 		// 0. initiate
-		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(entity));
+		LinkedHashSet<Entity> joinedEntities = new LinkedHashSet<>(Arrays.asList(entity));
 		List<Join> classJoins = new ArrayList<>();
 		
 		// 1. list all classes needed for query
-		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
+		LinkedHashSet<Entity> targetEntities = new LinkedHashSet<>(digClasses(this));
 		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
 		for(Join join : joins) {
 			targetEntities.add(join.joinerEntity);
