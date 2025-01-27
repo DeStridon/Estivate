@@ -170,9 +170,13 @@ public class Query extends Aggregator{
 		// 1. list all classes needed for query
 		LinkedHashSet<Entity> targetEntities = new LinkedHashSet<>(digClasses(this));
 		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
+		targetEntities.addAll(joins.stream().flatMap(x -> Arrays.asList(x.joinerEntity, x.joinedEntity).stream()).collect(Collectors.toList()));
+
 		for(Join join : joins) {
-			targetEntities.add(join.joinerEntity);
-			targetEntities.add(join.joinedEntity);
+			if(classJoins.stream().noneMatch(x -> x.joinerEntity.equals(join.joinerEntity) && x.joinedEntity.equals(join.joinedEntity) && x.joinType == join.joinType)) {
+				classJoins.add(join);
+				joinedEntities.add(join.joinedEntity);
+			}
 		}
 		
 		while(true) { 

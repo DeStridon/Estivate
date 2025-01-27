@@ -121,7 +121,10 @@ public class QueryJoinTest {
 		Query query = new Query(taskA)
 				.join(Join.find(taskA, segmentA).setJoinType(JoinType.INNER))
 				.join(new Join(segmentA, segmentB, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent).setJoinType(JoinType.INNER))
-				.join(Join.find(segmentB, taskB).setJoinType(JoinType.INNER));
+				.join(Join.find(segmentB, taskB).setJoinType(JoinType.INNER))
+				.join(Join.find(segmentB, taskB).setJoinType(JoinType.INNER))
+				.join(Join.find(segmentB, taskB).setJoinType(JoinType.LEFT))
+				.select(taskB, TaskEntity.Fields.name);
 		
 		String queryString = context.queryAsString(query);
 		
