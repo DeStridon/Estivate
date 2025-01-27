@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.estivate.entity.Index.CompositeIndex;
+import com.estivate.index.Annotations.CompositeIndex;
 import com.estivate.query.Query.Entity;
 
 public abstract class NameMapper {

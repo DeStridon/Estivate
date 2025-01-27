@@ -1,4 +1,4 @@
-package com.estivate.util;
+package com.estivate.index;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.estivate.context.Context;
-import com.estivate.entity.Index.ColumnIndex;
-import com.estivate.entity.Index.CompositeIndex;
+import com.estivate.index.Annotations.ColumnIndex;
+import com.estivate.index.Annotations.CompositeIndex;
 
 
 

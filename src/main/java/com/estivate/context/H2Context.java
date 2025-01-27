@@ -10,8 +10,8 @@ import javax.sql.DataSource;
 
 import com.estivate.Result;
 import com.estivate.Statement;
-import com.estivate.entity.Index.ColumnIndex;
-import com.estivate.entity.Index.CompositeIndex;
+import com.estivate.index.Annotations.ColumnIndex;
+import com.estivate.index.Annotations.CompositeIndex;
 import com.estivate.query.Query;
 
 import lombok.SneakyThrows;

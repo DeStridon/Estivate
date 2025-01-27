@@ -8,12 +8,12 @@ import javax.persistence.Enumerated;
 import javax.persistence.PostPersist;
 import javax.persistence.PrePersist;
 
-import com.estivate.entity.Index.ColumnIndex;
-import com.estivate.entity.Index.CompositeIndex;
-import com.estivate.entity.Index.TableIndexes;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.entity.VirtualForeignKey;
+import com.estivate.index.Annotations.ColumnIndex;
+import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.TableIndexes;
 import com.estivate.test.entities.misc.Language;
 import com.estivate.test.entities.misc.LanguageConverter;
 

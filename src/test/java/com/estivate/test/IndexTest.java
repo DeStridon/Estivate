@@ -7,10 +7,10 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
-import com.estivate.entity.Index.CompositeIndex;
+import com.estivate.index.IndexDiff;
+import com.estivate.index.Annotations.CompositeIndex;
 import com.estivate.query.Query;
 import com.estivate.test.entities.TaskEntity;
-import com.estivate.util.IndexDiff;
 
 public class IndexTest {
 
