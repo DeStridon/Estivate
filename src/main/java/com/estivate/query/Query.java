@@ -93,6 +93,7 @@ public class Query extends Aggregator{
 	
 	
 	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
+	@Getter
 	Set<Join> joins = new LinkedHashSet<>();
 	
 	@Getter
@@ -131,107 +132,111 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
-	// nested search of the different classes used in criterions and to be added in joins
-	public Set<Entity> digClasses(Aggregator aggregator){
-		
-		Set<Entity> classes = new HashSet<>();
-		for(EstivateNode node : aggregator.criterions) {
-			
-			if(node instanceof Criterion) {
-				classes.add(((Criterion) node).entity);
-				
-				if(node instanceof Criterion.Operator) {
-					Criterion.Operator operator = (Criterion.Operator) node;
-					if(operator.value instanceof PropertyValue) {
-						PropertyValue estivateField = (PropertyValue) operator.value;
-						classes.add(estivateField.entity);
-					}
-				}
-				
-			}
-			else if(node instanceof Aggregator) {
-				classes.addAll(digClasses((Aggregator) node));
-			}
-			
-		}
-		
-		return classes;
-		
-	}
+//	// nested search of the different classes used in criterions and to be added in joins
+//	public Set<Entity> digClasses(Aggregator aggregator){
+//		
+//		Set<Entity> classes = new HashSet<>();
+//		for(EstivateNode node : aggregator.criterions) {
+//			
+//			if(node instanceof Criterion) {
+//				classes.add(((Criterion) node).entity);
+//				
+//				if(node instanceof Criterion.Operator) {
+//					Criterion.Operator operator = (Criterion.Operator) node;
+//					if(operator.value instanceof PropertyValue) {
+//						PropertyValue estivateField = (PropertyValue) operator.value;
+//						classes.add(estivateField.entity);
+//					}
+//				}
+//				
+//			}
+//			else if(node instanceof Aggregator) {
+//				classes.addAll(digClasses((Aggregator) node));
+//			}
+//			
+//		}
+//		
+//		return classes;
+//		
+//	}
 	
 	
-	// purpose : build join tree out of entities nodes and join branches
-	public List<Join> buildJoins() {
+//	// purpose : build join tree out of entities nodes and join branches
+//	public List<Join> buildJoins() {
+//
+//		// 0. initiate
+//		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(entity));
+//		List<Join> classJoins = new ArrayList<>();
+//		
+//		// 1. list all classes needed for query
+//		Set<Entity> toJoinEntities = new HashSet<>(digClasses(this));
+//		toJoinEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
+//		for(Join join : joins) {
+//			toJoinEntities.add(join.joinerEntity);
+//			toJoinEntities.add(join.joinedEntity);
+//		}
+//		
+//		
+//		
+//		
+//		
+//		while(true) { 
+//			Join cj = tryAddingJoinedClass(joinedEntities, toJoinEntities);
+//			if(cj != null) {
+//				joinedEntities.add(cj.joinedEntity);
+//				classJoins.add(cj);
+//			}
+//			else {
+//				break;
+//			}
+//		}
+//
+//		// check no missing class from queryClasses in joinedQueryClasses
+//		if(!joinedEntities.containsAll(toJoinEntities)) {
+//			throw new RuntimeException(
+//					"No junction found for classes "
+//					+ toJoinEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
+//					+ " with classes "
+//					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
+//		}
+//		
+//		return classJoins;
+//		
+//		
+//	}
 
-		// 0. initiate
-		Set<Entity> joinedEntities = new HashSet<>(Arrays.asList(entity));
-		List<Join> classJoins = new ArrayList<>();
-		
-		// 1. list all classes needed for query
-		Set<Entity> targetEntities = new HashSet<>(digClasses(this));
-		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
-		for(Join join : joins) {
-			targetEntities.add(join.joinerEntity);
-			targetEntities.add(join.joinedEntity);
-		}
-		
-		while(true) { 
-			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
-			if(cj != null) {
-				joinedEntities.add(cj.joinedEntity);
-				classJoins.add(cj);
-			}
-			else {
-				break;
-			}
-		}
-
-		// check no missing class from queryClasses in joinedQueryClasses
-		if(!joinedEntities.containsAll(targetEntities)) {
-			throw new RuntimeException(
-					"No junction found for classes "
-					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
-					+ " with classes "
-					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
-		}
-		
-		return classJoins;
-		
-		
-	}
-
-	// links first suitable class of candidates to one of already joined classes
-	// return null if every class already joined or if all remaining classes cannot be joined
-	private Join tryAddingJoinedClass(Set<Entity> joined, Set<Entity> candidates) {
-		for(Entity candidate : candidates) {
-			
-			// if already joined, skip
-			if(joined.contains(candidate)) {
-				continue;
-			}
-			
-			// joining strategy #1 : manual joins
-			for(Entity joinedClass : joined) {
-				Join manualJoin = joins.stream()
-						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
-						.findFirst().orElse(null);
-				if(manualJoin != null) {
-					return manualJoin;
-				}
-			}
-			
-			// joining strategy #2 : VirtualKey
-			for(Entity joinedClass : joined) {
-				
-				Join cj = Join.find(joinedClass, candidate);
-				if(cj != null) {
-					return cj;
-				}
-			}
-		}
-		
-		return null;
-	}
+//	// links first suitable class of candidates to one of already joined classes
+//	// return null if every class already joined or if all remaining classes cannot be joined
+//	private Join tryAddingJoinedClass(Set<Entity> joined, Set<Entity> candidates) {
+//		for(Entity candidate : candidates) {
+//			
+//			// if already joined, skip
+//			if(joined.contains(candidate)) {
+//				continue;
+//			}
+//			
+//			// joining strategy #1 : manual joins
+//			for(Entity joinedClass : joined) {
+//				Join manualJoin = joins.stream()
+//						.filter(x -> x.joinerEntity.equals(joinedClass) && x.joinedEntity.equals(candidate))
+//						.findFirst().orElse(null);
+//				if(manualJoin != null) {
+//					return manualJoin;
+//				}
+//			}
+//			
+//			// joining strategy #2 : VirtualKey
+//			for(Entity joinedClass : joined) {
+//				
+//				Join cj = Join.find(joinedClass, candidate);
+//				if(cj != null) {
+//					return cj;
+//				}
+//			}
+//		}
+//		
+//		return null;
+//	}
 
 	
 	public Query join(Join classJoin) { joins.add(classJoin); return this; }

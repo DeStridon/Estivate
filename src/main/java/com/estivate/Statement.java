@@ -172,7 +172,7 @@ public class Statement {
 			statement.appendQuery(joinQuery.getIndexHint()+ " INDEX ("+joinQuery.getIndexNames().stream().collect(Collectors.joining(", "))+")");
 		}
 		
-        for(Join join : joinQuery.buildJoins()) {
+		for(Join join : joinQuery.getJoins()) {
         	statement.appendQuery(join.toString()+'\n');
         }
         
