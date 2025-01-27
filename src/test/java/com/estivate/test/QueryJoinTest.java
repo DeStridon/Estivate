@@ -8,12 +8,15 @@ import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+
 
 import com.estivate.NameMapper;
 import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Join;
+import com.estivate.query.Join.JoinType;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
@@ -111,6 +114,29 @@ public class QueryJoinTest {
 		
 	}
 
+	@Test
+	public void squareJoinTest() throws SQLException {
+		
+		
+		Entity<?> taskA = new Entity<>(TaskEntity.class, "TaskA");
+		Entity<?> segmentA = new Entity<>(SegmentEntity.class, "SegmentA");
+		Entity<?> segmentB = new Entity<>(SegmentEntity.class, "SegmentB");
+		Entity<?> taskB = new Entity<>(TaskEntity.class, "TaskB");
+		
+		Query query = new Query(taskA)
+				.joinInner(taskA, segmentA)
+				.joinInner(segmentA, segmentB, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
+				.joinInner(segmentB, taskB)
+				.joinInner(segmentB, taskB)
+				.joinLeft(segmentB, taskB)
+				.select(taskB, TaskEntity.Fields.name);
+		
+		String queryString = context.queryAsString(query);
+		
+		Assert.assertTrue(queryString.contains("INNER JOIN SEGMENTENTITY_D SegmentB ON SegmentA.SOURCECONTENT_D = SegmentB.SOURCECONTENT_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN TASKENTITY_D TaskB ON SegmentB.TASKID_D = TaskB.ID_D"));
+		
+	}
 	
 	
 }
