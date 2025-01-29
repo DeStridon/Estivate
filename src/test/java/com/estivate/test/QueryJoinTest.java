@@ -21,8 +21,8 @@ import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.SegmentEntity;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ChildEntity;
+import com.estivate.test.entities.ParentEntity;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,14 +39,14 @@ public class QueryJoinTest {
 		
 		
 		
-		context.saveOrUpdate(SegmentEntity.builder().projectId(1).taskId(2).sourceContent("source content 1").wordcount(3).sourceFragmentId(5).build());
-		context.saveOrUpdate(SegmentEntity.builder().projectId(1).taskId(2).sourceContent("source content 2").wordcount(3).sourceFragmentId(6).build());
+		context.saveOrUpdate(ChildEntity.builder().homeId(1).parentId(2).description("source content 1").age(3).build());
+		context.saveOrUpdate(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
 		
-		Query query = new Query(SegmentEntity.class)
+		Query query = new Query(ChildEntity.class)
 				.name("Query Join Test")
-				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, 2);
+				.eq(ChildEntity.class, ChildEntity.Fields.parentId, 2);
 		
-		List<SegmentEntity> results = context.fetchListAs(query, SegmentEntity.class);
+		List<ChildEntity> results = context.fetchListAs(query, ChildEntity.class);
 		
 		assertEquals(2, results.size());
 		
@@ -55,15 +55,15 @@ public class QueryJoinTest {
 	@Test
 	public void selectJoiningTest2() throws SQLException {
 		
-		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("join test name 1").build());
+		ParentEntity task = context.saveOrUpdate(ParentEntity.builder().name("join test name 1").build());
 		
-		context.saveOrUpdate(SegmentEntity.builder().taskId(task.getId()).sourceContent("source content 1").build());
-		context.saveOrUpdate(SegmentEntity.builder().taskId(task.getId()).sourceContent("source content 2").build());
+		context.saveOrUpdate(ChildEntity.builder().parentId(task.getId()).description("source content 1").build());
+		context.saveOrUpdate(ChildEntity.builder().parentId(task.getId()).description("source content 2").build());
 		
-		Query query = new Query(TaskEntity.class)
-				.join(Join.Inner(TaskEntity.class, SegmentEntity.class))
-				.selectAll(SegmentEntity.class)
-				.eq(TaskEntity.class, TaskEntity.Fields.name, task.getName());
+		Query query = new Query(ParentEntity.class)
+				.join(Join.Inner(ParentEntity.class, ChildEntity.class))
+				.selectAll(ChildEntity.class)
+				.eq(ParentEntity.class, ParentEntity.Fields.name, task.getName());
 		
 		List<Result> results = context.fetchList(query);
 		
@@ -76,13 +76,13 @@ public class QueryJoinTest {
 	@Test
 	public void whereJoiningTest() throws SQLException {
 		
-		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("join test name 2").build());
+		ParentEntity parent = context.saveOrUpdate(ParentEntity.builder().name("join test name 2").build());
 		
-		context.saveOrUpdate(SegmentEntity.builder().taskId(task.getId()).sourceContent("source content 1").build());
-		context.saveOrUpdate(SegmentEntity.builder().taskId(task.getId()).sourceContent("source content 2").build());
+		context.saveOrUpdate(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
+		context.saveOrUpdate(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
-		Query query = new Query(TaskEntity.class)
-				.eq(SegmentEntity.class, SegmentEntity.Fields.sourceContent, "source content 1");
+		Query query = new Query(ParentEntity.class)
+				.eq(ChildEntity.class, ChildEntity.Fields.description, "source content 1");
 		
 		String queryString = context.queryAsString(query);
 	
@@ -92,17 +92,16 @@ public class QueryJoinTest {
 	public void nameMappingTest() throws SQLException {
 		
 		
-		Entity<SegmentEntity> sourceSegment = new Entity<>(SegmentEntity.class, "sourceSegment");
-		Entity<SegmentEntity> targetSegment = new Entity<>(SegmentEntity.class, "targetSegment");
+		Entity<ChildEntity> sourceSegment = new Entity<>(ChildEntity.class, "sourceSegment");
+		Entity<ChildEntity> targetSegment = new Entity<>(ChildEntity.class, "targetSegment");
 		
 		
-		Query query = new Query(TaskEntity.class)
+		Query query = new Query(ParentEntity.class)
 			.select(sourceSegment, AbstractEntity.Fields.id)
 			.select(targetSegment, AbstractEntity.Fields.id)
-			.join(Join.Inner(TaskEntity.class, sourceSegment, AbstractEntity.Fields.id, SegmentEntity.Fields.taskId))
-			.join(Join.Inner(sourceSegment, targetSegment, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.targetContent))
-			.eq(sourceSegment, SegmentEntity.Fields.sourceLanguage, "en-FR")
-			.eq(TaskEntity.class, AbstractEntity.Fields.id, 35)
+			.join(Join.Inner(ParentEntity.class, sourceSegment, AbstractEntity.Fields.id, ChildEntity.Fields.parentId))
+			.join(Join.Inner(sourceSegment, targetSegment, ChildEntity.Fields.description, ChildEntity.Fields.description))
+			.eq(ParentEntity.class, AbstractEntity.Fields.id, 35)
 			.notEq(sourceSegment, AbstractEntity.Fields.id, new PropertyValue(targetSegment, AbstractEntity.Fields.id));
 		
 		String queryString = context.queryAsString(query);
@@ -118,18 +117,18 @@ public class QueryJoinTest {
 	public void squareJoinTest() throws SQLException {
 		
 		
-		Entity<?> taskA = new Entity<>(TaskEntity.class, "TaskA");
-		Entity<?> segmentA = new Entity<>(SegmentEntity.class, "SegmentA");
-		Entity<?> segmentB = new Entity<>(SegmentEntity.class, "SegmentB");
-		Entity<?> taskB = new Entity<>(TaskEntity.class, "TaskB");
+		Entity<?> taskA = new Entity<>(ParentEntity.class, "TaskA");
+		Entity<?> segmentA = new Entity<>(ChildEntity.class, "SegmentA");
+		Entity<?> segmentB = new Entity<>(ChildEntity.class, "SegmentB");
+		Entity<?> taskB = new Entity<>(ParentEntity.class, "TaskB");
 		
 		Query query = new Query(taskA)
 				.joinInner(taskA, segmentA)
-				.joinInner(segmentA, segmentB, SegmentEntity.Fields.sourceContent, SegmentEntity.Fields.sourceContent)
+				.joinInner(segmentA, segmentB, ChildEntity.Fields.description, ChildEntity.Fields.description)
 				.joinInner(segmentB, taskB)
 				.joinInner(segmentB, taskB)
 				.joinLeft(segmentB, taskB)
-				.select(taskB, TaskEntity.Fields.name);
+				.select(taskB, ParentEntity.Fields.name);
 		
 		String queryString = context.queryAsString(query);
 		

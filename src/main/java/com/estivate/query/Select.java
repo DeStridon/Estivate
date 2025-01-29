@@ -22,6 +22,7 @@ public class Select implements Comparable {
 	
 	public enum SelectMethod{
 		Count,
+		CountDistinct,
 		Max,
 		Min,
 		Sum,

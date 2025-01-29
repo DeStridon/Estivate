@@ -16,10 +16,10 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.SegmentEntity;
-import com.estivate.test.entities.TaskEntity;
-import com.estivate.test.entities.TaskEntity.MacroState;
-import com.estivate.test.entities.TaskEntity.StringEnum;
+import com.estivate.test.entities.ChildEntity;
+import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.ParentEntity.JobEnum;
+import com.estivate.test.entities.ParentEntity.StringEnum;
 import com.estivate.util.Chronometer;
 
 public class ResultTest {
@@ -32,18 +32,13 @@ public class ResultTest {
 		
 		
 		Map<String, String> map = new HashMap<>();
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.projectId), "1");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceFragmentId), "2");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetFragmentId), "45");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.taskId), "555");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceContent), "blablablablablabla");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetContent), "pihiphiphpih");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.sourceLanguage), "en_GB");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.targetLanguage), "fr_FR");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.macroStatus), "4");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.microStatus), "2");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.updated), "2024-11-19 22:02:03.254");
-		map.put(context.nameMapper.mapEntity(SegmentEntity.class, SegmentEntity.Fields.archived), "2023-11-19 22:02:03");
+		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.homeId), "1");
+		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.parentId), "555");
+		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.description), "blablablablablabla");
+
+		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.job), "4");
+		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.mood), "2");
+		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.lastSeen), "2024-11-19 22:02:03.254");
 		
 		Statement statement = new Statement(context, null);
 		
@@ -57,7 +52,7 @@ public class ResultTest {
 		Chronometer chrono = new Chronometer("bla");
 
 		
-		List<SegmentEntity> segments1 = results.stream().map(x -> x.mapTo(SegmentEntity.class)).collect(Collectors.toList());
+		List<ChildEntity> children = results.stream().map(x -> x.mapTo(ChildEntity.class)).collect(Collectors.toList());
 		
 		chrono.end("end");
 		
@@ -67,8 +62,8 @@ public class ResultTest {
 	public void testParallel() {
 		
 		
-		TaskEntity task = TaskEntity.builder()
-				.projectId(10)
+		ParentEntity task = ParentEntity.builder()
+				.homeId(10)
 				.name("parallel test task")
 				.updated(new Date())
 				.build();
@@ -78,10 +73,10 @@ public class ResultTest {
 			 task.setId(0);
 		}
 		
-		Query query = new Query(TaskEntity.class);
-		query.eq(TaskEntity.class, TaskEntity.Fields.name, "parallel test task");
+		Query query = new Query(ParentEntity.class);
+		query.eq(ParentEntity.class, ParentEntity.Fields.name, "parallel test task");
 		
-		List<TaskEntity> tasks = context.fetchListAs(query, TaskEntity.class);
+		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);
 		
 		
 	}
@@ -89,28 +84,28 @@ public class ResultTest {
 	@Test
 	public void testMapEnum() {
 		
-		TaskEntity task = TaskEntity.builder()
-				.projectId(10)
+		ParentEntity task = ParentEntity.builder()
+				.homeId(10)
 				.name("parallel test task")
 				.updated(new Date())
-				.status(MacroState.Correction)
+				.status(JobEnum.Correction)
 				.stringEnum(StringEnum.DEF)
 				.build();
 		
 		context.saveOrUpdate(task);
 		
-		Query query = new Query(TaskEntity.class);
-		query.eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId());
+		Query query = new Query(ParentEntity.class);
+		query.eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId());
 		
 		Result results = context.fetchList(query).get(0);
 		
-		MacroState status = (MacroState) results.getAsEnum(TaskEntity.class, TaskEntity.Fields.status);
-		assertEquals(MacroState.Correction, status);
+		JobEnum status = (JobEnum) results.getAsEnum(ParentEntity.class, ParentEntity.Fields.status);
+		assertEquals(JobEnum.Correction, status);
 		
-		StringEnum stringEnum = (StringEnum) results.getAsEnum(TaskEntity.class, TaskEntity.Fields.stringEnum);
+		StringEnum stringEnum = (StringEnum) results.getAsEnum(ParentEntity.class, ParentEntity.Fields.stringEnum);
 		assertEquals(StringEnum.DEF, stringEnum);
 	
-		Date taskDate = results.mapToDate(TaskEntity.class, TaskEntity.Fields.updated);
+		Date updatedDate = results.mapToDate(ParentEntity.class, ParentEntity.Fields.updated);
 		
 		
 		

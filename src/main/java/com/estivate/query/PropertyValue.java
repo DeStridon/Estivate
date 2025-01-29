@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class PropertyValue {
-	public Entity entity;
+	public Entity<?> entity;
 	public String attributeName;
 	
-	public PropertyValue(Class entityClass, String attributeName) {
-		this(new Entity(entityClass), attributeName);
+	public PropertyValue(Class<?> entityClass, String attributeName) {
+		this(new Entity<>(entityClass), attributeName);
 	}
 
 }

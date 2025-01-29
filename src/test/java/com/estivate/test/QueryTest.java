@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ParentEntity;
 
 public class QueryTest {
 
@@ -19,9 +19,9 @@ public class QueryTest {
 	@Test
 	void orderLimitTest(){
 		
-		context.truncateTable(TaskEntity.class);
+		context.truncateTable(ParentEntity.class);
 
-		List<TaskEntity> list = Arrays.asList(
+		List<ParentEntity> list = Arrays.asList(
 			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
 			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
 			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
@@ -32,19 +32,14 @@ public class QueryTest {
 		);
 		
 		
-		Query projectIdAscOrderedTaskQuery = new Query(TaskEntity.class).orderAsc(TaskEntity.class, TaskEntity.Fields.projectId).limit(2);
-		List<TaskEntity> projectIdAscOrderedTasks = context.fetchListAs(projectIdAscOrderedTaskQuery, TaskEntity.class);
-		Assert.assertEquals(list.stream().mapToLong(x -> x.getProjectId()).min().orElse(0), projectIdAscOrderedTasks.get(0).getProjectId());
+		Query projectIdAscOrderedTaskQuery = new Query(ParentEntity.class).orderAsc(ParentEntity.class, ParentEntity.Fields.homeId).limit(2);
+		List<ParentEntity> projectIdAscOrderedTasks = context.fetchListAs(projectIdAscOrderedTaskQuery, ParentEntity.class);
+		Assert.assertEquals(list.stream().mapToLong(x -> x.getHomeId()).min().orElse(0), projectIdAscOrderedTasks.get(0).getHomeId());
 		Assert.assertEquals(2, projectIdAscOrderedTasks.size());
 		
-		Query idDescOrderedTaskQuery = new Query(TaskEntity.class).orderDesc(TaskEntity.class, AbstractEntity.Fields.id);
-		List<TaskEntity> idDescOrderedTasks = context.fetchListAs(idDescOrderedTaskQuery, TaskEntity.class);
+		Query idDescOrderedTaskQuery = new Query(ParentEntity.class).orderDesc(ParentEntity.class, AbstractEntity.Fields.id);
+		List<ParentEntity> idDescOrderedTasks = context.fetchListAs(idDescOrderedTaskQuery, ParentEntity.class);
 		Assert.assertEquals(list.stream().mapToLong(x -> x.getId()).max().orElse(0), idDescOrderedTasks.get(0).getId());
-		
-	}
-	
-	@Test
-	void groupByTest() {
 		
 	}
 	

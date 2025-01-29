@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.query.Query;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ParentEntity;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +24,8 @@ public class QueryOrderTest {
 	@Test
 	public void orderTest1() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class)
-				.orderAsc(TaskEntity.class, TaskEntity.Fields.name, "IS NULL");
+		Query query = new Query(ParentEntity.class)
+				.orderAsc(ParentEntity.class, ParentEntity.Fields.name, "IS NULL");
 		
 		String queryString = context.queryAsString(query);
 		

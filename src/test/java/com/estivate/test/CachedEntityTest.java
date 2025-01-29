@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ParentEntity;
 
 public class CachedEntityTest {
 
@@ -19,16 +19,16 @@ public class CachedEntityTest {
 	@Test
 	public void cachedEntityTest() {
 		
-		TaskEntity task = context.saveOrUpdate(TaskEntity.builder().name("intial name").externalName("initial external name").build());
+		ParentEntity task = context.saveOrUpdate(ParentEntity.builder().name("intial name").externalName("initial external name").build());
 		
-		TaskEntity taskA = context.fetchSingleAs(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
-		TaskEntity taskB = context.fetchSingleAs(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
+		ParentEntity taskA = context.fetchSingleAs(new Query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId()), ParentEntity.class);
+		ParentEntity taskB = context.fetchSingleAs(new Query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId()), ParentEntity.class);
 		
 		taskA.setName("new name");
 		taskB.setExternalName("new external name");
 		
-		assertTrue(taskA.isFieldUpdated(TaskEntity.Fields.name));
-		assertFalse(taskA.isFieldUpdated(TaskEntity.Fields.externalName));
+		assertTrue(taskA.isFieldUpdated(ParentEntity.Fields.name));
+		assertFalse(taskA.isFieldUpdated(ParentEntity.Fields.externalName));
 		
 		
 		context.saveOrUpdate(taskA);
@@ -36,7 +36,7 @@ public class CachedEntityTest {
 		
 		
 		
-		TaskEntity taskC = context.fetchSingleAs(new Query(TaskEntity.class).eq(TaskEntity.class, AbstractEntity.Fields.id, task.getId()), TaskEntity.class);
+		ParentEntity taskC = context.fetchSingleAs(new Query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId()), ParentEntity.class);
 		
 		assertEquals(taskA.getName(), taskC.getName());
 		assertEquals(taskB.getExternalName(), taskC.getExternalName());

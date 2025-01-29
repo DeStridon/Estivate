@@ -10,8 +10,8 @@ import com.estivate.context.Context;
 import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.SegmentEntity;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ChildEntity;
+import com.estivate.test.entities.ParentEntity;
 
 public class QuerySubTest {
 
@@ -22,13 +22,13 @@ public class QuerySubTest {
 	@Test
 	void subTest1() throws SQLException{
 
-		Query subQuery = new Query(SegmentEntity.class)
-				.select(SegmentEntity.class, SegmentEntity.Fields.taskId)
-				.eq(SegmentEntity.class, SegmentEntity.Fields.taskId, new PropertyValue(TaskEntity.class, AbstractEntity.Fields.id));
+		Query subQuery = new Query(ChildEntity.class)
+				.select(ChildEntity.class, ChildEntity.Fields.parentId)
+				.eq(ChildEntity.class, ChildEntity.Fields.parentId, new PropertyValue(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		
-		Query query = new Query(TaskEntity.class)
-				.inSubQuery(TaskEntity.class, AbstractEntity.Fields.id, subQuery);
+		Query query = new Query(ParentEntity.class)
+				.inSubQuery(ParentEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		try(Connection connection = context.datasource.getConnection()){
 			Statement statement = Statement.toStatement(context, connection, query);

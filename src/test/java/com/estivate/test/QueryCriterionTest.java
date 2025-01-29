@@ -22,9 +22,9 @@ import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.SegmentEntity;
-import com.estivate.test.entities.TaskEntity;
-import com.estivate.test.entities.TaskEntity.MacroState;
+import com.estivate.test.entities.ChildEntity;
+import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.ParentEntity.JobEnum;
 import com.estivate.test.entities.misc.Language;
 
 public class QueryCriterionTest {
@@ -34,7 +34,7 @@ public class QueryCriterionTest {
 	@Test
 	public void insertTest() {
 		
-		TaskEntity task1 = context.saveOrUpdate(TaskEntity.builder().projectId(1).name("task 1").build());
+		ParentEntity task1 = context.saveOrUpdate(ParentEntity.builder().homeId(1).name("task 1").build());
 		
 		assertEquals(new Date().getTime(), task1.getCreated().getTime(), 100);
 		assertNull(task1.getUpdated());
@@ -52,31 +52,31 @@ public class QueryCriterionTest {
 	@Test 
 	public void automatedJoinTest() {
 		
-		TaskEntity task2 = context.saveOrUpdate(TaskEntity.builder().projectId(1).name("task 2").build());
+		ParentEntity parent2 = context.saveOrUpdate(ParentEntity.builder().homeId(1).name("parent 2").build());
 
-		SegmentEntity segment21 = context.saveOrUpdate(SegmentEntity.builder().taskId(task2.getId()).sourceContent("source content 2.1").build());
-		SegmentEntity segment22 = context.saveOrUpdate(SegmentEntity.builder().taskId(task2.getId()).sourceContent("source content 2.2").build());
-		SegmentEntity segment23 = context.saveOrUpdate(SegmentEntity.builder().taskId(task2.getId()).sourceContent("source content 2.3").build());
+		ChildEntity child21 = context.saveOrUpdate(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.1").build());
+		ChildEntity child22 = context.saveOrUpdate(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.2").build());
+		ChildEntity child23 = context.saveOrUpdate(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.3").build());
 		
-		TaskEntity task3 = context.saveOrUpdate(TaskEntity.builder().projectId(1).name("task 3").build());
+		ParentEntity parent3 = context.saveOrUpdate(ParentEntity.builder().homeId(1).name("task 3").build());
 
-		SegmentEntity segment31 = context.saveOrUpdate(SegmentEntity.builder().taskId(task3.getId()).sourceContent("source content 3.1").build());
-		SegmentEntity segment32 = context.saveOrUpdate(SegmentEntity.builder().taskId(task3.getId()).sourceContent("source content 3.2").build());
+		ChildEntity child31 = context.saveOrUpdate(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.1").build());
+		ChildEntity child32 = context.saveOrUpdate(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.2").build());
 		
-		Query query = new Query(SegmentEntity.class)
-				.join(Join.Inner(SegmentEntity.class, TaskEntity.class))
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.selectAll(TaskEntity.class)
+		Query query = new Query(ChildEntity.class)
+				.join(Join.Inner(ChildEntity.class, ParentEntity.class))
+				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
+				.selectAll(ParentEntity.class)
 				
-				.eq(TaskEntity.class, TaskEntity.Fields.name, "task 2");
+				.eq(ParentEntity.class, ParentEntity.Fields.name, "task 2");
 		
 		List<Result> results = context.fetchList(query);
 		
 		assertEquals(1, results.size());
 		
 		for(Result result : results) {
-			SegmentEntity segment = result.mapTo(SegmentEntity.class);
-			TaskEntity task = result.mapTo(TaskEntity.class);
+			ChildEntity child = result.mapTo(ChildEntity.class);
+			ParentEntity parent = result.mapTo(ParentEntity.class);
 		}
 		
 	}
@@ -84,8 +84,8 @@ public class QueryCriterionTest {
 	@Test
 	public void queryTest() {
 		
-		TaskEntity testTask = TaskEntity.builder()
-				.projectId(4)
+		ParentEntity testTask = ParentEntity.builder()
+				.homeId(4)
 				.name("queryTest test task")
 				.externalName("external Name")
 				.sourceLanguage(Language.ar_KW)
@@ -95,30 +95,30 @@ public class QueryCriterionTest {
 		context.saveOrUpdate(testTask);
 		
 		
-		Query query = new Query(TaskEntity.class)
-				.eq(TaskEntity.class, TaskEntity.Fields.name, "queryTest test task")
-				.lt(TaskEntity.class, TaskEntity.Fields.projectId, 5)
-				.lte(TaskEntity.class, TaskEntity.Fields.projectId, 4)
-				.gt(TaskEntity.class, TaskEntity.Fields.projectId, 1)
-				.gte(TaskEntity.class,  TaskEntity.Fields.projectId, 4)
-				.between(TaskEntity.class, TaskEntity.Fields.projectId, 3, 7)
-				.notEq(TaskEntity.class, TaskEntity.Fields.externalName, "external Name 2")
-				.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
-				.notIn(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
+		Query query = new Query(ParentEntity.class)
+				.eq(ParentEntity.class, ParentEntity.Fields.name, "queryTest test task")
+				.lt(ParentEntity.class, ParentEntity.Fields.homeId, 5)
+				.lte(ParentEntity.class, ParentEntity.Fields.homeId, 4)
+				.gt(ParentEntity.class, ParentEntity.Fields.homeId, 1)
+				.gte(ParentEntity.class,  ParentEntity.Fields.homeId, 4)
+				.between(ParentEntity.class, ParentEntity.Fields.homeId, 3, 7)
+				.notEq(ParentEntity.class, ParentEntity.Fields.externalName, "external Name 2")
+				.in(ParentEntity.class, ParentEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
+				.notIn(ParentEntity.class, ParentEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
 				
 				
-				.eqIfNotNull(TaskEntity.class, TaskEntity.Fields.created, null)
-				.ltIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 5)
-				.lteIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 4)
-				.gtIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 1)
-				.gteIfNotNull(TaskEntity.class,  TaskEntity.Fields.projectId, 4)
-				.betweenIfNotNull(TaskEntity.class, TaskEntity.Fields.projectId, 3, 7)
-				.notEqIfNotNull(TaskEntity.class, TaskEntity.Fields.externalName, "external Name 2")
-				.inIfNotEmpty(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
-				.notInIfNotEmpty(TaskEntity.class, TaskEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
+				.eqIfNotNull(ParentEntity.class, ParentEntity.Fields.created, null)
+				.ltIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 5)
+				.lteIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 4)
+				.gtIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1)
+				.gteIfNotNull(ParentEntity.class,  ParentEntity.Fields.homeId, 4)
+				.betweenIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 3, 7)
+				.notEqIfNotNull(ParentEntity.class, ParentEntity.Fields.externalName, "external Name 2")
+				.inIfNotEmpty(ParentEntity.class, ParentEntity.Fields.sourceLanguage, Arrays.asList(Language.ar_KW, Language.ar_BH, Language.ar_QA))
+				.notInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.targetLanguage, Arrays.asList(Language.ar_AE, Language.ar_BH, Language.ar_EG))
 				;
 		
-		List<TaskEntity> tasks = context.fetchListAs(query, TaskEntity.class);
+		List<ParentEntity> tasks = context.fetchListAs(query, ParentEntity.class);
 		
 		Assert.assertEquals(1, tasks.size());		
 	
@@ -129,13 +129,13 @@ public class QueryCriterionTest {
 	@Test
 	public void taskEnumTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class);
+		Query query = new Query(ParentEntity.class);
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1, 2, 3, 4));
+		query.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1, 2, 3, 4));
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.sourceLanguage, Arrays.asList(Language.en_GB, Language.fr_FR));
+		query.in(ParentEntity.class, ParentEntity.Fields.sourceLanguage, Arrays.asList(Language.en_GB, Language.fr_FR));
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.status, Arrays.asList(MacroState.Analysis, MacroState.Translation));
+		query.in(ParentEntity.class, ParentEntity.Fields.status, Arrays.asList(JobEnum.Analysis, JobEnum.Translation));
 		
 		context.fetchList(query);
 		
@@ -146,23 +146,23 @@ public class QueryCriterionTest {
 	@Test
 	public void inTest() {
 		
-		TaskEntity task1 = context.saveOrUpdate(TaskEntity.builder().projectId(1234).name("task 1").build());
-		TaskEntity task2 = context.saveOrUpdate(TaskEntity.builder().projectId(1235).name("task 2").build());
+		ParentEntity task1 = context.saveOrUpdate(ParentEntity.builder().homeId(1234).name("task 1").build());
+		ParentEntity task2 = context.saveOrUpdate(ParentEntity.builder().homeId(1235).name("task 2").build());
 		
-		Query query = new Query(TaskEntity.class);
+		Query query = new Query(ParentEntity.class);
 
-		Entity taskEntity = new Query.Entity(TaskEntity.class);
+		Entity taskEntity = new Query.Entity(ParentEntity.class);
 		
-		query.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1234, 1235));
+		query.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1234, 1235));
 		assertEquals(2, context.fetchList(query).size());
 		
-		Query query2 = query.clone().in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
+		Query query2 = query.clone().in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
 		assertEquals(1, context.fetchList(query2).size());
 
-		Query query3 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
+		Query query3 = query.clone().notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
 		assertEquals(1, context.fetchList(query3).size());
 
-		Query query4 = query.clone().notIn(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1235));
+		Query query4 = query.clone().notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
 		assertEquals(1, context.fetchList(query4).size());
 		
 	}
@@ -170,20 +170,20 @@ public class QueryCriterionTest {
 	@Test
 	public void in2Test() {
 		
-		TaskEntity task1 = context.saveOrUpdate(TaskEntity.builder().projectId(2234).name("task 1").build());
-		TaskEntity task2 = context.saveOrUpdate(TaskEntity.builder().projectId(2235).name("task 2").build());
+		ParentEntity task1 = context.saveOrUpdate(ParentEntity.builder().homeId(2234).name("task 1").build());
+		ParentEntity task2 = context.saveOrUpdate(ParentEntity.builder().homeId(2235).name("task 2").build());
 		
-		Query query = new Query(TaskEntity.class);
+		Query query = new Query(ParentEntity.class);
 
-		Entity taskEntity = new Query.Entity(TaskEntity.class);
+		Entity taskEntity = new Query.Entity(ParentEntity.class);
 		
-		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2234, 2235));
+		query.in(taskEntity, ParentEntity.Fields.homeId, Arrays.asList(2234, 2235));
 		assertEquals(2, context.fetchList(query).size());
 		
-		query.in(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
+		query.in(taskEntity, ParentEntity.Fields.homeId, Arrays.asList(2235));
 		assertEquals(1, context.fetchList(query).size());
 		
-		query.notIn(taskEntity, TaskEntity.Fields.projectId, Arrays.asList(2235));
+		query.notIn(taskEntity, ParentEntity.Fields.homeId, Arrays.asList(2235));
 		assertEquals(0, context.fetchList(query).size());
 		
 	}
@@ -196,7 +196,7 @@ public class QueryCriterionTest {
 		
 		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
 		
-		Query query = new Query(TaskEntity.class).in(TaskEntity.class, AbstractEntity.Fields.id, taskIds);
+		Query query = new Query(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, taskIds);
 
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
@@ -208,7 +208,7 @@ public class QueryCriterionTest {
 	@Test
 	public void isNullTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class).isNull(TaskEntity.class, AbstractEntity.Fields.id);
+		Query query = new Query(ParentEntity.class).isNull(ParentEntity.class, AbstractEntity.Fields.id);
 
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
@@ -220,7 +220,7 @@ public class QueryCriterionTest {
 	@Test
 	public void isNotNullTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class).isNotNull(TaskEntity.class, AbstractEntity.Fields.id);
+		Query query = new Query(ParentEntity.class).isNotNull(ParentEntity.class, AbstractEntity.Fields.id);
 
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
@@ -232,7 +232,7 @@ public class QueryCriterionTest {
 	@Test
 	public void likeTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class).like(TaskEntity.class, TaskEntity.Fields.name, "task%");
+		Query query = new Query(ParentEntity.class).like(ParentEntity.class, ParentEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
@@ -244,7 +244,7 @@ public class QueryCriterionTest {
 	@Test
 	public void notLikeTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class).notLike(TaskEntity.class, TaskEntity.Fields.name, "task%");
+		Query query = new Query(ParentEntity.class).notLike(ParentEntity.class, ParentEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
@@ -257,9 +257,9 @@ public class QueryCriterionTest {
 	@Test
 	public void eqOrNullTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class)
-				.in(TaskEntity.class, TaskEntity.Fields.projectId, Arrays.asList(1, 3, 5))
-				.eqOrNull(TaskEntity.class, TaskEntity.Fields.created, new Date());
+		Query query = new Query(ParentEntity.class)
+				.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1, 3, 5))
+				.eqOrNull(ParentEntity.class, ParentEntity.Fields.created, new Date());
 		
 		System.out.println(context.queryAsString(query));
 		
@@ -269,15 +269,15 @@ public class QueryCriterionTest {
 	@Test
 	public void orAggregatorTest() {
 		Aggregator or = Estivate.or();
-		or.add(Estivate.eq(TaskEntity.class, AbstractEntity.Fields.id, 1));
-		or.add(Estivate.eq(TaskEntity.class, TaskEntity.Fields.projectId, 2));
+		or.add(Estivate.eq(ParentEntity.class, AbstractEntity.Fields.id, 1));
+		or.add(Estivate.eq(ParentEntity.class, ParentEntity.Fields.homeId, 2));
 	}
 	
 	@Test
 	public void inIfNotEmptyNullableTest() {
 		List<String> names = new ArrayList<>();
 		names.add(null);
-		EstivateNode node = Estivate.inIfNotEmptyNullable(TaskEntity.class, TaskEntity.Fields.name, names);
+		EstivateNode node = Estivate.inIfNotEmptyNullable(ParentEntity.class, ParentEntity.Fields.name, names);
 		System.out.println(node.toString());
 	}
 	

@@ -122,12 +122,21 @@ public class Result {
 	}
 	
 	public Long getCount(Class<? extends Object> c, String attribute) {
-		if(columns.containsKey("COUNT(distinct "+statement.context.nameMapper.mapDatabase(c, attribute)+")")) {
-			return Long.valueOf(columns.get("COUNT(distinct "+statement.context.nameMapper.mapDatabase(c, attribute)+")"));
+		if(columns.containsKey("COUNT("+statement.context.nameMapper.mapDatabase(c, attribute)+")")) {
+			return Long.valueOf(columns.get("COUNT("+statement.context.nameMapper.mapDatabase(c, attribute)+")"));
 		}
 		return null;
 	}
 	
+
+	
+	public Long getCountDistinct(Class<? extends Object> c, String attribute) {
+		if(columns.containsKey("COUNT(DISTINCT "+statement.context.nameMapper.mapDatabase(c, attribute)+")")) {
+			return Long.valueOf(columns.get("COUNT(DISTINCT "+statement.context.nameMapper.mapDatabase(c, attribute)+")"));
+		}
+		return null;
+	}
+
 	
 	
 	

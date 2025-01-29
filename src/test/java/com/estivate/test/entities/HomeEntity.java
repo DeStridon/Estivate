@@ -5,7 +5,7 @@ import javax.persistence.Id;
 import lombok.experimental.FieldNameConstants;
 
 @FieldNameConstants
-public class ProjectEntity {
+public class HomeEntity {
 	
 	@Id
 	long id;

@@ -195,6 +195,7 @@ public class Query extends Aggregator{
 	String name;
 	
 	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
+	@Getter
 	Set<Join> joins = new LinkedHashSet<>();
 	
 	@Getter
@@ -232,118 +233,14 @@ public class Query extends Aggregator{
 		this.name = name;
 		return this;
 	}
-
 	
-	
-	// nested search of the different classes used in criterions and to be added in joins
-	public Set<Entity<?>> digClasses(Aggregator aggregator){
-		
-		Set<Entity<?>> classes = new HashSet<>();
-		for(EstivateNode node : aggregator.criterions) {
-			
-			if(node instanceof Criterion) {
-				classes.add(((Criterion) node).entity);
-				
-				if(node instanceof Criterion.Operator) {
-					Criterion.Operator operator = (Criterion.Operator) node;
-					if(operator.value instanceof PropertyValue) {
-						PropertyValue estivateField = (PropertyValue) operator.value;
-						classes.add(estivateField.entity);
-					}
-				}
-				
-			}
-			else if(node instanceof Aggregator) {
-				classes.addAll(digClasses((Aggregator) node));
-			}
-			
+	public Query join(Join join) { 
+		if(joins.stream().noneMatch(x -> x.leftEntity.equals(join.leftEntity) && x.rightEntity.equals(join.rightEntity) && x.joinType == join.joinType)) {
+			joins.add(join);
 		}
-		
-		return classes;
-		
+		return this;
 	}
-	
-	
-	// purpose : build join tree out of entities nodes and join branches
-	public List<Join> buildJoins() {
-
-		// 0. initiate
-
-		LinkedHashSet<Entity<?>> joinedEntities = new LinkedHashSet<>(Arrays.asList(entity));
-		List<Join> classJoins = new ArrayList<>();
 		
-		// 1. list all classes needed for query
-		LinkedHashSet<Entity<?>> targetEntities = new LinkedHashSet<>(digClasses(this));
-		targetEntities.addAll(selects.stream().filter(x -> x.entity != null).map(x -> x.entity).collect(Collectors.toSet()));
-		targetEntities.addAll(joins.stream().flatMap(x -> Arrays.asList(x.leftEntity, x.rightEntity).stream()).collect(Collectors.toList()));
-
-		for(Join join : joins) {
-			if(classJoins.stream().noneMatch(x -> x.leftEntity.equals(join.leftEntity) && x.rightEntity.equals(join.rightEntity) && x.joinType == join.joinType)) {
-				classJoins.add(join);
-				joinedEntities.add(join.rightEntity);
-			}
-		}
-		
-		while(true) { 
-			Join cj = tryAddingJoinedClass(joinedEntities, targetEntities);
-			if(cj != null) {
-				joinedEntities.add(cj.rightEntity);
-				classJoins.add(cj);
-			}
-			else {
-				break;
-			}
-		}
-
-		// check no missing class from queryClasses in joinedQueryClasses
-//		if(!joinedEntities.containsAll(targetEntities)) {
-//			throw new RuntimeException(
-//					"No junction found for classes "
-//					+ targetEntities.stream().filter(x -> !joinedEntities.contains(x)).map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")) 
-//					+ " with classes "
-//					+joinedEntities.stream().map(x -> x.entity.getSimpleName()).collect(Collectors.joining(", ", "{", "}")));
-//		}
-		
-		return classJoins;
-		
-		
-	}
-
-	// links first suitable class of candidates to one of already joined classes
-	// return null if every class already joined or if all remaining classes cannot be joined
-	private Join tryAddingJoinedClass(Set<Entity<?>> joined, Set<Entity<?>> candidates) {
-		for(Entity<?> candidate : candidates) {
-			
-			// if already joined, skip
-			if(joined.contains(candidate)) {
-				continue;
-			}
-			
-			// joining strategy #1 : manual joins
-			for(Entity<?> joinedClass : joined) {
-				Join manualJoin = joins.stream()
-						.filter(x -> x.leftEntity.equals(joinedClass) && x.rightEntity.equals(candidate))
-						.findFirst().orElse(null);
-				if(manualJoin != null) {
-					return manualJoin;
-				}
-			}
-			
-//			// joining strategy #2 : VirtualKey
-//			for(Entity joinedClass : joined) {
-//
-//				Join cj = Join.find(joinedClass, candidate);
-//				if(cj != null) {
-//					return cj;
-//				}
-//			}
-		}
-		
-		return null;
-	}
-
-	
-	public Query join(Join classJoin) { joins.add(classJoin); return this; }
 	public Query joinInner(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Join.Inner(leftEntity, rightEntity)); }
 	public Query joinInner(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Join.Inner(leftEntity, new Query.Entity<>(rightClass)));}
 	public Query joinInner(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Join.Inner(new Query.Entity<>(leftClass), rightEntity));}
@@ -479,50 +376,58 @@ public class Query extends Aggregator{
 	public Query selectCount() { selects.add(Select.builder().method(SelectMethod.Count).build()); return this; }
 	public Query selectCountAs(String alias) { selects.add(Select.builder().method(SelectMethod.Count).alias(alias).build()); return this; }
 	// Select count field
-	public Query selectCount(Class c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).build()); return this; }
-	public Query selectCount(Entity c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.Count).entity(c).attribute(attribute).build()); return this; }
-	public Query selectCountAs(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
-	public Query selectCountAs(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Count).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectCount(Class<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity<>(c)).attribute(attribute).build()); return this; }
+	public Query selectCount(Entity<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.Count).entity(c).attribute(attribute).build()); return this; }
+	public Query selectCountAs(Class<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Count).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectCountAs(Entity<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Count).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	
+	// Select count distinct field
+	public Query selectDistinctCount(Class<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.CountDistinct).entity(new Entity<>(c)).attribute(attribute).build()); return this; }
+	public Query selectDistinctCount(Entity<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.CountDistinct).entity(c).attribute(attribute).build()); return this; }
+	public Query selectDistinctCountAs(Class<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.CountDistinct).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectDistinctCountAs(Entity<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.CountDistinct).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	
+	
 	// Select min
-	public Query selectMin(Class c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).build()); return this; }
-	public Query selectMin(Entity c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Min).entity(c).attribute(attribute).build()); return this; }
-	public Query selectMinAs(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
-	public Query selectMinAs(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Min).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectMin(Class<?> c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity<>(c)).attribute(attribute).build()); return this; }
+	public Query selectMin(Entity<?> c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Min).entity(c).attribute(attribute).build()); return this; }
+	public Query selectMinAs(Class<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Min).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectMinAs(Entity<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Min).entity(c).attribute(attribute).alias(alias).build()); return this; }
 	// Select max
-	public Query selectMax(Class c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).build()); return this; }
-	public Query selectMax(Entity c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Max).entity(c).attribute(attribute).build()); return this; }
-	public Query selectMaxAs(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
-	public Query selectMaxAs(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Max).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectMax(Class<?> c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity<>(c)).attribute(attribute).build()); return this; }
+	public Query selectMax(Entity<?> c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Max).entity(c).attribute(attribute).build()); return this; }
+	public Query selectMaxAs(Class<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Max).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectMaxAs(Entity<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Max).entity(c).attribute(attribute).alias(alias).build()); return this; }
 	// Select Sum
-	public Query selectSum(Class c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).build()); return this; }
-	public Query selectSum(Entity c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Sum).entity(c).attribute(attribute).build()); return this; }
-	public Query selectSumAs(Class c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
-	public Query selectSumAs(Entity c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Sum).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectSum(Class<?> c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity<>(c)).attribute(attribute).build()); return this; }
+	public Query selectSum(Entity<?> c, String attribute) 					{ selects.add(Select.builder().method(SelectMethod.Sum).entity(c).attribute(attribute).build()); return this; }
+	public Query selectSumAs(Class<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Sum).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectSumAs(Entity<?> c, String attribute, String alias) 	{ selects.add(Select.builder().method(SelectMethod.Sum).entity(c).attribute(attribute).alias(alias).build()); return this; }
 	// Select Group Concat
-	public Query selectGroupConcat(Class c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity(c)).attribute(attribute).build()); return this; }
-	public Query selectGroupConcat(Entity c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).build()); return this; }
-	public Query selectGroupConcatAs(Class c, String attribute, String alias) { selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity(c)).attribute(attribute).alias(alias).build()); return this; }
-	public Query selectGroupConcatAs(Entity c, String attribute, String alias){ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectGroupConcat(Class<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity<>(c)).attribute(attribute).build()); return this; }
+	public Query selectGroupConcat(Entity<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).build()); return this; }
+	public Query selectGroupConcatAs(Class<?> c, String attribute, String alias) { selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
+	public Query selectGroupConcatAs(Entity<?> c, String attribute, String alias){ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).alias(alias).build()); return this; }
 	
 	
 	public Query clone() {
-		Query joinQuery = new Query(entity);
+		Query queryClone = new Query(entity);
 		
-		joinQuery.selects = new LinkedHashSet<>(this.selects);
-		joinQuery.joins = new LinkedHashSet<>(this.joins);
+		queryClone.selects = new LinkedHashSet<>(this.selects);
+		queryClone.joins = new LinkedHashSet<>(this.joins);
 
-		joinQuery.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
+		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		
-		joinQuery.indexHint = this.indexHint;
-		joinQuery.indexNames = new LinkedHashSet<>(this.indexNames);
+		queryClone.indexHint = this.indexHint;
+		queryClone.indexNames = new LinkedHashSet<>(this.indexNames);
 
-		joinQuery.orders = new ArrayList<>(this.orders);
-		joinQuery.groupBys = new ArrayList<>(this.groupBys);
+		queryClone.orders = new ArrayList<>(this.orders);
+		queryClone.groupBys = new ArrayList<>(this.groupBys);
 
-		joinQuery.limit = this.limit;
-		joinQuery.offset = this.offset;
+		queryClone.limit = this.limit;
+		queryClone.offset = this.offset;
 		
-		return joinQuery;
+		return queryClone;
 	}
 
 	public Query groupBy(Class c, String field) {

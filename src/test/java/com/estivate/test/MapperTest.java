@@ -9,7 +9,7 @@ import com.estivate.Mapper;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ParentEntity;
 
 public class MapperTest {
 	
@@ -18,18 +18,18 @@ public class MapperTest {
 	@Test
 	public void testPerf() {
 		
-		TaskEntity newTask = context.saveOrUpdate(TaskEntity.builder().name("task 1 name").build());	
+		ParentEntity newTask = context.saveOrUpdate(ParentEntity.builder().name("task 1 name").build());	
 		
-		Query query = new Query(TaskEntity.class)
-				.eq(TaskEntity.class, AbstractEntity.Fields.id, newTask.getId());
+		Query query = new Query(ParentEntity.class)
+				.eq(ParentEntity.class, AbstractEntity.Fields.id, newTask.getId());
 				
-		List<TaskEntity> tasks = context.fetchListAs(query, TaskEntity.class);
+		List<ParentEntity> tasks = context.fetchListAs(query, ParentEntity.class);
 		
 		Assert.assertEquals(1, tasks.size());
 		
 		System.out.println(tasks.get(0).getCreated());
 		
-		Mapper mapper = new Mapper<>(TaskEntity.class, context);
+		Mapper mapper = new Mapper<>(ParentEntity.class, context);
 		
 		//ResultSetMetaData rsmd
 		

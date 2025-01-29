@@ -12,10 +12,10 @@ public class TaskActivityEntity {
 	@Id
 	long id;
 	
-	@VirtualForeignKey(entity = ProjectEntity.class)
+	@VirtualForeignKey(entity = HomeEntity.class)
 	long projectId;
 	
-	@VirtualForeignKey(entity = TaskEntity.class)
+	@VirtualForeignKey(entity = ParentEntity.class)
 	long taskId;
 	
 	String username;

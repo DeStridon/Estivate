@@ -12,7 +12,7 @@ import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.TaskEntity;
+import com.estivate.test.entities.ParentEntity;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,12 +27,12 @@ public class QuerySelectMethodTest {
 	@Test
 	public void selectMaxTest() throws SQLException {
 		
-		Query query = new Query(TaskEntity.class)
-				.selectMaxAs(TaskEntity.class, AbstractEntity.Fields.id, "maxTaskId")
-				.selectCountAs(TaskEntity.class, AbstractEntity.Fields.id, "countTaskId")
-				.selectMinAs(TaskEntity.class, AbstractEntity.Fields.id, "minTaskId")
-				.selectGroupConcatAs(TaskEntity.class, AbstractEntity.Fields.id, "groupTaskId")
-				.selectSumAs(TaskEntity.class, AbstractEntity.Fields.id, "sumTaskId")
+		Query query = new Query(ParentEntity.class)
+				.selectMaxAs(ParentEntity.class, AbstractEntity.Fields.id, "maxTaskId")
+				.selectCountAs(ParentEntity.class, AbstractEntity.Fields.id, "countTaskId")
+				.selectMinAs(ParentEntity.class, AbstractEntity.Fields.id, "minTaskId")
+				.selectGroupConcatAs(ParentEntity.class, AbstractEntity.Fields.id, "groupTaskId")
+				.selectSumAs(ParentEntity.class, AbstractEntity.Fields.id, "sumTaskId")
 				;
 
 		System.out.println(context.queryAsString(query));
@@ -46,7 +46,7 @@ public class QuerySelectMethodTest {
 	
 	@Test
 	public void countTest() throws SQLException {
-		Query query = new Query(TaskEntity.class);
+		Query query = new Query(ParentEntity.class);
 		
 		query.selectCount();
 		
@@ -56,9 +56,9 @@ public class QuerySelectMethodTest {
 	
 	@Test
 	public void selectDistinctTest() throws SQLException {
-		Query query = new Query(TaskEntity.class)
-				.selectAll(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id);
+		Query query = new Query(ParentEntity.class)
+				.selectAll(ParentEntity.class)
+				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id);
 		
 		System.out.println(context.queryAsString(query));
 		
@@ -66,9 +66,9 @@ public class QuerySelectMethodTest {
 	
 	@Test
 	public void selectDistinctTest2() throws SQLException {
-		Query query = new Query(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.selectAll(TaskEntity.class);
+		Query query = new Query(ParentEntity.class)
+				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
+				.selectAll(ParentEntity.class);
 		
 		System.out.println(context.queryAsString(query));
 		
@@ -76,9 +76,9 @@ public class QuerySelectMethodTest {
 	
 	@Test
 	public void selectDistinctTest3() throws SQLException {
-		Query query = new Query(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.select(TaskEntity.class, AbstractEntity.Fields.id);
+		Query query = new Query(ParentEntity.class)
+				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
+				.select(ParentEntity.class, AbstractEntity.Fields.id);
 
 		System.out.println(context.queryAsString(query));
 		
@@ -86,10 +86,10 @@ public class QuerySelectMethodTest {
 
 	@Test
 	public void selectDistinctTest4() throws SQLException {
-		Query query = new Query(TaskEntity.class)
-				.selectDistinct(TaskEntity.class, AbstractEntity.Fields.id)
-				.selectDistinct(TaskEntity.class, TaskEntity.Fields.sourceLanguage)
-				.select(TaskEntity.class, AbstractEntity.Fields.id);
+		Query query = new Query(ParentEntity.class)
+				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
+				.selectDistinct(ParentEntity.class, ParentEntity.Fields.sourceLanguage)
+				.select(ParentEntity.class, AbstractEntity.Fields.id);
 
 		context.fetchList(query);
 		

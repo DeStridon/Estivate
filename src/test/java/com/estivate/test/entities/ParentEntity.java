@@ -31,13 +31,13 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @FieldNameConstants
 @TableIndexes({
-	@CompositeIndex(name="created", columns= {@ColumnIndex(TaskEntity.Fields.created)}),
-	@CompositeIndex(name="updated", columns= {@ColumnIndex(TaskEntity.Fields.updated)})
+	@CompositeIndex(name="created", columns= {@ColumnIndex(ParentEntity.Fields.created)}),
+	@CompositeIndex(name="updated", columns= {@ColumnIndex(ParentEntity.Fields.updated)})
 })
-public class TaskEntity extends AbstractEntity {
+public class ParentEntity extends AbstractEntity {
 	
-	@VirtualForeignKey(entity = ProjectEntity.class)
-	long projectId;
+	@VirtualForeignKey(entity = HomeEntity.class)
+	long homeId;
 	
 	String name;
 	
@@ -48,7 +48,7 @@ public class TaskEntity extends AbstractEntity {
 	Date updated;
 	
 	@Enumerated(EnumType.ORDINAL)
-	MacroState status;
+	JobEnum status;
 	
 	@Enumerated(EnumType.STRING)
 	StringEnum stringEnum;
@@ -76,7 +76,7 @@ public class TaskEntity extends AbstractEntity {
 	}
 	
 	
-	public static enum MacroState {
+	public static enum JobEnum {
 		Analysis, 		//0
 		Preproc, 		//1
 		Translation, 	//2

@@ -207,7 +207,7 @@ public class Statement {
 			statement.appendQuery(query.getIndexHint()+ " INDEX ("+query.getIndexNames().stream().collect(Collectors.joining(", "))+")");
 		}
 		
-        for(Join join : query.buildJoins()) {
+        for(Join join : query.getJoins()) {
         	statement.appendQuery(statement.joinString(join)+'\n');
         }
         
@@ -271,7 +271,10 @@ public class Statement {
 			if (select.entity == null) {
 				return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
 			}
-			return "COUNT(distinct "+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+			return "COUNT("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		}
+		else if(select.method == SelectMethod.CountDistinct) {
+			return "COUNT(DISTINCT "+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
 		else if(select.method == SelectMethod.Max) {
 			return "MAX("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");

@@ -24,6 +24,10 @@ public class IndexDiff {
 	}
 	
 	
+    public void cleanAndApply() {
+		clean();
+		apply();
+    }
 
 
 	public List<CompositeIndex> listToClean(){
@@ -120,5 +124,9 @@ public class IndexDiff {
 		}
 		return true;
 	}
+
+
+
+
 	
 }

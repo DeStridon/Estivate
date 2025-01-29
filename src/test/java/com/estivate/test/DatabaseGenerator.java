@@ -7,10 +7,8 @@ import org.h2.tools.Server;
 import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
-import com.estivate.test.entities.FragmentEntity;
-import com.estivate.test.entities.SegmentEntity;
-import com.estivate.test.entities.TaskEntity;
-import com.estivate.test.entities.TaskHistoryEntity;
+import com.estivate.test.entities.ChildEntity;
+import com.estivate.test.entities.ParentEntity;
 import com.estivate.test.entities.misc.Language;
 
 import lombok.SneakyThrows;
@@ -30,10 +28,8 @@ public class DatabaseGenerator {
 			
 			context.nameMapper = new TestNameMapper();
 			
-			context.create(TaskEntity.class);
-			context.create(SegmentEntity.class);
-			context.create(FragmentEntity.class);
-			context.create(TaskHistoryEntity.class);	
+			context.create(ParentEntity.class);
+			context.create(ChildEntity.class);
 			
 			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
 			System.out.println();
@@ -45,22 +41,22 @@ public class DatabaseGenerator {
 				
 	}
 	
-	public static TaskEntity createRandomTask() {
+	public static ParentEntity createRandomTask() {
 		
-		TaskEntity taskEntity = new TaskEntity();
-		taskEntity.setProjectId((long) randomInt(1, 100));
-		taskEntity.setName("Random Task "+randomInt(1, 1000));
-		taskEntity.setSourceLanguage(randomEnum(Language.class));
-		taskEntity.setSourceLanguage(randomEnum(Language.class));
+		ParentEntity parentEntity = new ParentEntity();
+		parentEntity.setHomeId((long) randomInt(1, 100));
+		parentEntity.setName("Random Task "+randomInt(1, 1000));
+		parentEntity.setSourceLanguage(randomEnum(Language.class));
+		parentEntity.setSourceLanguage(randomEnum(Language.class));
 	
-		return taskEntity;
+		return parentEntity;
 
 	}
 	
 	public static class TestNameMapper extends NameMapper{
-		public String mapEntityClass(Class c) { return c.getSimpleName().toUpperCase()+"_E";}
+		public String mapEntityClass(Class<?> c) { return c.getSimpleName().toUpperCase()+"_E";}
 		public String mapEntityField(String field) { return field.toUpperCase()+"_E";  }
-		public String mapDatabaseClass(Class c) { return c.getSimpleName().toUpperCase()+"_D"; }
+		public String mapDatabaseClass(Class<?> c) { return c.getSimpleName().toUpperCase()+"_D"; }
 		public String mapDatabaseField(String field) { return field.toUpperCase()+"_D"; }
 	}
 	

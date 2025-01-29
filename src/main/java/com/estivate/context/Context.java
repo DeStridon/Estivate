@@ -95,13 +95,13 @@ public abstract class Context {
 	
 	
 	@SneakyThrows
-	public List<Result> fetchList(Query joinQuery){
+	public List<Result> fetchList(Query query){
 
 		try(Connection connection = datasource.getConnection()){
 			Chronometer chronometer = new Chronometer("list", tracePerformances);
 			chronometer.timeThreshold(100);
 	
-			Statement statement = Statement.toStatement(this, connection, joinQuery);
+			Statement statement = Statement.toStatement(this, connection, query);
 			chronometer.step("statement creation");
 			
 	        ResultSet resultSet = statement.executeForResultSet();
@@ -162,14 +162,14 @@ public abstract class Context {
 
 	
 	@SneakyThrows
-	public <U> List<U> fetchListAs(Query joinQuery, Class<U> clazz) {
+	public <U> List<U> fetchListAs(Query query, Class<U> clazz) {
 		
 		try(Connection connection = datasource.getConnection()){
 			
 			Chronometer chronometer = new Chronometer("listAs", tracePerformances);
 			chronometer.timeThreshold(100);
 			
-			Statement statement = Statement.toStatement(this, connection, joinQuery);
+			Statement statement = Statement.toStatement(this, connection, query);
 			chronometer.step("statement creation");
 			
 	        ResultSet resultSet = statement.executeForResultSet();
@@ -528,28 +528,32 @@ public abstract class Context {
 	}
 
 	public boolean addIndex(Class<?> c, String name, List<String> columns) {
+		Statement statement = null;
 		try (Connection connection = datasource.getConnection()){
-		//CREATE INDEX IDXNAME ON TEST(NAME)
-			Statement statement = new Statement(this, connection).appendQuery("CREATE INDEX").appendQuery(name).appendQuery("ON");
+			statement = new Statement(this, connection).appendQuery("CREATE INDEX").appendQuery(name).appendQuery("ON");
 			statement.appendQuery(nameMapper.mapDatabaseClass(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
 			
 			return statement.executeForValidation();
 		}
 		catch(SQLException e){
-			log.error("", e);
+			log.error("Error on execution of query = "+statement.query(), e);
 			return false;
 		}
 		
 	}
 
 	public boolean removeIndex(Class<?> c, String name){
+		if(name.equals("PRIMARY")) {
+			return false;
+		}
+		Statement statement = null;
 		try (Connection connection = datasource.getConnection()){
 			//CREATE INDEX IDXNAME ON TEST(NAME)
-			Statement statement = new Statement(this, connection).appendQuery("DROP INDEX").appendQuery(name).appendQuery("ON").appendQuery(nameMapper.mapDatabaseClass(c));
+			statement = new Statement(this, connection).appendQuery("DROP INDEX").appendQuery(name).appendQuery("ON").appendQuery(nameMapper.mapDatabaseClass(c));
 			return statement.executeForValidation();
 		}
 		catch(SQLException e){
-			log.error("", e);
+			log.error("Error on execution of query = "+statement.query(), e);
 			return false;
 		}
 	}
