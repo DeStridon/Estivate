@@ -42,30 +42,30 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notEqNullable (Entity<?> entity, String attribute, Object value) { add(Estivate.notEqNullable(entity, attribute, value)); return this; }
 	public Aggregator notEqOrNull	(Entity<?> entity, String attribute, Object value) { add(Estivate.notEqOrNull(entity, attribute, value)); return this; }
 	
-	public Aggregator lt    	(Entity<?> entity, String attribute, Object value)     { add(Estivate.lt(entity, attribute, value)); return this; }
-	public Aggregator ltIfNotNull   	(Entity<?> entity, String attribute, Object value) { add(Estivate.ltIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator ltOrNull(Entity<?> entity, String attribute, Object value) { criterions.add(new Aggregator(GroupType.OR).lt(entity, attribute, value).isNull(entity, attribute)); return this; }
+	public Aggregator lt    	(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.lt(entity, attribute, value)); return this; }
+	public Aggregator ltIfNotNull   	(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.ltIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator ltOrNull(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.ltOrNull(entity, attribute, value)); return this; }
 
-	public Aggregator lte   	(Entity<?> entity, String attribute, Object value)     { add(Estivate.lte(entity, attribute, value)); return this; }
-	public Aggregator lteIfNotNull  	(Entity<?> entity, String attribute, Object value) { add(Estivate.lteIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator lteOrNull(Entity<?> entity, String attribute, Object value) { criterions.add(new Aggregator(GroupType.OR).lte(entity, attribute, value).isNull(entity, attribute)); return this; }
+	public Aggregator lte   	(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.lte(entity, attribute, value)); return this; }
+	public Aggregator lteIfNotNull  	(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.lteIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator lteOrNull(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.lteOrNull(entity, attribute, value)); return this; }
 	
-	public Aggregator gt    	(Entity<?> entity, String attribute, Object value)     { add(Estivate.gt(entity, attribute, value)); return this; }
-	public Aggregator gtIfNotNull   	(Entity<?> entity, String attribute, Object value) { add(Estivate.gtIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator gtOrNull(Entity<?> entity, String attribute, Object value) { criterions.add(new Aggregator(GroupType.OR).gt(entity, attribute, value).isNull(entity, attribute)); return this; }
+	public Aggregator gt    	(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.gt(entity, attribute, value)); return this; }
+	public Aggregator gtIfNotNull   	(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.gtIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator gtOrNull(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.gtOrNull(entity, attribute, value)); return this; }
 	
-	public Aggregator gte   	(Entity<?> entity, String attribute, Object value)     { add(Estivate.gte(entity, attribute, value)); return this; }
-	public Aggregator gteIfNotNull  	(Entity<?> entity, String attribute, Object value) { add(Estivate.gteIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator gteOrNull(Entity<?> entity, String attribute, Object value) { criterions.add(new Aggregator(GroupType.OR).gte(entity, attribute, value).isNull(entity, attribute)); return this; }
+	public Aggregator gte   	(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.gte(entity, attribute, value)); return this; }
+	public Aggregator gteIfNotNull  	(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.gteIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator gteOrNull(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.gteOrNull(entity, attribute, value)); return this; }
 
-	public Aggregator between 	(Entity<?> entity, String attribute, Object min, Object max){ add(Estivate.between(entity, attribute, min, max)); return this; }
-	public Aggregator betweenIfNotNull	(Entity<?> entity, String attribute, Object min, Object max) {add(Estivate.betweenIfNotNull(entity, attribute, min, max)); return this; }
-	public Aggregator betweenOrNull	(Entity<?> entity, String attribute, Object min, Object max) {add(Estivate.betweenOrNull(entity, attribute, min, max)); return this; }
+	public Aggregator between 	(Entity<?> entity, String attribute, Object min, Object max)		{ add(Estivate.between(entity, attribute, min, max)); return this; }
+	public Aggregator betweenIfNotNull	(Entity<?> entity, String attribute, Object min, Object max){ add(Estivate.betweenIfNotNull(entity, attribute, min, max)); return this; }
+	public Aggregator betweenOrNull	(Entity<?> entity, String attribute, Object min, Object max) 	{ add(Estivate.betweenOrNull(entity, attribute, min, max)); return this; }
 	
 	
-	public Aggregator in    	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.in(entity, attribute, values)); return this; }
-	public Aggregator inIfNotEmptyNullable(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.inIfNotEmptyNullable(entity, attribute, values)); return this; }
-	public Aggregator notIn    	(Entity<?> entity, String attribute, Collection<?> values) { add(Estivate.notIn(entity, attribute, values)); return this; }
+	public Aggregator in    	(Entity<?> entity, String attribute, Collection<?> values) 			{ add(Estivate.in(entity, attribute, values)); return this; }
+	public Aggregator inIfNotEmptyNullable(Entity<?> entity, String attribute, Collection<?> values){ add(Estivate.inIfNotEmptyNullable(entity, attribute, values)); return this; }
+	public Aggregator notIn    	(Entity<?> entity, String attribute, Collection<?> values) 			{ add(Estivate.notIn(entity, attribute, values)); return this; }
 
 	public Aggregator like				(Entity<?> entity, String attribute, String value)     { add(Estivate.like(entity, attribute, value)); return this; }
 	public Aggregator likeStartsWith	(Entity<?> entity, String attribute, String value)     { add(Estivate.likeStartsWith(entity, attribute, value)); return this; }
@@ -97,7 +97,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator likeIfNotNull 			(Entity<?> entity, String attribute, String value) { add(Estivate.likeIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator likeStartsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeStartsWithIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeEndsWithIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeContainsIfNotNull(entity, attribute, value)); return this; }
 
 	
 	public Aggregator likeInIfNotEmpty 			(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.likeInIfNotEmpty(entity, attribute, values)); return this; }
@@ -107,18 +107,18 @@ public class Aggregator implements EstivateNode {
 
 	
 	
-	public Aggregator notLikeIfNotNull 			(Entity<?> entity, String attribute, String value) { if(value != null) {return notLike(entity, attribute, value);} return this; }
-	public Aggregator notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeStartsWith(entity, attribute, value);} return this; }
-	public Aggregator notLikeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeEndsWith(entity, attribute, value);} return this; }
-	public Aggregator notLikeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeContains(entity, attribute, value);} return this; }
+	public Aggregator notLikeIfNotNull 			(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeStartsWithIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator notLikeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeEndsWithIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator notLikeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeContainsIfNotNull(entity, attribute, value)); return this; }
 
-	public Aggregator isNull(Entity<?> entity, String attribute) { 		add(Estivate.isNull(entity, attribute)); 	return this; }
-	public Aggregator isNotNull(Entity<?> entity, String attribute) { 	add(Estivate.isNotNull(entity, attribute)); return this; }
+	public Aggregator isNull(Entity<?> entity, String attribute) 	{ add(Estivate.isNull(entity, attribute)); 	return this; }
+	public Aggregator isNotNull(Entity<?> entity, String attribute) { add(Estivate.isNotNull(entity, attribute)); return this; }
 
-	public Aggregator inSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ criterions.add(new Criterion.InSubQuery(entity, attribute, subQuery, true)); return this; }
-	public Aggregator existsSubQuery	(Query subQuery)	{ criterions.add(new Criterion.ExistsSubQuery(subQuery, true)); return this; }
-	public Aggregator notInSubQuery		(Entity<?> entity, String attribute, Query subQuery){ criterions.add(new Criterion.InSubQuery(entity, attribute, subQuery, false)); return this; }
-	public Aggregator notExistsSubQuery	(Query subQuery)	{ criterions.add(new Criterion.ExistsSubQuery(subQuery, false)); return this; }
+	public Aggregator inSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.inSubQuery(entity, attribute, subQuery)); return this; }
+	public Aggregator existsSubQuery	(Query subQuery)										{ add(Estivate.existsSubQuery(subQuery)); return this; }
+	public Aggregator notInSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.inSubQuery(entity, attribute, subQuery)); return this; }
+	public Aggregator notExistsSubQuery	(Query subQuery)										{ add(Estivate.existsSubQuery(subQuery)); return this; }
 
 	
 	/* Wrappers for Class */
@@ -133,7 +133,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notEqOrNull(Class<?> entity, String attribute, Object value)		{ return notEqOrNull(new Entity<>(entity), attribute, value); }
 	
 	public Aggregator lt    	(Class<?> entity, String attribute, Object value)        { return lt(new Entity<>(entity), attribute, value); }
-	public Aggregator ltIfNotNull    	(Class<?> entity, String attribute, Object value)        	{ return ltIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator ltIfNotNull    	(Class<?> entity, String attribute, Object value){ return ltIfNotNull(new Entity<>(entity), attribute, value); }
 	
 	public Aggregator lte   	(Class<?> entity, String attribute, Object value)        { return lte(new Entity<>(entity), attribute, value); }
 	
@@ -142,9 +142,9 @@ public class Aggregator implements EstivateNode {
 	
 	public Aggregator between	(Class<?> entity, String attribute, Object left, Object right) { return between(new Entity<>(entity), attribute, left, right); }
 	
-	public Aggregator in    	(Class<?> entity, String attribute, Collection<?> values) { return in(new Entity<>(entity), attribute, values); }
+	public Aggregator in    	(Class<?> entity, String attribute, Collection<?> values) 			{ return in(new Entity<>(entity), attribute, values); }
 	public Aggregator inIfNotEmptyNullable(Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmptyNullable(new Entity<>(entity), attribute, values); }
-	public Aggregator notIn    	(Class<?> entity, String attribute, Collection<?> values) { return notIn(new Entity<>(entity), attribute, values); }
+	public Aggregator notIn    	(Class<?> entity, String attribute, Collection<?> values) 			{ return notIn(new Entity<>(entity), attribute, values); }
 
 	public Aggregator like		(Class<?> entity, String attribute, String value)	{ return like(new Entity<>(entity), attribute, value); }
 	public Aggregator likeIn	(Class<?> entity, String attribute, Collection<String> value)	{ return likeIn(new Entity<>(entity), attribute, value); }
@@ -193,10 +193,10 @@ public class Aggregator implements EstivateNode {
 	public Aggregator likeContainsInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { return likeContainsInIfNotEmpty(new Entity<>(entity), attribute, values); }
 
 	
-	public Aggregator notLikeIfNotNull			(Class<?> entity, String attribute, String value)  { return notLikeIfNotNull(new Entity<>(entity), attribute, value); }
-	public Aggregator notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
-	public Aggregator notLikeEndsWithIfNotNull	(Class<?> entity, String attribute, String value)	{ return notLikeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
-	public Aggregator notLikeContainsIfNotNull	(Class<?> entity, String attribute, String value)	{ return notLikeContainsIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator notLikeIfNotNull			(Class<?> entity, String attribute, String value){ return notLikeIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value){ return notLikeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator notLikeEndsWithIfNotNull	(Class<?> entity, String attribute, String value){ return notLikeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator notLikeContainsIfNotNull	(Class<?> entity, String attribute, String value){ return notLikeContainsIfNotNull(new Entity<>(entity), attribute, value); }
 
 	
 	public Aggregator isNotNull(Class<?> entity, String attribute) { return isNotNull(new Entity<>(entity), attribute); }

@@ -46,8 +46,6 @@ public class DatabaseGenerator {
 		ParentEntity parentEntity = new ParentEntity();
 		parentEntity.setHomeId((long) randomInt(1, 100));
 		parentEntity.setName("Random Task "+randomInt(1, 1000));
-		parentEntity.setSourceLanguage(randomEnum(Language.class));
-		parentEntity.setSourceLanguage(randomEnum(Language.class));
 	
 		return parentEntity;
 

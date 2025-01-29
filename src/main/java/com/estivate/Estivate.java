@@ -81,9 +81,10 @@ public class Estivate {
 	public static EstivateNode notInOrTrueIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return keywordTrue(); }
 
 	// Like
-	public static Criterion like 	(Entity<?> entity, String attribute, String value)	    		{ return new Operator(entity, attribute, OperatorType.Like, value); }
-	public static Criterion likeIfNotNull 			(Entity<?> entity, String attribute, String value) { if(value != null) {return like(entity, attribute, value);} return null;  }
-	public static Criterion notLike(Entity<?> entity, String attribute, String value)	    		{ return new Operator(entity, attribute, OperatorType.NotLike, value);  		}
+	public static Criterion like 			(Entity<?> entity, String attribute, String value) { return new Operator(entity, attribute, OperatorType.Like, value); }
+	public static Criterion notLike			(Entity<?> entity, String attribute, String value) { return new Operator(entity, attribute, OperatorType.NotLike, value); }
+	public static Criterion likeIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return like(entity, attribute, value);} return null;  }
+	public static Criterion notLikeIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLike(entity, attribute, value);} return null;  }
 	
 	// Like In
 	public static Aggregator likeIn 	(Entity<?> entity, String attribute, Collection<String> values)	    	{ return or(values.stream().map(x -> like(entity, attribute, x)).collect(Collectors.toList())); }
@@ -93,8 +94,9 @@ public class Estivate {
 	
 	// Like starts
 	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.Like, value+"%");	}
-	public static Criterion likeStartsWithIfNotNull (Entity<?> entity, String attribute, String value) { if(value != null) {return likeStartsWith(entity, attribute, value);} return null; }
 	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.NotLike, value+"%");}
+	public static Criterion likeStartsWithIfNotNull (Entity<?> entity, String attribute, String value) 	{ if(value != null) {return likeStartsWith(entity, attribute, value);} return null; }
+	public static Criterion notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value){ if(value != null) {return notLikeStartsWith(entity, attribute, value);} return null; }
 	
 	// Like starts in
 	public static Aggregator likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return or(values.stream().map(x -> likeStartsWith(entity, attribute, x)).collect(Collectors.toList()));	}
@@ -104,9 +106,10 @@ public class Estivate {
 	
 	// Like ends
 	public static Criterion likeEndsWith(Entity<?> entity, String attribute, String value)			{ return new Operator(entity, attribute, OperatorType.Like, "%"+value);		}
-	public static Criterion likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeEndsWith(entity, attribute, value);} return null; }
 	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.NotLike, "%"+value);	}
-
+	public static Criterion likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeEndsWith(entity, attribute, value);} return null; }
+	public static Criterion notLikeEndsWithIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeEndsWith(entity, attribute, value);} return null; }
+	
 	// Like ends in
 	public static Aggregator likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
 	public static Aggregator likeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList())); } return null; }
@@ -114,8 +117,10 @@ public class Estivate {
 	
 	// Like contains
 	public static Criterion likeContains(Entity<?> entity, String attribute, String value)			{ return new Operator(entity, attribute, OperatorType.Like, "%"+value+"%");	}
-	public static Criterion likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeContains(entity, attribute, value);} return null; }
 	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.NotLike, "%"+value+"%");	}
+	public static Criterion likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeContains(entity, attribute, value);} return null; }
+	public static Criterion notLikeContainsIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeContains(entity, attribute, value);} return null; }
+
 
 	// Like contains in
 	public static Aggregator likeContainsIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeContains(entity, attribute, x)).collect(Collectors.toList()));	}

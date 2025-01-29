@@ -88,8 +88,6 @@ public class QueryCriterionTest {
 				.homeId(4)
 				.name("queryTest test task")
 				.externalName("external Name")
-				.sourceLanguage(Language.ar_KW)
-				.targetLanguage(Language.en_SG)
 				.build();
 		
 		context.saveOrUpdate(testTask);
