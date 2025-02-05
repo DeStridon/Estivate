@@ -12,6 +12,7 @@ import com.estivate.query.Criterion.Between;
 import com.estivate.query.Criterion.ExistsSubQuery;
 import com.estivate.query.Criterion.In;
 import com.estivate.query.Criterion.InSubQuery;
+import com.estivate.query.Criterion.NativeCriterion;
 import com.estivate.query.Criterion.NotIn;
 import com.estivate.query.Criterion.NullCheck;
 import com.estivate.query.Criterion.Operator;
@@ -66,9 +67,6 @@ public class Estivate {
 	public static Criterion between (Entity<?> entity, String attribute, Object min, Object max) 	{ return new Between(entity, attribute, min, max); }
 	public static Criterion betweenIfNotNull(Entity<?> entity, String attribute, Object min, Object max) {if(min != null && max != null) { return between(entity, attribute, min, max);} return null; }
 	public static Aggregator betweenOrNull(Entity<?> entity, String attribute, Object min, Object max) { return new Aggregator(GroupType.OR).between(entity, attribute, min, max).isNull(entity, attribute); }
-	
-	// Bracket
-	
 	
 	// In
 	public static Criterion in   					(Entity<?> entity, String attribute, Collection<?> values){ return new In(entity, attribute, values); }
@@ -131,6 +129,8 @@ public class Estivate {
 	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return new NullCheck(entity, attribute, true);}
 	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return new NullCheck(entity, attribute, false);}
 	
+	// natively
+	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return new NativeCriterion(entity, attribute, criterion); }
 	
 	// subQuery
 	public static Criterion inSubQuery(Entity<?> entity, String attribute, Query subQuery)	  	{ return new InSubQuery(entity, attribute, subQuery, true); }
@@ -222,6 +222,8 @@ public class Estivate {
 
 	public static Criterion isNull		(Class<?> entity, String attribute) 						{ return isNull(new Entity<>(entity), attribute);}
 	public static Criterion isNotNull	(Class<?> entity, String attribute) 						{ return isNotNull(new Entity<>(entity), attribute);}
+	
+	public static Criterion nativeCriterion (Class<?> entity, String attribute, String criterion)	{ return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 	
 	public static Criterion inSubQuery(Class<?> entity, String attribute, Query subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
 	public static Criterion notInSubQuery(Class<?> entity, String attribute, Query subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }

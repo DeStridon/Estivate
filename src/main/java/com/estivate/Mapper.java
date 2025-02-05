@@ -25,6 +25,8 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.context.Context;
 import com.estivate.query.Query.Entity;
 import com.estivate.util.Chronometer;
@@ -173,10 +175,10 @@ public class Mapper<U> {
 				field.set(obj, Long.parseLong(value));
 			}
 			else if(type == boolean.class) {
-				field.setBoolean(obj, Boolean.parseBoolean(value));
+				field.setBoolean(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value));
 			}
 			else if(type == Boolean.class) {
-				field.set(obj, Boolean.parseBoolean(value));
+				field.set(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value));
 			}
 			else if(type == Byte.class) {
 				field.set(obj, Byte.parseByte(value));

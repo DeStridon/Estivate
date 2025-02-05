@@ -74,6 +74,7 @@ public class Query extends Aggregator{
 	public Query notLikeEndsWithIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeEndsWithIn(entity, attribute, value);  return this; }
 	public Query notLikeContainsIn 	(Class<?> entity, String attribute, Collection<String> value)	{ super.notLikeContainsIn(entity, attribute, value);  return this; }
 
+	public Query nativeCriterion 	(Class<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 	
 	public Query inSubQuery			(Class<?> entity, String attribute, Query subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
 	public Query notInSubQuery		(Class<?> entity, String attribute, Query subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
@@ -179,8 +180,11 @@ public class Query extends Aggregator{
 	public Query eqOrNull			(Entity<?> entity, String attribute, Object value) { super.eqOrNull(entity, attribute, value); return this;	}
 	public Query ltOrNull			(Entity<?> entity, String attribute, Object value) { super.ltOrNull(entity, attribute, value); return this;	}
 	public Query gtOrNull			(Entity<?> entity, String attribute, Object value) { super.gtOrNull(entity, attribute, value); return this;	}
-	public Query lteOrNull			(Entity<?> entity, String attribute, Object value) { super.lteOrNull(entity, attribute, value); return this;	}
-	public Query gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return this;	}
+	public Query lteOrNull			(Entity<?> entity, String attribute, Object value) { super.lteOrNull(entity, attribute, value); return this;}
+	public Query gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return this;}
+	
+	
+	public Query nativeCriterion  	(Entity<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 
 	public Query add(EstivateNode node) { super.add(node); return this; }
 	public Query addIf(boolean condition, EstivateNode node) { super.addIf(condition, node); return this; }

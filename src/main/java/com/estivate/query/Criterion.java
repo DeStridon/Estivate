@@ -121,6 +121,20 @@ public abstract class Criterion implements EstivateNode{
 		public NullCheck clone() { return new NullCheck(entity, attribute, isNull); }
 
 	}
+	
+	public static class NativeCriterion extends Criterion{
+		
+		public String criterion;
+
+		public NativeCriterion(Entity<?> entity, String attribute, String criterion) {
+			this.entity = entity;
+			this.attribute = attribute;
+			this.criterion = criterion;
+		}
+		
+		public NativeCriterion clone() { return new NativeCriterion(entity, attribute, criterion); } 
+		
+	}
 
 	public static class InSubQuery extends Criterion{
 

@@ -345,6 +345,10 @@ public class Statement {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
 			statement.appendQuery(statement.context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
+		else if(node instanceof Criterion.NativeCriterion) {
+			Criterion.NativeCriterion nativeCriterion = (Criterion.NativeCriterion) node;
+			statement.appendQuery(statement.context.nameMapper.mapDatabase(nativeCriterion.entity, nativeCriterion.attribute)+nativeCriterion.criterion);
+		}
 		else if(node instanceof Criterion.InSubQuery) {
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
 			statement.appendQuery(statement.context.nameMapper.mapDatabase(subQuery.entity, subQuery.attribute)+(subQuery.include ? " in ":" not in "));

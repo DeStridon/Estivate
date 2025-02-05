@@ -114,6 +114,8 @@ public class Aggregator implements EstivateNode {
 
 	public Aggregator isNull(Entity<?> entity, String attribute) 	{ add(Estivate.isNull(entity, attribute)); 	return this; }
 	public Aggregator isNotNull(Entity<?> entity, String attribute) { add(Estivate.isNotNull(entity, attribute)); return this; }
+	
+	public Aggregator nativeCriterion(Entity<?> entity, String attribute, String criterion) { add(Estivate.nativeCriterion(entity, attribute, criterion)); return this; }
 
 	public Aggregator inSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.inSubQuery(entity, attribute, subQuery)); return this; }
 	public Aggregator existsSubQuery	(Query subQuery)										{ add(Estivate.existsSubQuery(subQuery)); return this; }
@@ -206,6 +208,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator gtOrNull(Class<?> entity, String attribute, Object value) 	{ return gtOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator lteOrNull(Class<?> entity, String attribute, Object value) 	{ return lteOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gteOrNull(Class<?> entity, String attribute, Object value) 	{ return gteOrNull(new Entity<>(entity), attribute, value); }
+	
+	public Aggregator nativeCriterion(Class<?> entity, String attribute, String criterion) { return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 	
 	
 	public Aggregator add(EstivateNode joinNode) { if(joinNode != null) { criterions.add(joinNode); } return this; }
