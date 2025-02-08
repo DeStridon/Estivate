@@ -122,6 +122,25 @@ public abstract class Criterion implements EstivateNode{
 
 	}
 	
+	
+	// MatchAgainst Criterion
+	public static class MatchAgainst extends Criterion{
+		
+		public List<String> attributes;
+		public Object value;
+		public boolean inclusive;
+		
+		public MatchAgainst(Entity<?> entity, List<String> attributes, Object value, boolean inclusive) {
+			this.entity = entity;
+			this.attributes = attributes;
+			this.value = value;
+			this.inclusive = inclusive;
+		}
+		
+		public MatchAgainst clone() { return new MatchAgainst(entity, attributes, value, inclusive); } 
+		
+	}
+	
 	public static class NativeCriterion extends Criterion{
 		
 		public String criterion;

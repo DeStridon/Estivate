@@ -74,12 +74,12 @@ public class Statement {
 	}
 	
 	
-	public Statement appendValue(Class entity, String fieldName, Object parameter) {
+	public Statement appendValue(Class<?> entity, String fieldName, Object parameter) {
 		parameters.add(compileObject(entity, fieldName, parameter));
 		return this;
 	}
 	
-	public Statement appendParameter(Class entity, String attribute, Object parameter) {
+	public Statement appendParameter(Class<?> entity, String attribute, Object parameter) {
 		if(parameter instanceof PropertyValue) {
 			PropertyValue field = (PropertyValue) parameter;
 			appendQuery(context.nameMapper.mapDatabase(field.entity, field.attributeName));
@@ -91,9 +91,10 @@ public class Statement {
 		return this;
 	}
 	
-	public String appendParameterFetchQuery(Class entity, String attribute, Object parameter) {
+	public String appendParameterFetchQuery(Class<?> entity, String attribute, Object parameter) {
 		if(parameter instanceof PropertyValue) {
 			PropertyValue field = (PropertyValue) parameter;
+
 			return field.toString();
 		}
 		
@@ -345,9 +346,23 @@ public class Statement {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
 			statement.appendQuery(statement.context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
+		else if(node instanceof Criterion.MatchAgainst) {
+			
+			Criterion.MatchAgainst matchAgainst = (Criterion.MatchAgainst) node;
+			if(!matchAgainst.inclusive){
+				statement.appendQuery("NOT");
+			}
+			statement.appendQuery("MATCH" + matchAgainst.attributes.stream().map(x -> statement.context.nameMapper.mapDatabase(matchAgainst.entity, x)).collect(Collectors.joining(", ", "(", ")")));
+			statement.appendQuery("AGAINST(");
+			statement.appendParameter(matchAgainst.entity.entity, matchAgainst.attributes.get(0), matchAgainst.value);
+			statement.appendQuery(")");
+			
+		}
 		else if(node instanceof Criterion.NativeCriterion) {
 			Criterion.NativeCriterion nativeCriterion = (Criterion.NativeCriterion) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(nativeCriterion.entity, nativeCriterion.attribute)+nativeCriterion.criterion);
+			statement
+				.appendQuery(statement.context.nameMapper.mapDatabase(nativeCriterion.entity, nativeCriterion.attribute))
+				.appendQuery(nativeCriterion.criterion);
 		}
 		else if(node instanceof Criterion.InSubQuery) {
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;

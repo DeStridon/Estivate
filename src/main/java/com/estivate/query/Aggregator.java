@@ -114,8 +114,19 @@ public class Aggregator implements EstivateNode {
 
 	public Aggregator isNull(Entity<?> entity, String attribute) 	{ add(Estivate.isNull(entity, attribute)); 	return this; }
 	public Aggregator isNotNull(Entity<?> entity, String attribute) { add(Estivate.isNotNull(entity, attribute)); return this; }
-	
+
+	public Aggregator matchAgainst(Entity<?> entity, String attribute, String value) { add(Estivate.matchAgainst(entity, attribute, value)); return this; }
+	public Aggregator matchAgainst(Entity<?> entity, List<String> attributes, String value) { add(Estivate.matchAgainst(entity, attributes, value)); return this; }
+	public Aggregator matchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.matchAgainstIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator matchAgainstIfNotNull(Entity<?> entity, List<String> attributes, String value) { add(Estivate.matchAgainstIfNotNull(entity, attributes, value)); return this; }
+	public Aggregator notMatchAgainst(Entity<?> entity, String attribute, String value) { add(Estivate.notMatchAgainst(entity, attribute, value)); return this; }
+	public Aggregator notMatchAgainst(Entity<?> entity, List<String> attributes, String value) { add(Estivate.notMatchAgainst(entity, attributes, value)); return this; }
+	public Aggregator notMatchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.notMatchAgainstIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator notMatchAgainstIfNotNull(Entity<?> entity, List<String> attributes, String value) { add(Estivate.notMatchAgainstIfNotNull(entity, attributes, value)); return this; }
+
+
 	public Aggregator nativeCriterion(Entity<?> entity, String attribute, String criterion) { add(Estivate.nativeCriterion(entity, attribute, criterion)); return this; }
+
 
 	public Aggregator inSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.inSubQuery(entity, attribute, subQuery)); return this; }
 	public Aggregator existsSubQuery	(Query subQuery)										{ add(Estivate.existsSubQuery(subQuery)); return this; }
@@ -208,11 +219,21 @@ public class Aggregator implements EstivateNode {
 	public Aggregator gtOrNull(Class<?> entity, String attribute, Object value) 	{ return gtOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator lteOrNull(Class<?> entity, String attribute, Object value) 	{ return lteOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gteOrNull(Class<?> entity, String attribute, Object value) 	{ return gteOrNull(new Entity<>(entity), attribute, value); }
-	
+
+	public Aggregator matchAgainst(Class<?> entity, String attribute, String value) { return matchAgainst(new Entity<>(entity), attribute, value); }
+	public Aggregator matchAgainst(Class<?> entity, List<String> attributes, String value) { return matchAgainst(new Entity<>(entity), attributes, value); }
+	public Aggregator matchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator matchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
+	public Aggregator notMatchAgainst(Class<?> entity, String attribute, String value) { return notMatchAgainst(new Entity<>(entity), attribute, value); }
+	public Aggregator notMatchAgainst(Class<?> entity, List<String> attributes, String value) { return notMatchAgainst(new Entity<>(entity), attributes, value); }
+	public Aggregator notMatchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator notMatchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
+
 	public Aggregator nativeCriterion(Class<?> entity, String attribute, String criterion) { return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 	
 	
 	public Aggregator add(EstivateNode joinNode) { if(joinNode != null) { criterions.add(joinNode); } return this; }
+
 	public Aggregator addIf(boolean condition, EstivateNode joinNode) { if(condition) { add(joinNode); } return this; }
 	
 	
