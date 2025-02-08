@@ -106,12 +106,11 @@ public class Estivate {
 	public static Aggregator matchAgainstIn 			(Entity<?> entity, List<String> attributes, Collection<String> values)	{ return or(values.stream().map(x -> matchAgainst(entity, attributes, x)).collect(Collectors.toList())); }
 	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, List<String> attributes, Collection<String> values) { if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> matchAgainst(entity, attributes, x)).collect(Collectors.toList()));} return null; }
 	public static Aggregator notMatchAgainstIn			(Entity<?> entity, List<String> attributes, Collection<String> values)	{ return and(values.stream().map(x -> notMatchAgainst(entity, attributes, x)).collect(Collectors.toList()));  		}
-	public static Aggregator notMatchAgainstInIfNotEmtpy(Entity<?> entity, List<String> attributes, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notMatchAgainst(entity, attributes, x)).collect(Collectors.toList()));} return null; }
-
+	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notMatchAgainst(entity, attributes, x)).collect(Collectors.toList()));} return null; }
 	public static Aggregator matchAgainstIn 			(Entity<?> entity, String attribute, Collection<String> values)	{ return matchAgainstIn(entity, Arrays.asList(attribute), values); }
 	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(entity, Arrays.asList(attribute), values); } 
 	public static Aggregator notMatchAgainstIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstIn(entity, Arrays.asList(attribute), values); }
-	public static Aggregator notMatchAgainstInIfNotEmtpy(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmtpy(entity, Arrays.asList(attribute), values); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(entity, Arrays.asList(attribute), values); }
 
 	// Like starts
 	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, OperatorType.Like, value+"%");	}
@@ -255,9 +254,19 @@ public class Estivate {
 	public static Criterion notMatchAgainst(Class<?> entity, List<String> attributes, String value) 	{ return notMatchAgainst(new Entity<>(entity), attributes, value); }
 	public static Criterion notMatchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Criterion notMatchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
+	
+	public static Aggregator matchAgainstIn(Class<?> entity, String attribute, Collection<String> values)			{ return matchAgainstIn(new Entity<>(entity), attribute, values); }
+	public static Aggregator matchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values)	{ return matchAgainstIn(new Entity<>(entity), attributes, values); }
+	public static Aggregator matchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public static Aggregator matchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { return matchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
+	public static Aggregator notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values)			{ return notMatchAgainstIn(new Entity<>(entity), attribute, values); }
+	public static Aggregator notMatchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values)				{ return notMatchAgainstIn(new Entity<>(entity), attributes, values); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
 
 
 	public static Criterion nativeCriterion (Class<?> entity, String attribute, String criterion)	{ return nativeCriterion(new Entity<>(entity), attribute, criterion); }
+
 	
 	public static Criterion inSubQuery(Class<?> entity, String attribute, Query subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
 	public static Criterion notInSubQuery(Class<?> entity, String attribute, Query subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
