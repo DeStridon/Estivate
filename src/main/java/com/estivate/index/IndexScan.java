@@ -25,7 +25,7 @@ public class IndexScan {
 	@Getter
 	List<IndexDiff> indexDiffs = new ArrayList<>();
 
-	public IndexScan(Context context, String packageName) throws IOException {
+	public IndexScan(Context context, String packageName) {
 		this.context = context;
 		this.packageName = packageName;
 
@@ -84,21 +84,26 @@ public class IndexScan {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private Set<Class<?>> listClasses() throws IOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        assert classLoader != null;
-        String path = packageName.replace('.', '/');
-        Enumeration<URL> resources = classLoader.getResources(path);
-        List<File> dirs = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            URL resource = resources.nextElement();
-            dirs.add(new File(resource.getFile()));
+    private Set<Class<?>> listClasses() {
+        try {
+	    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	        String path = packageName.replace('.', '/');
+	        Enumeration<URL> resources = classLoader.getResources(path);
+	        List<File> dirs = new ArrayList<>();
+	        while (resources.hasMoreElements()) {
+	            URL resource = resources.nextElement();
+	            dirs.add(new File(resource.getFile()));
+	        }
+	        Set<Class<?>> classes = new LinkedHashSet<>();
+	        for (File directory : dirs) {
+	            classes.addAll(findClasses(directory, packageName));
+	        }
+	        return classes;
         }
-        Set<Class<?>> classes = new LinkedHashSet<>();
-        for (File directory : dirs) {
-            classes.addAll(findClasses(directory, packageName));
+        catch(Exception e) {
+        	log.error("Error scanning package", e);
         }
-        return classes;
+        return new LinkedHashSet<>();
     }
 
     /**
