@@ -8,19 +8,25 @@ import java.util.stream.Collectors;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.ColumnIndex;
 import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.TableIndexes;
+
+import lombok.Getter;
+import lombok.ToString;
 
 
 
-
+@ToString
 public class IndexDiff {
 	
 	Context context;
-	Class<?> c;
+	
+	@Getter
+	Class<?> entity;
 	
 	
 	public IndexDiff(Context context, Class<?> c) {
 		this.context = context;
-		this.c = c;
+		this.entity = c;
 	}
 	
 	
@@ -79,18 +85,18 @@ public class IndexDiff {
 	}
 	
 	public boolean cleanSpecific(CompositeIndex index){
-		return context.removeIndex(c, index.name());
+		return context.removeIndex(entity, index.name());
 	}
 
 	public boolean applySpecific(CompositeIndex index) {
 		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-		return context.addIndex(c, index.name(), columns);
+		return context.addIndex(entity, index.name(), columns);
 	}
 	
 	
 	public List<CompositeIndex> getEntityIndexes(){
 		
-		CompositeIndex[] compositeIndex = c.getDeclaredAnnotationsByType(CompositeIndex.class);
+		CompositeIndex[] compositeIndex = entity.getDeclaredAnnotationsByType(CompositeIndex.class);
 		
 		List<CompositeIndex> indexes = new ArrayList<>();
 		for(CompositeIndex index : compositeIndex) {
@@ -102,7 +108,7 @@ public class IndexDiff {
 	}
 	
 	public List<CompositeIndex> getDatabaseIndexes(){
-		List<CompositeIndex> indexStrings = context.listIndexes(c);
+		List<CompositeIndex> indexStrings = context.listIndexes(entity);
 		return indexStrings;
 	}
 	

@@ -1,5 +1,6 @@
 package com.estivate.test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class IndexTest {
 	
 
 	@Test
-	public void scanTest() {
+	public void scanTest() throws IOException {
 		IndexScan is = new IndexScan(context, "com.estivate.test.entities");
 		System.out.println(is.getIndexDiffs());
 	}
