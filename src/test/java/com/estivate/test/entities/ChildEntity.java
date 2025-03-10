@@ -12,6 +12,8 @@ import com.estivate.index.Annotations.CompositeIndex;
 import com.estivate.index.Annotations.TableIndexes;
 import com.estivate.test.entities.ParentEntity.JobEnum;
 
+import com.estivate.index.Annotations.Type;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,10 +28,10 @@ import lombok.experimental.SuperBuilder;
 @FieldNameConstants
 @TableIndexes({
 	@CompositeIndex(name="created", columns= {@ColumnIndex(ChildEntity.Fields.born)}),
-	@CompositeIndex(name="updated", columns= {@ColumnIndex(ChildEntity.Fields.lastSeen)})
+	@CompositeIndex(name="updated", columns= {@ColumnIndex(ChildEntity.Fields.lastSeen)}),
+	@CompositeIndex(name="unique", type=Type.UNIQUE, columns= {@ColumnIndex(ChildEntity.Fields.born)})
 })
 public class ChildEntity extends AbstractEntity {
-	
 	@VirtualForeignKey(entity = HomeEntity.class)
 	long homeId;
 	

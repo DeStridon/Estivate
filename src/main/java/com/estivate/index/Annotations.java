@@ -11,6 +11,7 @@ public class Annotations {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface TableIndexes {
+		
 		CompositeIndex[] value();
 	}
 	
@@ -18,6 +19,7 @@ public class Annotations {
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface CompositeIndex {
 		String name() default "";
+		Type type() default Type.DEFAULT;
 		ColumnIndex[] columns() default {};	
 	}
 	
@@ -26,7 +28,12 @@ public class Annotations {
 		String value();
 		int length() default 0;
 	}
-	
+
+	public static enum Type{ 
+		DEFAULT,
+		UNIQUE,
+		PRIMARY
+	}	
 	
 
 }

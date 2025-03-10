@@ -90,7 +90,7 @@ public class IndexDiff {
 
 	public boolean applySpecific(CompositeIndex index) {
 		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-		return context.addIndex(entity, index.name(), columns);
+		return context.addIndex(entity, index.name(), index.type(), columns);
 	}
 	
 	
@@ -100,7 +100,7 @@ public class IndexDiff {
 		
 		List<CompositeIndex> indexes = new ArrayList<>();
 		for(CompositeIndex index : compositeIndex) {
-			indexes.add(Context.CompositeIndex(context.nameMapper.mapIndex(index), Arrays.asList(index.columns())));
+			indexes.add(Context.CompositeIndex(context.nameMapper.mapIndex(index), index.type(), Arrays.asList(index.columns())));
 		}
 		
 		return indexes;

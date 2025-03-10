@@ -40,6 +40,7 @@ import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.index.Annotations.ColumnIndex;
 import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.Type;
 import com.estivate.query.Query;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
@@ -527,10 +528,16 @@ public abstract class Context {
 		return null;
 	}
 
-	public boolean addIndex(Class<?> c, String name, List<String> columns) {
+	public boolean addIndex(Class<?> c, String name, Type type, List<String> columns) {
 		Statement statement = null;
 		try (Connection connection = datasource.getConnection()){
-			statement = new Statement(this, connection).appendQuery("CREATE INDEX").appendQuery(name).appendQuery("ON");
+			statement = new Statement(this, connection)
+				.appendQuery("CREATE")
+				.appendQuery(type == Type.DEFAULT ? "" : type.name().toUpperCase())
+				.appendQuery("INDEX")
+				.appendQuery(name)
+				.appendQuery("ON");
+
 			statement.appendQuery(nameMapper.mapDatabaseClass(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
 			
 			return statement.executeForValidation();
@@ -558,7 +565,7 @@ public abstract class Context {
 		}
 	}
 	
-	public static CompositeIndex CompositeIndex(String name, List<ColumnIndex> columns) {
+	public static CompositeIndex CompositeIndex(String name, Type type, List<ColumnIndex> columns) {
 		
 		ColumnIndex[] array = new ColumnIndex[columns.size()];
 		columns.toArray(array);
@@ -566,6 +573,9 @@ public abstract class Context {
 		CompositeIndex index = new CompositeIndex() {
 			@Override
 			public String name() { return name; }
+
+			@Override
+			public Type type() { return type; }
 
 			@Override
 			public Class<? extends Annotation> annotationType() { return null; }

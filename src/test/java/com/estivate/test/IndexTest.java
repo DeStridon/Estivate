@@ -11,6 +11,7 @@ import com.estivate.context.Context;
 import com.estivate.index.IndexDiff;
 import com.estivate.index.IndexScan;
 import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.Type;
 import com.estivate.test.entities.ParentEntity;
 
 public class IndexTest {
@@ -28,12 +29,21 @@ public class IndexTest {
 	public void contextTest() {
 		
 			
-		context.addIndex(ParentEntity.class, "yo", Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
+		context.addIndex(ParentEntity.class, "yo", Type.DEFAULT, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
 		
 		List<CompositeIndex> indexes = context.listIndexes(ParentEntity.class);
 		
 		System.out.println(indexes);
 		
+	}
+
+	@Test
+	public void uniqueTest() {
+		context.addIndex(ParentEntity.class, "unique", Type.UNIQUE, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
+		
+		List<CompositeIndex> indexes = context.listIndexes(ParentEntity.class);
+		
+		System.out.println(indexes);
 	}
 	
 	@Test

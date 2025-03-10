@@ -12,6 +12,7 @@ import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.index.Annotations.ColumnIndex;
 import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.Type;
 import com.estivate.query.Query;
 
 import lombok.SneakyThrows;
@@ -46,13 +47,26 @@ public class H2Context extends Context {
 				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.getAsString("INDEX_NAME").equals(indexResult.getAsString("INDEX_NAME"))).collect(Collectors.toList());
 				
 				List<ColumnIndex> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.getAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
-				CompositeIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), indexColumns);
+
+				System.out.println(indexResult.getAsString("INDEX_TYPE_NAME"));
+				
+
+				CompositeIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), getIndexType(indexResult.getAsString("INDEX_TYPE_NAME")), indexColumns);
 				indexes.add(ci);
 			}
 			
 			return indexes;
 		}
     }
+
+
+	public Type getIndexType(String typeName) {
+		switch(typeName) {
+			case "PRIMARY KEY": return Type.PRIMARY;
+			case "UNIQUE": return Type.UNIQUE;
+			default: return Type.DEFAULT;
+		}
+	}
 	
 	
 

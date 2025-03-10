@@ -14,6 +14,7 @@ import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.index.Annotations.ColumnIndex;
 import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.Type;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,7 +62,8 @@ public class MySQLContext extends Context {
 			
 			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
 				List<ColumnIndex> indexColumns = indexRowMapEntry.getValue().stream().map(x-> ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
-				CompositeIndex ci = CompositeIndex(indexRowMapEntry.getKey(), indexColumns);
+				// TODO : get index type
+				CompositeIndex ci = CompositeIndex(indexRowMapEntry.getKey(), Type.DEFAULT, indexColumns);
 				indexes.add(ci);
 			}
 			

@@ -6,7 +6,6 @@ import com.estivate.query.Query.Entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
