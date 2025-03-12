@@ -63,7 +63,7 @@ public class H2Context extends Context {
 	public Type getIndexType(String typeName) {
 		switch(typeName) {
 			case "PRIMARY KEY": return Type.PRIMARY;
-			case "UNIQUE": return Type.UNIQUE;
+			case "UNIQUE INDEX": return Type.UNIQUE;
 			default: return Type.DEFAULT;
 		}
 	}

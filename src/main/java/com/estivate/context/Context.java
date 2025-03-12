@@ -32,9 +32,9 @@ import javax.sql.DataSource;
 
 import com.estivate.Mapper;
 import com.estivate.NameMapper;
+import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Result;
 import com.estivate.Statement;
-import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
@@ -47,6 +47,7 @@ import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
 
 import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -582,6 +583,10 @@ public abstract class Context {
 
 			@Override
 			public ColumnIndex[] columns() { return array; }
+			
+			public String toString() {
+				return "CompositeIndex(name="+name+", type="+type+", columns="+List.of(array).stream().map(x -> x.value()).collect(Collectors.joining(","))+")";
+			}
 		};
 		
 		return index;

@@ -36,6 +36,7 @@ import com.estivate.util.FieldUtils;
 import com.estivate.util.StackLog;
 import com.estivate.util.StringPipe;
 
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -43,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * Wrapper for java.sql.PreparedStatement
  * doesn't hold any connection, it just helps using statement
  */
+@ToString
 @Slf4j
 public class Statement {
 

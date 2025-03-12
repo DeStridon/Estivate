@@ -49,6 +49,7 @@ public class MySQLContext extends Context {
 				IndexRow indexRow = IndexRow.builder()
 					.table(result.getAsString("Table"))
 					.keyName(result.getAsString("Key_name"))
+					.nonUnique(result.getAsBoolean("Non_unique"))
 					.seqInIndex(result.getAsInteger("Seq_in_index"))
 					.columnName(result.getAsString("Column_name"))
 					.build();
@@ -62,8 +63,14 @@ public class MySQLContext extends Context {
 			
 			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
 				List<ColumnIndex> indexColumns = indexRowMapEntry.getValue().stream().map(x-> ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
-				// TODO : get index type
-				CompositeIndex ci = CompositeIndex(indexRowMapEntry.getKey(), Type.DEFAULT, indexColumns);
+				
+				Type indexType = Type.DEFAULT;
+				
+				if(!indexRowMapEntry.getValue().get(0).getNonUnique()) {
+					indexType = indexColumns.size() == 1 ? Type.PRIMARY : Type.UNIQUE;
+				}
+				
+				CompositeIndex ci = CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
 				indexes.add(ci);
 			}
 			
@@ -78,6 +85,7 @@ public class MySQLContext extends Context {
 	public static class IndexRow{
 		String table;
 		String keyName;
+		Boolean nonUnique;
 		Integer seqInIndex;
 		String columnName;
 		
