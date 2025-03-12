@@ -585,7 +585,7 @@ public abstract class Context {
 			public ColumnIndex[] columns() { return array; }
 			
 			public String toString() {
-				return "CompositeIndex(name="+name+", type="+type+", columns="+List.of(array).stream().map(x -> x.value()).collect(Collectors.joining(","))+")";
+				return "CompositeIndex(name="+name+", type="+type+", columns="+Arrays.asList(array).stream().map(x -> x.value()).collect(Collectors.joining(","))+")";
 			}
 		};
 		
