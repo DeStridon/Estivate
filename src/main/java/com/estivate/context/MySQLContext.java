@@ -64,10 +64,13 @@ public class MySQLContext extends Context {
 			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
 				List<ColumnIndex> indexColumns = indexRowMapEntry.getValue().stream().map(x-> ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
 				
+
 				Type indexType = Type.DEFAULT;
-				
-				if(!indexRowMapEntry.getValue().get(0).getNonUnique()) {
-					indexType = indexColumns.size() == 1 ? Type.PRIMARY : Type.UNIQUE;
+				if(indexRowMapEntry.getKey().equals("PRIMARY")) {
+					indexType = Type.PRIMARY;
+				}
+				else if(!indexRowMapEntry.getValue().get(0).getNonUnique()) {
+					indexType = Type.UNIQUE;
 				}
 				
 				CompositeIndex ci = CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
