@@ -19,20 +19,25 @@ import com.estivate.test.entities.misc.LanguageConverter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
+import com.estivate.index.Annotations.Type;
+
 @Slf4j
 @Data
+@EqualsAndHashCode(callSuper=false)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
 @TableIndexes({
 	@CompositeIndex(name="created", columns= {@ColumnIndex(ParentEntity.Fields.created)}),
-	@CompositeIndex(name="updated", columns= {@ColumnIndex(ParentEntity.Fields.updated)})
+	@CompositeIndex(name="updated", columns= {@ColumnIndex(ParentEntity.Fields.updated)}),
+	@CompositeIndex(name="homeNameUnicity", columns= {@ColumnIndex(ParentEntity.Fields.homeId), @ColumnIndex(ParentEntity.Fields.name)}, type=Type.UNIQUE)
 })
 public class ParentEntity extends AbstractEntity {
 	

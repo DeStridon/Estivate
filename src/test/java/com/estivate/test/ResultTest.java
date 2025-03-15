@@ -69,7 +69,7 @@ public class ResultTest {
 				.build();
 		
 		for(int i = 0; i < 5000; i++) {
-			 context.saveOrUpdate(task);
+			 context.updateOrInsert(task);
 			 task.setId(0);
 		}
 		
@@ -92,7 +92,7 @@ public class ResultTest {
 				.stringEnum(StringEnum.DEF)
 				.build();
 		
-		context.saveOrUpdate(task);
+		context.updateOrInsert(task);
 		
 		Query query = new Query(ParentEntity.class);
 		query.eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId());

@@ -475,11 +475,11 @@ public class Query extends Aggregator{
 		return queryClone;
 	}
 
-	public Query groupBy(Class c, String field) {
-		return groupBy(new Entity(c), field);
+	public Query groupBy(Class<?> c, String field) {
+		return groupBy(new Entity<>(c), field);
 	}
 	
-	public Query groupBy(Entity entity, String field) {
+	public Query groupBy(Entity<?> entity, String field) {
 		
 		// Add to select
 		select(entity, field);

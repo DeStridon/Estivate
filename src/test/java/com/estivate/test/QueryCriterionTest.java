@@ -34,7 +34,7 @@ public class QueryCriterionTest {
 	@Test
 	public void insertTest() {
 		
-		ParentEntity task1 = context.saveOrUpdate(ParentEntity.builder().homeId(1).name("task 1").build());
+		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("task 1").build());
 		
 		assertEquals(new Date().getTime(), task1.getCreated().getTime(), 100);
 		assertNull(task1.getUpdated());
@@ -42,7 +42,7 @@ public class QueryCriterionTest {
 	
 		task1.setExternalName("external name 1");
 		
-		context.saveOrUpdate(task1);
+		context.updateOrInsert(task1);
 		
 		assertNotNull(task1.getUpdated());
 		
@@ -52,16 +52,16 @@ public class QueryCriterionTest {
 	@Test 
 	public void automatedJoinTest() {
 		
-		ParentEntity parent2 = context.saveOrUpdate(ParentEntity.builder().homeId(1).name("parent 2").build());
+		ParentEntity parent2 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("parent 2").build());
 
-		ChildEntity child21 = context.saveOrUpdate(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.1").build());
-		ChildEntity child22 = context.saveOrUpdate(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.2").build());
-		ChildEntity child23 = context.saveOrUpdate(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.3").build());
+		ChildEntity child21 = context.updateOrInsert(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.1").build());
+		ChildEntity child22 = context.updateOrInsert(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.2").build());
+		ChildEntity child23 = context.updateOrInsert(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.3").build());
 		
-		ParentEntity parent3 = context.saveOrUpdate(ParentEntity.builder().homeId(1).name("task 3").build());
+		ParentEntity parent3 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("task 3").build());
 
-		ChildEntity child31 = context.saveOrUpdate(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.1").build());
-		ChildEntity child32 = context.saveOrUpdate(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.2").build());
+		ChildEntity child31 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.1").build());
+		ChildEntity child32 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.2").build());
 		
 		Query query = new Query(ChildEntity.class)
 				.join(Join.Inner(ChildEntity.class, ParentEntity.class))
@@ -90,7 +90,7 @@ public class QueryCriterionTest {
 				.externalName("external Name")
 				.build();
 		
-		context.saveOrUpdate(testTask);
+		context.updateOrInsert(testTask);
 		
 		
 		Query query = new Query(ParentEntity.class)
@@ -144,8 +144,8 @@ public class QueryCriterionTest {
 	@Test
 	public void inTest() {
 		
-		ParentEntity task1 = context.saveOrUpdate(ParentEntity.builder().homeId(1234).name("task 1").build());
-		ParentEntity task2 = context.saveOrUpdate(ParentEntity.builder().homeId(1235).name("task 2").build());
+		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(1234).name("task 1").build());
+		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(1235).name("task 2").build());
 		
 		Query query = new Query(ParentEntity.class);
 
@@ -168,8 +168,8 @@ public class QueryCriterionTest {
 	@Test
 	public void in2Test() {
 		
-		ParentEntity task1 = context.saveOrUpdate(ParentEntity.builder().homeId(2234).name("task 1").build());
-		ParentEntity task2 = context.saveOrUpdate(ParentEntity.builder().homeId(2235).name("task 2").build());
+		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(2234).name("task 1").build());
+		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(2235).name("task 2").build());
 		
 		Query query = new Query(ParentEntity.class);
 

@@ -19,7 +19,7 @@ public class CachedEntityTest {
 	@Test
 	public void cachedEntityTest() {
 		
-		ParentEntity task = context.saveOrUpdate(ParentEntity.builder().name("intial name").externalName("initial external name").build());
+		ParentEntity task = context.updateOrInsert(ParentEntity.builder().name("intial name").externalName("initial external name").build());
 		
 		ParentEntity taskA = context.fetchSingleAs(new Query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId()), ParentEntity.class);
 		ParentEntity taskB = context.fetchSingleAs(new Query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId()), ParentEntity.class);
@@ -31,8 +31,8 @@ public class CachedEntityTest {
 		assertFalse(taskA.isFieldUpdated(ParentEntity.Fields.externalName));
 		
 		
-		context.saveOrUpdate(taskA);
-		context.saveOrUpdate(taskB);
+		context.updateOrInsert(taskA);
+		context.updateOrInsert(taskB);
 		
 		
 		

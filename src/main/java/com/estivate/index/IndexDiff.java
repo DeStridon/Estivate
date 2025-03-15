@@ -12,9 +12,10 @@ import com.estivate.index.Annotations.TableIndexes;
 
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 
-
+@Slf4j
 @ToString
 public class IndexDiff {
 	
@@ -89,6 +90,12 @@ public class IndexDiff {
 	}
 
 	public boolean applySpecific(CompositeIndex index) {
+
+		if(getDatabaseIndexes().stream().anyMatch(x -> x.name().equals(index.name()))) {
+			log.error("Trying to apply index that already exists: ", index);
+			return false;
+		}
+
 		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
 		return context.addIndex(entity, index.name(), index.type(), columns);
 	}

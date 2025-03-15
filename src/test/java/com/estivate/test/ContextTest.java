@@ -22,18 +22,18 @@ public class ContextTest {
 		
 		context.truncateTable(ParentEntity.class);
 		
-		ParentEntity task1 = context.saveOrUpdate(DatabaseGenerator.createRandomTask());
-		ParentEntity task2 = context.saveOrUpdate(DatabaseGenerator.createRandomTask());
-		ParentEntity task3 = context.saveOrUpdate(DatabaseGenerator.createRandomTask());
+		ParentEntity parent1 = context.updateOrInsert(DatabaseGenerator.createRandomParent());
+		ParentEntity parent2 = context.updateOrInsert(DatabaseGenerator.createRandomParent());
+		ParentEntity parent3 = context.updateOrInsert(DatabaseGenerator.createRandomParent());
 
-		task1.setName("Updated Name 1");
-		task2.setName("Updated Name 2");
-		task3.setName("Updated Name 3");
+		parent1.setName("Updated Name 1");
+		parent2.setName("Updated Name 2");
+		parent3.setName("Updated Name 3");
 		
-		context.updateAll(Arrays.asList(task1, task2, task3));
+		context.updateAll(Arrays.asList(parent1, parent2, parent3));
 		
 		
-		Query query = new Query(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(task1.getId(), task2.getId(), task3.getId()));
+		Query query = new Query(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
 		List<ParentEntity> resultQueries = context.fetchListAs(query, ParentEntity.class);
 		
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 1")));
@@ -46,12 +46,38 @@ public class ContextTest {
 	@Test
 	public void queryAliasTest() {
 		
-		Entity<ParentEntity> taskEntity = new Entity<>(ParentEntity.class, "myTask");
+		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class, "myTask");
 		
-		Query query = new Query(taskEntity).in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
+		Query query = new Query(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
 		List<ParentEntity> resultQueries = context.fetchListAs(query, ParentEntity.class);
 		
 	}
+
+
+	@Test
+	public void mergeTest() {
+		
+		ParentEntity parent1 = ParentEntity.builder().homeId(1).name("parent1").build();
+		context.updateOrInsert(parent1);
+		
+		ParentEntity parent2 = ParentEntity.builder().homeId(1).name("parent1").build();
+		context.merge(parent2);
+
+		Assert.assertEquals(parent2.getId(), parent1.getId());
 	
+	}
 	
+
+	@Test
+	public void mergeTest2() {
+		ParentEntity parent1 = ParentEntity.builder().homeId(1).name("parent1").build();
+		context.updateOrInsert(parent1);
+		
+		ParentEntity parent2 = ParentEntity.builder().homeId(1).name("parent2").build();
+		parent2.setId(parent1.getId());
+		context.merge(parent2);
+
+		Assert.assertEquals(parent2.getName(), "parent1");
+
+	}
 }

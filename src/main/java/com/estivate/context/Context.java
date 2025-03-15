@@ -32,22 +32,22 @@ import javax.sql.DataSource;
 
 import com.estivate.Mapper;
 import com.estivate.NameMapper;
-import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Result;
 import com.estivate.Statement;
+import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.index.Annotations.ColumnIndex;
 import com.estivate.index.Annotations.CompositeIndex;
 import com.estivate.index.Annotations.Type;
+import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
 
 import lombok.SneakyThrows;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -223,7 +223,7 @@ public abstract class Context {
 	
 	
 	@SneakyThrows
-	public <U> U saveOrUpdate(U object) {
+	public <U> U updateOrInsert(U object) {
 		
 		Field idField = getIdField(object.getClass());
 		idField.setAccessible(true);
@@ -309,6 +309,63 @@ public abstract class Context {
 		
 	}
 	
+
+	// Tries to find entity with same 
+	public <U> void merge(U entity){
+		try{
+			Field idField = getIdField(entity.getClass());
+			idField.setAccessible(true);
+		
+			if(idField != null && idField.getLong(entity) != 0L) {
+				Query query = new Query(entity.getClass());
+				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
+				U duplicatedEntity = fetchSingleAs(query, (Class<U>) entity.getClass());
+				if(duplicatedEntity != null) {
+					// Copy fields from result into object
+					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
+						field.setAccessible(true);
+						field.set(entity, field.get(duplicatedEntity));
+					}
+					return;
+				}
+			}
+		
+			// Tries to merge with entity having same unicity constraints
+			IndexDiff indexDiff = new IndexDiff(this, entity.getClass());
+			for(CompositeIndex entityIndex : indexDiff.getEntityIndexes()){
+				if(entityIndex.type() != Type.UNIQUE) {
+					continue;
+				}
+
+				Query query = new Query(entity.getClass());
+				for(ColumnIndex columnIndex : entityIndex.columns()) {
+					Field field = entity.getClass().getDeclaredField(columnIndex.value());
+					field.setAccessible(true);
+					Object value = field.get(entity);
+
+					query.eq(entity.getClass(), columnIndex.value(), value);
+				}
+
+				U duplicatedEntity = fetchSingleAs(query, (Class<U>) entity.getClass());
+				
+				if(duplicatedEntity != null) {
+					
+					// Copy fields from result into object
+					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
+						field.setAccessible(true);
+						field.set(entity, field.get(duplicatedEntity));
+					}
+				}
+
+			}
+
+		}
+		catch(Exception e) {
+			log.error("Error on merge", e);
+		}
+
+
+	}
 	
 	
 
@@ -409,6 +466,8 @@ public abstract class Context {
 		}
 		return null;
 	}
+
+
 	
 	
 	
@@ -583,10 +642,6 @@ public abstract class Context {
 
 			@Override
 			public ColumnIndex[] columns() { return array; }
-			
-			public String toString() {
-				return "CompositeIndex(name="+name+", type="+type+", columns="+Arrays.asList(array).stream().map(x -> x.value()).collect(Collectors.joining(","))+")";
-			}
 		};
 		
 		return index;

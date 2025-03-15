@@ -39,8 +39,8 @@ public class QueryJoinTest {
 		
 		
 		
-		context.saveOrUpdate(ChildEntity.builder().homeId(1).parentId(2).description("source content 1").age(3).build());
-		context.saveOrUpdate(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
+		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 1").age(3).build());
+		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
 		
 		Query query = new Query(ChildEntity.class)
 				.name("Query Join Test")
@@ -55,10 +55,10 @@ public class QueryJoinTest {
 	@Test
 	public void selectJoiningTest2() throws SQLException {
 		
-		ParentEntity task = context.saveOrUpdate(ParentEntity.builder().name("join test name 1").build());
+		ParentEntity task = context.updateOrInsert(ParentEntity.builder().name("join test name 1").build());
 		
-		context.saveOrUpdate(ChildEntity.builder().parentId(task.getId()).description("source content 1").build());
-		context.saveOrUpdate(ChildEntity.builder().parentId(task.getId()).description("source content 2").build());
+		context.updateOrInsert(ChildEntity.builder().parentId(task.getId()).description("source content 1").build());
+		context.updateOrInsert(ChildEntity.builder().parentId(task.getId()).description("source content 2").build());
 		
 		Query query = new Query(ParentEntity.class)
 				.join(Join.Inner(ParentEntity.class, ChildEntity.class))
@@ -76,10 +76,10 @@ public class QueryJoinTest {
 	@Test
 	public void whereJoiningTest() throws SQLException {
 		
-		ParentEntity parent = context.saveOrUpdate(ParentEntity.builder().name("join test name 2").build());
+		ParentEntity parent = context.updateOrInsert(ParentEntity.builder().name("join test name 2").build());
 		
-		context.saveOrUpdate(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
-		context.saveOrUpdate(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
+		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
+		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
 		Query query = new Query(ParentEntity.class)
 				.eq(ChildEntity.class, ChildEntity.Fields.description, "source content 1");

@@ -22,13 +22,13 @@ public class QueryTest {
 		context.truncateTable(ParentEntity.class);
 
 		List<ParentEntity> list = Arrays.asList(
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask()),
-			context.saveOrUpdate(DatabaseGenerator.createRandomTask())
+			context.updateOrInsert(DatabaseGenerator.createRandomParent()),
+			context.updateOrInsert(DatabaseGenerator.createRandomParent()),
+			context.updateOrInsert(DatabaseGenerator.createRandomParent()),
+			context.updateOrInsert(DatabaseGenerator.createRandomParent()),
+			context.updateOrInsert(DatabaseGenerator.createRandomParent()),
+			context.updateOrInsert(DatabaseGenerator.createRandomParent()),
+			context.updateOrInsert(DatabaseGenerator.createRandomParent())
 		);
 		
 		

@@ -41,7 +41,7 @@ public class DatabaseGenerator {
 				
 	}
 	
-	public static ParentEntity createRandomTask() {
+	public static ParentEntity createRandomParent() {
 		
 		ParentEntity parentEntity = new ParentEntity();
 		parentEntity.setHomeId((long) randomInt(1, 100));

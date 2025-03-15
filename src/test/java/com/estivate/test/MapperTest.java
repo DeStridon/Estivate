@@ -18,7 +18,7 @@ public class MapperTest {
 	@Test
 	public void testPerf() {
 		
-		ParentEntity newTask = context.saveOrUpdate(ParentEntity.builder().name("task 1 name").build());	
+		ParentEntity newTask = context.updateOrInsert(ParentEntity.builder().name("task 1 name").build());	
 		
 		Query query = new Query(ParentEntity.class)
 				.eq(ParentEntity.class, AbstractEntity.Fields.id, newTask.getId());
