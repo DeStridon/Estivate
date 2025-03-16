@@ -454,7 +454,7 @@ public class Statement {
 		}
 	}
 	
-	String compileAttribute(Class entity, String attribute, Object value) {
+	String compileAttribute(Class<?> entity, String attribute, Object value) {
 		return compileGenericType(compileObject(entity, attribute, value));
 	}
 	

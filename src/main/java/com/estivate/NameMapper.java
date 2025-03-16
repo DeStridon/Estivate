@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.query.Query.Entity;
 
 public abstract class NameMapper {
@@ -35,7 +35,7 @@ public abstract class NameMapper {
 
 	
 	
-	public String mapIndex(CompositeIndex compositeIndex) {
+	public String mapIndex(TableIndex compositeIndex) {
 		if(StringUtils.isNotBlank(compositeIndex.name())) {
 			return compositeIndex.name();
 		}

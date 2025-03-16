@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.estivate.context.Context;
-import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.TableIndexes;
 
 import lombok.Getter;
@@ -31,7 +31,7 @@ public class IndexScan {
 
 		// list all entities in the package
 		for(Class<?> c : listClasses()) {
-			if(c.getDeclaredAnnotation(TableIndexes.class) == null && c.getDeclaredAnnotationsByType(CompositeIndex.class).length == 0) {
+			if(c.getDeclaredAnnotation(TableIndexes.class) == null && c.getDeclaredAnnotationsByType(TableIndex.class).length == 0) {
 				continue;
 			}
 			indexDiffs.add(new IndexDiff(context, c));

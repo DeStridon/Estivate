@@ -12,24 +12,24 @@ public class Annotations {
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface TableIndexes {
 		
-		CompositeIndex[] value();
+		TableIndex[] value();
 	}
 	
 	@Repeatable(TableIndexes.class)
 	@Retention(RetentionPolicy.RUNTIME)
-	public @interface CompositeIndex {
+	public @interface TableIndex {
 		String name() default "";
-		Type type() default Type.DEFAULT;
-		ColumnIndex[] columns() default {};	
+		IndexType type() default IndexType.DEFAULT;
+		IndexColumn[] columns() default {};	
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)
-	public static @interface ColumnIndex{
+	public static @interface IndexColumn{
 		String value();
 		int length() default 0;
 	}
 
-	public static enum Type{ 
+	public static enum IndexType{ 
 		DEFAULT,
 		UNIQUE,
 		PRIMARY

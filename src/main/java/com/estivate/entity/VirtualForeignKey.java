@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention( RetentionPolicy.RUNTIME )
 public @interface VirtualForeignKey {
 	
-	public Class entity();
+	public Class<?> entity();
 	public String attribute() default "";
 
 }

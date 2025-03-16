@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.estivate.context.Context;
-import com.estivate.index.Annotations.ColumnIndex;
-import com.estivate.index.Annotations.CompositeIndex;
-import com.estivate.index.Annotations.TableIndexes;
+import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.TableIndex;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -37,14 +36,14 @@ public class IndexDiff {
     }
 
 
-	public List<CompositeIndex> listToClean(){
+	public List<TableIndex> listToClean(){
 		
-		List<CompositeIndex> entityIndexes = getEntityIndexes();
-		List<CompositeIndex> databaseIndexes = getDatabaseIndexes();
-		List<CompositeIndex> resultIndexes = new ArrayList<>();
+		List<TableIndex> entityIndexes = getEntityIndexes();
+		List<TableIndex> databaseIndexes = getDatabaseIndexes();
+		List<TableIndex> resultIndexes = new ArrayList<>();
 
-		for(CompositeIndex databaseIndex : databaseIndexes) {
-			CompositeIndex entityIndex = entityIndexes.stream().filter(x -> indexEquals(x, databaseIndex)).findFirst().orElse(null);
+		for(TableIndex databaseIndex : databaseIndexes) {
+			TableIndex entityIndex = entityIndexes.stream().filter(x -> indexEquals(x, databaseIndex)).findFirst().orElse(null);
 			if(entityIndex == null) {
 				resultIndexes.add(databaseIndex);
 			}
@@ -54,14 +53,14 @@ public class IndexDiff {
 
 	}
 	
-	public List<CompositeIndex> listToApply(){
+	public List<TableIndex> listToApply(){
 	
-		List<CompositeIndex> entityIndexes = getEntityIndexes();
-		List<CompositeIndex> databaseIndexes = getDatabaseIndexes();
-		List<CompositeIndex> resultIndexes = new ArrayList<>();
+		List<TableIndex> entityIndexes = getEntityIndexes();
+		List<TableIndex> databaseIndexes = getDatabaseIndexes();
+		List<TableIndex> resultIndexes = new ArrayList<>();
 		
-		for(CompositeIndex entityIndex : entityIndexes) {
-			CompositeIndex databaseIndex = databaseIndexes.stream().filter(x -> indexEquals(x, entityIndex)).findFirst().orElse(null);
+		for(TableIndex entityIndex : entityIndexes) {
+			TableIndex databaseIndex = databaseIndexes.stream().filter(x -> indexEquals(x, entityIndex)).findFirst().orElse(null);
 			if(databaseIndex == null) {
 				resultIndexes.add(entityIndex);
 			}
@@ -72,7 +71,7 @@ public class IndexDiff {
 	}
 
 	public void clean() {
-		for(CompositeIndex index : listToClean()) {
+		for(TableIndex index : listToClean()) {
 			cleanSpecific(index);
 		}
 	}
@@ -80,33 +79,34 @@ public class IndexDiff {
 	
 
 	public void apply() {
-		for(CompositeIndex index : listToApply()) {
+		for(TableIndex index : listToApply()) {
 			applySpecific(index);
 		}
 	}
 	
-	public boolean cleanSpecific(CompositeIndex index){
+	public boolean cleanSpecific(TableIndex index){
 		return context.removeIndex(entity, index.name());
 	}
 
-	public boolean applySpecific(CompositeIndex index) {
+	public boolean applySpecific(TableIndex index) {
 
 		if(getDatabaseIndexes().stream().anyMatch(x -> x.name().equals(index.name()))) {
-			log.error("Trying to apply index that already exists: ", index);
+			log.error("Table " + entity.getSimpleName() + ", aborting index creation : index with same name already exists: "+index.name());
 			return false;
 		}
 
 		List<String> columns = Arrays.asList(index.columns()).stream().map(x -> context.nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
 		return context.addIndex(entity, index.name(), index.type(), columns);
+
 	}
 	
 	
-	public List<CompositeIndex> getEntityIndexes(){
+	public List<TableIndex> getEntityIndexes(){
 		
-		CompositeIndex[] compositeIndex = entity.getDeclaredAnnotationsByType(CompositeIndex.class);
+		TableIndex[] compositeIndex = entity.getDeclaredAnnotationsByType(TableIndex.class);
 		
-		List<CompositeIndex> indexes = new ArrayList<>();
-		for(CompositeIndex index : compositeIndex) {
+		List<TableIndex> indexes = new ArrayList<>();
+		for(TableIndex index : compositeIndex) {
 			indexes.add(Context.CompositeIndex(context.nameMapper.mapIndex(index), index.type(), Arrays.asList(index.columns())));
 		}
 		
@@ -114,13 +114,13 @@ public class IndexDiff {
 	
 	}
 	
-	public List<CompositeIndex> getDatabaseIndexes(){
-		List<CompositeIndex> indexStrings = context.listIndexes(entity);
+	public List<TableIndex> getDatabaseIndexes(){
+		List<TableIndex> indexStrings = context.listIndexes(entity);
 		return indexStrings;
 	}
 	
 	
-	boolean indexEquals(CompositeIndex left, CompositeIndex right) {
+	boolean indexEquals(TableIndex left, TableIndex right) {
 		if(!left.name().toUpperCase().equals(right.name().toUpperCase())) {
 			return false;
 		}
@@ -128,8 +128,8 @@ public class IndexDiff {
 			return false;
 		}
 		for(int i = 0; i < left.columns().length; i++) {
-			ColumnIndex leftColumn = left.columns()[i];
-			ColumnIndex rightColumn = right.columns()[i];
+			IndexColumn leftColumn = left.columns()[i];
+			IndexColumn rightColumn = right.columns()[i];
 			
 			if(!leftColumn.value().equals(rightColumn.value())) {
 				return false;

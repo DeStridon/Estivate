@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.index.IndexDiff;
 import com.estivate.index.IndexScan;
-import com.estivate.index.Annotations.CompositeIndex;
-import com.estivate.index.Annotations.Type;
+import com.estivate.index.Annotations.TableIndex;
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.test.entities.ParentEntity;
 
 public class IndexTest {
@@ -29,9 +29,9 @@ public class IndexTest {
 	public void contextTest() {
 		
 			
-		context.addIndex(ParentEntity.class, "yo", Type.DEFAULT, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
+		context.addIndex(ParentEntity.class, "yo", IndexType.DEFAULT, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
 		
-		List<CompositeIndex> indexes = context.listIndexes(ParentEntity.class);
+		List<TableIndex> indexes = context.listIndexes(ParentEntity.class);
 		
 		System.out.println(indexes);
 		
@@ -39,9 +39,9 @@ public class IndexTest {
 
 	@Test
 	public void uniqueTest() {
-		context.addIndex(ParentEntity.class, "unique", Type.UNIQUE, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
+		context.addIndex(ParentEntity.class, "unique", IndexType.UNIQUE, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
 		
-		List<CompositeIndex> indexes = context.listIndexes(ParentEntity.class);
+		List<TableIndex> indexes = context.listIndexes(ParentEntity.class);
 		
 		System.out.println(indexes);
 	}
@@ -51,14 +51,14 @@ public class IndexTest {
 		
 		IndexDiff id = new IndexDiff(context, ParentEntity.class);
 		
-		List<CompositeIndex> indexes = id.getEntityIndexes();
+		List<TableIndex> indexes = id.getEntityIndexes();
 		Assert.assertEquals(2, indexes.size());
 		
 		id.applySpecific(indexes.get(0));
 		
 		id.cleanSpecific(indexes.get(0));
 		
-		List<CompositeIndex> missingDbIndexes = id.listToApply();
+		List<TableIndex> missingDbIndexes = id.listToApply();
 		Assert.assertEquals(1, missingDbIndexes.size());
 	}
 	

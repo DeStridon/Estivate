@@ -10,10 +10,9 @@ import javax.sql.DataSource;
 
 import com.estivate.Result;
 import com.estivate.Statement;
-import com.estivate.index.Annotations.ColumnIndex;
-import com.estivate.index.Annotations.CompositeIndex;
-import com.estivate.index.Annotations.Type;
-import com.estivate.query.Query;
+import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.TableIndex;
+import com.estivate.index.Annotations.IndexType;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +30,9 @@ public class H2Context extends Context {
 	
 	// Should be removed
 	@SneakyThrows
-	public List<CompositeIndex> listIndexes(Class<?> c) {
+	public List<TableIndex> listIndexes(Class<?> c) {
 		
-		List<CompositeIndex> indexes = new ArrayList<>();
+		List<TableIndex> indexes = new ArrayList<>();
 		
 		try (Connection connection = datasource.getConnection()){
 			
@@ -46,12 +45,9 @@ public class H2Context extends Context {
 			for(Result indexResult : indexResults) {
 				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.getAsString("INDEX_NAME").equals(indexResult.getAsString("INDEX_NAME"))).collect(Collectors.toList());
 				
-				List<ColumnIndex> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.getAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
+				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.getAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
 
-				System.out.println(indexResult.getAsString("INDEX_TYPE_NAME"));
-				
-
-				CompositeIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), getIndexType(indexResult.getAsString("INDEX_TYPE_NAME")), indexColumns);
+				TableIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), getIndexType(indexResult.getAsString("INDEX_TYPE_NAME")), indexColumns);
 				indexes.add(ci);
 			}
 			
@@ -60,11 +56,11 @@ public class H2Context extends Context {
     }
 
 
-	public Type getIndexType(String typeName) {
+	public IndexType getIndexType(String typeName) {
 		switch(typeName) {
-			case "PRIMARY KEY": return Type.PRIMARY;
-			case "UNIQUE INDEX": return Type.UNIQUE;
-			default: return Type.DEFAULT;
+			case "PRIMARY KEY": return IndexType.PRIMARY;
+			case "UNIQUE INDEX": return IndexType.UNIQUE;
+			default: return IndexType.DEFAULT;
 		}
 	}
 	

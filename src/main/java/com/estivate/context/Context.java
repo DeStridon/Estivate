@@ -38,9 +38,9 @@ import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
-import com.estivate.index.Annotations.ColumnIndex;
-import com.estivate.index.Annotations.CompositeIndex;
-import com.estivate.index.Annotations.Type;
+import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.TableIndex;
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
 import com.estivate.util.Chronometer;
@@ -332,13 +332,13 @@ public abstract class Context {
 		
 			// Tries to merge with entity having same unicity constraints
 			IndexDiff indexDiff = new IndexDiff(this, entity.getClass());
-			for(CompositeIndex entityIndex : indexDiff.getEntityIndexes()){
-				if(entityIndex.type() != Type.UNIQUE) {
+			for(TableIndex entityIndex : indexDiff.getEntityIndexes()){
+				if(entityIndex.type() != IndexType.UNIQUE) {
 					continue;
 				}
 
 				Query query = new Query(entity.getClass());
-				for(ColumnIndex columnIndex : entityIndex.columns()) {
+				for(IndexColumn columnIndex : entityIndex.columns()) {
 					Field field = entity.getClass().getDeclaredField(columnIndex.value());
 					field.setAccessible(true);
 					Object value = field.get(entity);
@@ -366,7 +366,23 @@ public abstract class Context {
 
 
 	}
-	
+
+
+	public <U> void mergeOrInsert(U entity){
+		merge(entity);
+		
+		try{
+			Field idField = getIdField(entity.getClass());
+			idField.setAccessible(true);
+		
+			if(idField != null && idField.getLong(entity) != 0L) {
+				insert(entity);
+			}
+		}
+		catch(Exception e){
+			log.error("Error on mergeOrInsert", e);
+		}
+	}
 	
 
 	
@@ -570,9 +586,9 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
-	public boolean truncateTable(Class c) {
+	public boolean truncateTable(Class<?> entity) {
 		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(this, connection).appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.mapDatabaseClass(c));
+			Statement statement = new Statement(this, connection).appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.mapDatabaseClass(entity));
 			return statement.executeForValidation();
 		}
 	}
@@ -588,12 +604,12 @@ public abstract class Context {
 		return null;
 	}
 
-	public boolean addIndex(Class<?> c, String name, Type type, List<String> columns) {
+	public boolean addIndex(Class<?> c, String name, IndexType type, List<String> columns) {
 		Statement statement = null;
 		try (Connection connection = datasource.getConnection()){
 			statement = new Statement(this, connection)
 				.appendQuery("CREATE")
-				.appendQuery(type == Type.DEFAULT ? "" : type.name().toUpperCase())
+				.appendQuery(type == IndexType.DEFAULT ? "" : type.name().toUpperCase())
 				.appendQuery("INDEX")
 				.appendQuery(name)
 				.appendQuery("ON");
@@ -625,32 +641,32 @@ public abstract class Context {
 		}
 	}
 	
-	public static CompositeIndex CompositeIndex(String name, Type type, List<ColumnIndex> columns) {
+	public static TableIndex CompositeIndex(String name, IndexType type, List<IndexColumn> columns) {
 		
-		ColumnIndex[] array = new ColumnIndex[columns.size()];
+		IndexColumn[] array = new IndexColumn[columns.size()];
 		columns.toArray(array);
 		
-		CompositeIndex index = new CompositeIndex() {
+		TableIndex index = new TableIndex() {
 			@Override
 			public String name() { return name; }
 
 			@Override
-			public Type type() { return type; }
+			public IndexType type() { return type; }
 
 			@Override
 			public Class<? extends Annotation> annotationType() { return null; }
 
 			@Override
-			public ColumnIndex[] columns() { return array; }
+			public IndexColumn[] columns() { return array; }
 		};
 		
 		return index;
 	
 	}
 	
-	public ColumnIndex ColumnIndex(String value, Integer length) {
+	public IndexColumn ColumnIndex(String value, Integer length) {
 		
-		ColumnIndex index = new ColumnIndex() {
+		IndexColumn index = new IndexColumn() {
 
 			@Override
 			public Class<? extends Annotation> annotationType() { return null; }
@@ -667,7 +683,7 @@ public abstract class Context {
 	
 	}
 	
-	public abstract List<CompositeIndex> listIndexes(Class<?> c);
+	public abstract List<TableIndex> listIndexes(Class<?> c);
 		
 	
 	

@@ -88,21 +88,21 @@ public class Result {
 	
 
 	// @Enumerated
-	public Enum getAsEnum(Class c, String attribute) {
+	public Enum getAsEnum(Class<?> entity, String attribute) {
 		
 		try {
-			Field[] fields = c.getDeclaredFields();
-			Field field = c.getDeclaredField(attribute);
+			Field[] fields = entity.getDeclaredFields();
+			Field field = entity.getDeclaredField(attribute);
 			Type type = field.getGenericType();
 			
 			if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
 	
 				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
-					return Enum.valueOf((Class)type, mapToString(c, attribute));
+					return Enum.valueOf((Class)type, mapToString(entity, attribute));
 				}
 				else {
-					return (Enum) field.getType().getEnumConstants()[mapToInteger(c, attribute)];
+					return (Enum) field.getType().getEnumConstants()[mapToInteger(entity, attribute)];
 				}
 			}
 		}

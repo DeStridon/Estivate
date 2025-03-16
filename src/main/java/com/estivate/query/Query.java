@@ -370,9 +370,9 @@ public class Query extends Aggregator{
 		return this;
 	}
 	
-	public Query selectAll(Class c, String...fields) { return selectAll(new Entity(c), fields); }
+	public Query selectAll(Class<?> entity, String...fields) { return selectAll(new Entity<>(entity), fields); }
 	
-	public Query selectAll(Entity c, String... fields) {
+	public Query selectAll(Entity<?> c, String... fields) {
 		
 		Class<?> currentClazz = c.entity;
 		while(currentClazz != Object.class) {
@@ -404,7 +404,7 @@ public class Query extends Aggregator{
 	
 	
 	
-	public Query selectDistinct(Class c, String attribute) {
+	public Query selectDistinct(Class<?> c, String attribute) {
 		
 		Select select = selects.stream().filter(x -> x.entity.equals(new Entity(c)) && x.attribute.equals(attribute)).findAny().orElse(null);
 		if(select != null) {

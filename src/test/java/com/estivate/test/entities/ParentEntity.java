@@ -11,8 +11,8 @@ import javax.persistence.PrePersist;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.entity.VirtualForeignKey;
-import com.estivate.index.Annotations.ColumnIndex;
-import com.estivate.index.Annotations.CompositeIndex;
+import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.TableIndexes;
 import com.estivate.test.entities.misc.Language;
 import com.estivate.test.entities.misc.LanguageConverter;
@@ -25,7 +25,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
-import com.estivate.index.Annotations.Type;
+import com.estivate.index.Annotations.IndexType;
 
 @Slf4j
 @Data
@@ -35,9 +35,9 @@ import com.estivate.index.Annotations.Type;
 @AllArgsConstructor
 @FieldNameConstants
 @TableIndexes({
-	@CompositeIndex(name="created", columns= {@ColumnIndex(ParentEntity.Fields.created)}),
-	@CompositeIndex(name="updated", columns= {@ColumnIndex(ParentEntity.Fields.updated)}),
-	@CompositeIndex(name="homeNameUnicity", columns= {@ColumnIndex(ParentEntity.Fields.homeId), @ColumnIndex(ParentEntity.Fields.name)}, type=Type.UNIQUE)
+	@TableIndex(name="created", columns= {@IndexColumn(ParentEntity.Fields.created)}),
+	@TableIndex(name="updated", columns= {@IndexColumn(ParentEntity.Fields.updated)}),
+	@TableIndex(name="homeNameUnicity", columns= {@IndexColumn(ParentEntity.Fields.homeId), @IndexColumn(ParentEntity.Fields.name)}, type=IndexType.UNIQUE)
 })
 public class ParentEntity extends AbstractEntity {
 	

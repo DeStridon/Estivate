@@ -12,9 +12,9 @@ import javax.sql.DataSource;
 
 import com.estivate.Result;
 import com.estivate.Statement;
-import com.estivate.index.Annotations.ColumnIndex;
-import com.estivate.index.Annotations.CompositeIndex;
-import com.estivate.index.Annotations.Type;
+import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.TableIndex;
+import com.estivate.index.Annotations.IndexType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,8 +36,8 @@ public class MySQLContext extends Context {
 	
 	
 	@SneakyThrows
-	public List<CompositeIndex> listIndexes(Class<?> c) {
-		List<CompositeIndex> indexes = new ArrayList<>();
+	public List<TableIndex> listIndexes(Class<?> c) {
+		List<TableIndex> indexes = new ArrayList<>();
 
 		try (Connection connection = datasource.getConnection()){
 			Statement statement = new Statement(this, connection).appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.mapDatabaseClass(c));
@@ -62,18 +62,18 @@ public class MySQLContext extends Context {
 	        
 			
 			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
-				List<ColumnIndex> indexColumns = indexRowMapEntry.getValue().stream().map(x-> ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
+				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
 				
 
-				Type indexType = Type.DEFAULT;
+				IndexType indexType = IndexType.DEFAULT;
 				if(indexRowMapEntry.getKey().equals("PRIMARY")) {
-					indexType = Type.PRIMARY;
+					indexType = IndexType.PRIMARY;
 				}
 				else if(!indexRowMapEntry.getValue().get(0).getNonUnique()) {
-					indexType = Type.UNIQUE;
+					indexType = IndexType.UNIQUE;
 				}
 				
-				CompositeIndex ci = CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
+				TableIndex ci = CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
 				indexes.add(ci);
 			}
 			
