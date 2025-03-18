@@ -242,7 +242,7 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
-	private <U> U insert(U object) {
+	public <U> U insert(U object) {
 		
 		try(Connection connection = datasource.getConnection()){
 			for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class)) {
