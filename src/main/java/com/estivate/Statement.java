@@ -208,12 +208,13 @@ public class Statement {
 		}
 		
         for(Join join : query.getJoins()) {
-        	statement.appendQuery(statement.joinString(join)+'\n');
+        	statement.appendJoin(join);
+        	statement.appendQuery("\n");
         }
         
         if(!query.getCriterions().isEmpty()) {
         	statement.appendQuery("WHERE");
-        	attachWhere(statement, query, true);
+        	statement.appendNodeToStatement(query, true);
         }
         
 		// Append group bys (if any)
@@ -239,19 +240,19 @@ public class Statement {
         
 	}
 	
-	public String joinString(Join join) {
+	public void appendJoin(Join join) {
 		
-		StringPipe sb = new StringPipe().separator(" ")
-				.append  (join.joinType.toString())
-				.append  ("JOIN")
-				.append  (context.nameMapper.mapDatabaseClass(join.rightEntity.entity))
-				.appendIf(join.rightEntity.alias != null, join.rightEntity.alias);
+		appendQuery(join.joinType.toString());
+		appendQuery("JOIN");
+		appendQuery(context.nameMapper.mapDatabaseClass(join.rightEntity.entity));
+		if(join.rightEntity.alias != null) { appendQuery(join.rightEntity.alias);}
 		if(join.indexHint != null && join.indexNames != null && !join.indexNames.isEmpty()) {
-			sb	.append  (join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
+			appendQuery(join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
 		}
-		sb		.append  ("ON")
-				.append  (join.joins.stream().map(x -> context.nameMapper.mapDatabase(join.leftEntity, x.getLeft()) + " = " + context.nameMapper.mapDatabase(join.rightEntity, x.getRight())).collect(Collectors.joining(" and ")));
-		return sb.toString();
+		appendQuery("ON");
+//				.append  (join.joiningAttributes.stream().map(x -> context.nameMapper.mapDatabase(join.leftEntity, x.getLeft()) + " = " + context.nameMapper.mapDatabase(join.rightEntity, x.getRight())).collect(Collectors.joining(" and ")));
+		appendNodeToStatement(join.joiningCriterion, false);
+		
 		
 	}
 	
@@ -294,77 +295,77 @@ public class Statement {
 	
 	}
 	
-	public static void attachWhere(Statement statement, EstivateNode node, boolean rootNode) {
+	public void appendNodeToStatement(EstivateNode node, boolean rootNode) {
 		
 		if(node instanceof Aggregator) {
 			Aggregator aggregator = (Aggregator) node;
 			if(!rootNode && aggregator.getCriterions().size() > 1) {
-				statement.appendQuery("(");
+				appendQuery("(");
 			}
 			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
 				if(i > 0) {
-					statement.appendQuery(aggregator.getGroupType().toString());
+					appendQuery(aggregator.getGroupType().toString());
 				}
-				attachWhere(statement, aggregator.getCriterions().get(i), false);
+				appendNodeToStatement(aggregator.getCriterions().get(i), false);
 			}
 			if(!rootNode && aggregator.getCriterions().size() > 1) {
-				statement.appendQuery(")");
+				appendQuery(")");
 			}
 			
 		}
 		else if(node instanceof Criterion.Operator) {
 			Criterion.Operator operator = (Criterion.Operator) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(operator.entity, operator.attribute));
-			statement.appendQuery(operator.type.symbol);
-			statement.appendParameter(operator.entity.entity, operator.attribute, operator.value);
+			appendQuery(context.nameMapper.mapDatabase(operator.entity, operator.attribute));
+			appendQuery(operator.type.symbol);
+			appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(in.entity, in.attribute));
-			statement.appendQuery("in (");
-			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
-			statement.appendQuery(")");
+			appendQuery(context.nameMapper.mapDatabase(in.entity, in.attribute));
+			appendQuery("in (");
+			appendQuery(in.getValues().stream().map(x -> appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(in.entity, in.attribute));
-			statement.appendQuery("not in (");
-			statement.appendQuery(in.getValues().stream().map(x -> statement.appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
-			statement.appendQuery(")");
+			appendQuery(context.nameMapper.mapDatabase(in.entity, in.attribute));
+			appendQuery("not in (");
+			appendQuery(in.getValues().stream().map(x -> appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(between.entity, between.attribute));
-			statement.appendQuery("between");
-			statement.appendParameter(between.entity.entity, between.attribute, between.min);
-			statement.appendQuery("and");
-			statement.appendParameter(between.entity.entity, between.attribute, between.max);
+			appendQuery(context.nameMapper.mapDatabase(between.entity, between.attribute));
+			appendQuery("between");
+			appendParameter(between.entity.entity, between.attribute, between.min);
+			appendQuery("and");
+			appendParameter(between.entity.entity, between.attribute, between.max);
 			
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+			appendQuery(context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
 		}
 		else if(node instanceof Criterion.NativeCriterion) {
 			Criterion.NativeCriterion nativeCriterion = (Criterion.NativeCriterion) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(nativeCriterion.entity, nativeCriterion.attribute)+nativeCriterion.criterion);
+			appendQuery(context.nameMapper.mapDatabase(nativeCriterion.entity, nativeCriterion.attribute)+nativeCriterion.criterion);
 		}
 		else if(node instanceof Criterion.InSubQuery) {
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
-			statement.appendQuery(statement.context.nameMapper.mapDatabase(subQuery.entity, subQuery.attribute)+(subQuery.include ? " in ":" not in "));
-			Statement subStatement = Statement.toStatement(statement.context, statement.connection, subQuery.subQuery);
-			statement.appendQuery("("+subStatement.query()+")");
-			statement.parameters.addAll(subStatement.parameters);
+			appendQuery(context.nameMapper.mapDatabase(subQuery.entity, subQuery.attribute)+(subQuery.include ? " in ":" not in "));
+			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
+			appendQuery("("+subStatement.query()+")");
+			parameters.addAll(subStatement.parameters);
 		}
 		else if(node instanceof Criterion.ExistsSubQuery){
 			Criterion.ExistsSubQuery subQuery = (Criterion.ExistsSubQuery) node;
-			Statement subStatement = Statement.toStatement(statement.context, statement.connection, subQuery.subQuery);
-			statement.appendQuery(subQuery.include ? "EXISTS": "NOT EXISTS");
-			statement.appendQuery("("+subStatement.query()+")");
-			statement.parameters.addAll(subStatement.parameters);
+			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
+			appendQuery(subQuery.include ? "EXISTS": "NOT EXISTS");
+			appendQuery("("+subStatement.query()+")");
+			parameters.addAll(subStatement.parameters);
 		}
 		else if(node instanceof Keyword) {
-			statement.appendQuery(((Keyword) node).getValue().toString().toLowerCase());
+			appendQuery(((Keyword) node).getValue().toString().toLowerCase());
 		}
 		else {
 			throw new RuntimeException("Node type not supported : "+node.getClass());

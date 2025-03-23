@@ -31,7 +31,7 @@ public class Result {
 	}
 	
 
-	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]").withZone(ZoneId.systemDefault());
 
 	private Map<String, Object> cache = new HashMap<>();
 	

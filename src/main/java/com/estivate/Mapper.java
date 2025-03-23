@@ -211,7 +211,7 @@ public class Mapper<U> {
 				
 				
 				LocalDateTime dateTime;
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]");
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]");
 				TemporalAccessor temporalAccessor = formatter.parseBest(value, LocalDateTime::from, LocalDate::from);
 				if (temporalAccessor instanceof LocalDateTime) {
 				  dateTime = (LocalDateTime)temporalAccessor;

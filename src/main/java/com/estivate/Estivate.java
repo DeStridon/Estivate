@@ -1,5 +1,6 @@
 package com.estivate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -230,8 +231,8 @@ public class Estivate {
 	
 	
 	
-	public static Aggregator or(EstivateNode... criterions) { return or(Arrays.asList(criterions));}
+	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}
 	public static Aggregator or(List<EstivateNode> criterions) { return new Aggregator(GroupType.OR, criterions); }
-	public static Aggregator and(EstivateNode... criterions) { return and(Arrays.asList(criterions)); }
+	public static Aggregator and(EstivateNode... criterions) { return and(new ArrayList<>(Arrays.asList(criterions))); }
 	public static Aggregator and(List<EstivateNode> criterions) { return new Aggregator(GroupType.AND, criterions); }
 }
