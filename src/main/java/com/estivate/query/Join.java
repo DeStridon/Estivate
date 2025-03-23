@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.estivate.Estivate;
 import com.estivate.entity.VirtualForeignKey;
 import com.estivate.util.FieldUtils;
 
@@ -22,7 +23,8 @@ public class Join {
 	public Query.Entity<?> rightEntity;
 
 	
-	public List<Pair<String, String>> joins = new ArrayList<>();
+	
+	public Aggregator joiningCriterion = Estivate.and();
 	
 	public JoinType joinType = JoinType.INNER;
 	
@@ -35,7 +37,7 @@ public class Join {
 		this.leftEntity = leftEntity;
 		this.rightEntity = rightEntity;
 		this.joinType = joinType;
-		joins.add(Pair.of(leftAttribute, rightAttribute));
+		this.on(leftAttribute, rightAttribute);
 	}
 
 	public static Join Inner(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return find(leftEntity, rightEntity, JoinType.INNER); }
@@ -134,7 +136,12 @@ public class Join {
 	}
 
 	public Join on(String joinerAttribute, String joinedAttribute) {
-		joins.add(Pair.of(joinerAttribute, joinedAttribute));
+		joiningCriterion.add(Estivate.eq(leftEntity, joinerAttribute, new PropertyValue(rightEntity, joinedAttribute)));
+		return this;
+	}
+	
+	public Join on(EstivateNode node) {
+		joiningCriterion.add(node);
 		return this;
 	}
 
