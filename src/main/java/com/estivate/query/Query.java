@@ -286,46 +286,46 @@ public class Query extends Aggregator{
 		return this;
 	}
 		
-	public Query joinInner(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Join.Inner(leftEntity, rightEntity)); }
-	public Query joinInner(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Join.Inner(leftEntity, new Query.Entity<>(rightClass)));}
-	public Query joinInner(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Join.Inner(new Query.Entity<>(leftClass), rightEntity));}
-	public Query joinInner(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Join.Inner(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
+	public Query joinInner(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Estivate.joinInner(leftEntity, rightEntity)); }
+	public Query joinInner(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinInner(leftEntity, new Query.Entity<>(rightClass)));}
+	public Query joinInner(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Estivate.joinInner(new Query.Entity<>(leftClass), rightEntity));}
+	public Query joinInner(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinInner(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
 
-	public Query joinOuter(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Join.Outer(leftEntity, rightEntity)); }
-	public Query joinOuter(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Join.Outer(leftEntity, new Query.Entity<>(rightClass))); }
-	public Query joinOuter(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Join.Outer(new Query.Entity<>(leftClass), rightEntity)); }
-	public Query joinOuter(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Join.Outer(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
+	public Query joinOuter(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Estivate.joinOuter(leftEntity, rightEntity)); }
+	public Query joinOuter(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinOuter(leftEntity, new Query.Entity<>(rightClass))); }
+	public Query joinOuter(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Estivate.joinOuter(new Query.Entity<>(leftClass), rightEntity)); }
+	public Query joinOuter(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinOuter(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
 
-	public Query joinLeft(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Join.Left(leftEntity, rightEntity)); }
-	public Query joinLeft(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Join.Left(leftEntity, new Query.Entity<>(rightClass))); }
-	public Query joinLeft(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Join.Left(new Query.Entity<>(leftClass), rightEntity)); }
-	public Query joinLeft(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Join.Left(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
+	public Query joinLeft(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Estivate.joinLeft(leftEntity, rightEntity)); }
+	public Query joinLeft(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinLeft(leftEntity, new Query.Entity<>(rightClass))); }
+	public Query joinLeft(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Estivate.joinLeft(new Query.Entity<>(leftClass), rightEntity)); }
+	public Query joinLeft(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinLeft(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
 
-	public Query joinRight(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Join.Right(leftEntity, rightEntity)); }
-	public Query joinRight(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Join.Right(leftEntity, new Query.Entity<>(rightClass))); }
-	public Query joinRight(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Join.Right(new Query.Entity<>(leftClass), rightEntity)); }
-	public Query joinRight(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Join.Right(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
+	public Query joinRight(Query.Entity<?> leftEntity, 	Query.Entity<?> rightEntity)	{ return join(Estivate.joinRight(leftEntity, rightEntity)); }
+	public Query joinRight(Query.Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinRight(leftEntity, new Query.Entity<>(rightClass))); }
+	public Query joinRight(Class<?> leftClass, 			Query.Entity<?> rightEntity)	{ return join(Estivate.joinRight(new Query.Entity<>(leftClass), rightEntity)); }
+	public Query joinRight(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinRight(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity))); }
 
 
-	public Query joinInner(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Inner(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinInner(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Join.Inner(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
-	public Query joinInner(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Inner(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinInner(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Join.Inner(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
+	public Query joinInner(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinInner(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query joinInner(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinInner(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinInner(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
 
-	public Query joinOuter(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Outer(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinOuter(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Join.Outer(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
-	public Query joinOuter(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Outer(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinOuter(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Join.Outer(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
+	public Query joinOuter(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinOuter(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query joinOuter(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinOuter(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinOuter(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
 
-	public Query joinLeft(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Left(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinLeft(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Join.Left(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
-	public Query joinLeft(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Left(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinLeft(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Join.Left(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
+	public Query joinLeft(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinLeft(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query joinLeft(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinLeft(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinLeft(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
 
-	public Query joinRight(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Right(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinRight(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Join.Right(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
-	public Query joinRight(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Join.Right(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query joinRight(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Join.Right(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
+	public Query joinRight(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinRight(Query.Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, new Query.Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query joinRight(Class<?> leftClass, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(new Query.Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
+	public Query joinRight(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinRight(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
 
 
 

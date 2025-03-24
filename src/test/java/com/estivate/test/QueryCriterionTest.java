@@ -64,7 +64,7 @@ public class QueryCriterionTest {
 		ChildEntity child32 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.2").build());
 		
 		Query query = new Query(ChildEntity.class)
-				.join(Join.Inner(ChildEntity.class, ParentEntity.class))
+				.joinInner(ChildEntity.class, ParentEntity.class)
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
 				.selectAll(ParentEntity.class)
 				

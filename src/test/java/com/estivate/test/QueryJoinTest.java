@@ -61,7 +61,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().parentId(task.getId()).description("source content 2").build());
 		
 		Query query = new Query(ParentEntity.class)
-				.join(Join.Inner(ParentEntity.class, ChildEntity.class))
+				.joinInner(ParentEntity.class, ChildEntity.class)
 				.selectAll(ChildEntity.class)
 				.eq(ParentEntity.class, ParentEntity.Fields.name, task.getName());
 		
@@ -99,8 +99,8 @@ public class QueryJoinTest {
 		Query query = new Query(ParentEntity.class)
 			.select(sourceSegment, AbstractEntity.Fields.id)
 			.select(targetSegment, AbstractEntity.Fields.id)
-			.join(Join.Inner(ParentEntity.class, sourceSegment, AbstractEntity.Fields.id, ChildEntity.Fields.parentId))
-			.join(Join.Inner(sourceSegment, targetSegment, ChildEntity.Fields.description, ChildEntity.Fields.description))
+			.joinInner(ParentEntity.class, sourceSegment, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
+			.joinInner(sourceSegment, targetSegment, ChildEntity.Fields.description, ChildEntity.Fields.description)
 			.eq(ParentEntity.class, AbstractEntity.Fields.id, 35)
 			.notEq(sourceSegment, AbstractEntity.Fields.id, new PropertyValue(targetSegment, AbstractEntity.Fields.id));
 		
