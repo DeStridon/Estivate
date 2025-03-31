@@ -26,7 +26,8 @@ public class Select implements Comparable {
 		Min,
 		Sum,
 		Distinct,
-		GroupConcat
+		GroupConcat, 
+		DistinctGroupConcat
 	}
 
 
