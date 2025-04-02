@@ -14,9 +14,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attribute {
-
     public Entity<?> entity;
 	public String attribute;
 	public List<String> functions;
-
 }

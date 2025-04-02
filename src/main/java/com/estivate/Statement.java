@@ -34,7 +34,6 @@ import com.estivate.query.Select;
 import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StackLog;
-import com.estivate.util.StringPipe;
 
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +67,19 @@ public class Statement {
 			query.append(" ");
 		}
 		query.append(queryContent);
+		return this;
+	}
+
+	public Statement appendAttribute(Criterion criterion){
+		// TODO : nest functions
+		StringBuilder sb = new StringBuilder();
+		sb.append(context.nameMapper.mapDatabase(criterion.entity, criterion.attribute));
+		for(String function : criterion.functions){
+			sb.insert(0, "(");
+			sb.insert(0, function);
+			sb.append(")");
+		}
+		appendQuery(sb.toString());
 		return this;
 	}
 	
@@ -318,27 +330,27 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.Operator) {
 			Criterion.Operator operator = (Criterion.Operator) node;
-			appendQuery(context.nameMapper.mapDatabase(operator.entity, operator.attribute));
+			appendAttribute(operator);
 			appendQuery(operator.type.symbol);
 			appendParameter(operator.entity.entity, operator.attribute, operator.value);
 		}
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
-			appendQuery(context.nameMapper.mapDatabase(in.entity, in.attribute));
+			appendAttribute(in);
 			appendQuery("in (");
 			appendQuery(in.getValues().stream().map(x -> appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
-			appendQuery(context.nameMapper.mapDatabase(in.entity, in.attribute));
+			appendAttribute(in);
 			appendQuery("not in (");
 			appendQuery(in.getValues().stream().map(x -> appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
-			appendQuery(context.nameMapper.mapDatabase(between.entity, between.attribute));
+			appendAttribute(between);
 			appendQuery("between");
 			appendParameter(between.entity.entity, between.attribute, between.min);
 			appendQuery("and");
@@ -347,7 +359,8 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
-			appendQuery(context.nameMapper.mapDatabase(nullcheck.entity, nullcheck.attribute)+(nullcheck.isNull ? " is null":" is not null"));
+			appendAttribute(nullcheck);
+			appendQuery(nullcheck.isNull ? " is null":" is not null");
 		}
 		else if(node instanceof Criterion.MatchAgainst) {
 			
@@ -363,12 +376,13 @@ public class Statement {
 		}
 		else if(node instanceof Criterion.NativeCriterion) {
 			Criterion.NativeCriterion nativeCriterion = (Criterion.NativeCriterion) node;
-			appendQuery(context.nameMapper.mapDatabase(nativeCriterion.entity, nativeCriterion.attribute));
+			appendAttribute(nativeCriterion);
 			appendQuery(nativeCriterion.criterion);
 		}
 		else if(node instanceof Criterion.InSubQuery) {
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
-			appendQuery(context.nameMapper.mapDatabase(subQuery.entity, subQuery.attribute)+(subQuery.include ? " in ":" not in "));
+			appendAttribute(subQuery);
+			appendQuery(subQuery.include ? "in " : "not in ");
 			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
 			appendQuery("("+subStatement.query()+")");
 			parameters.addAll(subStatement.parameters);
@@ -416,7 +430,7 @@ public class Statement {
 					return value.toString();
 				}
 				
-				return ((Enum) value).ordinal();
+				return ((Enum<?>) value).ordinal();
 				
 			}
 

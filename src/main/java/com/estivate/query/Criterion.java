@@ -1,6 +1,7 @@
 package com.estivate.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ public abstract class Criterion implements EstivateNode{
 	
 	public Entity<?> entity;
 	public String attribute;
+	public List<String> functions;
 	
 	public abstract Criterion clone();
 	
@@ -54,6 +56,9 @@ public abstract class Criterion implements EstivateNode{
 			this.value = value;
 		}
 
+		public Operator(Attribute attribute, OperatorType type, Object value) {
+			this(attribute.entity, attribute.attribute, type, value);
+		}
 
 		public Operator clone() { return new Operator(entity, attribute, type, value); }
 
@@ -69,6 +74,10 @@ public abstract class Criterion implements EstivateNode{
 			this.entity = entity;
 			this.attribute = attribute;
 			this.values = new ArrayList<>(values) ; 
+		}
+
+		public In(Attribute attribute, Collection<?> values) {
+			this(attribute.entity, attribute.attribute, values);
 		}
 		
 		public In clone() { return new In(entity, attribute, values.stream().collect(Collectors.toList())); }
@@ -87,6 +96,10 @@ public abstract class Criterion implements EstivateNode{
 			this.values = new ArrayList<>(values) ; 
 		}
 
+		public NotIn(Attribute attribute, Collection<?> values) {
+			this(attribute.entity, attribute.attribute, values);
+		}
+
 		public NotIn clone() { return new NotIn(entity, attribute, values.stream().collect(Collectors.toList())); }
 
 	}
@@ -103,6 +116,13 @@ public abstract class Criterion implements EstivateNode{
 			this.min = min;
 			this.max = max;
 		}
+
+		public Between(Attribute attribute, Object min, Object max) {
+			this.entity = attribute.entity;
+			this.attribute = attribute.attribute;
+			this.min = min;
+			this.max = max;
+		}
 		
 		public Between clone() { return new Between(entity, attribute, min, max); }
 	}
@@ -116,6 +136,10 @@ public abstract class Criterion implements EstivateNode{
 			this.entity = entity;
 			this.attribute = attribute;
 			this.isNull = isNull;
+		}
+
+		public NullCheck(Attribute attribute, boolean isNull) {
+			this(attribute.entity, attribute.attribute, isNull);
 		}
 
 		public NullCheck clone() { return new NullCheck(entity, attribute, isNull); }
@@ -136,6 +160,10 @@ public abstract class Criterion implements EstivateNode{
 			this.value = value;
 			this.inclusive = inclusive;
 		}
+
+		public MatchAgainst(Attribute attribute, Object value, boolean inclusive) {
+			this(attribute.entity, Arrays.asList(attribute.attribute), value, inclusive);
+		}
 		
 		public MatchAgainst clone() { return new MatchAgainst(entity, attributes, value, inclusive); } 
 		
@@ -149,6 +177,10 @@ public abstract class Criterion implements EstivateNode{
 			this.entity = entity;
 			this.attribute = attribute;
 			this.criterion = criterion;
+		}
+
+		public NativeCriterion(Attribute attribute, String criterion) {
+			this(attribute.entity, attribute.attribute, criterion);
 		}
 		
 		public NativeCriterion clone() { return new NativeCriterion(entity, attribute, criterion); } 
@@ -165,6 +197,10 @@ public abstract class Criterion implements EstivateNode{
 			this.attribute = attribute;
 			this.subQuery = subQuery;
 			this.include = include;
+		}
+
+		public InSubQuery(Attribute attribute, Query subQuery, boolean include){
+			this(attribute.entity, attribute.attribute, subQuery, include);
 		}
 
 		public InSubQuery clone() {return new InSubQuery(entity, attribute, subQuery, include);}

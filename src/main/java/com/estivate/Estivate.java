@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
+import com.estivate.query.Attribute;
 import com.estivate.query.Criterion;
 import com.estivate.query.Criterion.Between;
 import com.estivate.query.Criterion.ExistsSubQuery;
@@ -35,6 +36,133 @@ public class Estivate {
 	public static Query query(Class<?> entity) 	{ return new Query(entity); }
 	
 	
+	// Eq methods
+	public static Criterion eq   			(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.Eq, value); }
+	public static Criterion eqIfNotNull		(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return null; }
+	public static Criterion eqNullable		(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return isNull(attribute); }
+	public static Aggregator eqOrNull		(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).eq(attribute, value).isNull(attribute); }
+	public static Criterion notEq			(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.NotEq, value); }
+	public static Criterion notEqIfNotNull	(Attribute attribute, Object value) { if(value != null) {return notEq(attribute, value);} return null; }
+	public static Criterion notEqNullable	(Attribute attribute, Object value) { if(value != null) {return notEq(attribute, value);} return isNotNull(attribute); }
+	public static Aggregator notEqOrNull	(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).notEq(attribute, value).isNull(attribute); }
+	
+	// Lt 
+	public static Criterion lt   	(Attribute attribute, Object value)        		{ return new Operator(attribute, OperatorType.Lt, value); }
+	public static Criterion ltIfNotNull   	(Attribute attribute, Object value) { if(value != null) {return lt(attribute, value);} return null; }
+	public static Aggregator ltOrNull(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).lt(attribute, value).isNull(attribute); }
+	
+	// Lte
+	public static Criterion lte  	(Attribute attribute, Object value)        		{ return new Operator(attribute, OperatorType.Lte, value); }
+	public static Criterion lteIfNotNull  	(Attribute attribute, Object value) { if(value != null) {return lte(attribute, value);} return null; }
+	public static Aggregator lteOrNull(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).lte(attribute, value).isNull(attribute); }
+	
+	
+	// Gt 
+	public static Criterion gt   	(Attribute attribute, Object value)        		{ return new Operator(attribute, OperatorType.Gt, value); }
+	public static Criterion gtIfNotNull   	(Attribute attribute, Object value) { if(value != null) {return gt(attribute, value);} return null; }
+	public static Aggregator gtOrNull(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).gt(attribute, value).isNull(attribute); }
+	
+	// Gte
+	public static Criterion gte  	(Attribute attribute, Object value)        		{ return new Operator(attribute, OperatorType.Gte, value); }
+	public static Criterion gteIfNotNull  	(Attribute attribute, Object value) { if(value != null) {return gte(attribute, value);} return null; }
+	public static Aggregator gteOrNull(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).gte(attribute, value).isNull(attribute); }
+	
+	
+	// Between
+	public static Criterion between (Attribute attribute, Object min, Object max) 	{ return new Between(attribute, min, max); }
+	public static Criterion betweenIfNotNull(Attribute attribute, Object min, Object max) {if(min != null && max != null) { return between(attribute, min, max);} return null; }
+	public static Aggregator betweenOrNull(Attribute attribute, Object min, Object max) { return new Aggregator(GroupType.OR).between(attribute, min, max).isNull(attribute); }
+	
+	// In
+	public static Criterion in   					(Attribute attribute, Collection<?> values){ return new In(attribute, values); }
+	public static Criterion inIfNotEmpty			(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(attribute, values);} return null; }
+	public static Aggregator inIfNotEmptyNullable	(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return Estivate.or(inIfNotEmpty(attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(attribute)); } return null; }
+	public static EstivateNode inOrFalseIfEmpty		(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(attribute, values);} return keywordFalse(); }
+	
+	public static Criterion notIn   				(Attribute attribute, Collection<?> values){ return new NotIn(attribute, values); }
+	public static Criterion notInIfNotEmpty			(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(attribute, values);} return null; }
+	public static EstivateNode notInOrTrueIfEmpty	(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(attribute, values);} return keywordTrue(); }
+
+	// Like
+	public static Criterion like 			(Attribute attribute, String value) { return new Operator(attribute, OperatorType.Like, value); }
+	public static Criterion notLike			(Attribute attribute, String value) { return new Operator(attribute, OperatorType.NotLike, value); }
+	public static Criterion likeIfNotNull 	(Attribute attribute, String value) { if(value != null) {return like(attribute, value);} return null;  }
+	public static Criterion notLikeIfNotNull(Attribute attribute, String value) { if(value != null) {return notLike(attribute, value);} return null;  }
+	
+	// Match Against
+	public static Criterion matchAgainst			(Attribute attribute, String value) { return new MatchAgainst(attribute, value, true); }
+	public static Criterion notMatchAgainst 		(Attribute attribute, String value) { return new MatchAgainst(attribute, value, false); }
+	public static Criterion matchAgainstIfNotNull 	(Attribute attribute, String value) { if(value != null) {return new MatchAgainst(attribute, value, true);} return null;  }
+	public static Criterion notMatchAgainstIfNotNull(Attribute attribute, String value) { if(value != null) {return new MatchAgainst(attribute, value, false);} return null;  }
+	
+	// Like In
+	public static Aggregator likeIn 			(Attribute attribute, Collection<String> values) { return or(values.stream().map(x -> like(attribute, x)).collect(Collectors.toList())); }
+	public static Aggregator likeInIfNotEmpty	(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> like(attribute, x)).collect(Collectors.toList()));} return null; }
+	public static Aggregator notLikeIn			(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLike(attribute, x)).collect(Collectors.toList()));  		}
+	public static Aggregator notLikeInIfNotEmpty(Attribute attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notLike(attribute, x)).collect(Collectors.toList()));} return null; }
+
+	// Match Against In
+	public static Aggregator matchAgainstIn 			(Attribute attribute, Collection<String> values)	{ return matchAgainstIn(attribute, values); }
+	public static Aggregator matchAgainstInIfNotEmpty	(Attribute attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(attribute, values); } 
+	public static Aggregator notMatchAgainstIn			(Attribute attribute, Collection<String> values)	{ return notMatchAgainstIn(attribute, values); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Attribute attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(attribute, values); }
+
+	// Like starts
+	public static Criterion likeStartsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.Like, value+"%");	}
+	public static Criterion notLikeStartsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, value+"%");}
+	public static Criterion likeStartsWithIfNotNull (Attribute attribute, String value) 	{ if(value != null) {return likeStartsWith(attribute, value);} return null; }
+	public static Criterion notLikeStartsWithIfNotNull(Attribute attribute, String value){ if(value != null) {return notLikeStartsWith(attribute, value);} return null; }
+	
+	// Like starts in
+	public static Aggregator likeStartsWithIn(Attribute attribute, Collection<String> values)	{ return or(values.stream().map(x -> likeStartsWith(attribute, x)).collect(Collectors.toList()));	}
+	public static Aggregator likeStartsWithInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeStartsWith(attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator notLikeStartsWithIn(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeStartsWith(attribute, x)).collect(Collectors.toList()));}
+	
+	
+	// Like ends
+	public static Criterion likeEndsWith(Attribute attribute, String value)			{ return new Operator(attribute, OperatorType.Like, "%"+value);		}
+	public static Criterion notLikeEndsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, "%"+value);	}
+	public static Criterion likeEndsWithIfNotNull 	(Attribute attribute, String value) { if(value != null) {return likeEndsWith(attribute, value);} return null; }
+	public static Criterion notLikeEndsWithIfNotNull(Attribute attribute, String value) { if(value != null) {return notLikeEndsWith(attribute, value);} return null; }
+	
+	// Like ends in
+	public static Aggregator likeEndsWithIn(Attribute attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeEndsWith(attribute, x)).collect(Collectors.toList()));	}
+	public static Aggregator likeEndsWithInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeEndsWith(attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator notLikeEndsWithIn(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeEndsWith(attribute, x)).collect(Collectors.toList()));	}
+	
+	// Like contains
+	public static Criterion likeContains(Attribute attribute, String value)			{ return new Operator(attribute, OperatorType.Like, "%"+value+"%");	}
+	public static Criterion notLikeContains(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, "%"+value+"%");	}
+	public static Criterion likeContainsIfNotNull 	(Attribute attribute, String value) { if(value != null) {return likeContains(attribute, value);} return null; }
+	public static Criterion notLikeContainsIfNotNull(Attribute attribute, String value) { if(value != null) {return notLikeContains(attribute, value);} return null; }
+
+
+	// Like contains in
+	public static Aggregator likeContainsIn(Attribute attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeContains(attribute, x)).collect(Collectors.toList()));	}
+	public static Aggregator likeContainsInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeContains(attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator notLikeContainsIn(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeContains(attribute, x)).collect(Collectors.toList()));	}
+
+	// isNull
+	public static Criterion isNull		(Attribute attribute) 						{ return new NullCheck(attribute, true);}
+	public static Criterion isNotNull	(Attribute attribute) 						{ return new NullCheck(attribute, false);}
+	
+	// natively
+	public static Criterion nativeCriterion (Attribute attribute, String criterion) { return new NativeCriterion(attribute, criterion); }
+	
+	// subQuery
+	public static Criterion inSubQuery(Attribute attribute, Query subQuery)	  	{ return new InSubQuery(attribute, subQuery, true); }
+	public static Criterion notInSubQuery(Attribute attribute, Query subQuery)	{ return new InSubQuery(attribute, subQuery, false); }
+	
+	// exists
+	public static Criterion existsSubQuery(Query subQuery)		{ return new ExistsSubQuery(subQuery, true); }
+	public static Criterion notExistsSubQuery(Query subQuery)	{ return new ExistsSubQuery(subQuery, false); }
+	
+
+	public static Keyword keywordTrue() { return new Keyword(KeywordValue.TRUE); }
+	public static Keyword keywordFalse() { return new Keyword(KeywordValue.FALSE); }
+
+
+	/* Wrapper for Entity */
 	
 	// Eq methods
 	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return new Operator(entity, attribute, OperatorType.Eq, value); }
@@ -161,14 +289,9 @@ public class Estivate {
 	public static Criterion inSubQuery(Entity<?> entity, String attribute, Query subQuery)	  	{ return new InSubQuery(entity, attribute, subQuery, true); }
 	public static Criterion notInSubQuery(Entity<?> entity, String attribute, Query subQuery)	{ return new InSubQuery(entity, attribute, subQuery, false); }
 	
-	// exists
-	public static Criterion existsSubQuery(Query subQuery)		{ return new ExistsSubQuery(subQuery, true); }
-	public static Criterion notExistsSubQuery(Query subQuery)	{ return new ExistsSubQuery(subQuery, false); }
+	
 	
 
-	public static Keyword keywordTrue() { return new Keyword(KeywordValue.TRUE); }
-	public static Keyword keywordFalse() { return new Keyword(KeywordValue.FALSE); }
-	
 	
 	/* Wrappers for Class */
 	
