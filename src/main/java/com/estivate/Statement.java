@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
+import com.estivate.query.Attribute;
 import com.estivate.query.Criterion;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
@@ -72,14 +73,12 @@ public class Statement {
 
 	public Statement appendAttribute(Criterion criterion){
 		// TODO : nest functions
-		StringBuilder sb = new StringBuilder();
-		sb.append(context.nameMapper.mapDatabase(criterion.entity, criterion.attribute));
-		for(String function : criterion.functions){
-			sb.insert(0, "(");
-			sb.insert(0, function);
-			sb.append(")");
+		
+		String attribute = context.nameMapper.mapDatabase(criterion.entity, criterion.attribute);
+		for(Attribute.Function function : criterion.functions){
+			attribute = function.render(attribute);
 		}
-		appendQuery(sb.toString());
+		appendQuery(attribute);
 		return this;
 	}
 	

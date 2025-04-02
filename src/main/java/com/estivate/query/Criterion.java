@@ -18,7 +18,7 @@ public abstract class Criterion implements EstivateNode{
 	
 	public Entity<?> entity;
 	public String attribute;
-	public List<String> functions;
+	public List<Attribute.Function> functions;
 	
 	public abstract Criterion clone();
 	

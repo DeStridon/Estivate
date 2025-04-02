@@ -16,5 +16,14 @@ import lombok.AllArgsConstructor;
 public class Attribute {
     public Entity<?> entity;
 	public String attribute;
-	public List<String> functions;
+	public List<Function> functions;
+
+	public static class Function {
+		String before;
+		String after;
+
+		public String render(String attribute){
+			return before + attribute + after;
+		}
+	}
 }
