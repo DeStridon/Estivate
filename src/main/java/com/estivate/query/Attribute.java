@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.estivate.query.Query.Entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @Builder
@@ -18,6 +18,9 @@ public class Attribute {
 	public String attribute;
 	public List<Function> functions;
 
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class Function {
 		String before;
 		String after;

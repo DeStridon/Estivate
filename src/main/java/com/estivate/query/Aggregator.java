@@ -128,9 +128,11 @@ public class Aggregator implements EstivateNode {
 
 
 	public Aggregator inSubQuery		(Attribute attribute, Query subQuery)	{ add(Estivate.inSubQuery(attribute, subQuery)); return this; }
-	public Aggregator existsSubQuery	(Query subQuery)										{ add(Estivate.existsSubQuery(subQuery)); return this; }
-	public Aggregator notInSubQuery		(Attribute attribute, Query subQuery)	{ add(Estivate.inSubQuery(attribute, subQuery)); return this; }
-	public Aggregator notExistsSubQuery	(Query subQuery)										{ add(Estivate.existsSubQuery(subQuery)); return this; }
+	public Aggregator notInSubQuery		(Attribute attribute, Query subQuery)	{ add(Estivate.notInSubQuery(attribute, subQuery)); return this; }
+	
+	
+	public Aggregator existsSubQuery	(Query subQuery)						{ add(Estivate.existsSubQuery(subQuery)); return this; }
+	public Aggregator notExistsSubQuery	(Query subQuery)						{ add(Estivate.notExistsSubQuery(subQuery)); return this; }
 	
 	/* Wrapper for Entity */
 		
@@ -241,7 +243,7 @@ public class Aggregator implements EstivateNode {
 
 
 	public Aggregator inSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.inSubQuery(entity, attribute, subQuery)); return this; }
-	public Aggregator notInSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.inSubQuery(entity, attribute, subQuery)); return this; }
+	public Aggregator notInSubQuery		(Entity<?> entity, String attribute, Query subQuery)	{ add(Estivate.notInSubQuery(entity, attribute, subQuery)); return this; }
 	
 	
 	/* Wrappers for Class */
