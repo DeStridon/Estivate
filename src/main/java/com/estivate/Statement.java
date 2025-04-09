@@ -236,6 +236,12 @@ public class Statement {
 		if(!query.getGroupBys().isEmpty()) {
 			statement.appendQuery(query.getGroupBys().stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}
+
+		// Append having (if any)
+		if(query.getHaving() != null) {
+			statement.appendQuery("HAVING");
+			statement.appendNodeToStatement(query.getHaving(), true);
+		}
 		
 		// Append order
 		if(!query.getOrders().isEmpty()) {
@@ -271,7 +277,7 @@ public class Statement {
 	}
 	
 	public String orderString(Order order) {
-		return context.nameMapper.mapDatabase(order.entity, order.attribute) + (StringUtils.isBlank(order.option) ? "" : " " + order.option) + (order.asc ? " ASC" : " DESC");
+		return context.nameMapper.mapDatabase(order.entity, order.attribute) + (StringUtils.isBlank(order.option) ? "" : " " + order.option) + (order.direction.toString().toUpperCase());
 	}
 	
 	public String groupString(Group group) {

@@ -454,6 +454,9 @@ public class Query extends Aggregator{
 	
 	@Getter
 	List<Group> groupBys = new ArrayList<>();
+
+	@Getter
+	EstivateNode having;
 	
 	@Getter
 	Integer offset;
@@ -531,15 +534,20 @@ public class Query extends Aggregator{
 	public Query joinRight(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinRight(new Query.Entity<>(joinerEntity), new Query.Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
 
 
-
-	public Query orderAsc(Entity<?> c, String attribute) 				{ orders.add(new Order(c, attribute, "", true)); return this; }
-	public Query orderAsc(Entity<?> c, String attribute, String option) { orders.add(new Order(c, attribute, option, true)); return this; }
-	public Query orderAsc(Class<?> c, String attribute) 				{ return orderAsc(new Entity<>(c), attribute); }
-	public Query orderAsc(Class<?> c, String attribute, String option) 	{ return orderAsc(new Entity<>(c), attribute, option); }
-	public Query orderDesc(Entity<?> c, String attribute) 				{ orders.add(new Order(c, attribute, "", false)); return this; }
-	public Query orderDesc(Entity<?> c, String attribute, String option){ orders.add(new Order(c, attribute, option, false)); return this; }
-	public Query orderDesc(Class<?> c, String attribute) 				{ return orderDesc(new Entity<>(c), attribute); }
-	public Query orderDesc(Class<?> c, String attribute, String option) { return orderDesc(new Entity<>(c), attribute, option); }
+	public Query order(Order order) { orders.add(order); return this; }
+	public Query order(Entity<?> entity, String attribute, Order.Direction direction) { orders.add(new Order(entity, attribute, direction, "")); return this; }
+	public Query order(Entity<?> entity, String attribute, Order.Direction direction, String option) { orders.add(new Order(entity, attribute, direction, option)); return this; }
+	public Query order(Class<?> entity, String attribute, Order.Direction direction) { orders.add(new Order(new Entity<>(entity), attribute, direction, "")); return this; }
+	public Query order(Class<?> entity, String attribute, Order.Direction direction, String option) { orders.add(new Order(new Entity<>(entity), attribute, direction, option)); return this; }
+	
+	public Query orderAsc(Entity<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Asc); }
+	public Query orderAsc(Entity<?> c, String attribute, String option) { return order(c, attribute, Order.Direction.Asc, option); }
+	public Query orderAsc(Class<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Asc); }
+	public Query orderAsc(Class<?> c, String attribute, String option) 	{ return order(c, attribute, Order.Direction.Asc, option); }
+	public Query orderDesc(Entity<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Desc); }
+	public Query orderDesc(Entity<?> c, String attribute, String option){ return order(c, attribute, Order.Direction.Desc, option); }
+	public Query orderDesc(Class<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Desc); }
+	public Query orderDesc(Class<?> c, String attribute, String option) { return order(c, attribute, Order.Direction.Desc, option); }
 	
 	public Query limit(Integer limit) 		{ this.limit = limit; return this; }
 	public Query offset(Integer offset) 	{ this.offset = offset; return this;}
@@ -549,8 +557,13 @@ public class Query extends Aggregator{
 	public static class Order{
 		public Entity<?> entity;
 		public String attribute;
+		public Direction direction;
 		public String option;
-		public Boolean asc;
+
+		public enum Direction{
+			Asc,
+			Desc
+		}
 	}
 	
 	@AllArgsConstructor
@@ -558,6 +571,8 @@ public class Query extends Aggregator{
 		public Entity<?> entity;
 		public String attribute;
 	}
+	
+	
 	
 
 	
@@ -656,7 +671,9 @@ public class Query extends Aggregator{
 	public Query selectGroupConcat(Entity<?> c, String attribute) 				{ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).build()); return this; }
 	public Query selectGroupConcatAs(Class<?> c, String attribute, String alias) { selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(new Entity<>(c)).attribute(attribute).alias(alias).build()); return this; }
 	public Query selectGroupConcatAs(Entity<?> c, String attribute, String alias){ selects.add(Select.builder().method(SelectMethod.GroupConcat).entity(c).attribute(attribute).alias(alias).build()); return this; }
-	
+
+	// Having
+	public Query having(EstivateNode node) { this.having = node; return this; }
 	
 	public Query clone() {
 		Query queryClone = new Query(entity);
@@ -697,6 +714,8 @@ public class Query extends Aggregator{
 		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
+
+	
 	
 
 	@EqualsAndHashCode

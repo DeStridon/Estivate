@@ -163,6 +163,7 @@ You can execute your query in the context, enabling you to get your results
 ### 3. Empower entities
 
 #### 3.1. VirtualForeignKey
+You can use this annotation to explicit link between entities you have in your model.
 
 #### 3.2. CachedEntity
 
@@ -178,7 +179,7 @@ Following legacy annotations are handled by Estivate
 - PostUpdate 
 
 
-### 5. Advanced
+### 4. Advanced
 #### 4.1. NameMapper
 
 ### 5. License
