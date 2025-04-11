@@ -52,7 +52,7 @@ public class IndexTest {
 		IndexDiff id = new IndexDiff(context, ParentEntity.class);
 		
 		List<TableIndex> indexes = id.getEntityIndexes();
-		Assert.assertEquals(2, indexes.size());
+		Assert.assertEquals(3, indexes.size());
 		
 		id.applySpecific(indexes.get(0));
 		

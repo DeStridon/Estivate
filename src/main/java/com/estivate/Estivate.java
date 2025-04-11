@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.Attribute;
+import com.estivate.query.Attribute.Function;
 import com.estivate.query.Criterion;
 import com.estivate.query.Criterion.Between;
 import com.estivate.query.Criterion.ExistsSubQuery;
@@ -35,8 +36,8 @@ public class Estivate {
 	public static Query query(Entity<?> entity) { return new Query(entity); }	
 	public static Query query(Class<?> entity) 	{ return new Query(entity); }
 	
-	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function... functions) { return new Attribute(entity, field, Arrays.asList(functions)); }
-	public static Attribute attribute(Class<?> entity, String field, Attribute.Function... functions) { return attribute(new Entity<>(entity), field, functions); }
+	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function function) { return new Attribute(entity, field, function); }
+	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function) { return attribute(new Entity<>(entity), field, function); }
 
 	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}
 	public static Aggregator or(List<EstivateNode> criterions) { return new Aggregator(GroupType.OR, criterions); }
@@ -46,12 +47,13 @@ public class Estivate {
 	public static Attribute.Function function(String before, String after) { return new Attribute.Function(before, after); }
 	
 
-	public static Order order(Entity<?> entity, String attribute){ return new Order(entity, attribute, null, ""); }
-	public static Order order(Entity<?> entity, String attribute, Order.Direction direction){ return new Order(entity, attribute, direction, ""); }
-	public static Order order(Entity<?> entity, String attribute, Order.Direction direction, String option){ return new Order(entity, attribute, direction, option); }
-	public static Order order(Class<?> entity, String attribute){ return new Order(new Entity<>(entity), attribute, null, ""); }
-	public static Order order(Class<?> entity, String attribute, Order.Direction direction){ return new Order(new Entity<>(entity), attribute, direction, ""); }
-	public static Order order(Class<?> entity, String attribute, Order.Direction direction, String option){ return new Order(new Entity<>(entity), attribute, direction, option); }
+	public static Order order(Entity<?> entity, String attribute, Order.Direction direction, Function function){  return Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build(); }
+
+	public static Order order(Entity<?> entity, String attribute){ return order(entity, attribute, null, null); }
+	public static Order order(Entity<?> entity, String attribute, Order.Direction direction){ return order(entity, attribute, direction, null); }
+	public static Order order(Class<?> entity, String attribute){ return order(new Entity<>(entity), attribute, null, null); }
+	public static Order order(Class<?> entity, String attribute, Order.Direction direction){ return order(new Entity<>(entity), attribute, direction, null); }
+	public static Order order(Class<?> entity, String attribute, Order.Direction direction, Function function){ return order(new Entity<>(entity), attribute, direction, function); }
 
 
 	/*
@@ -469,48 +471,59 @@ public class Estivate {
 	 
 	 public static class Functions{
 		 
-
+		/* Keyword / Modifiers */
+		public static Attribute.Function distinct = new Attribute.Function("distinct ", "");
+		
 		/* Math Functions */
-		public static Attribute.Function abs(){ return new Attribute.Function("abs(", ")"); }
-		public static Attribute.Function round(){ return new Attribute.Function("round(", ")"); }
-		public static Attribute.Function ceil(){ return new Attribute.Function("ceil(", ")"); }
-		public static Attribute.Function floor(){ return new Attribute.Function("floor(", ")"); }
+		public static Attribute.Function abs = new Attribute.Function("abs(", ")");
+		public static Attribute.Function round = new Attribute.Function("round(", ")");
+		public static Attribute.Function ceil = new Attribute.Function("ceil(", ")");
+		public static Attribute.Function floor = new Attribute.Function("floor(", ")");
 		public static Attribute.Function mod(int mod) {return new Attribute.Function("mod(", mod+")"); }
-		public static Attribute.Function pow(){ return new Attribute.Function("pow(", ")"); }
-		public static Attribute.Function sqrt(){ return new Attribute.Function("sqrt(", ")"); }
-		public static Attribute.Function log(){ return new Attribute.Function("log(", ")"); }
-		public static Attribute.Function exp(){ return new Attribute.Function("exp(", ")"); }
-		public static Attribute.Function sin(){ return new Attribute.Function("sin(", ")"); }
-		public static Attribute.Function cos(){ return new Attribute.Function("cos(", ")"); }
-		public static Attribute.Function tan(){ return new Attribute.Function("tan(", ")"); }
+		public static Attribute.Function pow = new Attribute.Function("pow(", ")"); 
+		public static Attribute.Function sqrt = new Attribute.Function("sqrt(", ")");
+		public static Attribute.Function log = new Attribute.Function("log(", ")");
+		public static Attribute.Function exp = new Attribute.Function("exp(", ")"); 
+		public static Attribute.Function sin = new Attribute.Function("sin(", ")"); 
+		public static Attribute.Function cos = new Attribute.Function("cos(", ")"); 
+		public static Attribute.Function tan = new Attribute.Function("tan(", ")"); 
 		
 		/* Date Functions */
-		public static Attribute.Function date(){ return new Attribute.Function("date(", ")"); }
-		public static Attribute.Function time(){ return new Attribute.Function("time(", ")"); }
-		public static Attribute.Function timestamp(){ return new Attribute.Function("timestamp(", ")"); }
-		public static Attribute.Function now(){ return new Attribute.Function("now(", ")"); }
-		public static Attribute.Function month() { return new Attribute.Function("month(", ")"); }
-		public static Attribute.Function year() { return new Attribute.Function("year(", ")"); }
+		public static Attribute.Function date = new Attribute.Function("date(", ")"); 
+		public static Attribute.Function time = new Attribute.Function("time(", ")"); 
+		public static Attribute.Function timestamp = new Attribute.Function("timestamp(", ")");
+		public static Attribute.Function now = new Attribute.Function("now(", ")"); 
+		public static Attribute.Function month = new Attribute.Function("month(", ")");
+		public static Attribute.Function year = new Attribute.Function("year(", ")");
 
 		/* String Functions */
-		 public static Attribute.Function lower(){ 	return new Attribute.Function("lower(", ")"); }
-		 public static Attribute.Function upper(){ 	return new Attribute.Function("upper(", ")"); }
-		 public static Attribute.Function length(){ return new Attribute.Function("length(", ")"); }
-		 public static Attribute.Function trim(){ 	return new Attribute.Function("trim(", ")"); }
+		public static Attribute.Function lower = new Attribute.Function("lower(", ")"); 
+		public static Attribute.Function upper = new Attribute.Function("upper(", ")"); 
+		public static Attribute.Function length = new Attribute.Function("length(", ")"); 
+		public static Attribute.Function trim = new Attribute.Function("trim(", ")");
+		public static Attribute.Function charLength = new Attribute.Function("char_length(", ")");
 
 		/* Aggregate Functions : cannot be used in where clause */
-		 public static Attribute.Function count(){ return new Attribute.Function("count(", ")"); }
-		 public static Attribute.Function countDistinct(){ return new Attribute.Function("count(distinct ", ")"); }
-		 public static Attribute.Function sum(){ return new Attribute.Function("sum(", ")"); }
-		 public static Attribute.Function avg(){ return new Attribute.Function("avg(", ")"); }
-		 public static Attribute.Function min(){ return new Attribute.Function("min(", ")"); }
-		 public static Attribute.Function max(){ return new Attribute.Function("max(", ")"); }
-		 public static Attribute.Function groupConcat(){ return new Attribute.Function("group_concat(", ")"); }
+		public static Attribute.Function count = new Attribute.Function("count(", ")");
+		public static Attribute.Function countDistinct = new Attribute.Function("count(distinct ", ")");
+		public static Attribute.Function sum = new Attribute.Function("sum(", ")");
+		public static Attribute.Function sumDistinct = new Attribute.Function("sum(distinct ", ")");
+		public static Attribute.Function avg = new Attribute.Function("avg(", ")");
+		public static Attribute.Function avgDistinct = new Attribute.Function("avg(distinct ", ")");
+		public static Attribute.Function min = new Attribute.Function("min(", ")");
+		public static Attribute.Function max = new Attribute.Function("max(", ")");
+		public static Attribute.Function groupConcat = new Attribute.Function("group_concat(", ")");
+		public static Attribute.Function groupConcatDistinct = new Attribute.Function("group_concat(distinct ", ")");
+
+		/* Null Handling Functions */
+		public static Attribute.Function isNull = new Attribute.Function("", " IS NULL");
+		public static Attribute.Function isNotNull = new Attribute.Function("", " IS NOT NULL");
+		public static Attribute.Function ifNull(String alternative) { return new Attribute.Function("ifnull(", ", "+alternative+")"); }
 
 		/* JSON Functions */
 		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
 
 		 
-	 }
+	}
 	 
 }

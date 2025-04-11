@@ -7,29 +7,16 @@ import com.estivate.query.Query.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 
-@Builder
+
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Select implements Comparable {
-	public SelectMethod method;
-	public Entity<?> entity;
-	public String attribute;
+public class Select extends Attribute implements Comparable {
+	
 	public String alias;
-	
-	
-	public enum SelectMethod{
-		Count,
-		CountDistinct,
-		Max,
-		Min,
-		Sum,
-		Distinct,
-		GroupConcat, 
-		DistinctGroupConcat
-	}
-
 
 	@Override
 	public int compareTo(Object o) {
@@ -38,10 +25,10 @@ public class Select implements Comparable {
 		}
 		Select select = (Select) o;
 		
-		if(this.method != null && select.method == null) {
+		if(this.function != null && select.function == null) {
 			return -1;
 		}
-		else if(this.method == null && select.method != null) {
+		else if(this.function == null && select.function != null) {
 			return 1;
 		}
 		return StringUtils.compare(this.toString(), select.toString());

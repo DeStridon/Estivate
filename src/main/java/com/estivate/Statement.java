@@ -32,7 +32,6 @@ import com.estivate.query.Query;
 import com.estivate.query.Query.Group;
 import com.estivate.query.Query.Order;
 import com.estivate.query.Select;
-import com.estivate.query.Select.SelectMethod;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StackLog;
 
@@ -277,41 +276,36 @@ public class Statement {
 	}
 	
 	public String orderString(Order order) {
-		return context.nameMapper.mapDatabase(order.entity, order.attribute) + (StringUtils.isBlank(order.option) ? "" : " " + order.option) + (order.direction.toString().toUpperCase());
+
+		StringBuilder sb = new StringBuilder();
+	
+		if(order.function != null) {
+			sb.append(order.function.render(context.nameMapper.mapDatabase(order.entity, order.attribute)));
+		}
+		else {
+			sb.append(context.nameMapper.mapDatabase(order.entity, order.attribute));
+		}
+		sb.append(order.direction != null ? " " + order.direction.toString().toUpperCase() : "");
+	
+		return sb.toString();
+		
 	}
+		
 	
 	public String groupString(Group group) {
 		return context.nameMapper.mapDatabase(group.entity, group.attribute);
 	}
 	
 	public String selectString(Select select) {
-		if(select.method == SelectMethod.Distinct) {
-			return "DISTINCT "+context.nameMapper.mapDatabase(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
+
+		if(select.function == Estivate.Functions.count && select.entity == null) {
+			return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
-		else if(select.method == SelectMethod.Count) {
-			if (select.entity == null) {
-				return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
-			}
-			return "COUNT("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
+		else if (select.function != null) {
+			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
-		else if(select.method == SelectMethod.CountDistinct) {
-			return "COUNT(DISTINCT "+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
-		}
-		else if(select.method == SelectMethod.Max) {
-			return "MAX("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
-		}
-		else if(select.method == SelectMethod.Min) {
-			return "MIN("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
-		}
-		else if(select.method == SelectMethod.Sum) {
-			return "SUM("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
-		}
-		else if(select.method == SelectMethod.GroupConcat) {
-			return "GROUP_CONCAT("+context.nameMapper.mapDatabase(select.entity, select.attribute)+")"+(select.alias != null ? " as `"+select.alias+"`" : "");
-		}
-		
+
 		return context.nameMapper.mapDatabase(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
-		
 	
 	}
 	

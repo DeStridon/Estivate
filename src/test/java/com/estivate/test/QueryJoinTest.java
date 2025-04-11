@@ -92,23 +92,23 @@ public class QueryJoinTest {
 	public void nameMappingTest() throws SQLException {
 		
 		
-		Entity<ChildEntity> sourceSegment = new Entity<>(ChildEntity.class, "sourceSegment");
-		Entity<ChildEntity> targetSegment = new Entity<>(ChildEntity.class, "targetSegment");
+		Entity<ChildEntity> firstChild = new Entity<>(ChildEntity.class, "firstChild");
+		Entity<ChildEntity> secondChild = new Entity<>(ChildEntity.class, "secondChild");
 		
 		
 		Query query = new Query(ParentEntity.class)
-			.select(sourceSegment, AbstractEntity.Fields.id)
-			.select(targetSegment, AbstractEntity.Fields.id)
-			.joinInner(ParentEntity.class, sourceSegment, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
-			.joinInner(sourceSegment, targetSegment, ChildEntity.Fields.description, ChildEntity.Fields.description)
+			.select(firstChild, AbstractEntity.Fields.id)
+			.select(secondChild, AbstractEntity.Fields.id)
+			.joinInner(ParentEntity.class, firstChild, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
+			.joinInner(firstChild, secondChild, ChildEntity.Fields.description, ChildEntity.Fields.description)
 			.eq(ParentEntity.class, AbstractEntity.Fields.id, 35)
-			.notEq(sourceSegment, AbstractEntity.Fields.id, new PropertyValue(targetSegment, AbstractEntity.Fields.id));
+			.notEq(firstChild, AbstractEntity.Fields.id, new PropertyValue(secondChild, AbstractEntity.Fields.id));
 		
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);
 		
-		assertTrue(queryString.contains("INNER JOIN SEGMENTENTITY_D sourceSegment"));
-		assertTrue(queryString.contains("sourceSegment.SOURCELANGUAGE_D = ?"));
+		assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D firstChild"));
+		assertTrue(queryString.contains("firstChild.ID_D != secondChild.ID_D"));
 		
 		
 	}
