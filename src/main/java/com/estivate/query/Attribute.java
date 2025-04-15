@@ -29,5 +29,11 @@ public class Attribute {
 		public String render(String attribute){
 			return before + attribute + after;
 		}
+
+		public boolean equals(Function function){
+			if(function == null) return false;
+			boolean result = before.equals(function.before) && after.equals(function.after);
+			return result;
+		}
 	}
 }

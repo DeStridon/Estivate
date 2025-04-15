@@ -542,20 +542,26 @@ public class Query extends Aggregator{
 		return this; 
 	}
 	public Query order(Class<?> entity, String attribute, Order.Direction direction, Function function) { return order(new Entity<>(entity), attribute, direction, function); }
+	public Query order(String attribute, Order.Direction direction, Function function) { return order(this.entity, attribute, direction, function); }
 	public Query order(Entity<?> entity, String attribute, Order.Direction direction) { return order(entity, attribute, direction, null); }
 	public Query order(Class<?> entity, String attribute, Order.Direction direction) { return order(new Entity<>(entity), attribute, direction, null); }
+	public Query order(String attribute, Order.Direction direction) { return order(this.entity, attribute, direction, null); }
 	public Query order(Attribute attribute, Order.Direction direction) { return order(attribute.entity, attribute.attribute, direction, attribute.function); }
 
 	public Query orderAsc(Entity<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Asc); }
 	public Query orderAsc(Entity<?> c, String attribute, Function function) { return order(c, attribute, Order.Direction.Asc, function); }
 	public Query orderAsc(Class<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Asc); }
 	public Query orderAsc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
+	public Query orderAsc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Asc); }
+	public Query orderAsc(String attribute, Function function) { return order(this.entity, attribute, Order.Direction.Asc, function); }
 	public Query orderAsc(Attribute attribute) { return order(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
 	
 	public Query orderDesc(Entity<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Desc); }
 	public Query orderDesc(Entity<?> c, String attribute, Function function){ return order(c, attribute, Order.Direction.Desc, function); }
 	public Query orderDesc(Class<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Desc); }
 	public Query orderDesc(Class<?> c, String attribute, Function function) { return order(c, attribute, Order.Direction.Desc, function); }
+	public Query orderDesc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Desc); }
+	public Query orderDesc(String attribute, Function function) { return order(this.entity, attribute, Order.Direction.Desc, function); }
 	public Query orderDesc(Attribute attribute) { return order(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
 	
 	public Query limit(Integer limit) 		{ this.limit = limit; return this; }
@@ -583,7 +589,7 @@ public class Query extends Aggregator{
 	}
 	
 	
-	public Query selectFunctionAs(Entity<?> c, String attribute, String alias, Attribute.Function function) {
+	public Query selectFunctionAs(Entity<?> c, String attribute, Attribute.Function function, String alias) {
 		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
 		if(select != null) {
 			selects.remove(select);
@@ -593,16 +599,16 @@ public class Query extends Aggregator{
 		return this;
 	}
 
-	public Query selectFunctionAs(Class<?> c, String attribute, String alias, Attribute.Function function) { return selectFunctionAs(new Entity<>(c), attribute, alias, function); }
+	public Query selectFunctionAs(Class<?> c, String attribute, Attribute.Function function, String alias) { return selectFunctionAs(new Entity<>(c), attribute, function, alias); }
 
 	/* Wrappers */
 	public Query select(Class<?> c, String attribute) { return selectFunctionAs(new Entity<>(c), attribute, null, null); }
 	public Query select(Entity<?> c, String attribute) { return selectFunctionAs(c, attribute, null, null); }
-	public Query selectAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, alias, null); }
-	public Query selectAs(Entity<?> c, String attribute, String alias) { return selectFunctionAs(c, attribute, alias, null); }	
-	public Query selectFunction(Class<?> c, String attribute, Attribute.Function function) { return selectFunctionAs(new Entity<>(c), attribute, null, function); }
-	public Query selectFunction(Entity<?> c, String attribute, Attribute.Function function) { return selectFunctionAs(c, attribute, null, function); }
-	public Query selectAttribute(Attribute attribute) { return selectFunctionAs(attribute.entity, attribute.attribute, null, attribute.function); }
+	public Query selectAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, null, alias); }
+	public Query selectAs(Entity<?> c, String attribute, String alias) { return selectFunctionAs(c, attribute, null, alias); }	
+	public Query selectFunction(Class<?> c, String attribute, Attribute.Function function) { return selectFunctionAs(new Entity<>(c), attribute, function, null); }
+	public Query selectFunction(Entity<?> c, String attribute, Attribute.Function function) { return selectFunctionAs(c, attribute, function, null); }
+	public Query selectAttribute(Attribute attribute) { return selectFunctionAs(attribute.entity, attribute.attribute, attribute.function, null); }
 	
 	public Query selectAll(Class<?> entity, String...fields) { return selectAll(new Entity<>(entity), fields); }	
 	public Query selectAll(Entity<?> c, String... fields) {
@@ -623,47 +629,65 @@ public class Query extends Aggregator{
 	}
 
 	
-	public Query selectDistinct(Class<?> c, String attribute) { return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.distinct); }
-	public Query selectDistinct(Entity<?> c, String attribute) { return selectFunctionAs(c, attribute, null, Estivate.Functions.distinct); }
-	public Query selectDistinctAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.distinct); }
-	public Query selectDistinctAs(Entity<?> c, String attribute, String alias) { return selectFunctionAs(c, attribute, alias, Estivate.Functions.distinct); }
-	
+	public Query selectDistinct(Class<?> c, String attribute) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.distinct, null); }
+	public Query selectDistinct(Entity<?> c, String attribute) { return selectFunctionAs(c, attribute, Estivate.Functions.distinct, null); }
+	public Query selectDistinct(String attribute) { return selectFunctionAs(this.entity, attribute, Estivate.Functions.distinct, null); }
+	public Query selectDistinctAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.distinct, alias); }
+	public Query selectDistinctAs(Entity<?> c, String attribute, String alias) { return selectFunctionAs(c, attribute, Estivate.Functions.distinct, alias); }
+	public Query selectDistinctAs(String attribute, String alias) { return selectFunctionAs(this.entity, attribute, Estivate.Functions.distinct, alias); }
+
 	// Select count
-	public Query selectCount() { return selectFunctionAs(new Entity<>(null), null, null, Estivate.Functions.count); }
-	public Query selectCountAs(String alias) { return selectFunctionAs(new Entity<>(null), null, alias, Estivate.Functions.count); }
-	// Select count field
-	public Query selectCount(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.count); }
-	public Query selectCount(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, null, Estivate.Functions.count); }
-	public Query selectCountAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.count); }
-	public Query selectCountAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, alias, Estivate.Functions.count); }
+	public Query selectCount() { return selectFunctionAs(new Entity<>(null), null, Estivate.Functions.count, null); }
+	public Query selectCountAs(String alias) { return selectFunctionAs(new Entity<>(null), null, Estivate.Functions.count, alias); }
+
+	// Select count field 
+	public Query selectCount(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.count, null); }
+	public Query selectCount(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, Estivate.Functions.count, null); }
+	public Query selectCount(String attribute) 							{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.count, null); }
+	public Query selectCountAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.count, alias); }
+	public Query selectCountAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.count, alias); }
+	public Query selectCountAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.count, alias); }
 	
 	// Select count distinct field
-	public Query selectCountDistinct(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.countDistinct); }
-	public Query selectCountDistinct(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, null, Estivate.Functions.countDistinct); }
-	public Query selectCountDistinctAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.countDistinct); }
-	public Query selectCountDistinctAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, alias, Estivate.Functions.countDistinct); }
-	
+	public Query selectCountDistinct(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.countDistinct, null); }
+	public Query selectCountDistinct(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, Estivate.Functions.countDistinct, null); }
+	public Query selectCountDistinct(String attribute) 							{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.countDistinct, null); }
+	public Query selectCountDistinctAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.countDistinct, alias); }
+	public Query selectCountDistinctAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.countDistinct, alias); }
+	public Query selectCountDistinctAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.countDistinct, alias); }
 	
 	// Select min
-	public Query selectMin(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.min); }
-	public Query selectMin(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, null, Estivate.Functions.min); }
-	public Query selectMinAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.min); }
-	public Query selectMinAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, alias, Estivate.Functions.min); }
+	public Query selectMin(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.min, null); }
+	public Query selectMin(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, Estivate.Functions.min, null); }
+	public Query selectMin(String attribute) 								{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.min, null); }
+	public Query selectMinAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.min, alias); }
+	public Query selectMinAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.min, alias); }
+	public Query selectMinAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.min, alias); }
+	
 	// Select max
-	public Query selectMax(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.max); }
-	public Query selectMax(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, null, Estivate.Functions.max); }
-	public Query selectMaxAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.max); }
-	public Query selectMaxAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, alias, Estivate.Functions.max); }
+	public Query selectMax(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.max, null); }
+	public Query selectMax(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, Estivate.Functions.max, null); }
+	public Query selectMax(String attribute) 								{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.max, null); }
+	public Query selectMaxAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.max, alias); }
+	public Query selectMaxAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.max, alias); }
+	public Query selectMaxAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.max, alias); }
+
 	// Select Sum
-	public Query selectSum(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.sum); }
-	public Query selectSum(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, null, Estivate.Functions.sum); }
-	public Query selectSumAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.sum); }
-	public Query selectSumAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, alias, Estivate.Functions.sum); }
+	public Query selectSum(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.sum, null); }
+	public Query selectSum(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, Estivate.Functions.sum, null); }
+	public Query selectSum(String attribute) 								{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.sum, null); }
+	public Query selectSumAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.sum, alias); }
+	public Query selectSumAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.sum, alias); }
+	public Query selectSumAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.sum, alias); }
+	
 	// Select Group Concat
-	public Query selectGroupConcat(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, null, Estivate.Functions.groupConcat); }
-	public Query selectGroupConcat(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, null, Estivate.Functions.groupConcat); }
-	public Query selectGroupConcatAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, alias, Estivate.Functions.groupConcat); }
-	public Query selectGroupConcatAs(Entity<?> c, String attribute, String alias){ return selectFunctionAs(c, attribute, alias, Estivate.Functions.groupConcat); }
+	public Query selectGroupConcat(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, null); }
+	public Query selectGroupConcat(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, null); }
+	public Query selectGroupConcat(String attribute) 							{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, null); }
+	public Query selectGroupConcatAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, alias); }
+	public Query selectGroupConcatAs(Entity<?> c, String attribute, String alias){ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, alias); }
+	public Query selectGroupConcatAs(String attribute, String alias) 			{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, alias); }
+
 
 	// Having
 	public Query having(EstivateNode node) { this.having = node; return this; }

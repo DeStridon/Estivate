@@ -6,6 +6,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
@@ -80,4 +81,30 @@ public class ContextTest {
 		Assert.assertEquals(parent2.getName(), "parent1");
 
 	}
+
+	@Test
+	public void rawSingleFetchTest() {
+		ParentEntity parent1 = ParentEntity.builder().homeId(1).name("parent1-1").build();
+		ParentEntity parent2 = ParentEntity.builder().homeId(1).name("parent2-1").build();
+		context.updateOrInsert(parent1);
+		context.updateOrInsert(parent2);
+		
+
+		Query query = Estivate.query(ParentEntity.class)
+			.selectCount();
+
+		Long count = context.fetchSingleAs(query, Long.class);
+		Assert.assertNotNull(count);
+		Assert.assertTrue(count > 0);
+	}
+
+	// @Test
+	// public void rawListFetchTest() {
+	// 	Query query = Estivate.query(ParentEntity.class)
+	// 		.selectDistinct(ParentEntity.Fields.name);
+
+	// 	List<Long> count = context.fetchListAs(query, Long.class);
+	// 	Assert.assertNotNull(count);
+	// 	Assert.assertTrue(count.size() > 0);
+	// }
 }

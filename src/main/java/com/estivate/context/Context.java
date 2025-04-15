@@ -83,16 +83,45 @@ public abstract class Context {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@SneakyThrows
 	public <U> U fetchSingleAs(Query query, Class<U> clazz) {
 		Result result = fetchSingle(query);
-		if(result != null){
+		if(result == null){
+			return null;
+		}
+		else if(clazz == Integer.class){
+			return (U) result.getAsInteger(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == Short.class){
+			return (U) result.getAsShort(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == Long.class){
+			return (U) result.getAsLong(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == Float.class){
+			return (U) result.getAsFloat(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == Double.class){
+			return (U) result.getAsDouble(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == String.class){
+			return (U) result.getAsString(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == Boolean.class){
+			return (U) result.getAsBoolean(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz == java.util.Date.class){
+			return (U) result.getAsDate(result.getColumns().keySet().iterator().next());
+		}
+		else if(clazz.isEnum()){
+			return (U) result.getAsEnum(clazz, result.getColumns().keySet().iterator().next());
+		}
+		else {
 			U object = result.mapTo(clazz);
 	    	return object;
 		}
-		return null;
 	}
-
 	
 	
 	
@@ -168,36 +197,22 @@ public abstract class Context {
 		
 		try(Connection connection = datasource.getConnection()){
 			
-			Chronometer chronometer = new Chronometer("listAs", tracePerformances);
-			chronometer.timeThreshold(100);
-			
 			Statement statement = Statement.toStatement(this, connection, query);
-			chronometer.step("statement creation");
-			
-	        ResultSet resultSet = statement.executeForResultSet();
-	        chronometer.step("get resultset");
+			ResultSet resultSet = statement.executeForResultSet();
 	        
 	        Mapper<U> mapper = new Mapper<>(clazz, this);
-	        chronometer.step("create mapper");
-	        //mapper.chronometer.active(tracePerformances);
 	        
 	        ResultSetMetaData metadata = resultSet.getMetaData();
 	        mapper.attachMetadata(metadata);
-	        chronometer.step("get and attach metadata");
 	        
 	        List<String[]> rows = new ArrayList<>();
 	        
 	        while(resultSet.next()) {
-	        	chronometer.step("resultset next");
-	            
 	        	String[] values = new String[metadata.getColumnCount()];
-	            
 	        	for(int i = 0; i < metadata.getColumnCount(); i++) { 
 	        		values[i] = resultSet.getString(i+1);
 	        	}
 	        	rows.add(values);
-	            
-	        	chronometer.step("create row");
 	        }
 	        
 			List<U> output = new ArrayList<>();
@@ -209,7 +224,6 @@ public abstract class Context {
 			else {
 				output = rows.stream().parallel().map(mapper::map).collect(Collectors.toList());
 			}
-			chronometer.end("map rows");
 			
 			if(tracePerformances) {
 				System.out.println(mapper.getStats());

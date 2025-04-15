@@ -298,7 +298,7 @@ public class Statement {
 	
 	public String selectString(Select select) {
 
-		if(select.function == Estivate.Functions.count && select.entity == null) {
+		if(select.function != null && select.function.equals(Estivate.Functions.count) && (select.entity == null || select.entity.entity == null)) {
 			return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
 		else if (select.function != null) {

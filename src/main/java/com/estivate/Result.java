@@ -62,6 +62,8 @@ public class Result {
 	public Short 	getAsShort(String column) 	 { return Short.valueOf(columns.get(column)); }
 	public Integer 	getAsInteger(String column) { return Integer.valueOf(columns.get(column)); }
 	public Long 	getAsLong(String column) { return Long.valueOf(columns.get(column)); }
+	public Float 	getAsFloat(String column) { return Float.valueOf(columns.get(column)); }
+	public Double 	getAsDouble(String column) { return Double.valueOf(columns.get(column)); }
 	public Boolean 	getAsBoolean(String column) { return Boolean.valueOf(columns.get(column)); }
 	
 	public Date getAsDate(String column) {
