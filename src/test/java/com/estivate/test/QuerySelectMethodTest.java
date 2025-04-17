@@ -60,6 +60,7 @@ public class QuerySelectMethodTest {
 				.selectAll(ParentEntity.class)
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id);
 		
+		Assert.assertTrue(context.queryAsString(query).startsWith("SELECT DISTINCT"));
 		System.out.println(context.queryAsString(query));
 		
 	}

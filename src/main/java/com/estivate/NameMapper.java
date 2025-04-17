@@ -18,8 +18,20 @@ public abstract class NameMapper {
 	
 	public abstract String mapDatabaseField(String field);
 
-	public String mapDatabase(Class<?> c, String field) 	{ return mapDatabaseClass(c)+"."+mapDatabaseField(field); }
-	public String mapDatabase(Entity<?> e, String field) 	{ return mapDatabaseClass(e)+"."+mapDatabaseField(field); }
+	public String mapDatabase(Class<?> c, String field) 	{ 
+		// Case attribute alias
+		if(c == null) {
+			return field;
+		}
+		return mapDatabaseClass(c)+"."+mapDatabaseField(field); 
+	}
+	public String mapDatabase(Entity<?> e, String field) 	{
+		// Case attribute alias
+		if(e == null) {
+			return field;
+		}
+		return mapDatabaseClass(e)+"."+mapDatabaseField(field); 
+	}
 
 
 	// entity mapping : maps names in query to aliases
