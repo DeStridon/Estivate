@@ -301,6 +301,9 @@ public class Statement {
 		if(select.function != null && select.function.equals(Estivate.Functions.count) && (select.entity == null || select.entity.entity == null)) {
 			return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
+		else if (select.function != null && select.function.equals(Estivate.Functions.distinct)) {
+			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
+		}
 		else if (select.function != null) {
 			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}

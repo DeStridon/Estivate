@@ -117,10 +117,10 @@ public class QueryJoinTest {
 	public void squareJoinTest() throws SQLException {
 		
 		
-		Entity<?> taskA = new Entity<>(ParentEntity.class, "TaskA");
-		Entity<?> segmentA = new Entity<>(ChildEntity.class, "SegmentA");
-		Entity<?> segmentB = new Entity<>(ChildEntity.class, "SegmentB");
-		Entity<?> taskB = new Entity<>(ParentEntity.class, "TaskB");
+		Entity<?> taskA = new Entity<>(ParentEntity.class, "ParentA");
+		Entity<?> segmentA = new Entity<>(ChildEntity.class, "ChildA");
+		Entity<?> segmentB = new Entity<>(ChildEntity.class, "ChildB");
+		Entity<?> taskB = new Entity<>(ParentEntity.class, "ParentB");
 		
 		Query query = new Query(taskA)
 				.joinInner(taskA, segmentA)
@@ -132,8 +132,8 @@ public class QueryJoinTest {
 		
 		String queryString = context.queryAsString(query);
 		
-		Assert.assertTrue(queryString.contains("INNER JOIN SEGMENTENTITY_D SegmentB ON SegmentA.SOURCECONTENT_D = SegmentB.SOURCECONTENT_D"));
-		Assert.assertTrue(queryString.contains("INNER JOIN TASKENTITY_D TaskB ON SegmentB.TASKID_D = TaskB.ID_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D ChildB ON ChildA.SOURCECONTENT_D = ChildB.SOURCECONTENT_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN PARENTENTITY_D ParentB ON ChildB.TASKID_D = ParentB.ID_D"));
 		
 	}
 	

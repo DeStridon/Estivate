@@ -79,8 +79,12 @@ public abstract class Context {
 	        	Result result = new Result(statement, map);
 				return result;
 	        }
-	        return null;
+	        
 		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -192,6 +196,9 @@ public abstract class Context {
 	}
 
 	
+	
+	
+	
 	@SneakyThrows
 	public <U> List<U> fetchListAs(Query query, Class<U> clazz) {
 		
@@ -231,7 +238,10 @@ public abstract class Context {
 	
 			return output;
 		}
-		
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 		
 	}
 	
