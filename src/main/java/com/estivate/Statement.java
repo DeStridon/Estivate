@@ -199,16 +199,18 @@ public class Statement {
 		
 		statement.appendQuery("SELECT ");
 		
-		//TODO : avoid modifying joinQuery
+
 		if(query.getSelects().isEmpty()) {
 			query.selectAll(query.getEntity());
 		}
 		
-//		if(joinQuery.getSelects().stream().map(x -> x.toString()).allMatch(x -> x.contains(".")) && joinQuery.getGroupBys().isEmpty()) {
-//			statement.appendQuery("distinct");
-//		}
+		List<Select> selects = new ArrayList<>();
+		selects.addAll(query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).toList());
+		selects.addAll(query.getSelects().stream().filter(x -> !selects.contains(x)).toList());
 		
-		statement.appendQuery(String.join(", ", query.getSelects().stream().map(x -> statement.selectString(x)).collect(Collectors.toList()))+"\n");
+		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList())));
+		
+		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList()))+"\n");
 
 		//statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
 		statement.appendQuery("FROM").appendQuery(context.nameMapper.mapDatabaseClass(query.getEntity().entity));
@@ -231,7 +233,6 @@ public class Statement {
         }
         
 		// Append group bys (if any)
-        
 		if(!query.getGroupBys().isEmpty()) {
 			statement.appendQuery(query.getGroupBys().stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}

@@ -2,15 +2,13 @@ package com.estivate.query;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.estivate.query.Query.Entity;
-
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 
-
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

@@ -27,7 +27,7 @@ public abstract class NameMapper {
 	}
 	public String mapDatabase(Entity<?> e, String field) 	{
 		// Case attribute alias
-		if(e == null) {
+		if(e == null || e.entity == null) {
 			return field;
 		}
 		return mapDatabaseClass(e)+"."+mapDatabaseField(field); 
