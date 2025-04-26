@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,7 +85,7 @@ public class Statement {
 	public String query() {
 		return query.toString();
 	}
-	
+
 	
 	public Statement appendValue(Class<?> entity, String fieldName, Object parameter) {
 		parameters.add(compileObject(entity, fieldName, parameter));
@@ -204,14 +205,16 @@ public class Statement {
 			query.selectAll(query.getEntity());
 		}
 		
-		List<Select> selects = new ArrayList<>();
-		selects.addAll(query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).toList());
-		selects.addAll(query.getSelects().stream().filter(x -> !selects.contains(x)).toList());
+		List<Select> selects = query.getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
 		
-		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList())));
+//		selects.addAll(query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).collect(Collectors.toList()));
+//		selects.addAll(query.getSelects().stream().filter(x -> !selects.contains(x)).collect(Collectors.toList()));
 		
-		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList()))+"\n");
+//		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList())));
+//		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList()))+"\n");
 
+		statement.appendQuery(String.join(", ", selects.stream().map(statement::selectString).collect(Collectors.toList()))+"\n");
+		
 		//statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
 		statement.appendQuery("FROM").appendQuery(context.nameMapper.mapDatabaseClass(query.getEntity().entity));
 		if(query.getEntity().alias != null) {

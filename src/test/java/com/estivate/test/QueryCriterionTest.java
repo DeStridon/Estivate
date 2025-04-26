@@ -58,7 +58,7 @@ public class QueryCriterionTest {
 		ChildEntity child22 = context.updateOrInsert(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.2").build());
 		ChildEntity child23 = context.updateOrInsert(ChildEntity.builder().parentId(parent2.getId()).description("source content 2.3").build());
 		
-		ParentEntity parent3 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("task 3").build());
+		ParentEntity parent3 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("parent 3").build());
 
 		ChildEntity child31 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.1").build());
 		ChildEntity child32 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.2").build());
@@ -68,7 +68,7 @@ public class QueryCriterionTest {
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
 				.selectAll(ParentEntity.class)
 				
-				.eq(ParentEntity.class, ParentEntity.Fields.name, "task 2");
+				.eq(ParentEntity.class, ParentEntity.Fields.name, "parent 2");
 		
 		List<Result> results = context.fetchList(query);
 		
@@ -88,6 +88,8 @@ public class QueryCriterionTest {
 				.homeId(4)
 				.name("queryTest test task")
 				.externalName("external Name")
+				.sourceLanguage(Language.ar_KW)
+				.targetLanguage(Language.de_AT)
 				.build();
 		
 		context.updateOrInsert(testTask);
@@ -118,7 +120,7 @@ public class QueryCriterionTest {
 		
 		List<ParentEntity> tasks = context.fetchListAs(query, ParentEntity.class);
 		
-		Assert.assertEquals(1, tasks.size());		
+		Assert.assertEquals(1, tasks.size());
 	
 		
 	

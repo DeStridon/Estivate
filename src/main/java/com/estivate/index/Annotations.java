@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.Data;
+
 public class Annotations {
 	
 	@Target(ElementType.TYPE)

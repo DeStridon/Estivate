@@ -60,7 +60,7 @@ public class QuerySelectMethodTest {
 				.selectAll(ParentEntity.class)
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id);
 		
-		Assert.assertTrue(context.queryAsString(query).startsWith("SELECT DISTINCT"));
+		Assert.assertTrue(context.queryAsString(query).toUpperCase().startsWith("SELECT DISTINCT"));
 		System.out.println(context.queryAsString(query));
 		
 	}
@@ -81,6 +81,7 @@ public class QuerySelectMethodTest {
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
 				.select(ParentEntity.class, AbstractEntity.Fields.id);
 
+		context.fetchList(query);
 		System.out.println(context.queryAsString(query));
 		
 	}
@@ -95,5 +96,7 @@ public class QuerySelectMethodTest {
 		context.fetchList(query);
 		
 	}
+
+	
 
 }

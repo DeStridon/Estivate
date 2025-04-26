@@ -4,10 +4,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -32,7 +35,6 @@ public class Select extends Attribute implements Comparable {
 		return StringUtils.compare(this.toString(), select.toString());
 		
 	}
-
 
 
 }

@@ -98,13 +98,13 @@ public class ContextTest {
 		Assert.assertTrue(count > 0);
 	}
 
-	// @Test
-	// public void rawListFetchTest() {
-	// 	Query query = Estivate.query(ParentEntity.class)
-	// 		.selectDistinct(ParentEntity.Fields.name);
-
-	// 	List<Long> count = context.fetchListAs(query, Long.class);
-	// 	Assert.assertNotNull(count);
-	// 	Assert.assertTrue(count.size() > 0);
-	// }
+//	@Test
+//	public void rawListFetchTest() {
+//		Query query = Estivate.query(ParentEntity.class)
+//			.selectDistinct(ParentEntity.Fields.name);
+//
+//		List<Long> count = context.fetchListAs(query, Long.class);
+//		Assert.assertNotNull(count);
+//		Assert.assertTrue(count.size() > 0);
+//	}
 }

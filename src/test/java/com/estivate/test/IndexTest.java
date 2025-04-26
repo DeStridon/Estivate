@@ -56,10 +56,12 @@ public class IndexTest {
 		
 		id.applySpecific(indexes.get(0));
 		
+		Assert.assertEquals(2, id.listToApply().size());
+		
 		id.cleanSpecific(indexes.get(0));
 		
 		List<TableIndex> missingDbIndexes = id.listToApply();
-		Assert.assertEquals(1, missingDbIndexes.size());
+		Assert.assertEquals(3, missingDbIndexes.size());
 	}
 	
 }
