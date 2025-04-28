@@ -75,8 +75,8 @@ public class Statement {
 		// TODO : nest functions
 		
 		String attribute = context.nameMapper.mapDatabase(criterion.entity, criterion.attribute);
-		for(Attribute.Function function : criterion.functions){
-			attribute = function.render(attribute);
+		if(criterion.function != null){
+			attribute = criterion.function.render(attribute);
 		}
 		appendQuery(attribute);
 		return this;

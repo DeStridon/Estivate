@@ -3,7 +3,6 @@ package com.estivate.query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,16 +10,17 @@ import java.util.stream.Collectors;
 
 import com.estivate.Estivate;
 import com.estivate.query.Attribute.Function;
-import com.estivate.query.Query.Entity;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
+@ToString
 @Slf4j
 public class Query extends Aggregator{
 	
