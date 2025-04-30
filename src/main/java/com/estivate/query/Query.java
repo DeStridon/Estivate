@@ -444,12 +444,13 @@ public class Query extends Aggregator{
 	@Getter
 	String name;
 	
-	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
-	@Getter
-	Set<Join> joins = new LinkedHashSet<>();
 	
 	@Getter
 	Set<Select> selects = new LinkedHashSet<>();
+	
+	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
+	@Getter
+	Set<Join> joins = new LinkedHashSet<>();
 	
 	@Getter
 	List<Order> orders = new ArrayList<>();
@@ -712,18 +713,8 @@ public class Query extends Aggregator{
 		return queryClone;
 	}
 
-	public Query groupBy(Class<?> c, String field) {
-		return groupBy(new Entity<>(c), field);
-	}
-	
-	public Query groupBy(Entity<?> entity, String field) {
-		
-		// Add to select
-		select(entity, field);
-		groupBys.add(new Group(entity, field));
-		
-		return this;
-	}
+	public Query groupBy(Entity<?> entity, String field) { groupBys.add(new Group(entity, field)); return this; }
+	public Query groupBy(Class<?> c, String field) { return groupBy(new Entity<>(c), field); }
 	
 	public Query setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
 		this.indexHint = indexHint;
