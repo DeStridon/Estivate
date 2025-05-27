@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * doesn't hold any connection, it just helps using statement
  */
 @Slf4j
-public class Statement {
+public class Statement implements AutoCloseable{
 
 	final Context context;
 	final Connection connection;
@@ -59,6 +59,11 @@ public class Statement {
 	public Statement(Context context, Connection connection){
 		this.context = context;
 		this.connection = connection;
+	}
+	
+	public Statement(Context context, Connection connection, String query) {
+		this(context, connection);
+		this.query = new StringBuilder(query);
 	}
 	
 	public Statement appendQuery(String queryContent) {
@@ -440,6 +445,13 @@ public class Statement {
 	
 	String compileAttribute(Class entity, String attribute, Object value) {
 		return compileGenericType(compileObject(entity, attribute, value));
+	}
+
+	@Override
+	public void close() throws Exception {
+		if(statement != null) {
+			statement.close();
+		}
 	}
 	
 

@@ -3,6 +3,7 @@ package com.estivate.index;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public class IndexScan {
 	Context context;
 
 	@Getter
-	List<IndexDiff> indexDiffs;
+	List<IndexDiff> indexDiffs = new ArrayList<>();
 
 	public IndexScan(Context context, String packageName) {
 		this.context = context;

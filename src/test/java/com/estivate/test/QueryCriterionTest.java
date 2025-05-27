@@ -68,7 +68,7 @@ public class QueryCriterionTest {
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
 				.selectAll(ParentEntity.class)
 				
-				.eq(ParentEntity.class, ParentEntity.Fields.name, "task 2");
+				.eq(ParentEntity.class, ParentEntity.Fields.name, "parent 2");
 		
 		List<Result> results = context.fetchList(query);
 		
@@ -88,6 +88,8 @@ public class QueryCriterionTest {
 				.homeId(4)
 				.name("queryTest test task")
 				.externalName("external Name")
+				.sourceLanguage(Language.ar_KW)
+				.targetLanguage(Language.fr_FR)
 				.build();
 		
 		context.saveOrUpdate(testTask);

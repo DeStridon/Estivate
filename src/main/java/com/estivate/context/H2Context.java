@@ -27,17 +27,17 @@ public class H2Context extends Context {
 		super(datasource);
 	}
 		
-	
-	// Should be removed
 	@SneakyThrows
 	public List<CompositeIndex> listIndexes(Class<?> c) {
 		
 		List<CompositeIndex> indexes = new ArrayList<>();
 		
-		try (Connection connection = datasource.getConnection()){
+		try(Connection connection = datasource.getConnection(); 
+			Statement indexQueryStatement = new Statement(this, connection);
+			Statement indexColumnQueryStatement = new Statement(this, connection); ){
 			
-			Statement indexQueryStatement = new Statement(this, connection).appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
-			Statement indexColumnQueryStatement = new Statement(this, connection).appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
+			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
+			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
 			
 			List<Result> indexResults = fetchList(indexQueryStatement);
 			List<Result> columnResults = fetchList(indexColumnQueryStatement);

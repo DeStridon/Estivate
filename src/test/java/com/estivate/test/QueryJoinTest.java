@@ -107,8 +107,8 @@ public class QueryJoinTest {
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);
 		
-		assertTrue(queryString.contains("INNER JOIN SEGMENTENTITY_D sourceSegment"));
-		assertTrue(queryString.contains("sourceSegment.SOURCELANGUAGE_D = ?"));
+		assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D sourceSegment"));
+		assertTrue(queryString.contains("sourceSegment.DESCRIPTION_D = targetSegment.DESCRIPTION_D"));
 		
 		
 	}
@@ -132,8 +132,8 @@ public class QueryJoinTest {
 		
 		String queryString = context.queryAsString(query);
 		
-		Assert.assertTrue(queryString.contains("INNER JOIN SEGMENTENTITY_D SegmentB ON SegmentA.SOURCECONTENT_D = SegmentB.SOURCECONTENT_D"));
-		Assert.assertTrue(queryString.contains("INNER JOIN TASKENTITY_D TaskB ON SegmentB.TASKID_D = TaskB.ID_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D SegmentB ON SegmentA.DESCRIPTION_D = SegmentB.DESCRIPTION_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN PARENTENTITY_D TaskB ON SegmentB.PARENTID_D = TaskB.ID_D"));
 		
 	}
 	
