@@ -203,7 +203,7 @@ public abstract class Context {
 			Statement statement = Statement.toStatement(this, connection, query);
 			ResultSet resultSet = statement.executeForResultSet()) {
 			
-	        Mapper<U> mapper = new Mapper<>(clazz, this);
+	        Mapper<U> mapper = new Mapper<>(clazz, this, tracePerformances);
 	        
 	        ResultSetMetaData metadata = resultSet.getMetaData();
 	        mapper.attachMetadata(metadata);
@@ -234,10 +234,6 @@ public abstract class Context {
 	
 			return output;
 		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		return null;
 		
 	}
 	
