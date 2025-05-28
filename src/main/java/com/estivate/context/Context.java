@@ -64,9 +64,10 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public Result fetchSingle(Query query) {
-		try(Connection connection = datasource.getConnection()){
+		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, query);
-	        ResultSet resultSet = statement.executeForResultSet();
+			ResultSet resultSet = statement.executeForResultSet()) {
+			
 	    	ResultSetMetaData metadata = resultSet.getMetaData();
 	        
 	        if(resultSet.next()) {
@@ -132,16 +133,11 @@ public abstract class Context {
 	@SneakyThrows
 	public List<Result> fetchList(Query query){
 
-		try(Connection connection = datasource.getConnection()){
+		try(Connection connection = datasource.getConnection();
+			Statement statement = Statement.toStatement(this, connection, query);
+			ResultSet resultSet = statement.executeForResultSet()) {
 			Chronometer chronometer = new Chronometer("list", tracePerformances);
 			chronometer.timeThreshold(100);
-	
-			Statement statement = Statement.toStatement(this, connection, query);
-			chronometer.step("statement creation");
-			
-	        ResultSet resultSet = statement.executeForResultSet();
-	        chronometer.step("get resultset");
-	        
 	        
 	        ResultSetMetaData metadata = resultSet.getMetaData();
 	        
@@ -173,26 +169,27 @@ public abstract class Context {
 	
 	protected List<Result> fetchList(Statement statement) throws SQLException{
 		
-		ResultSet resultSet = statement.executeForResultSet();
-        ResultSetMetaData metadata = resultSet.getMetaData();
-        
-        List<Result> results = new ArrayList<>();
-        
-        
-        while(resultSet.next()) {
-            
-        	Map<String, String> map = new HashMap<>();
-            
-        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
-        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
-        	}
-            
-        	Result result = new Result(statement, map);
-        	results.add(result);
-            
-        }
-        
-        return results;
+		try(ResultSet resultSet = statement.executeForResultSet()) {
+		
+	        ResultSetMetaData metadata = resultSet.getMetaData();
+	        
+	        List<Result> results = new ArrayList<>();
+	        
+	        while(resultSet.next()) {
+	            
+	        	Map<String, String> map = new HashMap<>();
+	            
+	        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
+	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
+	        	}
+	            
+	        	Result result = new Result(statement, map);
+	        	results.add(result);
+	            
+	        }
+	        
+	        return results;
+		}
 	}
 
 	
@@ -202,11 +199,10 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> List<U> fetchListAs(Query query, Class<U> clazz) {
 		
-		try(Connection connection = datasource.getConnection()){
-			
+		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, query);
-			ResultSet resultSet = statement.executeForResultSet();
-	        
+			ResultSet resultSet = statement.executeForResultSet()) {
+			
 	        Mapper<U> mapper = new Mapper<>(clazz, this);
 	        
 	        ResultSetMetaData metadata = resultSet.getMetaData();
@@ -268,15 +264,16 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> U insert(U object) {
 		
-		try(Connection connection = datasource.getConnection()){
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			
 			for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PrePersist.class)) {
 				method.invoke(object);
 			}
 
 			List<String> fieldValueList = new ArrayList<>();
 			
-			Statement statement = new Statement(this, connection)
-					.appendQuery("INSERT INTO ")
+			statement.appendQuery("INSERT INTO ")
 					.appendQuery(nameMapper.mapDatabaseClass(object.getClass()));
 
 			
@@ -313,22 +310,23 @@ public abstract class Context {
 					.appendQuery(fieldValueList.stream().map(x -> "?").collect(Collectors.joining(", ")))
 					.appendQuery(")");
 			
-			ResultSet rs = statement.executeForGeneratedKeys();
-			if (rs.next()) {
-				Field field = getIdField(object.getClass());
-				field.setAccessible(true);
-				field.setLong(object, rs.getLong(1));
+			try(ResultSet rs = statement.executeForGeneratedKeys()){
+				if (rs.next()) {
+					Field field = getIdField(object.getClass());
+					field.setAccessible(true);
+					field.setLong(object, rs.getLong(1));
+				}
+				else {
+					return null;
+				}
+				
+				
+				for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PostPersist.class)) {
+					method.invoke(object);
+				}
+				
+				return object;
 			}
-			else {
-				return null;
-			}
-			
-			
-			for(Method method : FieldUtils.findMethodWithAnnotation(object.getClass(), PostPersist.class)) {
-				method.invoke(object);
-			}
-			
-			return object;
 		}
 		
 	}
@@ -479,17 +477,19 @@ public abstract class Context {
 		
 		String result = "CREATE TABLE "+nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
 		
-		try (Connection connection = datasource.getConnection()){
-			PreparedStatement statement = connection.prepareStatement(result);
+		try(Connection connection = datasource.getConnection(); 
+			PreparedStatement statement = connection.prepareStatement(result);){
 			return statement.execute();
 		}
 		
 		
 	}
 	
-	public String queryAsString(Query query) throws SQLException {
-		try (Connection connection = datasource.getConnection()){
-			return Statement.toStatement(this, connection, query).query();
+	@SneakyThrows
+	public String queryAsString(Query query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = Statement.toStatement(this, connection, query); ){
+			return statement.query();
 		}
 	}
 	
@@ -520,8 +520,8 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> void updateAll(List<U> entities) {
 
-		try(Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(this, connection);
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
 					
 			for(Object entity : entities) {
 				
@@ -595,9 +595,9 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public List<String> showTables(){
-		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(this, connection).appendQuery("SHOW TABLES;");
-			ResultSet resultSet = statement.executeForResultSet();
+		try (Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection, "SHOW TABLES;");
+			ResultSet resultSet = statement.executeForResultSet(); ){
 			
 			List<String> rows = new ArrayList<>();
 	        
@@ -612,8 +612,10 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public boolean truncateTable(Class<?> entity) {
-		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(this, connection).appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.mapDatabaseClass(entity));
+		try (Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			
+			statement.appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.mapDatabaseClass(entity));
 			return statement.executeForValidation();
 		}
 	}
@@ -629,10 +631,13 @@ public abstract class Context {
 		return null;
 	}
 
+
+	@SneakyThrows
 	public boolean addIndex(Class<?> c, String name, IndexType type, List<String> columns) {
-		Statement statement = null;
-		try (Connection connection = datasource.getConnection()){
-			statement = new Statement(this, connection)
+		
+		try(Connection connection = datasource.getConnection(); 
+			Statement statement = new Statement(this, connection); ){
+			statement
 				.appendQuery("CREATE")
 				.appendQuery(type == IndexType.DEFAULT ? "" : type.name().toUpperCase())
 				.appendQuery("INDEX")
@@ -643,27 +648,25 @@ public abstract class Context {
 			
 			return statement.executeForValidation();
 		}
-		catch(SQLException e){
-			log.error("Error on execution of query = "+statement.query(), e);
-			return false;
-		}
 		
 	}
 
+	@SneakyThrows
 	public boolean removeIndex(Class<?> c, String name){
 		if(name.equals("PRIMARY")) {
 			return false;
 		}
-		Statement statement = null;
-		try (Connection connection = datasource.getConnection()){
-			//CREATE INDEX IDXNAME ON TEST(NAME)
-			statement = new Statement(this, connection).appendQuery("DROP INDEX").appendQuery(name).appendQuery("ON").appendQuery(nameMapper.mapDatabaseClass(c));
+		
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			statement
+				.appendQuery("DROP INDEX")
+				.appendQuery(name)
+				.appendQuery("ON")
+				.appendQuery(nameMapper.mapDatabaseClass(c));
 			return statement.executeForValidation();
 		}
-		catch(SQLException e){
-			log.error("Error on execution of query = "+statement.query(), e);
-			return false;
-		}
+		
 	}
 	
 	public static TableIndex CompositeIndex(String name, IndexType type, List<IndexColumn> columns) {

@@ -109,8 +109,7 @@ public class QueryJoinTest {
 		
 		assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D firstChild"));
 		assertTrue(queryString.contains("firstChild.ID_D != secondChild.ID_D"));
-		
-		
+
 	}
 
 	@Test
@@ -134,7 +133,7 @@ public class QueryJoinTest {
 		
 		Assert.assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D ChildB ON ChildA.DESCRIPTION_D = ChildB.DESCRIPTION_D"));
 		Assert.assertTrue(queryString.contains("INNER JOIN PARENTENTITY_D ParentB ON ChildB.PARENTID_D = ParentB.ID_D"));
-		
+
 	}
 	
 	

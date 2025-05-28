@@ -39,8 +39,10 @@ public class MySQLContext extends Context {
 	public List<TableIndex> listIndexes(Class<?> c) {
 		List<TableIndex> indexes = new ArrayList<>();
 
-		try (Connection connection = datasource.getConnection()){
-			Statement statement = new Statement(this, connection).appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.mapDatabaseClass(c));
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+
+			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.mapDatabaseClass(c));
 			
 			List<Result> results = this.fetchList(statement);
 			List<IndexRow> indexRows = new ArrayList<>();

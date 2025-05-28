@@ -62,6 +62,7 @@ public class IndexTest {
 		
 		List<TableIndex> missingDbIndexes = id.listToApply();
 		Assert.assertEquals(3, missingDbIndexes.size());
+
 	}
 	
 }
