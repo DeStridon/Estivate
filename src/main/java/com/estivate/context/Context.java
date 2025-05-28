@@ -168,7 +168,7 @@ public abstract class Context {
 			Chronometer chronometer = new Chronometer("listAs", tracePerformances);
 			chronometer.timeThreshold(100);
 			
-	        Mapper<U> mapper = new Mapper<>(clazz, this);
+	        Mapper<U> mapper = new Mapper<>(clazz, this, tracePerformances);
 	        chronometer.step("create mapper");
 	        //mapper.chronometer.active(tracePerformances);
 	        
