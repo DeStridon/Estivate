@@ -57,8 +57,8 @@ public class Mapper<U> {
 	List<Field> columnFields = new ArrayList<>();
 	
 	@SneakyThrows
-	public Mapper(Class<U> targetClass, Context context) {
-		chronometer = new Chronometer("Mapper "+targetClass.getSimpleName()).timeThreshold(null);
+	public Mapper(Class<U> targetClass, Context context, boolean tracePerformances) {
+		chronometer = new Chronometer("Mapper "+targetClass.getSimpleName(), tracePerformances).timeThreshold(100);
 		
 		this.context = context;
 		this.targetClass = targetClass;
@@ -70,6 +70,10 @@ public class Mapper<U> {
 		postLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
 		
 		chronometer.step("mapper constructor");
+	}
+	
+	public Mapper(Class<U> targetClass, Context context) {
+		this(targetClass, context, false);
 	}
 	
 	
