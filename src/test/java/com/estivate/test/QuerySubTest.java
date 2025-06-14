@@ -5,9 +5,9 @@ import java.sql.SQLException;
 
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.Statement;
 import com.estivate.context.Context;
-import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
@@ -22,9 +22,9 @@ public class QuerySubTest {
 	@Test
 	void subTest1() throws SQLException{
 
-		Query subQuery = new Query(ChildEntity.class)
+		Query subQuery = Estivate.query(ChildEntity.class)
 				.select(ChildEntity.class, ChildEntity.Fields.parentId)
-				.eq(ChildEntity.class, ChildEntity.Fields.parentId, new PropertyValue(ParentEntity.class, AbstractEntity.Fields.id));
+				.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		
 		Query query = new Query(ParentEntity.class)

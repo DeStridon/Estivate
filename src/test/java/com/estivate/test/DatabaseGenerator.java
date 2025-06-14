@@ -7,9 +7,9 @@ import org.h2.tools.Server;
 import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
+import com.estivate.index.IndexDiff;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
-import com.estivate.test.entities.misc.Language;
 
 import lombok.SneakyThrows;
 
@@ -29,12 +29,19 @@ public class DatabaseGenerator {
 			context.nameMapper = new TestNameMapper();
 			
 			context.create(ParentEntity.class);
+			IndexDiff parentIndexDiff = new IndexDiff(context, ParentEntity.class);
+			parentIndexDiff.apply();
+			
 			context.create(ChildEntity.class);
+			IndexDiff childIndexDiff = new IndexDiff(context, ChildEntity.class);
+			childIndexDiff.apply();
+		
 			
 			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
 			System.out.println();
 			
 		}
+		
 		
 		
 		return context;

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.persistence.Convert;
@@ -32,15 +33,15 @@ import javax.sql.DataSource;
 
 import com.estivate.Mapper;
 import com.estivate.NameMapper;
+import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Result;
 import com.estivate.Statement;
-import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.entity.CachedEntity;
 import com.estivate.entity.InsertDate;
 import com.estivate.entity.UpdateDate;
 import com.estivate.index.Annotations.IndexColumn;
-import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.IndexType;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
 import com.estivate.util.Chronometer;
@@ -56,6 +57,8 @@ public abstract class Context {
 	public final DataSource datasource;
 	public boolean tracePerformances = false;
 	public NameMapper nameMapper = new DefaultNameMapper();
+
+	public Consumer<? super Query> fetchQueryPreProcessor = null;
 	
 	
 	public Context(DataSource datasource) {
@@ -64,8 +67,9 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public Result fetchSingle(Query query) {
+		
 		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, query);
+			Statement statement = Statement.toStatement(this, connection, preExecute(query));
 			ResultSet resultSet = statement.executeForResultSet()) {
 			
 	    	ResultSetMetaData metadata = resultSet.getMetaData();
@@ -134,7 +138,7 @@ public abstract class Context {
 	public List<Result> fetchList(Query query){
 
 		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, query);
+			Statement statement = Statement.toStatement(this, connection, preExecute(query));
 			ResultSet resultSet = statement.executeForResultSet()) {
 			Chronometer chronometer = new Chronometer("list", tracePerformances);
 			chronometer.timeThreshold(100);
@@ -200,7 +204,7 @@ public abstract class Context {
 	public <U> List<U> fetchListAs(Query query, Class<U> clazz) {
 		
 		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, query);
+			Statement statement = Statement.toStatement(this, connection, preExecute(query));
 			ResultSet resultSet = statement.executeForResultSet()) {
 			
 	        Mapper<U> mapper = new Mapper<>(clazz, this, tracePerformances);
@@ -483,12 +487,22 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public String queryAsString(Query query) {
+		
 		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, query); ){
+			Statement statement = Statement.toStatement(this, connection, preExecute(query)); ){
 			return statement.query();
 		}
+		
 	}
 	
+	private Query preExecute(Query query) {
+		if(fetchQueryPreProcessor == null) {
+			return query;
+		}
+		Query clonedQuery = query.clone();
+		fetchQueryPreProcessor.accept(clonedQuery);
+		return clonedQuery;
+	}
 	
 	private Field getIdField(Class<? extends Object> objectClass) {
 		if(objectClass == null) {

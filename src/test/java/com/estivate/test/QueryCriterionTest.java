@@ -34,17 +34,17 @@ public class QueryCriterionTest {
 	@Test
 	public void insertTest() {
 		
-		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("task 1").build());
+		ParentEntity parent1 = context.updateOrInsert(ParentEntity.builder().homeId(1).name("task 1").build());
 		
-		assertEquals(new Date().getTime(), task1.getCreated().getTime(), 100);
-		assertNull(task1.getUpdated());
-		assertNotNull(task1.getId());
+		assertEquals(new Date().getTime(), parent1.getCreated().getTime(), 100);
+		assertNull(parent1.getUpdated());
+		assertNotNull(parent1.getId());
 	
-		task1.setExternalName("external name 1");
+		parent1.setExternalName("external name 1");
 		
-		context.updateOrInsert(task1);
+		context.updateOrInsert(parent1);
 		
-		assertNotNull(task1.getUpdated());
+		assertNotNull(parent1.getUpdated());
 		
 	}
 	
@@ -170,8 +170,8 @@ public class QueryCriterionTest {
 	@Test
 	public void in2Test() {
 		
-		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(2234).name("task 1").build());
-		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(2235).name("task 2").build());
+		ParentEntity parent1 = context.updateOrInsert(ParentEntity.builder().homeId(2234).name("task 1").build());
+		ParentEntity parent2 = context.updateOrInsert(ParentEntity.builder().homeId(2235).name("task 2").build());
 		
 		Query query = new Query(ParentEntity.class);
 

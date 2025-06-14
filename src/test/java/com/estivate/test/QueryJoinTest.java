@@ -11,13 +11,9 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-
-import com.estivate.NameMapper;
+import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
-import com.estivate.query.Join;
-import com.estivate.query.Join.JoinType;
-import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
@@ -43,7 +39,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
 		
 		Query query = new Query(ChildEntity.class)
-				.name("Query Join Test")
+				.comment("Query Join Test")
 				.eq(ChildEntity.class, ChildEntity.Fields.parentId, 2);
 		
 		List<ChildEntity> results = context.fetchListAs(query, ChildEntity.class);
@@ -55,15 +51,15 @@ public class QueryJoinTest {
 	@Test
 	public void selectJoiningTest2() throws SQLException {
 		
-		ParentEntity task = context.updateOrInsert(ParentEntity.builder().name("join test name 1").build());
+		ParentEntity parent = context.updateOrInsert(ParentEntity.builder().name("join test name 1").build());
 		
-		context.updateOrInsert(ChildEntity.builder().parentId(task.getId()).description("source content 1").build());
-		context.updateOrInsert(ChildEntity.builder().parentId(task.getId()).description("source content 2").build());
+		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
+		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
 		Query query = new Query(ParentEntity.class)
 				.joinInner(ParentEntity.class, ChildEntity.class)
 				.selectAll(ChildEntity.class)
-				.eq(ParentEntity.class, ParentEntity.Fields.name, task.getName());
+				.eq(ParentEntity.class, ParentEntity.Fields.name, parent.getName());
 		
 		List<Result> results = context.fetchList(query);
 		
@@ -96,13 +92,13 @@ public class QueryJoinTest {
 		Entity<ChildEntity> secondChild = new Entity<>(ChildEntity.class, "secondChild");
 		
 		
-		Query query = new Query(ParentEntity.class)
+		Query query = Estivate.query(ParentEntity.class)
 			.select(firstChild, AbstractEntity.Fields.id)
 			.select(secondChild, AbstractEntity.Fields.id)
 			.joinInner(ParentEntity.class, firstChild, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
 			.joinInner(firstChild, secondChild, ChildEntity.Fields.description, ChildEntity.Fields.description)
 			.eq(ParentEntity.class, AbstractEntity.Fields.id, 35)
-			.notEq(firstChild, AbstractEntity.Fields.id, new PropertyValue(secondChild, AbstractEntity.Fields.id));
+			.notEq(firstChild, AbstractEntity.Fields.id, Estivate.attribute(secondChild, AbstractEntity.Fields.id));
 		
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);

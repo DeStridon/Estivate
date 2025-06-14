@@ -27,9 +27,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @FieldNameConstants
 @TableIndexes({
-	@TableIndex(name="created", columns= {@IndexColumn(ChildEntity.Fields.born)}),
-	@TableIndex(name="updated", columns= {@IndexColumn(ChildEntity.Fields.lastSeen)}),
-	@TableIndex(name="unique", type=IndexType.UNIQUE, columns= {@IndexColumn(ChildEntity.Fields.born)})
+	@TableIndex(name="born", columns= {@IndexColumn(ChildEntity.Fields.born)}),
+	@TableIndex(name="lastseen", columns= {@IndexColumn(ChildEntity.Fields.lastSeen)}),
+	@TableIndex(name="bornUnique", type=IndexType.UNIQUE, columns= {@IndexColumn(ChildEntity.Fields.parentId), @IndexColumn(ChildEntity.Fields.description)})
 })
 public class ChildEntity extends AbstractEntity {
 	@VirtualForeignKey(entity = HomeEntity.class)

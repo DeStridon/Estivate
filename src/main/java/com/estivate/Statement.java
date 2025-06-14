@@ -28,7 +28,6 @@ import com.estivate.query.Criterion;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.Keyword;
-import com.estivate.query.PropertyValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Group;
 import com.estivate.query.Query.Order;
@@ -50,8 +49,6 @@ public class Statement implements AutoCloseable{
 
 	final Context context;
 	final Connection connection;
-	
-	String queryName;
 	
 	StringBuilder query = new StringBuilder();
 	List<Object> parameters = new ArrayList<>();
@@ -77,7 +74,6 @@ public class Statement implements AutoCloseable{
 	}
 
 	public Statement appendAttribute(Criterion criterion){
-		// TODO : nest functions
 		
 		String attribute = context.nameMapper.mapDatabase(criterion.entity, criterion.attribute);
 		if(criterion.function != null){
@@ -98,27 +94,32 @@ public class Statement implements AutoCloseable{
 	}
 	
 	public Statement appendParameter(Class<?> entity, String attribute, Object parameter) {
-		if(parameter instanceof PropertyValue) {
-			PropertyValue field = (PropertyValue) parameter;
-			appendQuery(context.nameMapper.mapDatabase(field.entity, field.attributeName));
-		}
-		else {
-			appendQuery("?");
-			appendValue(entity, attribute, parameter);
-		}
+		appendQuery(writeParameter(entity, attribute, parameter));		
 		return this;
 	}
 	
-	public String appendParameterFetchQuery(Class<?> entity, String attribute, Object parameter) {
-		if(parameter instanceof PropertyValue) {
-			PropertyValue field = (PropertyValue) parameter;
-
-			return field.toString();
+	public String writeAttribute(Attribute attribute) {
+		String field = attribute.entity == null ? attribute.attribute : context.nameMapper.mapDatabase(attribute.entity, attribute.attribute);
+		if(attribute.function != null) {
+			return attribute.function.render(field);
 		}
-		
-		appendValue(entity, attribute, parameter);
-		return "?";
+		else {
+			return field;
+		}
 	}
+	
+	public String writeParameter(Class<?> entity, String attribute, Object parameter) {
+		
+		if(parameter instanceof Attribute) {
+			return writeAttribute((Attribute) parameter);
+		}
+		else {
+			appendValue(entity, attribute, parameter);
+			return "?";
+		}
+			
+	}
+	
 
 	public boolean executeForValidation() throws SQLException{
 		return execute(connection);
@@ -140,14 +141,8 @@ public class Statement implements AutoCloseable{
 	}
 	
 	private boolean execute(Connection connection) throws SQLException {
-		query.insert(0, "-- Stack = "+StackLog.create().subList(0, 3).stream().collect(Collectors.joining(", "))+"\n"); 
-		if(!StringUtils.isBlank(queryName)) {
-			query.insert(0, "-- "+queryName+"\n");
-		}
-		
 		
 		statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
-	
 
 		for(int i = 0; i < parameters.size(); i++) {
 			
@@ -201,7 +196,10 @@ public class Statement implements AutoCloseable{
 	public static Statement toStatement(Context context, Connection connection, Query query) {
 		
 		Statement statement = new Statement(context, connection);
-		statement.queryName = query.getName();
+		
+		for(String comment : query.getComments()) {
+			statement.appendQuery("-- "+comment+"\n");
+		}
 		
 		statement.appendQuery("SELECT ");
 		
@@ -349,14 +347,14 @@ public class Statement implements AutoCloseable{
 			Criterion.In in = (Criterion.In) node;
 			appendAttribute(in);
 			appendQuery("in (");
-			appendQuery(in.getValues().stream().map(x -> appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(in.getValues().stream().map(x -> writeParameter(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
 			appendAttribute(in);
 			appendQuery("not in (");
-			appendQuery(in.getValues().stream().map(x -> appendParameterFetchQuery(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(in.getValues().stream().map(x -> writeParameter(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {

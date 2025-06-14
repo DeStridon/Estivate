@@ -440,10 +440,8 @@ public class Query extends Aggregator{
 	@Getter
 	final Entity<?> entity;
 
-	
 	@Getter
-	String name;
-	
+	List<String> comments = new ArrayList<>();
 	
 	@Getter
 	Set<Select> selects = new LinkedHashSet<>();
@@ -473,9 +471,9 @@ public class Query extends Aggregator{
 	@Getter
 	Set<String> indexNames = new LinkedHashSet<>();
 	
-	public Query(Class<?> baseClass) {
+	public <U> Query(Class<U> baseClass) {
 		super(GroupType.AND);
-		this.entity = new Entity<>(baseClass);
+		this.entity = new Entity<U>(baseClass);
 	}
 	
 	public Query(Entity<?> entity) {
@@ -483,8 +481,8 @@ public class Query extends Aggregator{
 		this.entity = entity;
 	}
 	
-	public Query name(String name) {
-		this.name = name;
+	public Query comment(String comment) {
+		comments.add(comment);
 		return this;
 	}
 	
@@ -695,6 +693,8 @@ public class Query extends Aggregator{
 	
 	public Query clone() {
 		Query queryClone = new Query(entity);
+		
+		queryClone.comments = new ArrayList<>(this.comments);
 		
 		queryClone.selects = new LinkedHashSet<>(this.selects);
 		queryClone.joins = new LinkedHashSet<>(this.joins);

@@ -33,9 +33,12 @@ import com.estivate.query.Query.Order;
 public class Estivate {
 
 	// Entities Factory
-	public static Query query(Entity<?> entity) { return new Query(entity); }	
+	public static Query query(Entity<?> entity) { return new Query(entity); }
 	public static Query query(Class<?> entity) 	{ return new Query(entity); }
 	
+	
+	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field, null); }
+	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field, null); }
 	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function function) { return new Attribute(entity, field, function); }
 	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function) { return attribute(new Entity<>(entity), field, function); }
 	public static Attribute attributeOfAlias(String alias, Attribute.Function function) { return new Attribute(null, alias, function); }

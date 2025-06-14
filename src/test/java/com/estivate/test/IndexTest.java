@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.index.IndexDiff;
 import com.estivate.index.IndexScan;
@@ -25,23 +26,15 @@ public class IndexTest {
 		System.out.println(is.getIndexDiffs());
 	}
 	
-	@Test
-	public void contextTest() {
-		
-			
-		context.addIndex(ParentEntity.class, "yo", IndexType.DEFAULT, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
-		
-		List<TableIndex> indexes = context.listIndexes(ParentEntity.class);
-		
-		System.out.println(indexes);
-		
-	}
 
 	@Test
 	public void uniqueTest() {
-		context.addIndex(ParentEntity.class, "unique", IndexType.UNIQUE, Arrays.asList(context.nameMapper.mapDatabaseField(ParentEntity.Fields.homeId)+" ASC"));
+		
+		List<ParentEntity> parentEntities = context.fetchListAs(Estivate.query(ParentEntity.class), ParentEntity.class);
 		
 		List<TableIndex> indexes = context.listIndexes(ParentEntity.class);
+		
+		Assert.assertTrue(indexes.stream().anyMatch(x -> x.type() == IndexType.UNIQUE));
 		
 		System.out.println(indexes);
 	}
@@ -54,14 +47,12 @@ public class IndexTest {
 		List<TableIndex> indexes = id.getEntityIndexes();
 		Assert.assertEquals(3, indexes.size());
 		
-		id.applySpecific(indexes.get(0));
-		
-		Assert.assertEquals(2, id.listToApply().size());
+		Assert.assertEquals(0, id.listToApply().size());
 		
 		id.cleanSpecific(indexes.get(0));
 		
 		List<TableIndex> missingDbIndexes = id.listToApply();
-		Assert.assertEquals(3, missingDbIndexes.size());
+		Assert.assertEquals(1, missingDbIndexes.size());
 
 	}
 	

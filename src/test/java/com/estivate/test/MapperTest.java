@@ -18,16 +18,16 @@ public class MapperTest {
 	@Test
 	public void testPerf() {
 		
-		ParentEntity newTask = context.updateOrInsert(ParentEntity.builder().name("task 1 name").build());	
+		ParentEntity newParent = context.updateOrInsert(ParentEntity.builder().name("parent 1 name").build());	
 		
 		Query query = new Query(ParentEntity.class)
-				.eq(ParentEntity.class, AbstractEntity.Fields.id, newTask.getId());
+				.eq(ParentEntity.class, AbstractEntity.Fields.id, newParent.getId());
 				
-		List<ParentEntity> tasks = context.fetchListAs(query, ParentEntity.class);
+		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);
 		
-		Assert.assertEquals(1, tasks.size());
+		Assert.assertEquals(1, parents.size());
 		
-		System.out.println(tasks.get(0).getCreated());
+		System.out.println(parents.get(0).getCreated());
 		
 		Mapper mapper = new Mapper<>(ParentEntity.class, context);
 		

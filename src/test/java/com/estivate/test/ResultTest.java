@@ -62,15 +62,16 @@ public class ResultTest {
 	public void testParallel() {
 		
 		
-		ParentEntity task = ParentEntity.builder()
+		ParentEntity parent = ParentEntity.builder()
 				.homeId(10)
-				.name("parallel test task")
+				.name("parallel test parent")
 				.updated(new Date())
 				.build();
 		
 		for(int i = 0; i < 5000; i++) {
-			 context.updateOrInsert(task);
-			 task.setId(0);
+			parent.setName(parent.getName()+" - "+i);
+			parent.setId(0);
+			context.updateOrInsert(parent);
 		}
 		
 		Query query = new Query(ParentEntity.class);
@@ -84,7 +85,7 @@ public class ResultTest {
 	@Test
 	public void testMapEnum() {
 		
-		ParentEntity task = ParentEntity.builder()
+		ParentEntity parent = ParentEntity.builder()
 				.homeId(10)
 				.name("parallel test task")
 				.updated(new Date())
@@ -92,10 +93,10 @@ public class ResultTest {
 				.stringEnum(StringEnum.DEF)
 				.build();
 		
-		context.updateOrInsert(task);
+		context.updateOrInsert(parent);
 		
 		Query query = new Query(ParentEntity.class);
-		query.eq(ParentEntity.class, AbstractEntity.Fields.id, task.getId());
+		query.eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId());
 		
 		Result results = context.fetchList(query).get(0);
 		

@@ -106,7 +106,7 @@ public class Join {
 	}
 
 	public Join on(String joinerAttribute, String joinedAttribute) {
-		joiningCriterion.add(Estivate.eq(leftEntity, joinerAttribute, new PropertyValue(rightEntity, joinedAttribute)));
+		joiningCriterion.add(Estivate.eq(leftEntity, joinerAttribute, Estivate.attribute(rightEntity, joinedAttribute)));
 		return this;
 	}
 	
