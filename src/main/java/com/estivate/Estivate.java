@@ -497,6 +497,8 @@ public class Estivate {
 		
 		/* Date Functions */
 		public static Attribute.Function date = new Attribute.Function("date(", ")"); 
+		public static Attribute.Function date_add(int value, String unit){ return new Attribute.Function("date_add(", ", INTERVAL "+value+" "+unit+")"); }		
+		
 		public static Attribute.Function time = new Attribute.Function("time(", ")"); 
 		public static Attribute.Function timestamp = new Attribute.Function("timestamp(", ")");
 		public static Attribute.Function now = new Attribute.Function("now(", ")"); 

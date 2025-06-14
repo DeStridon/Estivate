@@ -18,7 +18,6 @@ import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.EstivateNode;
-import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
