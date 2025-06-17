@@ -150,11 +150,15 @@ public class Estivate {
 	public static Criterion inIfNotEmpty			(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(attribute, values);} return null; }
 	public static Aggregator inIfNotEmptyNullable	(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return Estivate.or(inIfNotEmpty(attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(attribute)); } return null; }
 	public static EstivateNode inOrFalseIfEmpty		(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(attribute, values);} return keywordFalse(); }
+	public static Aggregator inOrNull				(Attribute attribute, Collection<?> values){ return or(in(attribute, values), isNull(attribute)); }
+	public static Aggregator inIfNotEmptyOrNull		(Attribute attribute, Collection<?> values){ return or(inIfNotEmpty(attribute, values), isNull(attribute)); }
 	
 	public static Criterion notIn   				(Attribute attribute, Collection<?> values){ return new NotIn(attribute, values); }
 	public static Criterion notInIfNotEmpty			(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(attribute, values);} return null; }
 	public static EstivateNode notInOrTrueIfEmpty	(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(attribute, values);} return keywordTrue(); }
-
+	public static Aggregator notInOrNull			(Attribute attribute, Collection<?> values){ return or(notIn(attribute, values), isNull(attribute)); }
+	public static Aggregator notInIfNotEmptyOrNull	(Attribute attribute, Collection<?> values){ return or(notInIfNotEmpty(attribute, values), isNull(attribute)); }
+	
 	// Like
 	public static Criterion like 			(Attribute attribute, String value) { return new Operator(attribute, OperatorType.Like, value); }
 	public static Criterion notLike			(Attribute attribute, String value) { return new Operator(attribute, OperatorType.NotLike, value); }
@@ -276,11 +280,15 @@ public class Estivate {
 	// In
 	public static Criterion in   					(Entity<?> entity, String attribute, Collection<?> values){ return new In(entity, attribute, null, values); }
 	public static Criterion inIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return null; }
+	public static Aggregator inOrNull				(Entity<?> entity, String attribute, Collection<?> values){ return or(in(entity, attribute, values), isNull(entity, attribute)); }
+	public static Aggregator inIfNotEmptyOrNull		(Entity<?> entity, String attribute, Collection<?> values){ return or(inIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
 	public static Aggregator inIfNotEmptyNullable	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return Estivate.or(inIfNotEmpty(entity, attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(entity, attribute)); } return null; }
 	public static EstivateNode inOrFalseIfEmpty		(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return keywordFalse(); }
 	
 	public static Criterion notIn   				(Entity<?> entity, String attribute, Collection<?> values){ return new NotIn(entity, attribute, null, values); }
 	public static Criterion notInIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return null; }
+	public static Aggregator notInOrNull			(Entity<?> entity, String attribute, Collection<?> values){ return or(notIn(entity, attribute, values), isNull(entity, attribute)); }
+	public static Aggregator notInIfNotEmptyOrNull	(Entity<?> entity, String attribute, Collection<?> values){ return or(notInIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
 	public static EstivateNode notInOrTrueIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return keywordTrue(); }
 
 	// Like

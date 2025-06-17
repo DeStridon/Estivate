@@ -51,7 +51,11 @@ public class Query extends Aggregator{
 	public Query in   					(Attribute attribute, Collection<?> values) { super.in(attribute, values); return this; }
 	public Query inIfNotEmpty  			(Attribute attribute, Collection<?> values) { super.inIfNotEmpty(attribute, values); return this; }
 	public Query inIfNotEmptyNullable  	(Attribute attribute, Collection<?> values) { super.inIfNotEmptyNullable(attribute, values); return this; }
+	public Query inOrNull 				(Attribute attribute, Collection<?> values) { super.inOrNull(attribute, values); return this; }
+	public Query inIfNotEmptyOrNull 	(Attribute attribute, Collection<?> values) { super.inIfNotEmptyOrNull(attribute, values); return this; }
 	public Query notIn  				(Attribute attribute, Collection<?> values) { super.notIn(attribute, values); return this; }
+	public Query notInOrNull			(Attribute attribute, Collection<?> values) { super.notInOrNull(attribute, values); return this; }
+	public Query notInIfNotEmptyOrNull	(Attribute attribute, Collection<?> values) { super.notInIfNotEmptyOrNull(attribute, values); return this; }
 
 
 	public Query like 		(Attribute attribute, String value)				{ super.like(attribute, value);  return this; }
@@ -155,7 +159,11 @@ public class Query extends Aggregator{
 	public Query in   					(String attribute, Collection<?> values) { super.in(this.entity, attribute, values); return this; }
 	public Query inIfNotEmpty  			(String attribute, Collection<?> values) { super.inIfNotEmpty(this.entity, attribute, values); return this; }
 	public Query inIfNotEmptyNullable  	(String attribute, Collection<?> values) { super.inIfNotEmptyNullable(this.entity, attribute, values); return this; }
+	public Query inOrNull				(String attribute, Collection<?> values) { super.inOrNull(this.entity, attribute, values); return this; }
+	public Query inIfNotEmptyOrNull		(String attribute, Collection<?> values) { super.inIfNotEmptyOrNull(this.entity, attribute, values); return this; }
 	public Query notIn  				(String attribute, Collection<?> values) { super.notIn(this.entity, attribute, values); return this; }
+	public Query notInOrNull			(String attribute, Collection<?> values) { super.notInOrNull(this.entity, attribute, values); return this; }
+	public Query notInIfNotEmptyOrNull	(String attribute, Collection<?> values) { super.notInIfNotEmptyOrNull(this.entity, attribute, values); return this; }
 
 
 	public Query like 		(String attribute, String value)				{ super.like(this.entity, attribute, value);  return this; }
@@ -256,7 +264,12 @@ public class Query extends Aggregator{
 	public Query in   					(Class<?> entity, String attribute, Collection<?> values) { super.in    				(entity, attribute, values); return this; }
 	public Query inIfNotEmpty  			(Class<?> entity, String attribute, Collection<?> values) { super.inIfNotEmpty  		(entity, attribute, values); return this; }
 	public Query inIfNotEmptyNullable  	(Class<?> entity, String attribute, Collection<?> values) { super.inIfNotEmptyNullable  (entity, attribute, values); return this; }
+	public Query inOrNull			  	(Class<?> entity, String attribute, Collection<?> values) { super.inOrNull			    (entity, attribute, values); return this; }
+	public Query inIfNotEmptyOrNull		(Class<?> entity, String attribute, Collection<?> values) { super.inIfNotEmptyOrNull	(entity, attribute, values); return this; }
 	public Query notIn  				(Class<?> entity, String attribute, Collection<?> values) { super.notIn   				(entity, attribute, values); return this; }
+	public Query notInOrNull		  	(Class<?> entity, String attribute, Collection<?> values) { super.notInOrNull		    (entity, attribute, values); return this; }
+	public Query notInIfNotEmptyOrNull	(Class<?> entity, String attribute, Collection<?> values) { super.notInIfNotEmptyOrNull (entity, attribute, values); return this; }
+	
 
 
 	public Query like 		(Class<?> entity, String attribute, String value)				{ super.like(entity, attribute, value);  return this; }
@@ -352,8 +365,12 @@ public class Query extends Aggregator{
 	public Query in   	(Entity<?> entity, String attribute, Collection<?> values) 		{ super.in    	(entity, attribute, values); 		return this; }
 	public Query inIfNotEmpty  (Entity<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmpty      (entity, attribute, values); return this; }
 	public Query inIfNotEmptyNullable(Entity<?> entity, String attribute, Collection<?> values) { super.inIfNotEmptyNullable(entity, attribute, values); return this; }
+	public Query inOrNull(Entity<?> entity, String attribute, Collection<?> values) 	{ super.inOrNull(entity, attribute, values); return this; }
+	public Query inIfNotEmptyOrNull(Entity<?> entity, String attribute, Collection<?> values) 	{ super.inIfNotEmptyOrNull(entity, attribute, values); return this; }
 	public Query notIn  (Entity<?> entity, String attribute, Collection<?> values) 		{ super.notIn   (entity, attribute, values); 		return this; }
-
+	public Query notInOrNull(Entity<?> entity, String attribute, Collection<?> values) { super.notInOrNull(entity, attribute, values); return this; }
+	public Query notInIfNotEmptyOrNull(Entity<?> entity, String attribute, Collection<?> values) { super.notInIfNotEmptyOrNull(entity, attribute, values); return this; }
+	
 	public Query like 	(Entity<?> entity, String attribute, String value)	    		{ super.like  	(entity, attribute, value);  		return this; }
 	public Query likeStartsWith(Entity<?> entity, String attribute, String value)		{ super.likeStartsWith(entity, attribute, value);	return this; }
 	public Query likeEndsWith(Entity<?> entity, String attribute, String value)			{ super.likeEndsWith(entity, attribute, value);		return this; }
@@ -722,6 +739,9 @@ public class Query extends Aggregator{
 		this.indexNames.addAll(Arrays.asList(moreIndex));
 		return this;
 	}
+
+
+
 
 	
 	

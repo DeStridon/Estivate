@@ -19,8 +19,6 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
@@ -33,7 +31,6 @@ import com.estivate.query.Query.Group;
 import com.estivate.query.Query.Order;
 import com.estivate.query.Select;
 import com.estivate.util.FieldUtils;
-import com.estivate.util.StackLog;
 
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
