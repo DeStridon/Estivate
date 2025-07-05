@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.Attribute;
@@ -29,6 +30,13 @@ import com.estivate.query.Keyword.KeywordValue;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Entity;
 import com.estivate.query.Query.Order;
+import com.estivate.manager.ManagerInterceptor;
+import com.estivate.manager.ManagerInterceptor.EntityManager;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
 
 public class Estivate {
 
@@ -542,5 +550,25 @@ public class Estivate {
 
 		 
 	}
+
+
+	@SuppressWarnings("unchecked")
+	public static <U extends EntityManager<T>, T> U implementManager(Class<U> interfaceClass, Context context) {
+        try {
+            
+            return new ByteBuddy()
+                .subclass(interfaceClass)
+                .method(ElementMatchers.isAbstract())
+                .intercept(MethodDelegation.to(new ManagerInterceptor<T>(interfaceClass, context)))
+                .make()
+                .load(interfaceClass.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+                .getLoaded()
+                .getDeclaredConstructor()
+                .newInstance();
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to generate proxy", e);
+        }
+    }
 	 
 }

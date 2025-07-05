@@ -89,6 +89,12 @@
 		    <artifactId>guava</artifactId>
 		    <version>27.1-jre</version>
 		</dependency>
+
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.17.2</version>
+		</dependency>
 		
 		
 		<dependency>

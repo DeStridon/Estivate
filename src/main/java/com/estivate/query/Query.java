@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.estivate.Estivate;
+import com.estivate.Result;
+import com.estivate.context.Context;
 import com.estivate.query.Attribute.Function;
 import com.estivate.util.FieldUtils;
 
@@ -742,8 +744,21 @@ public class Query extends Aggregator{
 
 
 
+	public <U> U fetchSingleAs(Context context, Class<U> clazz) {
+		return context.fetchSingleAs(this, clazz);
+	}
 
-	
+	public <U> List<U> fetchListAs(Context context, Class<U> clazz) {
+		return context.fetchListAs(this, clazz);
+	}
+
+	public List<Result> fetchList(Context context) {
+		return context.fetchList(this);
+	}
+
+	public Result fetchSingle(Context context) {
+		return context.fetchSingle(this);
+	}
 	
 
 	@EqualsAndHashCode
