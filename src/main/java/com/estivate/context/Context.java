@@ -60,7 +60,7 @@ public abstract class Context {
 	public boolean tracePerformances = false;
 	public NameMapper nameMapper = new DefaultNameMapper();
 
-	public Consumer<? super Query<?>> fetchQueryPreProcessor = null;
+	public Consumer<Query<?>> fetchQueryPreProcessor = null;
 	
 	
 	public Context(DataSource datasource) {
@@ -520,7 +520,7 @@ public abstract class Context {
 		if(fetchQueryPreProcessor == null) {
 			return query;
 		}
-		Query clonedQuery = query.clone();
+		Query<?> clonedQuery = query.clone();
 		fetchQueryPreProcessor.accept(clonedQuery);
 		return clonedQuery;
 	}
