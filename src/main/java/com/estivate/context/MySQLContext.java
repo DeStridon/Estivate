@@ -44,16 +44,16 @@ public class MySQLContext extends Context {
 
 			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.mapDatabaseClass(c));
 			
-			List<Result> results = this.fetchList(statement);
+			List<Result> results = this.fetchListAsResults(statement);
 			List<IndexRow> indexRows = new ArrayList<>();
 			for(Result result : results) {
 				
 				IndexRow indexRow = IndexRow.builder()
-					.table(result.getAsString("Table"))
-					.keyName(result.getAsString("Key_name"))
-					.nonUnique(result.getAsBoolean("Non_unique"))
-					.seqInIndex(result.getAsInteger("Seq_in_index"))
-					.columnName(result.getAsString("Column_name"))
+					.table(result.columnAsString("Table"))
+					.keyName(result.columnAsString("Key_name"))
+					.nonUnique(result.columnAsBoolean("Non_unique"))
+					.seqInIndex(result.columnAsInteger("Seq_in_index"))
+					.columnName(result.columnAsString("Column_name"))
 					.build();
 			
 				indexRows.add(indexRow);

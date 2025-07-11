@@ -31,6 +31,8 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.Mapper;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
@@ -58,15 +60,20 @@ public abstract class Context {
 	public boolean tracePerformances = false;
 	public NameMapper nameMapper = new DefaultNameMapper();
 
-	public Consumer<? super Query> fetchQueryPreProcessor = null;
+	public Consumer<? super Query<?>> fetchQueryPreProcessor = null;
 	
 	
 	public Context(DataSource datasource) {
 		this.datasource = datasource;
 	}
 	
+	
+	public <T> T fetchSingle(Query<T> query){
+		return fetchSingleAs(query, (Class<T>) query.getEntity().entity);
+	}
+
 	@SneakyThrows
-	public Result fetchSingle(Query query) {
+	public Result fetchSingleAsResult(Query<?> query) {
 		
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));
@@ -94,114 +101,57 @@ public abstract class Context {
 	
 	@SuppressWarnings("unchecked")
 	@SneakyThrows
-	public <U> U fetchSingleAs(Query query, Class<U> clazz) {
-		Result result = fetchSingle(query);
+	public <U> U fetchSingleAs(Query<?> query, Class<U> clazz) {
+		Result result = fetchSingleAsResult(query);
 		if(result == null){
 			return null;
 		}
 		else if(clazz == Integer.class){
-			return (U) result.getAsInteger(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsInteger(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == Short.class){
-			return (U) result.getAsShort(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsShort(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == Long.class){
-			return (U) result.getAsLong(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsLong(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == Float.class){
-			return (U) result.getAsFloat(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsFloat(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == Double.class){
-			return (U) result.getAsDouble(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsDouble(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == String.class){
-			return (U) result.getAsString(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsString(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == Boolean.class){
-			return (U) result.getAsBoolean(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsBoolean(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz == java.util.Date.class){
-			return (U) result.getAsDate(result.getColumns().keySet().iterator().next());
+			return (U) result.columnAsDate(result.getColumns().keySet().iterator().next());
 		}
 		else if(clazz.isEnum()){
-			return (U) result.getAsEnum(clazz, result.getColumns().keySet().iterator().next());
+			// Try to parse as ordinal first
+			String value = result.columnAsString(result.getColumns().keySet().iterator().next());
+
+			if(StringUtils.isNumeric(value)) {
+				return result.columnAsOrdinalEnum(value, clazz);
+			}
+			else{
+				return result.columnAsStringEnum(value, clazz);	
+			}
 		}
 		else {
 			U object = result.mapTo(clazz);
 	    	return object;
 		}
 	}
-	
-	
-	
-	@SneakyThrows
-	public List<Result> fetchList(Query query){
 
-		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, preExecute(query));
-			ResultSet resultSet = statement.executeForResultSet()) {
-			Chronometer chronometer = new Chronometer("list", tracePerformances);
-			chronometer.timeThreshold(100);
-	        
-	        ResultSetMetaData metadata = resultSet.getMetaData();
-	        
-	        List<Result> results = new ArrayList<>();
-	        
-	        
-	        while(resultSet.next()) {
-	        	chronometer.step("resultset next");
-	            
-	        	Map<String, String> map = new HashMap<>();
-	            
-	        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
-	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
-	        	}
-	        	chronometer.step("insert in map");
-	            
-	        	Result result = new Result(statement, map);
-	        	results.add(result);
-	        	chronometer.step("create result");
-	            
-	        }
-	        chronometer.end("end");
-	        
-	        return results;
-		}
-		
-		
+	public <T> List<T> fetchList(Query<T> query){
+		return fetchListAs(query, (Class<T>) query.getEntity().entity);
 	}
-	
-	protected List<Result> fetchList(Statement statement) throws SQLException{
-		
-		try(ResultSet resultSet = statement.executeForResultSet()) {
-		
-	        ResultSetMetaData metadata = resultSet.getMetaData();
-	        
-	        List<Result> results = new ArrayList<>();
-	        
-	        while(resultSet.next()) {
-	            
-	        	Map<String, String> map = new HashMap<>();
-	            
-	        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
-	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
-	        	}
-	            
-	        	Result result = new Result(statement, map);
-	        	results.add(result);
-	            
-	        }
-	        
-	        return results;
-		}
-	}
-
-	
-	
-	
-	
 	@SneakyThrows
-	public <U> List<U> fetchListAs(Query query, Class<U> clazz) {
+	public <U> List<U> fetchListAs(Query<?> query, Class<U> clazz) {
 		
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));
@@ -240,6 +190,77 @@ public abstract class Context {
 		}
 		
 	}
+	
+	
+	@SneakyThrows
+	public List<Result> fetchListAsResults(Query<?> query){
+
+		try(Connection connection = datasource.getConnection();
+			Statement statement = Statement.toStatement(this, connection, preExecute(query));
+			ResultSet resultSet = statement.executeForResultSet()) {
+			Chronometer chronometer = new Chronometer("list", tracePerformances);
+			chronometer.timeThreshold(100);
+	        
+	        ResultSetMetaData metadata = resultSet.getMetaData();
+	        
+	        List<Result> results = new ArrayList<>();
+	        
+	        
+	        while(resultSet.next()) {
+	        	chronometer.step("resultset next");
+	            
+	        	Map<String, String> map = new HashMap<>();
+	            
+	        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
+	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
+	        	}
+	        	chronometer.step("insert in map");
+	            
+	        	Result result = new Result(statement, map);
+	        	results.add(result);
+	        	chronometer.step("create result");
+	            
+	        }
+	        chronometer.end("end");
+	        
+	        return results;
+		}
+		
+		
+	}
+
+	
+	
+	protected List<Result> fetchListAsResults(Statement statement) throws SQLException{
+		
+		try(ResultSet resultSet = statement.executeForResultSet()) {
+		
+	        ResultSetMetaData metadata = resultSet.getMetaData();
+	        
+	        List<Result> results = new ArrayList<>();
+	        
+	        while(resultSet.next()) {
+	            
+	        	Map<String, String> map = new HashMap<>();
+	            
+	        	for(int i = 1; i <= metadata.getColumnCount(); i++) { 
+	        		map.put(metadata.getColumnLabel(i), resultSet.getString(i));
+	        	}
+	            
+	        	Result result = new Result(statement, map);
+	        	results.add(result);
+	            
+	        }
+	        
+	        return results;
+		}
+	}
+
+	
+	
+	
+	
+	
 	
 	
 	@SneakyThrows

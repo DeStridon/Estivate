@@ -39,15 +39,15 @@ public class H2Context extends Context {
 			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
 			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
 			
-			List<Result> indexResults = fetchList(indexQueryStatement);
-			List<Result> columnResults = fetchList(indexColumnQueryStatement);
+			List<Result> indexResults = fetchListAsResults(indexQueryStatement);
+			List<Result> columnResults = fetchListAsResults(indexColumnQueryStatement);
 			
 			for(Result indexResult : indexResults) {
-				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.getAsString("INDEX_NAME").equals(indexResult.getAsString("INDEX_NAME"))).collect(Collectors.toList());
+				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.columnAsString("INDEX_NAME").equals(indexResult.columnAsString("INDEX_NAME"))).collect(Collectors.toList());
 				
-				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.getAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
+				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.columnAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
 
-				TableIndex ci = CompositeIndex(indexResult.getAsString("INDEX_NAME"), getIndexType(indexResult.getAsString("INDEX_TYPE_NAME")), indexColumns);
+				TableIndex ci = CompositeIndex(indexResult.columnAsString("INDEX_NAME"), getIndexType(indexResult.columnAsString("INDEX_TYPE_NAME")), indexColumns);
 				indexes.add(ci);
 			}
 			

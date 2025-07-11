@@ -59,42 +59,41 @@ public class Result {
 	}
 
 	
-	public String 	getAsString(String column) { return columns.get(column); }
-	public Short 	getAsShort(String column) 	 { return Short.valueOf(columns.get(column)); }
-	public Integer 	getAsInteger(String column) { return Integer.valueOf(columns.get(column)); }
-	public Long 	getAsLong(String column) { return Long.valueOf(columns.get(column)); }
-	public Float 	getAsFloat(String column) { return Float.valueOf(columns.get(column)); }
-	public Double 	getAsDouble(String column) { return Double.valueOf(columns.get(column)); }
-	public Boolean 	getAsBoolean(String column) { return Boolean.valueOf(columns.get(column)); }
+	public String 	columnAsString(String column) { return columns.get(column); }
+	public Short 	columnAsShort(String column) 	 { return Short.valueOf(columns.get(column)); }
+	public Integer 	columnAsInteger(String column) { return Integer.valueOf(columns.get(column)); }
+	public Long 	columnAsLong(String column) { return Long.valueOf(columns.get(column)); }
+	public Float 	columnAsFloat(String column) { return Float.valueOf(columns.get(column)); }
+	public Double 	columnAsDouble(String column) { return Double.valueOf(columns.get(column)); }
+	public Boolean 	columnAsBoolean(String column) { return Boolean.valueOf(columns.get(column)); }
 	
-	public Date getAsDate(String column) {
+	public Date columnAsDate(String column) {
 		String value = columns.get(column);
 		LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
 		return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
 	}
-	
-	
-	public String 	mapToString	(Class<?> c, String attribute) 	{ return getAsString(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public String 	mapToString	(Entity<?> e, String attribute)	{ return getAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Short 	mapToShort	(Class<?> c, String attribute) 	{ return getAsShort(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Short 	mapToShort	(Entity<?> e, String attribute)	{ return getAsShort(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Integer 	mapToInteger(Class<?> c, String attribute) 	{ return getAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Integer 	mapToInteger(Entity<?> e, String attribute)	{ return getAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Boolean 	mapToBoolean(Class<?> c, String attribute) 	{ return getAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Boolean 	mapToBoolean(Entity<?> e, String attribute)	{ return getAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Long 	mapToLong	(Class<?> c, String attribute) 	{ return getAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Long 	mapToLong	(Entity<?> e, String attribute) { return getAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Date 	mapToDate	(Class<?> c, String attribute)	{ return getAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Date 	mapToDate	(Entity<?> e, String attribute)	{ return getAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
 
+	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { return (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
+	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { return (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
 	
-	
+	public String 	attributeAsString	(Class<?> c, String attribute) 	{ return columnAsString(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public String 	attributeAsString	(Entity<?> e, String attribute)	{ return columnAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Short 	attributeAsShort	(Class<?> c, String attribute) 	{ return columnAsShort(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Short 	attributeAsShort	(Entity<?> e, String attribute)	{ return columnAsShort(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Integer 	attributeAsInteger(Class<?> c, String attribute) 	{ return columnAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Integer 	attributeAsInteger(Entity<?> e, String attribute)	{ return columnAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Boolean 	attributeAsBoolean(Class<?> c, String attribute) 	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Boolean 	attributeAsBoolean(Entity<?> e, String attribute)	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Long 	attributeAsLong	(Class<?> c, String attribute) 	{ return columnAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Long 	attributeAsLong	(Entity<?> e, String attribute) { return columnAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Date 	attributeAsDate	(Class<?> c, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Date 	attributeAsDate	(Entity<?> e, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
+
 
 	// @Enumerated
-	public Enum getAsEnum(Class<?> entity, String attribute) {
+	public Enum attributeAsEnum(Class<?> entity, String attribute) {
 		
 		try {
-			Field[] fields = entity.getDeclaredFields();
 			Field field = entity.getDeclaredField(attribute);
 			Type type = field.getGenericType();
 			
@@ -102,10 +101,10 @@ public class Result {
 	
 				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
-					return Enum.valueOf((Class)type, mapToString(entity, attribute));
+					return Enum.valueOf((Class)type, attributeAsString(entity, attribute));
 				}
 				else {
-					return (Enum) field.getType().getEnumConstants()[mapToInteger(entity, attribute)];
+					return (Enum) field.getType().getEnumConstants()[attributeAsInteger(entity, attribute)];
 				}
 			}
 		}
@@ -115,6 +114,10 @@ public class Result {
 		return null;
 		
 	}
+
+	
+
+
 	
 	
 	public Long getCount() {

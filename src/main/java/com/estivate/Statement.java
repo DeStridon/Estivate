@@ -190,7 +190,7 @@ public class Statement implements AutoCloseable{
 	
 	
 	
-	public static Statement toStatement(Context context, Connection connection, Query query) {
+	public static Statement toStatement(Context context, Connection connection, Query<?> query) {
 		
 		Statement statement = new Statement(context, connection);
 		

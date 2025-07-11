@@ -74,10 +74,10 @@ public class ResultTest {
 			context.updateOrInsert(parent);
 		}
 		
-		Query query = new Query(ParentEntity.class);
+		Query<ParentEntity> query = new Query<>(ParentEntity.class);
 		query.eq(ParentEntity.class, ParentEntity.Fields.name, "parallel test task");
 		
-		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);
+		List<ParentEntity> parents = context.fetchList(query);
 		
 		
 	}
@@ -95,18 +95,18 @@ public class ResultTest {
 		
 		context.updateOrInsert(parent);
 		
-		Query query = new Query(ParentEntity.class);
-		query.eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId());
+		Query<ParentEntity> query = new Query<>(ParentEntity.class);
+		query.eq(AbstractEntity.Fields.id, parent.getId());
 		
-		Result results = context.fetchList(query).get(0);
+		Result results = context.fetchListAsResults(query).get(0);
 		
-		JobEnum status = (JobEnum) results.getAsEnum(ParentEntity.class, ParentEntity.Fields.status);
+		JobEnum status = (JobEnum) results.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status);
 		assertEquals(JobEnum.Correction, status);
 		
-		StringEnum stringEnum = (StringEnum) results.getAsEnum(ParentEntity.class, ParentEntity.Fields.stringEnum);
+		StringEnum stringEnum = (StringEnum) results.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.stringEnum);
 		assertEquals(StringEnum.DEF, stringEnum);
 	
-		Date updatedDate = results.mapToDate(ParentEntity.class, ParentEntity.Fields.updated);
+		Date updatedDate = results.attributeAsDate(ParentEntity.class, ParentEntity.Fields.updated);
 		
 		
 		

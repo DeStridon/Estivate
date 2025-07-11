@@ -69,7 +69,7 @@ public class QueryCriterionTest {
 				
 				.eq(ParentEntity.class, ParentEntity.Fields.name, "parent 2");
 		
-		List<Result> results = context.fetchList(query);
+		List<Result> results = context.fetchListAsResults(query);
 		
 		assertEquals(1, results.size());
 		

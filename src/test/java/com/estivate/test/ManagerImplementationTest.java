@@ -45,6 +45,8 @@ public class ManagerImplementationTest {
 
         public abstract List<ParentEntity> findByHomeIdBetween(long homeId1, long homeId2);
         
+        public abstract List<ParentEntity> findByHomeIdOrderByCreatedDesc(long homeId);
+        
     }
 
 
