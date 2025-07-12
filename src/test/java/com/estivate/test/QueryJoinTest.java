@@ -38,7 +38,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 1").age(3).build());
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
 		
-		Query query = new Query(ChildEntity.class)
+		Query<ChildEntity> query = Estivate.query(ChildEntity.class)
 				.comment("Query Join Test")
 				.eq(ChildEntity.class, ChildEntity.Fields.parentId, 2);
 		

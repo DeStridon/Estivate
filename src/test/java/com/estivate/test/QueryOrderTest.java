@@ -25,7 +25,7 @@ public class QueryOrderTest {
 	@Test
 	public void orderTest1() throws SQLException {
 		
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.orderAsc(ParentEntity.class, ParentEntity.Fields.name, Estivate.Functions.isNull);
 		
 		String queryString = context.queryAsString(query);

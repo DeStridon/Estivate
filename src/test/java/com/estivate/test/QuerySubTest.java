@@ -22,12 +22,12 @@ public class QuerySubTest {
 	@Test
 	void subTest1() throws SQLException{
 
-		Query subQuery = Estivate.query(ChildEntity.class)
+		Query<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
 				.select(ChildEntity.class, ChildEntity.Fields.parentId)
 				.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.inSubQuery(ParentEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		try(Connection connection = context.datasource.getConnection()){

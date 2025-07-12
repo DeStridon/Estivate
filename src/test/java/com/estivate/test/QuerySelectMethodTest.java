@@ -8,6 +8,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
@@ -27,7 +28,7 @@ public class QuerySelectMethodTest {
 	@Test
 	public void selectMaxTest() throws SQLException {
 		
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.selectMaxAs(ParentEntity.class, AbstractEntity.Fields.id, "maxTaskId")
 				.selectCountAs(ParentEntity.class, AbstractEntity.Fields.id, "countTaskId")
 				.selectMinAs(ParentEntity.class, AbstractEntity.Fields.id, "minTaskId")
@@ -37,7 +38,7 @@ public class QuerySelectMethodTest {
 
 		System.out.println(context.queryAsString(query));
 		
-		List<Result> results = context.fetchList(query);
+		List<Result> results = context.fetchListAsResults(query);
 		
 		
 		Assert.assertEquals(1, results.size());
@@ -46,7 +47,7 @@ public class QuerySelectMethodTest {
 	
 	@Test
 	public void countTest() throws SQLException {
-		Query query = new Query(ParentEntity.class);
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class);
 		
 		query.selectCount();
 		

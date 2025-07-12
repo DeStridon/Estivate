@@ -41,8 +41,8 @@ import net.bytebuddy.matcher.ElementMatchers;
 public class Estivate {
 
 	// Entities Factory
-	public static Query query(Entity<?> entity) { return new Query(entity); }
-	public static Query query(Class<?> entity) 	{ return new Query(entity); }
+	public static <U> Query<U> query(Entity<U> entity) { return new Query<>(entity); }
+	public static <U> Query<U> query(Class<U> entity) 	{ return new Query<>(entity); }
 	
 	
 	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field, null); }

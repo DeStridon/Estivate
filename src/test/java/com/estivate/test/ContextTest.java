@@ -49,7 +49,7 @@ public class ContextTest {
 		
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class, "myTask");
 		
-		Query<ParentEntity> query = new Query<>(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
+		Query<ParentEntity> query = Estivate.query(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
 		List<ParentEntity> resultQueries = context.fetchList(query);
 		
 	}

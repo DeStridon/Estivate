@@ -24,7 +24,7 @@ public class QueryPreProcessorTest {
             }
         };
 
-        Query query = Estivate.query(ParentEntity.class);
+        Query<ParentEntity> query = Estivate.query(ParentEntity.class);
 
         String queryString = context.queryAsString(query);
 
