@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -71,6 +72,10 @@ public abstract class Context {
 	public <T> T fetchSingle(Query<T> query){
 		return fetchSingleAs(query, (Class<T>) query.getEntity().entity);
 	}
+	
+	public <T> Optional<T> fetchSingleOptional(Query<T> query){
+		return Optional.ofNullable(fetchSingle(query));
+	}
 
 	@SneakyThrows
 	public Result fetchSingleAsResult(Query<?> query) {
@@ -97,6 +102,10 @@ public abstract class Context {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public Optional<Result> fetchSingleAsResultOptional(Query<?> query){
+		return Optional.ofNullable(fetchSingleAsResult(query));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -145,6 +154,10 @@ public abstract class Context {
 			U object = result.mapTo(clazz);
 	    	return object;
 		}
+	}
+
+	public <U> Optional<U> fetchSingleAsOptional(Query<?> query, Class<U> clazz) {
+		return Optional.ofNullable(fetchSingleAs(query, clazz));
 	}
 
 	public <T> List<T> fetchList(Query<T> query){

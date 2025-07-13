@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -748,12 +749,24 @@ public class Query<T> extends Aggregator{
 		return context.fetchSingle(this);
 	}
 
-	public <U> U fetchSingleAs(Context context, Class<U> clazz) {
-		return context.fetchSingleAs(this, clazz);
+	public Optional<T> fetchSingleOptional(Context context) {
+		return context.fetchSingleOptional(this);
 	}
 
 	public Result fetchSingleAsResult(Context context){
 		return context.fetchSingleAsResult(this);
+	}
+
+	public Optional<Result> fetchSingleAsResultOptional(Context context) {
+		return context.fetchSingleAsResultOptional(this);
+	}
+
+	public <U> U fetchSingleAs(Context context, Class<U> clazz) {
+		return context.fetchSingleAs(this, clazz);
+	}
+
+	public Optional<T> fetchSingleAsOptional(Context context) {
+		return context.fetchSingleAsOptional(this, (Class<T>) entity.entity);
 	}
 
 
