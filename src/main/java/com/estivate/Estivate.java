@@ -51,6 +51,8 @@ public class Estivate {
 	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function) { return attribute(new Entity<>(entity), field, function); }
 	public static Attribute attributeOfAlias(String alias, Attribute.Function function) { return new Attribute(null, alias, function); }
 
+	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
+
 	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}
 	public static Aggregator or(List<EstivateNode> criterions) { return new Aggregator(GroupType.OR, criterions); }
 	public static Aggregator and(EstivateNode... criterions) { return and(new ArrayList<>(Arrays.asList(criterions))); }

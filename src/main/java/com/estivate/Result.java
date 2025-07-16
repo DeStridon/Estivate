@@ -53,6 +53,8 @@ public class Result {
 		return u;
 		
 	}
+
+	
 	
 	public <U> U mapTo(Class<U> clazz) throws SecurityException, IllegalArgumentException {
 		return mapTo(new Entity<U>(clazz));

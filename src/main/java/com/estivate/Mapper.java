@@ -28,6 +28,7 @@ import javax.persistence.Enumerated;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.Context;
+import com.estivate.entity.Mapping;
 import com.estivate.query.Query.Entity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
@@ -109,7 +110,7 @@ public class Mapper<U> {
 			Field field = columnFields.get(i);
 			chronometer.step("get field");
 			if(field != null) {
-				setGeneratedField(entity, row[i], field, obj);
+				setGeneratedField(entity, field, obj, row[i]);
 				chronometer.step("generate field "+field.getName());
 			}
 		}
@@ -132,10 +133,32 @@ public class Mapper<U> {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
 			for(Field field : fields) {
-				String value = arguments.get(getFieldName(entity, field));
-				setGeneratedField(entity, value, field, obj);
+				// TODO : check if field has mapping annotation
+				if(field.getDeclaredAnnotation(Mapping.Attribute.class) != null) {
+					Mapping.Attribute mappingAnnotation = field.getDeclaredAnnotation(Mapping.Attribute.class);
+
+					Field mappingField = FieldUtils.getEntityFields(mappingAnnotation.entity()).stream().filter(x -> x.getName().equals(mappingAnnotation.attribute())).findFirst().orElse(null);
+					if(mappingField == null){
+						log.error("Field "+mappingAnnotation.attribute()+" not found in entity "+mappingAnnotation.entity());
+						continue;
+					}
+					String value = arguments.get(getFieldName(new Entity<>(mappingAnnotation.entity()), mappingField));
+					setGeneratedField(entity, field, obj, value);
+				}
+				else if(field.getDeclaredAnnotation(Mapping.Column.class) != null) {
+					Mapping.Column mappingAnnotation = field.getDeclaredAnnotation(Mapping.Column.class);
+					String value = arguments.get(mappingAnnotation.column());
+					setGeneratedField(entity, field, obj, value);
+				}
+				else{
+					String value = arguments.get(getFieldName(entity, field));
+					setGeneratedField(entity, field, obj, value);	
+				}
+
 			}
+
 			currentClass = currentClass.getSuperclass();
+
 		}
 		
 		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
@@ -160,7 +183,7 @@ public class Mapper<U> {
 	}
 	
 	
-	public void setGeneratedField(Entity<?> entity, String value, Field field, U obj) throws EstivateException {
+	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value) throws EstivateException {
 		try {
 			
 			if(value == null) {
