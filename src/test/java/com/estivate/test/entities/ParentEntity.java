@@ -8,10 +8,11 @@ import javax.persistence.Enumerated;
 import javax.persistence.PostPersist;
 import javax.persistence.PrePersist;
 
-import com.estivate.entity.InsertDate;
-import com.estivate.entity.UpdateDate;
-import com.estivate.entity.VirtualForeignKey;
+import com.estivate.Entity.InsertDate;
+import com.estivate.Entity.UpdateDate;
+import com.estivate.Entity.VirtualForeignKey;
 import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.TableIndexes;
 import com.estivate.test.entities.misc.Language;
@@ -24,8 +25,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
-
-import com.estivate.index.Annotations.IndexType;
 
 @Slf4j
 @Data

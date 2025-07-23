@@ -6,10 +6,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
-import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ParentEntity;
 
@@ -34,7 +34,7 @@ public class ContextTest {
 		context.updateAll(Arrays.asList(parent1, parent2, parent3));
 		
 		
-		Query query = new Query(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
+		Query<ParentEntity> query = new Query<>(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
 		List<ParentEntity> resultQueries = context.fetchListAs(query, ParentEntity.class);
 		
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 1")));

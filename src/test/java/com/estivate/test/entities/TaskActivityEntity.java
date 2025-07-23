@@ -2,7 +2,7 @@ package com.estivate.test.entities;
 
 import javax.persistence.Id;
 
-import com.estivate.entity.VirtualForeignKey;
+import com.estivate.Entity.VirtualForeignKey;
 
 import lombok.experimental.FieldNameConstants;
 

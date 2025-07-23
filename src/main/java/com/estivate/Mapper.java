@@ -1,5 +1,9 @@
 package com.estivate;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -28,7 +32,6 @@ import javax.persistence.Enumerated;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.Context;
-import com.estivate.query.Query.Entity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
@@ -109,7 +112,7 @@ public class Mapper<U> {
 			Field field = columnFields.get(i);
 			chronometer.step("get field");
 			if(field != null) {
-				setGeneratedField(entity, row[i], field, obj);
+				setGeneratedField(entity, field, obj, row[i]);
 				chronometer.step("generate field "+field.getName());
 			}
 		}
@@ -132,10 +135,32 @@ public class Mapper<U> {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
 			for(Field field : fields) {
-				String value = arguments.get(getFieldName(entity, field));
-				setGeneratedField(entity, value, field, obj);
+				// check if field has mapping annotation
+				if(field.getDeclaredAnnotation(Mapper.Attribute.class) != null) {
+					Mapper.Attribute mappingAnnotation = field.getDeclaredAnnotation(Mapper.Attribute.class);
+
+					Field mappingField = FieldUtils.getEntityFields(mappingAnnotation.entity()).stream().filter(x -> x.getName().equals(mappingAnnotation.attribute())).findFirst().orElse(null);
+					if(mappingField == null){
+						log.error("Field "+mappingAnnotation.attribute()+" not found in entity "+mappingAnnotation.entity());
+						continue;
+					}
+					String value = arguments.get(getFieldName(new Entity<>(mappingAnnotation.entity()), mappingField));
+					setGeneratedField(entity, field, obj, value);
+				}
+				else if(field.getDeclaredAnnotation(Mapper.Column.class) != null) {
+					Mapper.Column mappingAnnotation = field.getDeclaredAnnotation(Mapper.Column.class);
+					String value = arguments.get(mappingAnnotation.column());
+					setGeneratedField(entity, field, obj, value);
+				}
+				else{
+					String value = arguments.get(getFieldName(entity, field));
+					setGeneratedField(entity, field, obj, value);	
+				}
+
 			}
+
 			currentClass = currentClass.getSuperclass();
+
 		}
 		
 		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
@@ -160,7 +185,7 @@ public class Mapper<U> {
 	}
 	
 	
-	public void setGeneratedField(Entity<?> entity, String value, Field field, U obj) throws EstivateException {
+	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value) throws EstivateException {
 		try {
 			
 			if(value == null) {
@@ -270,6 +295,21 @@ public class Mapper<U> {
 		return chronometer.getLog();
 	}
 
+	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface Attribute {
+		
+		public Class<?> entity();
+		public String attribute();
+
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface Column {
+		public String column();
+	}
 
 
 

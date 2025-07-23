@@ -6,16 +6,11 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.PostLoad;
 import javax.persistence.Transient;
-
-import com.estivate.entity.CachedEntity;
-import com.estivate.query.Query;
-import com.estivate.query.Query.Entity;
 
 public class FieldUtils {
 	

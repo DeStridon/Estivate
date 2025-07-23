@@ -4,16 +4,14 @@ import java.util.Date;
 
 import javax.persistence.Enumerated;
 
-import com.estivate.entity.InsertDate;
-import com.estivate.entity.UpdateDate;
-import com.estivate.entity.VirtualForeignKey;
+import com.estivate.Entity.InsertDate;
+import com.estivate.Entity.UpdateDate;
+import com.estivate.Entity.VirtualForeignKey;
 import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.TableIndexes;
 import com.estivate.test.entities.ParentEntity.JobEnum;
-
-import com.estivate.index.Annotations.IndexType;
-
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

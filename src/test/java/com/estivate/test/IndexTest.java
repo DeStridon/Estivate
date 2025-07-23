@@ -47,11 +47,11 @@ public class IndexTest {
 		List<TableIndex> indexes = id.getEntityIndexes();
 		Assert.assertEquals(3, indexes.size());
 		
-		Assert.assertEquals(0, id.listToApply().size());
+		Assert.assertEquals(0, id.listUnimplemented().size());
 		
 		id.cleanSpecific(indexes.get(0));
 		
-		List<TableIndex> missingDbIndexes = id.listToApply();
+		List<TableIndex> missingDbIndexes = id.listUnimplemented();
 		Assert.assertEquals(1, missingDbIndexes.size());
 
 	}

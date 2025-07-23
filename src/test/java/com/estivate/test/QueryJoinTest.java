@@ -11,11 +11,11 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
-import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
@@ -56,12 +56,12 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = new Query<>(ParentEntity.class)
 				.joinInner(ParentEntity.class, ChildEntity.class)
 				.selectAll(ChildEntity.class)
 				.eq(ParentEntity.class, ParentEntity.Fields.name, parent.getName());
 		
-		List<Result> results = context.fetchList(query);
+		List<Result> results = context.fetchListAsResults(query);
 		
 		log.debug(context.queryAsString(query));
 		
@@ -112,12 +112,12 @@ public class QueryJoinTest {
 	public void squareJoinTest() throws SQLException {
 		
 		
-		Entity<?> parentA = new Entity<>(ParentEntity.class, "ParentA");
-		Entity<?> parentB = new Entity<>(ParentEntity.class, "ParentB");
-		Entity<?> childA = new Entity<>(ChildEntity.class, "ChildA");
-		Entity<?> childB = new Entity<>(ChildEntity.class, "ChildB");
+		Entity<ParentEntity> parentA = new Entity<>(ParentEntity.class, "ParentA");
+		Entity<ParentEntity> parentB = new Entity<>(ParentEntity.class, "ParentB");
+		Entity<ChildEntity> childA = new Entity<>(ChildEntity.class, "ChildA");
+		Entity<ChildEntity> childB = new Entity<>(ChildEntity.class, "ChildB");
 		
-		Query query = new Query(parentA)
+		Query<ParentEntity> query = new Query<>(parentA)
 				.joinInner(parentA, childA)
 				.joinInner(childA, childB, ChildEntity.Fields.description, ChildEntity.Fields.description)
 				.joinInner(childB, parentB)

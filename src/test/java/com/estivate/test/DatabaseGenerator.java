@@ -30,11 +30,11 @@ public class DatabaseGenerator {
 			
 			context.create(ParentEntity.class);
 			IndexDiff parentIndexDiff = new IndexDiff(context, ParentEntity.class);
-			parentIndexDiff.apply();
+			parentIndexDiff.addUnimplemented();
 			
 			context.create(ChildEntity.class);
 			IndexDiff childIndexDiff = new IndexDiff(context, ChildEntity.class);
-			childIndexDiff.apply();
+			childIndexDiff.addUnimplemented();
 		
 			
 			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));

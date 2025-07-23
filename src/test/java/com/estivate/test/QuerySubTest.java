@@ -3,6 +3,7 @@ package com.estivate.test;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -20,7 +21,7 @@ public class QuerySubTest {
 	
 	
 	@Test
-	void subTest1() throws SQLException{
+	void inSubQueryTest() throws SQLException{
 
 		Query<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
 				.select(ChildEntity.class, ChildEntity.Fields.parentId)
@@ -37,6 +38,35 @@ public class QuerySubTest {
 		}
 		
 	}
+
+
+    @Test
+    void fromSubQueryTest() throws SQLException {
+        // Create a subquery selecting parent IDs from ChildEntity
+        Query<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+                .select(ChildEntity.class, ChildEntity.Fields.parentId);
+
+        // Create main query using the subquery
+        Query<ChildEntity> mainQuery = Estivate.query(subQuery, "sub");
+
+		String sql = context.queryAsString(mainQuery);
+		System.out.println(sql);
+
+        // Verify the query structure
+		Assert.assertTrue(sql.contains("FROM (SELECT"));
+		Assert.assertTrue(sql.contains("AS sub"));
+		
+    }
+
+	@Test
+	void joinSubQueryTest() throws SQLException {
+		Query<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+			.selectMax(AbstractEntity.Fields.id);
+
+		Query<ChildEntity> mainQuery = Estivate.query(ChildEntity.class)
+			.joinInner(ChildEntity.class, Estivate.queryEntity(subQuery, "sub"), AbstractEntity.Fields.id, AbstractEntity.Fields.id);
+			
+		context.queryAsString(mainQuery);
 	
-	
+	}
 }

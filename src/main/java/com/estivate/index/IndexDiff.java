@@ -31,12 +31,12 @@ public class IndexDiff {
 	
 	
     public void cleanAndApply() {
-		clean();
-		apply();
+		removeUndeclared();
+		addUnimplemented();
     }
 
 
-	public List<TableIndex> listToClean(){
+	public List<TableIndex> listUndeclared(){
 		
 		List<TableIndex> entityIndexes = getEntityIndexes();
 		List<TableIndex> databaseIndexes = getDatabaseIndexes();
@@ -53,7 +53,23 @@ public class IndexDiff {
 
 	}
 	
-	public List<TableIndex> listToApply(){
+	public List<TableIndex> listUndeclaredDuplicates(){
+		List<TableIndex> entityIndexes = getEntityIndexes();
+		List<TableIndex> databaseIndexes = getDatabaseIndexes();
+		
+		List<TableIndex> resultIndexes = new ArrayList<>();
+
+		for(TableIndex databaseIndex : databaseIndexes) {
+			TableIndex entityIndex = entityIndexes.stream().filter(x -> !indexEquals(x, databaseIndex) && indexColumnsEquals(x, databaseIndex)).findFirst().orElse(null);
+			if(entityIndex == null) {
+				resultIndexes.add(databaseIndex);
+			}
+		}
+
+		return resultIndexes;
+	}
+	
+	public List<TableIndex> listUnimplemented(){
 	
 		List<TableIndex> entityIndexes = getEntityIndexes();
 		List<TableIndex> databaseIndexes = getDatabaseIndexes();
@@ -70,16 +86,22 @@ public class IndexDiff {
 		
 	}
 
-	public void clean() {
-		for(TableIndex index : listToClean()) {
+	public void removeUndeclared() {
+		for(TableIndex index : listUndeclared()) {
+			cleanSpecific(index);
+		}
+	}
+
+	public void removeUndeclaredDuplicates() {
+		for(TableIndex index : listUndeclaredDuplicates()) {
 			cleanSpecific(index);
 		}
 	}
 
 	
 
-	public void apply() {
-		for(TableIndex index : listToApply()) {
+	public void addUnimplemented() {
+		for(TableIndex index : listUnimplemented()) {
 			applySpecific(index);
 		}
 	}
@@ -124,6 +146,10 @@ public class IndexDiff {
 		if(!left.name().toUpperCase().equals(right.name().toUpperCase())) {
 			return false;
 		}
+		return indexColumnsEquals(left, right);
+	}
+	
+	boolean indexColumnsEquals(TableIndex left, TableIndex right) {
 		if(left.columns().length != right.columns().length) {
 			return false;
 		}

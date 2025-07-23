@@ -6,10 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
+import com.estivate.Entity;
+import com.estivate.Entity.SubQueryEntity;
+import com.estivate.Entity.VirtualForeignKey;
 import com.estivate.Estivate;
-import com.estivate.entity.VirtualForeignKey;
 import com.estivate.util.FieldUtils;
 
 import lombok.AccessLevel;
@@ -18,10 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Join {
 
-	public Query.Entity<?> leftEntity;
+	public Entity<?> leftEntity;
 
-	public Query.Entity<?> rightEntity;
-
+	public Entity<?> rightEntity;
 	
 	
 	public Aggregator joiningCriterion = Estivate.and();
@@ -32,28 +32,31 @@ public class Join {
 	public List<String> indexNames;
 
 
-
-	public Join(Query.Entity<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
+	public Join(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
 		this.leftEntity = leftEntity;
 		this.rightEntity = rightEntity;
 		this.joinType = joinType;
 		this.on(leftAttribute, rightAttribute);
 	}
 
-	public Join(Class<?> leftEntity, Query.Entity<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
-		this(new Query.Entity<>(leftEntity), rightEntity, leftAttribute, rightAttribute, joinType);
+	public Join(Class<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
+		this(new Entity<>(leftEntity), rightEntity, leftAttribute, rightAttribute, joinType);
 	}
 
-	public Join(Query.Entity<?> leftEntity, Class<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
-		this(leftEntity, new Query.Entity<>(rightEntity), leftAttribute, rightAttribute, joinType);
+	public Join(Entity<?> leftEntity, Class<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
+		this(leftEntity, new Entity<>(rightEntity), leftAttribute, rightAttribute, joinType);
 	}
 
 	public Join(Class<?> leftEntity, Class<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
-		this(new Query.Entity<>(leftEntity), new Query.Entity<>(rightEntity), leftAttribute, rightAttribute, joinType);
+		this(new Entity<>(leftEntity), new Entity<>(rightEntity), leftAttribute, rightAttribute, joinType);
+	}
+
+	public Join(Class<?> leftEntity, SubQueryEntity<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
+		this(new Entity<>(leftEntity), rightEntity, leftAttribute, rightAttribute, joinType);
 	}
 
 
-	public static Join find(Query.Entity<?> internal, Query.Entity<?> external, JoinType joinType) {
+	public static Join find(Entity<?> internal, Entity<?> external, JoinType joinType) {
 
 		// try doing the join from external class to internal class
 		for(Field externalField : FieldUtils.getEntityFields(external.entity)) {

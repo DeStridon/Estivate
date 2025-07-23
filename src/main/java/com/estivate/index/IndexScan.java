@@ -48,13 +48,13 @@ public class IndexScan {
 
 	public void cleanAll(){
 		for(IndexDiff indexDiff : indexDiffs) {
-			indexDiff.clean();
+			indexDiff.removeUndeclared();
 		}
 	}
 	
 	public void applyAll(){
 		for(IndexDiff indexDiff : indexDiffs) {
-			indexDiff.apply();
+			indexDiff.addUnimplemented();
 		}
 	}
 

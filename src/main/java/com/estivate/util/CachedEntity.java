@@ -1,4 +1,4 @@
-package com.estivate.entity;
+package com.estivate.util;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -8,8 +8,6 @@ import java.util.Set;
 
 import javax.persistence.PostLoad;
 import javax.persistence.Transient;
-
-import com.estivate.util.FieldUtils;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;

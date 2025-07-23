@@ -13,13 +13,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Query;
-import com.estivate.query.Query.Entity;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
@@ -150,7 +150,7 @@ public class QueryCriterionTest {
 		
 		Query query = new Query(ParentEntity.class);
 
-		Entity taskEntity = new Query.Entity(ParentEntity.class);
+		Entity<ParentEntity> taskEntity = new Entity<>(ParentEntity.class);
 		
 		query.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1234, 1235));
 		assertEquals(2, context.fetchList(query).size());
@@ -172,9 +172,9 @@ public class QueryCriterionTest {
 		ParentEntity parent1 = context.updateOrInsert(ParentEntity.builder().homeId(2234).name("task 1").build());
 		ParentEntity parent2 = context.updateOrInsert(ParentEntity.builder().homeId(2235).name("task 2").build());
 		
-		Query query = new Query(ParentEntity.class);
+		Query<ParentEntity> query = new Query<>(ParentEntity.class);
 
-		Entity taskEntity = new Query.Entity(ParentEntity.class);
+		Entity<ParentEntity> taskEntity = new Entity<>(ParentEntity.class);
 		
 		query.in(taskEntity, ParentEntity.Fields.homeId, Arrays.asList(2234, 2235));
 		assertEquals(2, context.fetchList(query).size());

@@ -1,8 +1,6 @@
 package com.estivate.query;
 
-import java.util.List;
-
-import com.estivate.query.Query.Entity;
+import com.estivate.Entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

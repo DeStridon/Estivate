@@ -19,6 +19,7 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+import com.estivate.Entity.SubQueryEntity;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
@@ -207,19 +208,11 @@ public class Statement implements AutoCloseable{
 		
 		List<Select> selects = query.getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
 		
-//		selects.addAll(query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).collect(Collectors.toList()));
-//		selects.addAll(query.getSelects().stream().filter(x -> !selects.contains(x)).collect(Collectors.toList()));
-		
-//		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function != null && x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList())));
-//		statement.appendQuery(String.join(", ", query.getSelects().stream().filter(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct)).map(statement::selectString).collect(Collectors.toList()))+"\n");
-
 		statement.appendQuery(String.join(", ", selects.stream().map(statement::selectString).collect(Collectors.toList()))+"\n");
 		
-		//statement.appendQuery("FROM "+Query.nameMapper.mapDatabaseClass(joinQuery.getEntity())+"\n");
-		statement.appendQuery("FROM").appendQuery(context.nameMapper.mapDatabaseClass(query.getEntity().entity));
-		if(query.getEntity().alias != null) {
-			statement.appendQuery(query.getEntity().alias);
-		}
+		statement.appendQuery("FROM");
+
+		statement.appendEntity(query.getEntity());
 
 		if(query.getIndexHint() != null && query.getIndexNames() != null && !query.getIndexNames().isEmpty()) {
 			statement.appendQuery(query.getIndexHint()+ " INDEX ("+query.getIndexNames().stream().collect(Collectors.joining(", "))+")");
@@ -277,6 +270,28 @@ public class Statement implements AutoCloseable{
 		appendNodeToStatement(join.joiningCriterion, false);
 		
 		
+	}
+
+	public void appendEntity(Entity<?> entity) {
+
+		if(entity instanceof SubQueryEntity<?>){
+
+			appendQuery("(");
+			Statement subStatement = Statement.toStatement(context, connection, ((SubQueryEntity<?>) entity).query);
+			appendQuery(subStatement.query());
+			appendQuery(") AS ");
+			parameters.addAll(subStatement.parameters);
+			if(entity.alias != null) {
+				appendQuery(entity.alias);
+			}
+
+		}
+		else{
+			appendQuery(context.nameMapper.mapDatabaseClass(entity.entity));
+			if(entity.alias != null) {
+				appendQuery(entity.alias);
+			}
+		}
 	}
 	
 	public String orderString(Order order) {

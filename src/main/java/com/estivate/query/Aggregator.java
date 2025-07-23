@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.estivate.Entity;
 import com.estivate.Estivate;
-import com.estivate.query.Query.Entity;
 
 import lombok.Getter;
 

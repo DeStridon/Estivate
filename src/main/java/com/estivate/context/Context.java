@@ -34,19 +34,19 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.estivate.Entity.InsertDate;
+import com.estivate.Entity.UpdateDate;
 import com.estivate.Mapper;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Result;
 import com.estivate.Statement;
-import com.estivate.entity.CachedEntity;
-import com.estivate.entity.InsertDate;
-import com.estivate.entity.UpdateDate;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
+import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
