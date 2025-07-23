@@ -56,6 +56,7 @@ public class Estivate {
 
 	public static <U> SubQueryEntity<U> queryEntity(Query<U> query, String alias) { return new SubQueryEntity<>(query, alias); }
 
+
 	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}
 	public static Aggregator or(List<EstivateNode> criterions) { return new Aggregator(GroupType.OR, criterions); }
 	public static Aggregator and(EstivateNode... criterions) { return and(new ArrayList<>(Arrays.asList(criterions))); }

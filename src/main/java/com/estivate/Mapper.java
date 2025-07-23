@@ -32,6 +32,7 @@ import javax.persistence.Enumerated;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.Context;
+//github.com/DeStridon/Estivate.git
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
@@ -135,9 +136,10 @@ public class Mapper<U> {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
 			for(Field field : fields) {
+
 				// check if field has mapping annotation
-				if(field.getDeclaredAnnotation(Mapper.Attribute.class) != null) {
-					Mapper.Attribute mappingAnnotation = field.getDeclaredAnnotation(Mapper.Attribute.class);
+				if(field.getDeclaredAnnotation(Attribute.class) != null) {
+					Attribute mappingAnnotation = field.getDeclaredAnnotation(Attribute.class);
 
 					Field mappingField = FieldUtils.getEntityFields(mappingAnnotation.entity()).stream().filter(x -> x.getName().equals(mappingAnnotation.attribute())).findFirst().orElse(null);
 					if(mappingField == null){
@@ -147,8 +149,8 @@ public class Mapper<U> {
 					String value = arguments.get(getFieldName(new Entity<>(mappingAnnotation.entity()), mappingField));
 					setGeneratedField(entity, field, obj, value);
 				}
-				else if(field.getDeclaredAnnotation(Mapper.Column.class) != null) {
-					Mapper.Column mappingAnnotation = field.getDeclaredAnnotation(Mapper.Column.class);
+				else if(field.getDeclaredAnnotation(Column.class) != null) {
+					Column mappingAnnotation = field.getDeclaredAnnotation(Column.class);
 					String value = arguments.get(mappingAnnotation.column());
 					setGeneratedField(entity, field, obj, value);
 				}
