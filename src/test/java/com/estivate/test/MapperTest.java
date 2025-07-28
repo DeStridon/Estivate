@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.Mapper;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
@@ -20,7 +21,7 @@ public class MapperTest {
 		
 		ParentEntity newParent = context.updateOrInsert(ParentEntity.builder().name("parent 1 name").build());	
 		
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.eq(ParentEntity.class, AbstractEntity.Fields.id, newParent.getId());
 				
 		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);
@@ -29,10 +30,8 @@ public class MapperTest {
 		
 		System.out.println(parents.get(0).getCreated());
 		
-		Mapper mapper = new Mapper<>(ParentEntity.class, context);
-		
-		//ResultSetMetaData rsmd
-		
+		Mapper<ParentEntity> mapper = new Mapper<>(ParentEntity.class, context);
+				
 	}
 
 }

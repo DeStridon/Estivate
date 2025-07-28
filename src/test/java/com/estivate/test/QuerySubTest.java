@@ -64,7 +64,7 @@ public class QuerySubTest {
 			.selectMax(AbstractEntity.Fields.id);
 
 		Query<ChildEntity> mainQuery = Estivate.query(ChildEntity.class)
-			.joinInner(ChildEntity.class, Estivate.queryEntity(subQuery, "sub"), AbstractEntity.Fields.id, AbstractEntity.Fields.id);
+			.joinInner(ChildEntity.class, Estivate.subQueryEntity(subQuery, "sub"), AbstractEntity.Fields.id, AbstractEntity.Fields.id);
 			
 		context.queryAsString(mainQuery);
 	

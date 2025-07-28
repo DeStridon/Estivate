@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,8 +64,8 @@ public class Query<T> extends Aggregator{
 
 
 	public Query<T> like 		(Attribute attribute, String value)				{ super.like(attribute, value);  return this; }
-	public Query<T> likeIn 	(Attribute attribute, Collection<String> value)	{ super.likeIn(attribute, value);  return this; }
-	public Query<T> notLike	(Attribute attribute, String value)				{ super.notLike(attribute, value);  return this; }
+	public Query<T> likeIn 		(Attribute attribute, Collection<String> value)	{ super.likeIn(attribute, value);  return this; }
+	public Query<T> notLike		(Attribute attribute, String value)				{ super.notLike(attribute, value);  return this; }
 	public Query<T> notLikeIn	(Attribute attribute, Collection<String> value)	{ super.notLikeIn(attribute, value);  return this; }
 	
 	
@@ -86,10 +87,10 @@ public class Query<T> extends Aggregator{
 
 	public Query<T> nativeCriterion 	(Attribute attribute, String criterion) { super.nativeCriterion(attribute, criterion); return this; }
 	
-	public Query<T> inSubQuery			(Attribute attribute, Query subQuery){ super.inSubQuery(attribute, subQuery); return this; }
-	public Query<T> notInSubQuery		(Attribute attribute, Query subQuery){ super.notInSubQuery(attribute, subQuery); return this; }
-	public Query<T> existsSubQuery		(Query subQuery){ super.existsSubQuery(subQuery); return this; }
-	public Query<T> notExistsSubQuery	(Query subQuery){ super.notExistsSubQuery(subQuery); return this; }
+	public Query<T> inSubQuery			(Attribute attribute, Query<?> subQuery){ super.inSubQuery(attribute, subQuery); return this; }
+	public Query<T> notInSubQuery		(Attribute attribute, Query<?> subQuery){ super.notInSubQuery(attribute, subQuery); return this; }
+	public Query<T> exists		(Query<?> subQuery){ super.exists(subQuery); return this; }
+	public Query<T> notExists	(Query<?> subQuery){ super.notExists(subQuery); return this; }
 
 	
 	public Query<T> notInIfNotEmpty   	(Attribute attribute, Collection<?> values) { super.notInIfNotEmpty   (attribute, values); return this; }
@@ -103,7 +104,7 @@ public class Query<T> extends Aggregator{
 	public Query<T> likeContainsIfNotNull 		(Attribute attribute, String value)        	{ super.likeContainsIfNotNull (attribute, value);  return this; }
 
 	public Query<T> likeInIfNotEmpty 			(Attribute attribute, Collection<String> values) { super.likeInIfNotEmpty(attribute, values); return this; }
-	public Query<T> likeStartsWithInIfNotEmpty (Attribute attribute, Collection<String> values) { super.likeStartsWithInIfNotEmpty(attribute, values); return this; }
+	public Query<T> likeStartsWithInIfNotEmpty  (Attribute attribute, Collection<String> values) { super.likeStartsWithInIfNotEmpty(attribute, values); return this; }
 	public Query<T> likeEndsWithInIfNotEmpty	(Attribute attribute, Collection<String> values) { super.likeEndsWithInIfNotEmpty(attribute, values); return this; }
 	public Query<T> likeContainsInIfNotEmpty	(Attribute attribute, Collection<String> values) { super.likeContainsInIfNotEmpty(attribute, values); return this; }
 	
@@ -515,50 +516,62 @@ public class Query<T> extends Aggregator{
 		return this;
 	}
 		
-	public Query<T> joinInner(Entity<?> leftEntity, 	Entity<?> rightEntity)	{ return join(Estivate.joinInner(leftEntity, rightEntity)); }
-	public Query<T> joinInner(Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinInner(leftEntity, new Entity<>(rightClass)));}
-	public Query<T> joinInner(Class<?> leftClass, 			Entity<?> rightEntity)	{ return join(Estivate.joinInner(new Entity<>(leftClass), rightEntity));}
-	public Query<T> joinInner(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinInner(new Entity<>(joinerEntity), new Entity<>(joinedEntity))); }
+	public Query<T> joinInner(Entity<?> leftEntity, Entity<?> rightEntity)			{ return join(Estivate.joinInner(leftEntity, rightEntity)); }
+	public Query<T> joinInner(Entity<?> leftEntity, Class<?> rightClass)			{ return join(Estivate.joinInner(leftEntity, new Entity<>(rightClass)));}
+	public Query<T> joinInner(Class<?> leftClass, 	Entity<?> rightEntity)			{ return join(Estivate.joinInner(new Entity<>(leftClass), rightEntity));}
+	public Query<T> joinInner(Class<?> leftClass, 	Class<?> rightClass)			{ return join(Estivate.joinInner(new Entity<>(leftClass), new Entity<>(rightClass))); }
 
-	public Query<T> joinOuter(Entity<?> leftEntity, 	Entity<?> rightEntity)	{ return join(Estivate.joinOuter(leftEntity, rightEntity)); }
-	public Query<T> joinOuter(Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinOuter(leftEntity, new Entity<>(rightClass))); }
-	public Query<T> joinOuter(Class<?> leftClass, 			Entity<?> rightEntity)	{ return join(Estivate.joinOuter(new Entity<>(leftClass), rightEntity)); }
-	public Query<T> joinOuter(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinOuter(new Entity<>(joinerEntity), new Entity<>(joinedEntity))); }
+	public Query<T> joinOuter(Entity<?> leftEntity, Entity<?> rightEntity)			{ return join(Estivate.joinOuter(leftEntity, rightEntity)); }
+	public Query<T> joinOuter(Entity<?> leftEntity, Class<?> rightClass)			{ return join(Estivate.joinOuter(leftEntity, new Entity<>(rightClass))); }
+	public Query<T> joinOuter(Class<?> leftClass, 	Entity<?> rightEntity)			{ return join(Estivate.joinOuter(new Entity<>(leftClass), rightEntity)); }
+	public Query<T> joinOuter(Class<?> leftClass, 	Class<?> rightClass)			{ return join(Estivate.joinOuter(new Entity<>(leftClass), new Entity<>(rightClass))); }
 
-	public Query<T> joinLeft(Entity<?> leftEntity, 	Entity<?> rightEntity)	{ return join(Estivate.joinLeft(leftEntity, rightEntity)); }
+	public Query<T> joinLeft(Entity<?> leftEntity, 	Entity<?> rightEntity)			{ return join(Estivate.joinLeft(leftEntity, rightEntity)); }
 	public Query<T> joinLeft(Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinLeft(leftEntity, new Entity<>(rightClass))); }
-	public Query<T> joinLeft(Class<?> leftClass, 			Entity<?> rightEntity)	{ return join(Estivate.joinLeft(new Entity<>(leftClass), rightEntity)); }
-	public Query<T> joinLeft(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinLeft(new Entity<>(joinerEntity), new Entity<>(joinedEntity))); }
+	public Query<T> joinLeft(Class<?> leftClass, 	Entity<?> rightEntity)			{ return join(Estivate.joinLeft(new Entity<>(leftClass), rightEntity)); }
+	public Query<T> joinLeft(Class<?> leftClass, 	Class<?> rightClass)			{ return join(Estivate.joinLeft(new Entity<>(leftClass), new Entity<>(rightClass))); }
 
-	public Query<T> joinRight(Entity<?> leftEntity, 	Entity<?> rightEntity)	{ return join(Estivate.joinRight(leftEntity, rightEntity)); }
-	public Query<T> joinRight(Entity<?> leftEntity, 	Class<?> rightClass)			{ return join(Estivate.joinRight(leftEntity, new Entity<>(rightClass))); }
-	public Query<T> joinRight(Class<?> leftClass, 			Entity<?> rightEntity)	{ return join(Estivate.joinRight(new Entity<>(leftClass), rightEntity)); }
-	public Query<T> joinRight(Class<?> joinerEntity, 		Class<?> joinedEntity)			{ return join(Estivate.joinRight(new Entity<>(joinerEntity), new Entity<>(joinedEntity))); }
+	public Query<T> joinRight(Entity<?> leftEntity, Entity<?> rightEntity)			{ return join(Estivate.joinRight(leftEntity, rightEntity)); }
+	public Query<T> joinRight(Entity<?> leftEntity, Class<?> rightClass)			{ return join(Estivate.joinRight(leftEntity, new Entity<>(rightClass))); }
+	public Query<T> joinRight(Class<?> leftClass, 	Entity<?> rightEntity)			{ return join(Estivate.joinRight(new Entity<>(leftClass), rightEntity)); }
+	public Query<T> joinRight(Class<?> leftClass, 	Class<?> rightClass)			{ return join(Estivate.joinRight(new Entity<>(leftClass), new Entity<>(rightClass))); }
 
 
 	public Query<T> joinInner(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
 	public Query<T> joinInner(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute)); }
 	public Query<T> joinInner(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query<T> joinInner(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinInner(new Entity<>(joinerEntity), new Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
-	public Query<T> joinInner(Class<?> joinerEntity, SubQueryEntity<?> joinedQuery, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinInner(new Entity<>(joinerEntity), joinedQuery, joinerAttribute, joinedAttribute)); }
+	public Query<T> joinInner(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(new Entity<>(leftClass), new Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query<T> joinInner(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinInner(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(leftEntity, rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinInner(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
+	public Query<T> joinInner(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinInner(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
 
 	public Query<T> joinOuter(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
 	public Query<T> joinOuter(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute)); }
 	public Query<T> joinOuter(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query<T> joinOuter(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinOuter(new Entity<>(joinerEntity), new Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
-	public Query<T> joinOuter(Class<?> joinerEntity, SubQueryEntity<?> joinedQuery, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinOuter(new Entity<>(joinerEntity), joinedQuery, joinerAttribute, joinedAttribute)); }
+	public Query<T> joinOuter(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(new Entity<>(leftClass), new Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query<T> joinOuter(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinOuter(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(leftEntity, rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinOuter(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
+	public Query<T> joinOuter(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinOuter(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
 
 	public Query<T> joinLeft(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
 	public Query<T> joinLeft(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute)); }
 	public Query<T> joinLeft(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query<T> joinLeft(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinLeft(new Entity<>(joinerEntity), new Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
-	public Query<T> joinLeft(Class<?> joinerEntity, SubQueryEntity<?> joinedQuery, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinLeft(new Entity<>(joinerEntity), joinedQuery, joinerAttribute, joinedAttribute)); }
+	public Query<T> joinLeft(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(new Entity<>(leftClass), new Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query<T> joinLeft(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinLeft(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(leftEntity, rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinLeft(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
+	public Query<T> joinLeft(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinLeft(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
 
 	public Query<T> joinRight(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, rightEntity, leftAttribute, rightAttribute)); }
 	public Query<T> joinRight(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute)); }
 	public Query<T> joinRight(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute)); }
-	public Query<T> joinRight(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinRight(new Entity<>(joinerEntity), new Entity<>(joinedEntity), joinerAttribute, joinedAttribute)); }
-	public Query<T> joinRight(Class<?> joinerEntity, SubQueryEntity<?> joinedQuery, String joinerAttribute, String joinedAttribute){ return join(Estivate.joinRight(new Entity<>(joinerEntity), joinedQuery, joinerAttribute, joinedAttribute)); }
+	public Query<T> joinRight(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(new Entity<>(leftClass), new Entity<>(rightClass), leftAttribute, rightAttribute)); }
+	public Query<T> joinRight(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinRight(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, rightSubQuery, leftAttribute, rightAttribute)); }
+	public Query<T> joinRight(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
+	public Query<T> joinRight(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
 
 	public Query<T> order(Order order) { orders.add(order); return this; }
 	public Query<T> order(Entity<?> entity, String attribute, Order.Direction direction, Function function) {
@@ -588,10 +601,10 @@ public class Query<T> extends Aggregator{
 	public Query<T> orderDesc(String attribute, Function function) { return order(this.entity, attribute, Order.Direction.Desc, function); }
 	public Query<T> orderDesc(Attribute attribute) { return order(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
 	
-	public Query<T> limit(Integer limit) 		{ this.limit = limit; return this; }
-	public Query<T> offset(Integer offset) 	{ this.offset = offset; return this;}
-	
-
+	public Query<T> limit(Integer limit) 			{ this.limit = limit; return this; }
+	public Query<T> limitIfNotNull(Integer limit) 	{ if(limit != null) { this.limit = limit; } return this; }
+	public Query<T> offset(Integer offset) 			{ this.offset = offset; return this;}
+	public Query<T> offsetIfNotNull(Integer offset) { if(offset != null) { this.offset = offset; } return this; }
 	
 	@SuperBuilder
 	@Data
@@ -785,6 +798,20 @@ public class Query<T> extends Aggregator{
 
 	public List<Result> fetchListAsResults(Context context) {
 		return context.fetchListAsResults(this);
+	}
+
+	public <U, V> Map<U, V> fetchMap(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
+		return context.fetchMap(this, uType, vType);
+	}
+
+	public <U, V> Map<U, List<V>> fetchMapList(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
+		return context.fetchMapList(this, uType, vType);
+	}
+
+
+
+	public SubQueryEntity<T> asSubQueryEntity(String alias){
+		return Estivate.subQueryEntity(this, alias);
 	}
 
 

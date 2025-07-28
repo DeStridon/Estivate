@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Entity;
+import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
@@ -77,7 +78,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
-		Query query = new Query(ParentEntity.class)
+		Query<?> query = Estivate.query(ParentEntity.class)
 				.eq(ChildEntity.class, ChildEntity.Fields.description, "source content 1");
 		
 		String queryString = context.queryAsString(query);
@@ -92,7 +93,7 @@ public class QueryJoinTest {
 		Entity<ChildEntity> secondChild = new Entity<>(ChildEntity.class, "secondChild");
 		
 		
-		Query query = Estivate.query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 			.select(firstChild, AbstractEntity.Fields.id)
 			.select(secondChild, AbstractEntity.Fields.id)
 			.joinInner(ParentEntity.class, firstChild, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
@@ -130,6 +131,23 @@ public class QueryJoinTest {
 		Assert.assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D ChildB ON ChildA.DESCRIPTION_D = ChildB.DESCRIPTION_D"));
 		Assert.assertTrue(queryString.contains("INNER JOIN PARENTENTITY_D ParentB ON ChildB.PARENTID_D = ParentB.ID_D"));
 
+	}
+
+	@Test
+	public void joinWithSubQueryTest() throws SQLException {
+
+		SubQueryEntity<ParentEntity> subQuery = Estivate.query(ParentEntity.class)
+			.in(AbstractEntity.Fields.id, List.of(1, 2, 3))
+			.asSubQueryEntity("subQuery");
+
+		Query<ParentEntity> query = new Query<>(ParentEntity.class)
+			.joinInner(ParentEntity.class, subQuery, AbstractEntity.Fields.id, AbstractEntity.Fields.id)
+			.select(ParentEntity.class, ParentEntity.Fields.name);
+
+		String queryString = context.queryAsString(query);
+		System.out.println(queryString);
+
+	
 	}
 	
 	

@@ -257,18 +257,27 @@ public class Statement implements AutoCloseable{
 	}
 	
 	public void appendJoin(Join join) {
-		
+
 		appendQuery(join.joinType.toString());
 		appendQuery("JOIN");
-		appendQuery(context.nameMapper.mapDatabaseClass(join.rightEntity.entity));
-		if(join.rightEntity.alias != null) { appendQuery(join.rightEntity.alias);}
-		if(join.indexHint != null && join.indexNames != null && !join.indexNames.isEmpty()) {
-			appendQuery(join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
+
+		if(join.rightEntity instanceof SubQueryEntity<?>) {
+			appendQuery("(");
+			Statement subStatement = Statement.toStatement(context, connection, ((SubQueryEntity<?>) join.rightEntity).query);
+			appendQuery(subStatement.query());
+			appendQuery(") AS ");
+			appendQuery(join.rightEntity.alias);
+			parameters.addAll(subStatement.parameters);
+		}
+		else{
+			appendQuery(context.nameMapper.mapDatabaseClass(join.rightEntity.entity));
+			if(join.rightEntity.alias != null) { appendQuery(join.rightEntity.alias);}
+			if(join.indexHint != null && join.indexNames != null && !join.indexNames.isEmpty()) {
+				appendQuery(join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
+			}
 		}
 		appendQuery("ON");
-//				.append  (join.joiningAttributes.stream().map(x -> context.nameMapper.mapDatabase(join.leftEntity, x.getLeft()) + " = " + context.nameMapper.mapDatabase(join.rightEntity, x.getRight())).collect(Collectors.joining(" and ")));
-		appendNodeToStatement(join.joiningCriterion, false);
-		
+		appendNodeToStatement(join.joiningCriterion, false);		
 		
 	}
 

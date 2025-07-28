@@ -111,6 +111,19 @@ public class ResultTest {
 		
 		
 	}
+
+	@Test
+	public void testMap() {
+		
+		Query<ParentEntity> query = new Query<>(ParentEntity.class);
+		query.eq(AbstractEntity.Fields.id, 1);
+		
+		Map<String, JobEnum> map = context.fetchMap(query, x -> x.attributeAsString(ParentEntity.class, ParentEntity.Fields.name), x -> (JobEnum) x.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status));
+		
+		assertEquals(1, map.size());
+		assertEquals("parallel test task", map.get("name"));
+		
+	}
 	
 	
 	

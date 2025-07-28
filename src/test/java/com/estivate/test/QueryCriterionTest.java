@@ -94,7 +94,7 @@ public class QueryCriterionTest {
 		context.updateOrInsert(testTask);
 		
 		
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.eq(ParentEntity.class, ParentEntity.Fields.name, "queryTest test task")
 				.lt(ParentEntity.class, ParentEntity.Fields.homeId, 5)
 				.lte(ParentEntity.class, ParentEntity.Fields.homeId, 4)
@@ -128,13 +128,10 @@ public class QueryCriterionTest {
 	@Test
 	public void taskEnumTest() throws SQLException {
 		
-		Query query = new Query(ParentEntity.class);
-		
-		query.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1, 2, 3, 4));
-		
-		query.in(ParentEntity.class, ParentEntity.Fields.sourceLanguage, Arrays.asList(Language.en_GB, Language.fr_FR));
-		
-		query.in(ParentEntity.class, ParentEntity.Fields.status, Arrays.asList(JobEnum.Analysis, JobEnum.Translation));
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
+			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1, 2, 3, 4))
+			.in(ParentEntity.class, ParentEntity.Fields.sourceLanguage, Arrays.asList(Language.en_GB, Language.fr_FR))
+			.in(ParentEntity.class, ParentEntity.Fields.status, Arrays.asList(JobEnum.Analysis, JobEnum.Translation));
 		
 		context.fetchList(query);
 		
@@ -148,20 +145,18 @@ public class QueryCriterionTest {
 		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(1234).name("task 1").build());
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(1235).name("task 2").build());
 		
-		Query query = new Query(ParentEntity.class);
-
-		Entity<ParentEntity> taskEntity = new Entity<>(ParentEntity.class);
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
+			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1234, 1235));
 		
-		query.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1234, 1235));
 		assertEquals(2, context.fetchList(query).size());
 		
-		Query query2 = query.clone().in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
+		Query<ParentEntity> query2 = query.clone().in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
 		assertEquals(1, context.fetchList(query2).size());
 
-		Query query3 = query.clone().notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
+		Query<ParentEntity> query3 = query.clone().notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
 		assertEquals(1, context.fetchList(query3).size());
 
-		Query query4 = query.clone().notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
+		Query<ParentEntity> query4 = query.clone().notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1235));
 		assertEquals(1, context.fetchList(query4).size());
 		
 	}

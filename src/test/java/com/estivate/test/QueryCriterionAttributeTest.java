@@ -15,7 +15,7 @@ public class QueryCriterionAttributeTest {
 	@Test
 	public void attributeTest() {
 		
-		Query query = Estivate.query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.lt(Estivate.attribute(ParentEntity.class, ParentEntity.Fields.archived, Estivate.Functions.date_add(1, "DAY")), Estivate.attribute(ParentEntity.class, ParentEntity.Fields.created, Estivate.Functions.date_add(1, "DAY")));
 		
 		System.out.println(context.queryAsString(query));

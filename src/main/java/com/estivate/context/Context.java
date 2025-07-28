@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.Convert;
@@ -243,6 +245,8 @@ public abstract class Context {
 	}
 
 	
+
+	
 	
 	protected List<Result> fetchListAsResults(Statement statement) throws SQLException{
 		
@@ -269,6 +273,31 @@ public abstract class Context {
 		}
 	}
 
+
+	public <U, V> Map<U, V> fetchMap(Query<?> query, Function<Result,U> uType, Function<Result,V> vType){
+
+		List<Result> results = fetchListAsResults(query);
+		Map<U, V> map = new LinkedHashMap<>();
+		
+		for(Result result : results){
+			map.put(uType.apply(result), vType.apply(result));
+		}
+
+		return map;
+
+	}
+
+	public <U, V> Map<U, List<V>> fetchMapList(Query<?> query, Function<Result,U> uType, Function<Result,V> vType){
+
+		List<Result> results = fetchListAsResults(query);
+		Map<U, List<V>> map = new LinkedHashMap<>();
+		
+		for(Result result : results){
+			map.computeIfAbsent(uType.apply(result), k -> new ArrayList<>()).add(vType.apply(result));
+		}
+
+		return map;
+	}
 	
 	
 	
@@ -520,7 +549,7 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
-	public String queryAsString(Query query) {
+	public String queryAsString(Query<?> query) {
 		
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query)); ){
@@ -529,7 +558,7 @@ public abstract class Context {
 		
 	}
 	
-	private Query preExecute(Query query) {
+	private Query<?> preExecute(Query<?> query) {
 		if(fetchQueryPreProcessor == null) {
 			return query;
 		}
