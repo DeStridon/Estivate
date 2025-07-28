@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -137,7 +138,7 @@ public class QueryJoinTest {
 	public void joinWithSubQueryTest() throws SQLException {
 
 		SubQueryEntity<ParentEntity> subQuery = Estivate.query(ParentEntity.class)
-			.in(AbstractEntity.Fields.id, List.of(1, 2, 3))
+			.in(AbstractEntity.Fields.id, Arrays.asList(1, 2, 3))
 			.asSubQueryEntity("subQuery");
 
 		Query<ParentEntity> query = new Query<>(ParentEntity.class)
