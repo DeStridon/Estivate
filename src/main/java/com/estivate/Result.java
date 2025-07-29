@@ -78,14 +78,18 @@ public class Result {
 	public String 	attributeAsString	(Entity<?> e, String attribute)	{ return columnAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
 	public Short 	attributeAsShort	(Class<?> c, String attribute) 	{ return columnAsShort(statement.context.nameMapper.mapEntity(c, attribute)); }
 	public Short 	attributeAsShort	(Entity<?> e, String attribute)	{ return columnAsShort(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Integer 	attributeAsInteger(Class<?> c, String attribute) 	{ return columnAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Integer 	attributeAsInteger(Entity<?> e, String attribute)	{ return columnAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Boolean 	attributeAsBoolean(Class<?> c, String attribute) 	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Boolean 	attributeAsBoolean(Entity<?> e, String attribute)	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Long 	attributeAsLong	(Class<?> c, String attribute) 	{ return columnAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Long 	attributeAsLong	(Entity<?> e, String attribute) { return columnAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Date 	attributeAsDate	(Class<?> c, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Date 	attributeAsDate	(Entity<?> e, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Integer 	attributeAsInteger	(Class<?> c, String attribute) 	{ return columnAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Integer 	attributeAsInteger	(Entity<?> e, String attribute)	{ return columnAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Long 	attributeAsLong		(Class<?> c, String attribute) 	{ return columnAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Long 	attributeAsLong		(Entity<?> e, String attribute) { return columnAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Float 	attributeAsFloat	(Class<?> c, String attribute) 	{ return columnAsFloat(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Float 	attributeAsFloat	(Entity<?> e, String attribute)	{ return columnAsFloat(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Double 	attributeAsDouble	(Class<?> c, String attribute) 	{ return columnAsDouble(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Double 	attributeAsDouble	(Entity<?> e, String attribute)	{ return columnAsDouble(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Boolean 	attributeAsBoolean	(Class<?> c, String attribute) 	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Boolean 	attributeAsBoolean	(Entity<?> e, String attribute)	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public Date 	attributeAsDate		(Class<?> c, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
+	public Date 	attributeAsDate		(Entity<?> e, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
 
 
 	// @Enumerated

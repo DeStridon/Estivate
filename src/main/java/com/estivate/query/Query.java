@@ -603,16 +603,16 @@ public class Query<T> extends Aggregator{
 	
 	public Query<T> limit(Integer limit) 			{ this.limit = limit; return this; }
 	public Query<T> limitIfNotNull(Integer limit) 	{ if(limit != null) { this.limit = limit; } return this; }
+	public Query<T> limitIfNotNullOr(Integer limit, Integer fallbackLimit) { if(limit != null) { this.limit = limit; } else { this.limit = fallbackLimit; } return this; }
 	public Query<T> offset(Integer offset) 			{ this.offset = offset; return this;}
 	public Query<T> offsetIfNotNull(Integer offset) { if(offset != null) { this.offset = offset; } return this; }
+	public Query<T> offsetIfNotNullOr(Integer offset, Integer fallbackOffset) { if(offset != null) { this.offset = offset; } else { this.offset = fallbackOffset; } return this; }
 	
 	@SuperBuilder
 	@Data
 	@AllArgsConstructor
 	public static class Order extends Attribute{
-		
 		public Direction direction;
-
 		public enum Direction{
 			Asc,
 			Desc
@@ -725,7 +725,8 @@ public class Query<T> extends Aggregator{
 	public Query<T> selectGroupConcatAs(Entity<?> c, String attribute, String alias){ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, alias); }
 	public Query<T> selectGroupConcatAs(String attribute, String alias) 			{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, alias); }
 
-
+	public Query<T> clearSelects(){ selects.clear(); return this; }
+	
 	// Having
 	public Query<T> having(EstivateNode node) { this.having = node; return this; }
 	
@@ -754,6 +755,7 @@ public class Query<T> extends Aggregator{
 
 	public Query<T> groupBy(Entity<?> entity, String field) { groupBys.add(new Group(entity, field)); return this; }
 	public Query<T> groupBy(Class<?> c, String field) { return groupBy(new Entity<>(c), field); }
+	public Query<T> clearGroupBys(){ groupBys.clear(); return this; }
 	
 	public Query<T> setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
 		this.indexHint = indexHint;

@@ -62,6 +62,8 @@ public class Estivate {
 	public static Aggregator and(EstivateNode... criterions) { return and(new ArrayList<>(Arrays.asList(criterions))); }
 	public static Aggregator and(List<EstivateNode> criterions) { return new Aggregator(GroupType.AND, criterions); }
 	
+	public static EstivateNode addIf(boolean condition, EstivateNode node) { return condition ? node : null; }
+	
 	public static Attribute.Function function(String before, String after) { return new Attribute.Function(before, after); }
 	
 
