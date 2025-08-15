@@ -2,40 +2,56 @@ package com.estivate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+import com.estivate.IMapper.DateMapper;
+import com.estivate.IMapper.EntityMapper;
+
 import lombok.Data;
-import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
 public class Result {
 
-	Statement statement;
-	@Getter Map<String, String> columns;
+	//final ResultSetMetaData resultSetMetaData;
+	final String[] columnValues;
+	final List<String> columnNames;
+	final Statement statement;
+
 	
-	public Result(Statement statement, Map<String, String> columns) {
+	@SneakyThrows
+	public Result(ResultSet resultSet, List<String> columnNames, Statement statement) {
+		
+		//this.resultSetMetaData = resultSet.getMetaData();
+		this.columnValues = new String[resultSet.getMetaData().getColumnCount()];
+		for(int i = 0; i < columnValues.length; i++) {
+			this.columnValues[i] = resultSet.getString(i+1);
+		}
+		this.columnNames = columnNames;
 		this.statement = statement;
-		this.columns = columns;
+
 	}
+
 	
 
-	final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]").withZone(ZoneId.systemDefault());
+	//final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]").withZone(ZoneId.systemDefault());
 
 	private Map<String, Object> cache = new HashMap<>();
 	
 	
 	
+	@SneakyThrows
 	public <U> U mapTo(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
 		
 		String key = statement.context.nameMapper.mapEntityClass(clazz);
@@ -43,8 +59,8 @@ public class Result {
 		U u = (U) cache.get(key);
 		
 		if(u == null) {
-			Mapper<U> mapper = new Mapper<>(clazz.entity, statement.context);
-			u = mapper.map(columns);
+			EntityMapper<U> mapper = new EntityMapper<>(clazz.entity, statement.context, columnNames);
+			u = mapper.map(columnValues);
 			cache.put(key, u);
 		}
 		
@@ -57,22 +73,24 @@ public class Result {
 	}
 
 	
-	public String 	columnAsString(String column) { return columns.get(column); }
-	public Short 	columnAsShort(String column) 	 { return Short.valueOf(columns.get(column)); }
-	public Integer 	columnAsInteger(String column) { return Integer.valueOf(columns.get(column)); }
-	public Long 	columnAsLong(String column) { return Long.valueOf(columns.get(column)); }
-	public Float 	columnAsFloat(String column) { return Float.valueOf(columns.get(column)); }
-	public Double 	columnAsDouble(String column) { return Double.valueOf(columns.get(column)); }
-	public Boolean 	columnAsBoolean(String column) { return Boolean.valueOf(columns.get(column)); }
+	@SneakyThrows
+	public String 	columnAsString(String column) { Integer index = columnNames.indexOf(column); return index == null ? null : columnValues[index]; }
+	public Short 	columnAsShort(String column) { String value = columnAsString(column); return value == null ? null : Short.valueOf(value); } 
+	public Integer 	columnAsInteger(String column) { String value = columnAsString(column); return value == null ? null : Integer.valueOf(value); }
+	public Long 	columnAsLong(String column) { String value = columnAsString(column); return value == null ? null : Long.valueOf(value); }
+	public Float 	columnAsFloat(String column) { String value = columnAsString(column); return value == null ? null : Float.valueOf(value); }
+	public Double 	columnAsDouble(String column) { String value = columnAsString(column); return value == null ? null : Double.valueOf(value); }
+	public Boolean 	columnAsBoolean(String column) { String value = columnAsString(column); return value == null ? null : Boolean.valueOf(value); }
 	
 	public Date columnAsDate(String column) {
-		String value = columns.get(column);
-		LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormater);
+		String value = columnAsString(column);
+		if(value == null) return null;
+		LocalDateTime ldt = LocalDateTime.parse(value, DateMapper.formatter);
 		return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
 	}
 
-	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { return (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
-	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { return (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
+	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
+	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
 	
 	public String 	attributeAsString	(Class<?> c, String attribute) 	{ return columnAsString(statement.context.nameMapper.mapEntity(c, attribute)); }
 	public String 	attributeAsString	(Entity<?> e, String attribute)	{ return columnAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
@@ -117,33 +135,9 @@ public class Result {
 		
 	}
 
-	
-
-
-	
-	
-	public Long getCount() {
-		if(columns.containsKey("COUNT(*)")) {
-			return Long.valueOf(columns.get("COUNT(*)"));			
-		}
-		return null;
-	}
-	
-	public Long getCount(Class<? extends Object> c, String attribute) {
-		if(columns.containsKey("COUNT("+statement.context.nameMapper.mapDatabase(c, attribute)+")")) {
-			return Long.valueOf(columns.get("COUNT("+statement.context.nameMapper.mapDatabase(c, attribute)+")"));
-		}
-		return null;
-	}
-	
-
-	
-	public Long getCountDistinct(Class<? extends Object> c, String attribute) {
-		if(columns.containsKey("COUNT(DISTINCT "+statement.context.nameMapper.mapDatabase(c, attribute)+")")) {
-			return Long.valueOf(columns.get("COUNT(DISTINCT "+statement.context.nameMapper.mapDatabase(c, attribute)+")"));
-		}
-		return null;
-	}
+	public Long getCount() { return columnAsLong("count(*)"); }
+	public Long getCount(Class<? extends Object> c, String attribute) { return columnAsLong("count("+statement.context.nameMapper.mapDatabase(c, attribute)+")"); }	
+	public Long getCountDistinct(Class<? extends Object> c, String attribute) { return columnAsLong("count(distinct "+statement.context.nameMapper.mapDatabase(c, attribute)+")"); }
 
 	
 }

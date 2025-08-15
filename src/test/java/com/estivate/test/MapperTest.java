@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
-import com.estivate.Mapper;
+import com.estivate.IMapper.EntityMapper;
 import com.estivate.context.Context;
 import com.estivate.query.Query;
 import com.estivate.test.entities.AbstractEntity;
@@ -30,7 +30,6 @@ public class MapperTest {
 		
 		System.out.println(parents.get(0).getCreated());
 		
-		Mapper<ParentEntity> mapper = new Mapper<>(ParentEntity.class, context);
 				
 	}
 

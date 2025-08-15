@@ -505,6 +505,7 @@ public class Statement implements AutoCloseable{
 	@Override
 	public void close() throws Exception {
 		if(statement != null) {
+			connection.close();
 			statement.close();
 		}
 	}

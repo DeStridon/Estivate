@@ -1,55 +1,37 @@
-# Estivate
+# Estivate Framework
 
-Estivate is a framework complementing Hibernate, helping developers to create SQL queries
+[![Java](https://img.shields.io/badge/Java-8+-blue.svg)](https://openjdk.java.net/)
+[![Maven](https://img.shields.io/badge/Maven-3.6+-orange.svg)](https://maven.apache.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](MIT-License.txt)
 
+**Estivate** is a powerful, lightweight Java framework that complements Hibernate by providing a fluent, type-safe SQL query builder with advanced features for database operations, entity management, and performance optimization.
 
-### 0. Foreword
-
-This framework has been created to ease developers life, it tries to follow basic principles you should keep in mind to take best advantage of it:
-
-** Intuitive **
-
-Don't waist your time looking for all framework capacities, one single entry point : Estivate static class.
-`Estivate.query()`, `Estivate.()`, `RegexBuilder.classMatch()`, `RegexBuilder.regexMatcher()` etc.
-If it's not here, it just doesn't exist at all !
-
-** Verbose **
-
-Concepts of regex are sometimes hard to get as they are using symbols (*, ?, +, |) you don't want to remember, let's use words instead !
-
-Sample:
-
-```
-Query query = Estivate.query(BasicEntity.class)
-	.eq(BasicEntity.class, BasicEntity.Fields.parentId, 1)
-	.gte(BasicEntity.class, BasicEntity.Fields.created, new Date());
-
-```
-
-> ^Hello World\s*!+
-
-** Fluent interface **
-
-Fluent interface, also known as method chaining or method cascading, is a design pattern making each method return the instance it belongs to, so that you can keep on calling instance methods.
-
-```
-Query query = Estivate.query(BasicEntity.class)
-	.joinInner(BasicEntity.class, JoinedEntity.class) 
-	.eq(BasicEntity.class, BasicEntity.Fields.parentId, 1)
-	.gte(BasicEntity.class, BasicEntity.Fields.created, new Date());
-
-```
+Estivate is a framework complementary to Hibernate, helping developers to create SQL queries that would 
 
 
-### 1. Estivate Query
+### 0. Features
 
-### 1.1 Building select query
+- **Fluent Query Builder**: Chainable, readable SQL query construction
+- **Centralized Catalog**: Exhaustive feature listing from one class
+- **Type-Safe Operations**: Compile-time safety with generic types 
+- **Advanced Joins**: Support for INNER, LEFT, RIGHT, and OUTER joins
+- **Subquery Support**: Complex nested queries with aliasing
+- **Performance Optimization**: Built-in caching, index hints
+- **Flexible Entity Mapping**: JPA annotations with custom extensions
+- **Database Agnostic**: Works with any JDBC-compliant database
 
-### 1.2. Getting result
 
-### 1.3. Criterion Library
+### 1. Setup context
 
-#### 1.3.1. Native SQL Criteria
+### 2. Query execution
+
+#### 2.1 Basic select query
+
+#### 2.2. Getting result
+
+#### 2.3. Criterion Library
+
+##### 2.3.1. Native SQL Criteria
 
 - Estivate::eq : `x = ?`
 - Estivate::notEq : `x != ?`
@@ -78,7 +60,7 @@ Query query = Estivate.query(BasicEntity.class)
 - Estivate::nativeCriterion : allow you to append native sql to query
 
 
-#### 1.3.2. Extended Criteria
+##### 2.3.2. Extended Criteria
 Criterions not supported natively by SQL, but wrapped by Estivate to feel like it does.
 
 - Estivate::eqOrNull : `(x = ? OR x IS NULL)`
@@ -106,7 +88,7 @@ Criterions not supported natively by SQL, but wrapped by Estivate to feel like i
 - Estivate::notMatchAgainstIn : `(not match(x) against (?)) AND (not match(x) against (?)) AND (not match(x) against (?)) ...`
 
 
-#### 1.3.3. Optional Criteria
+##### 2.3.3. Optional Criteria
 Criterions that are activated only if the value is not null (IfNotNull suffix) or is not empty (IfNotEmpty suffix)
 
 - Estivate::eqIfNotNull : `x = ?` (if value is not null, nothing happens otherwise)
@@ -131,17 +113,10 @@ Criterions that are activated only if the value is not null (IfNotNull suffix) o
 - Estivate::matchAgainstInIfNotEmpty : `(match(x) against (?)) OR (match(x) against (?)) OR (match(x) against (?)) ...` (if list is not null and not empty, nothing happens otherwise)
 - Estivate::notMatchAgainstInIfNotEmpty : `(not match(x) against (?)) AND (not match(x) against (?)) AND (not match(x) against (?)) ...` (if list is not null and not empty, nothing happens otherwise)
 
-### 1.4. Join
+### 3. Join
 Estivate aims to offer simplicity and control over query joins. 
 
-#### 1.4.1. Automated Join
-
-- Query::joinInner
-- Query::joinLeft
-- Query::joinRight
-- Query::joinOuter
-
-#### 1.4.2. Manual Join
+#### 3.1. Manual Join
 
 - Query::joinInner
 - Query::joinLeft
@@ -150,38 +125,41 @@ Estivate aims to offer simplicity and control over query joins.
 - Query::join
 - Estivate::join 
 
-### 1.5. Aggregator mecanisms
+
+#### 3.2. Automated Join
+
+- Query::joinInner
+- Query::joinLeft
+- Query::joinRight
+- Query::joinOuter
+
+- @VirtualForeignKey
 
 
 
-### 2. Setup
+#### 3.3. Extended join
 
-#### 2.1. Context
-You can execute your query in the context, enabling you to get your results
+### 4. Performances
+
+#### 4.1. Differential Update
 
 
-### 3. Empower entities
+### 5. Misc
 
-#### 3.1. VirtualForeignKey
-You can use this annotation to explicit link between entities you have in your model.
-
-#### 3.2. CachedEntity
-
-#### 3.3. @InsertDate & @UpdateDate
+#### 5.1. @InsertDate & @UpdateDate
 Field with @InsertDate annotation will be filled with current date when inserted.
 Field with @UpdateDate annotation will be filled with current date when updated.
 
-#### 3.4. Legacy annotations management
+#### 5.2. Legacy annotations management
 Following legacy annotations are handled by Estivate 
 - PrePersist  
 - PreUpdate
 - PostPersist
 - PostUpdate 
 
+### 6. Advanced configuration
 
-### 4. Advanced
-#### 4.1. NameMapper
 
-### 5. License
+### 7. License
 The source code is licensed under the MIT license, which you can find in the MIT-LICENSE.txt file.
 	

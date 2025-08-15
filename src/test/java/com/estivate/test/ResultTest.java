@@ -26,37 +26,6 @@ public class ResultTest {
 	
 	Context context = DatabaseGenerator.getContext();
 	
-	@Test
-	public void testPerf() {
-		
-		
-		
-		Map<String, String> map = new HashMap<>();
-		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.homeId), "1");
-		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.parentId), "555");
-		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.description), "blablablablablabla");
-
-		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.job), "4");
-		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.mood), "2");
-		map.put(context.nameMapper.mapEntity(ChildEntity.class, ChildEntity.Fields.lastSeen), "2024-11-19 22:02:03.254");
-		
-		Statement statement = new Statement(context, null);
-		
-		
-		
-		List<Result> results = new ArrayList<>();
-		for(int i = 0; i < 2; i++) {
-			results.add(new Result(statement, map));
-		}
-
-		Chronometer chrono = new Chronometer("bla");
-
-		
-		List<ChildEntity> children = results.stream().map(x -> x.mapTo(ChildEntity.class)).collect(Collectors.toList());
-		
-		chrono.end("end");
-		
-	}
 	
 	@Test
 	public void testParallel() {
@@ -115,13 +84,34 @@ public class ResultTest {
 	@Test
 	public void testMap() {
 		
-		Query<ParentEntity> query = new Query<>(ParentEntity.class);
-		query.eq(AbstractEntity.Fields.id, 1);
+		ParentEntity parent1 = ParentEntity.builder()
+				.homeId(22)
+				.name("map test 1")
+				.status(JobEnum.Legal)
+				.updated(new Date())
+				.build();
 		
-		Map<String, JobEnum> map = context.fetchMap(query, x -> x.attributeAsString(ParentEntity.class, ParentEntity.Fields.name), x -> (JobEnum) x.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status));
+		context.insert(parent1);
 		
-		assertEquals(1, map.size());
-		assertEquals("parallel test task", map.get("name"));
+		ParentEntity parent2 = ParentEntity.builder()
+				.homeId(23)
+				.name("map test 2")
+				.status(JobEnum.Analysis)
+				.updated(new Date())
+				.build();
+		
+		context.insert(parent2);
+		
+		
+		
+		Query<ParentEntity> query = new Query<>(ParentEntity.class)
+				.likeStartsWith(ParentEntity.Fields.name, "map test");
+		
+		Map<String, JobEnum> map = context.aggregateToMap(query, x -> x.attributeAsString(ParentEntity.class, ParentEntity.Fields.name), x -> (JobEnum) x.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status));
+		
+		assertEquals(JobEnum.Legal, map.get("map test 1"));
+		assertEquals(JobEnum.Analysis, map.get("map test 2"));
+		
 		
 	}
 	

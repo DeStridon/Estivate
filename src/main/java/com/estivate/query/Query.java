@@ -252,27 +252,27 @@ public class Query<T> extends Aggregator{
 	public Query<T> notEqNullable	(Class<?> entity, String attribute, Object value)	{ super.notEqNullable(entity, attribute, value); return this; }
 	
 	public Query<T> lt   			(Class<?> entity, String attribute, Object value)   { super.lt    (entity, attribute, value);  return this; }
-	public Query<T> ltIfNotNull	(Class<?> entity, String attribute, Object value)   { super.ltIfNotNull   (entity, attribute, value);  return this; }
+	public Query<T> ltIfNotNull		(Class<?> entity, String attribute, Object value)   { super.ltIfNotNull   (entity, attribute, value);  return this; }
 	
 	public Query<T> lte  			(Class<?> entity, String attribute, Object value)   { super.lte   (entity, attribute, value);  return this; }
 	public Query<T> lteIfNotNull  	(Class<?> entity, String attribute, Object value)   { super.lteIfNotNull  (entity, attribute, value);  return this; }
 	
 	
-	public Query<T> gt   	(Class<?> entity, String attribute, Object value)        		{ super.gt    (entity, attribute, value);  return this; }
-	public Query<T> gtIfNotNull   		(Class<?> entity, String attribute, Object value)   { super.gtIfNotNull   (entity, attribute, value);  return this; }
-	public Query<T> gte  	(Class<?> entity, String attribute, Object value)        		{ super.gte   (entity, attribute, value);  return this; }
-	public Query<T> gteIfNotNull  		(Class<?> entity, String attribute, Object value)   { super.gteIfNotNull  (entity, attribute, value);  return this; }
+	public Query<T> gt   			(Class<?> entity, String attribute, Object value)   { super.gt    (entity, attribute, value);  return this; }
+	public Query<T> gtIfNotNull 	(Class<?> entity, String attribute, Object value)   { super.gtIfNotNull   (entity, attribute, value);  return this; }
+	public Query<T> gte  			(Class<?> entity, String attribute, Object value)   { super.gte   (entity, attribute, value);  return this; }
+	public Query<T> gteIfNotNull	(Class<?> entity, String attribute, Object value)   { super.gteIfNotNull  (entity, attribute, value);  return this; }
 	
-	public Query<T> between(Class<?> entity, String attribute, Object min, Object max) 	{ super.between(entity, attribute, min, max); return this; }
-	public Query<T> betweenIfNotNull	(Class<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull(entity, attribute, min, max); return this; }
+	public Query<T> between			(Class<?> entity, String attribute, Object min, Object max) 	{ super.between(entity, attribute, min, max); return this; }
+	public Query<T> betweenIfNotNull(Class<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull(entity, attribute, min, max); return this; }
 
 	public Query<T> in   					(Class<?> entity, String attribute, Collection<?> values) { super.in    				(entity, attribute, values); return this; }
 	public Query<T> inIfNotEmpty  			(Class<?> entity, String attribute, Collection<?> values) { super.inIfNotEmpty  		(entity, attribute, values); return this; }
 	public Query<T> inIfNotEmptyNullable  	(Class<?> entity, String attribute, Collection<?> values) { super.inIfNotEmptyNullable  (entity, attribute, values); return this; }
 	public Query<T> inOrNull			  	(Class<?> entity, String attribute, Collection<?> values) { super.inOrNull			    (entity, attribute, values); return this; }
 	public Query<T> inIfNotEmptyOrNull		(Class<?> entity, String attribute, Collection<?> values) { super.inIfNotEmptyOrNull	(entity, attribute, values); return this; }
-	public Query<T> notIn  				(Class<?> entity, String attribute, Collection<?> values) { super.notIn   				(entity, attribute, values); return this; }
-	public Query<T> notInOrNull		  	(Class<?> entity, String attribute, Collection<?> values) { super.notInOrNull		    (entity, attribute, values); return this; }
+	public Query<T> notIn  					(Class<?> entity, String attribute, Collection<?> values) { super.notIn   				(entity, attribute, values); return this; }
+	public Query<T> notInOrNull		  		(Class<?> entity, String attribute, Collection<?> values) { super.notInOrNull		    (entity, attribute, values); return this; }
 	public Query<T> notInIfNotEmptyOrNull	(Class<?> entity, String attribute, Collection<?> values) { super.notInIfNotEmptyOrNull (entity, attribute, values); return this; }
 	
 
@@ -316,12 +316,12 @@ public class Query<T> extends Aggregator{
 	public Query<T> likeContainsIfNotNull 		(Class<?> entity, String attribute, String value)        	{ super.likeContainsIfNotNull (entity, attribute, value);  return this; }
 
 	public Query<T> likeInIfNotEmpty 			(Class<?> entity, String attribute, Collection<String> values) { super.likeInIfNotEmpty(entity, attribute, values); return this; }
-	public Query<T> likeStartsWithInIfNotEmpty (Class<?> entity, String attribute, Collection<String> values) { super.likeStartsWithInIfNotEmpty(entity, attribute, values); return this; }
+	public Query<T> likeStartsWithInIfNotEmpty 	(Class<?> entity, String attribute, Collection<String> values) { super.likeStartsWithInIfNotEmpty(entity, attribute, values); return this; }
 	public Query<T> likeEndsWithInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { super.likeEndsWithInIfNotEmpty(entity, attribute, values); return this; }
 	public Query<T> likeContainsInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { super.likeContainsInIfNotEmpty(entity, attribute, values); return this; }
 	
 	public Query<T> notLikeIfNotNull 			(Class<?> entity, String attribute, String value)        	{ super.notLikeIfNotNull (entity, attribute, value);  return this; }
-	public Query<T> notLikeStartsWithIfNotNull (Class<?> entity, String attribute, String value)        	{ super.notLikeStartsWithIfNotNull (entity, attribute, value);  return this; }
+	public Query<T> notLikeStartsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeStartsWithIfNotNull (entity, attribute, value);  return this; }
 	public Query<T> notLikeEndsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeEndsWithIfNotNull (entity, attribute, value);  return this; }
 	public Query<T> notLikeContainsIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeContainsIfNotNull (entity, attribute, value);  return this; }
 
@@ -584,6 +584,7 @@ public class Query<T> extends Aggregator{
 	public Query<T> order(Class<?> entity, String attribute, Order.Direction direction) { return order(new Entity<>(entity), attribute, direction, null); }
 	public Query<T> order(String attribute, Order.Direction direction) { return order(this.entity, attribute, direction, null); }
 	public Query<T> order(Attribute attribute, Order.Direction direction) { return order(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public Query<T> orderAlias(String alias, Order.Direction direction) { orders.add(Order.builder().attribute(alias).direction(direction).build()); return this; }
 
 	public Query<T> orderAsc(Entity<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Asc); }
 	public Query<T> orderAsc(Entity<?> c, String attribute, Function function) { return order(c, attribute, Order.Direction.Asc, function); }
@@ -592,6 +593,7 @@ public class Query<T> extends Aggregator{
 	public Query<T> orderAsc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Asc); }
 	public Query<T> orderAsc(String attribute, Function function) { return order(this.entity, attribute, Order.Direction.Asc, function); }
 	public Query<T> orderAsc(Attribute attribute) { return order(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
+	public Query<T> orderAscAlias(String alias){ return orderAlias(alias, Order.Direction.Asc); }
 	
 	public Query<T> orderDesc(Entity<?> c, String attribute) 				{ return order(c, attribute, Order.Direction.Desc); }
 	public Query<T> orderDesc(Entity<?> c, String attribute, Function function){ return order(c, attribute, Order.Direction.Desc, function); }
@@ -600,6 +602,7 @@ public class Query<T> extends Aggregator{
 	public Query<T> orderDesc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Desc); }
 	public Query<T> orderDesc(String attribute, Function function) { return order(this.entity, attribute, Order.Direction.Desc, function); }
 	public Query<T> orderDesc(Attribute attribute) { return order(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
+	public Query<T> orderDescAlias(String alias){ return orderAlias(alias, Order.Direction.Desc); }
 	
 	public Query<T> limit(Integer limit) 			{ this.limit = limit; return this; }
 	public Query<T> limitIfNotNull(Integer limit) 	{ if(limit != null) { this.limit = limit; } return this; }
@@ -755,6 +758,8 @@ public class Query<T> extends Aggregator{
 
 	public Query<T> groupBy(Entity<?> entity, String field) { groupBys.add(new Group(entity, field)); return this; }
 	public Query<T> groupBy(Class<?> c, String field) { return groupBy(new Entity<>(c), field); }
+	public Query<T> groupBy(String attribute) { return groupBy(this.entity, attribute); }
+	public Query<T> groupByAlias(String alias) { groupBys.add(new Group(null, alias)); return this; }
 	public Query<T> clearGroupBys(){ groupBys.clear(); return this; }
 	
 	public Query<T> setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
@@ -802,12 +807,12 @@ public class Query<T> extends Aggregator{
 		return context.fetchListAsResults(this);
 	}
 
-	public <U, V> Map<U, V> fetchMap(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
-		return context.fetchMap(this, uType, vType);
+	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
+		return context.aggregateToMap(this, uType, vType);
 	}
 
-	public <U, V> Map<U, List<V>> fetchMapList(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
-		return context.fetchMapList(this, uType, vType);
+	public <U, V> Map<U, List<V>> aggregateToMapList(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
+		return context.aggregateToMapList(this, uType, vType);
 	}
 
 

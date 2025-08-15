@@ -57,7 +57,7 @@ public class QuerySelectMethodTest {
 	
 	@Test
 	public void selectDistinctTest() throws SQLException {
-		Query query = new Query(ParentEntity.class)
+		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.selectAll(ParentEntity.class)
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id);
 		

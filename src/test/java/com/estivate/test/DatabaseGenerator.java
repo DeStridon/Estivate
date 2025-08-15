@@ -9,24 +9,48 @@ import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.index.IndexDiff;
 import com.estivate.test.entities.ChildEntity;
+import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.OrderEntity;
+import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.ProductEntity;
 
 import lombok.SneakyThrows;
 
 public class DatabaseGenerator {
 
 	private static Context context = null;
+
 	
 	@SneakyThrows
 	static Context getContext() {
 		
 		if(context == null) {
 			
-			//context = new Context(DriverManager.getConnection("jdbc:h2:mem:test"));
 			context = new H2Context(DatasourceGenerator.datasource());
 			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
 			
 			context.nameMapper = new TestNameMapper();
+
+			context.create(ProductEntity.class);
+			IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
+			productIndexDiff.addUnimplemented();
+
+			context.create(OrderLineEntity.class);
+			IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
+			orderLineIndexDiff.addUnimplemented();
+
+			context.create(OrderEntity.class);
+			IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
+			orderIndexDiff.addUnimplemented();
+
+			context.create(CustomerEntity.class);
+			IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
+			customerIndexDiff.addUnimplemented();
+			
+
+			
+
 			
 			context.create(ParentEntity.class);
 			IndexDiff parentIndexDiff = new IndexDiff(context, ParentEntity.class);

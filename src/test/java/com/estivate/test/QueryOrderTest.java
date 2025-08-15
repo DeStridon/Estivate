@@ -33,8 +33,6 @@ public class QueryOrderTest {
 		Assert.assertTrue(queryString.contains("IS NULL ASC"));
 		
 	}
-	
-	
 
 	
 	
