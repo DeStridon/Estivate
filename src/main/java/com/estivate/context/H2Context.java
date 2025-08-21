@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 
 import com.estivate.Result;
 import com.estivate.Statement;
+import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.IndexType;
@@ -45,9 +46,9 @@ public class H2Context extends Context {
 			for(Result indexResult : indexResults) {
 				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.columnAsString("INDEX_NAME").equals(indexResult.columnAsString("INDEX_NAME"))).collect(Collectors.toList());
 				
-				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> ColumnIndex(findEntityName(c, x.columnAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
+				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.columnAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
 
-				TableIndex ci = CompositeIndex(indexResult.columnAsString("INDEX_NAME"), getIndexType(indexResult.columnAsString("INDEX_TYPE_NAME")), indexColumns);
+				TableIndex ci = Annotations.CompositeIndex(indexResult.columnAsString("INDEX_NAME"), getIndexType(indexResult.columnAsString("INDEX_TYPE_NAME")), indexColumns);
 				indexes.add(ci);
 			}
 			

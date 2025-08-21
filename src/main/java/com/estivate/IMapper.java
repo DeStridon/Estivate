@@ -8,11 +8,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -38,16 +35,22 @@ import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
 
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+@Data
+public abstract class IMapper<U> {
 
-public interface IMapper<U> {
-	public U map(String[] row);
+	NameMapper nameMapper;
+	String[] columnNames;
+	
+	
+	abstract public U map(String[] row);
 	
 	
 	@Slf4j
-	public static class EntityMapper<U> implements IMapper<U>{
+	public static class EntityMapper<U> extends IMapper<U>{
 		final Class<U> targetClass;
 		final Constructor<U> constructor;
 
@@ -56,7 +59,7 @@ public interface IMapper<U> {
 		
 		final Chronometer chronometer;
 		
-		final Context context;
+		
 		
 		Map<Integer, String> fieldNames = new HashMap<>();
 		
@@ -66,28 +69,14 @@ public interface IMapper<U> {
 		List<Field> columnFields = new ArrayList<>();
 		
 
-
-		@SneakyThrows
-		public EntityMapper(Class<U> targetClass, Context context, List<String> columnNames, boolean tracePerformances) {
-			chronometer = new Chronometer("Mapper "+targetClass.getSimpleName(), tracePerformances).timeThreshold(100);
-			
-			this.context = context;
-			this.targetClass = targetClass;
-			
-
-			// Get constructor
-			constructor = targetClass.getConstructor();
-			
-			// Get Fields
-			fields = FieldUtils.getEntityFields(targetClass);
+		public void setColumnNames(String[] columnNames) {
 			
 			// Map columns to fields
 			Entity<U> entity = new Entity<>(targetClass);
 			columnFields = new ArrayList<>();
-			
-			
-			for(int i = 0; i < columnNames.size(); i++) {
-				String columnName = columnNames.get(i);
+						
+			for(int i = 0; i < columnNames.length; i++) {
+				String columnName = columnNames[i];
 				Field field = fields.stream().filter(x -> columnName.equals(getFieldName(entity, x))).findFirst().orElse(null);
 				if(field != null) {
 					while(columnFields.size() <= i) {
@@ -97,6 +86,23 @@ public interface IMapper<U> {
 				}
 			}
 			
+		}
+
+		@SneakyThrows
+		public EntityMapper(Class<U> targetClass, boolean tracePerformances) {
+			chronometer = new Chronometer("Mapper "+targetClass.getSimpleName(), tracePerformances).timeThreshold(100);
+			
+			
+			this.targetClass = targetClass;
+			
+
+			// Get constructor
+			constructor = targetClass.getConstructor();
+			
+			// Get Fields
+			fields = FieldUtils.getEntityFields(targetClass);
+			
+			
 			// Get PostLoadMethods
 			postLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
 			
@@ -104,8 +110,8 @@ public interface IMapper<U> {
 			chronometer.step("mapper constructor");
 		}
 		
-		public EntityMapper(Class<U> targetClass, Context context, List<String> columnNames) {
-			this(targetClass, context, columnNames, false);
+		public EntityMapper(Class<U> targetClass) {
+			this(targetClass, false);
 		}
 		
 		
@@ -193,7 +199,7 @@ public interface IMapper<U> {
 			int hash = Objects.hash(entity, field);
 			String fieldName = fieldNames.get(hash);
 			if(fieldName == null) {
-				fieldName = context.nameMapper.mapEntity(entity, field.getName());
+				fieldName = nameMapper.mapEntity(entity, field.getName());
 				fieldNames.put(hash, fieldName);
 			}
 			return fieldName;
@@ -320,16 +326,16 @@ public interface IMapper<U> {
 	}
 
 
-	public static class StringMapper implements IMapper<String>{ public String map(String[] row) { return row[0]; } }
-	public static class IntegerMapper implements IMapper<Integer>{ public Integer map(String[] row){ if(row[0] == null) return null; return Integer.parseInt(row[0]); } }
-	public static class FloatMapper implements IMapper<Float>{ public Float map(String[] row) { if(row[0] == null) return null; return Float.parseFloat(row[0]); } }
-	public static class DoubleMapper implements IMapper<Double>{ public Double map(String[] row) { if(row[0] == null) return null; return Double.parseDouble(row[0]); } }
-	public static class LongMapper implements IMapper<Long>{ public Long map(String[] row) { if(row[0] == null) return null; return Long.parseLong(row[0]); } }
-	public static class ShortMapper implements IMapper<Short>{ public Short map(String[] row) { if(row[0] == null) return null; return Short.parseShort(row[0]); } }
-	public static class BooleanMapper implements IMapper<Boolean>{ public Boolean map(String[] row) { if(row[0] == null) return null; return Boolean.parseBoolean(row[0]); } }
+	public static class StringMapper extends IMapper<String>{ public String map(String[] row) { return row[0]; } }
+	public static class IntegerMapper extends IMapper<Integer>{ public Integer map(String[] row){ if(row[0] == null) return null; return Integer.parseInt(row[0]); } }
+	public static class FloatMapper extends IMapper<Float>{ public Float map(String[] row) { if(row[0] == null) return null; return Float.parseFloat(row[0]); } }
+	public static class DoubleMapper extends IMapper<Double>{ public Double map(String[] row) { if(row[0] == null) return null; return Double.parseDouble(row[0]); } }
+	public static class LongMapper extends IMapper<Long>{ public Long map(String[] row) { if(row[0] == null) return null; return Long.parseLong(row[0]); } }
+	public static class ShortMapper extends IMapper<Short>{ public Short map(String[] row) { if(row[0] == null) return null; return Short.parseShort(row[0]); } }
+	public static class BooleanMapper extends IMapper<Boolean>{ public Boolean map(String[] row) { if(row[0] == null) return null; return Boolean.parseBoolean(row[0]); } }
 
-	public static class LocalDateTimeMapper implements IMapper<LocalDateTime> { public LocalDateTime map(String[] row) { if(row[0]==null) return null; return LocalDateTime.parse(row[0], DateMapper.formatter); }}
-	public static class DateMapper implements IMapper<Date> { 
+	public static class LocalDateTimeMapper extends IMapper<LocalDateTime> { public LocalDateTime map(String[] row) { if(row[0]==null) return null; return LocalDateTime.parse(row[0], DateMapper.formatter); }}
+	public static class DateMapper extends IMapper<Date> { 
 
 		static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]");
 	
@@ -350,6 +356,15 @@ public interface IMapper<U> {
 			}
 		}
 
+	}
+	
+	public static class ResultMapper extends IMapper<Result>{
+
+		@Override
+		public Result map(String[] row) {
+			return new Result(row, columnNames, nameMapper);
+		}
+		
 	}
  
 

@@ -2,47 +2,55 @@ package com.estivate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.estivate.IMapper.DateMapper;
 import com.estivate.IMapper.EntityMapper;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
+@AllArgsConstructor
 public class Result {
 
 	//final ResultSetMetaData resultSetMetaData;
 	final String[] columnValues;
-	final List<String> columnNames;
-	final Statement statement;
+	final String[] columnNames;
+	final NameMapper nameMapper;
 
 	
-	@SneakyThrows
-	public Result(ResultSet resultSet, List<String> columnNames, Statement statement) {
-		
-		//this.resultSetMetaData = resultSet.getMetaData();
-		this.columnValues = new String[resultSet.getMetaData().getColumnCount()];
-		for(int i = 0; i < columnValues.length; i++) {
-			this.columnValues[i] = resultSet.getString(i+1);
-		}
-		this.columnNames = columnNames;
-		this.statement = statement;
-
+//	@SneakyThrows
+//	public Result(String[] values, String[] columns, Statement statement) {
+//		
+//		//this.resultSetMetaData = resultSet.getMetaData();
+//		this.columnValues = new String[resultSet.getMetaData().getColumnCount()];
+//		for(int i = 0; i < columnValues.length; i++) {
+//			this.columnValues[i] = resultSet.getString(i+1);
+//		}
+//		this.columnNames = columnNames;
+//		
+//
+//	}
+	
+	
+	public Result(String[] values, String[] columns, NameMapper nameMapper) {
+		this.columnValues = values;
+		this.columnNames = columns;
+		this.nameMapper = nameMapper;
 	}
-
 	
 
 	//final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]").withZone(ZoneId.systemDefault());
@@ -54,12 +62,12 @@ public class Result {
 	@SneakyThrows
 	public <U> U mapTo(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
 		
-		String key = statement.context.nameMapper.mapEntityClass(clazz);
+		String key = nameMapper.mapEntityClass(clazz);
 		
 		U u = (U) cache.get(key);
 		
 		if(u == null) {
-			EntityMapper<U> mapper = new EntityMapper<>(clazz.entity, statement.context, columnNames);
+			EntityMapper<U> mapper = new EntityMapper<>(clazz.entity);
 			u = mapper.map(columnValues);
 			cache.put(key, u);
 		}
@@ -74,7 +82,7 @@ public class Result {
 
 	
 	@SneakyThrows
-	public String 	columnAsString(String column) { Integer index = columnNames.indexOf(column); return index == null ? null : columnValues[index]; }
+	public String 	columnAsString(String column) { Integer index = ArrayUtils.indexOf(columnNames, column); return index == null ? null : columnValues[index]; }
 	public Short 	columnAsShort(String column) { String value = columnAsString(column); return value == null ? null : Short.valueOf(value); } 
 	public Integer 	columnAsInteger(String column) { String value = columnAsString(column); return value == null ? null : Integer.valueOf(value); }
 	public Long 	columnAsLong(String column) { String value = columnAsString(column); return value == null ? null : Long.valueOf(value); }
@@ -92,22 +100,22 @@ public class Result {
 	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
 	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
 	
-	public String 	attributeAsString	(Class<?> c, String attribute) 	{ return columnAsString(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public String 	attributeAsString	(Entity<?> e, String attribute)	{ return columnAsString(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Short 	attributeAsShort	(Class<?> c, String attribute) 	{ return columnAsShort(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Short 	attributeAsShort	(Entity<?> e, String attribute)	{ return columnAsShort(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Integer 	attributeAsInteger	(Class<?> c, String attribute) 	{ return columnAsInteger(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Integer 	attributeAsInteger	(Entity<?> e, String attribute)	{ return columnAsInteger(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Long 	attributeAsLong		(Class<?> c, String attribute) 	{ return columnAsLong(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Long 	attributeAsLong		(Entity<?> e, String attribute) { return columnAsLong(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Float 	attributeAsFloat	(Class<?> c, String attribute) 	{ return columnAsFloat(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Float 	attributeAsFloat	(Entity<?> e, String attribute)	{ return columnAsFloat(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Double 	attributeAsDouble	(Class<?> c, String attribute) 	{ return columnAsDouble(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Double 	attributeAsDouble	(Entity<?> e, String attribute)	{ return columnAsDouble(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Boolean 	attributeAsBoolean	(Class<?> c, String attribute) 	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Boolean 	attributeAsBoolean	(Entity<?> e, String attribute)	{ return columnAsBoolean(statement.context.nameMapper.mapEntity(e, attribute)); }
-	public Date 	attributeAsDate		(Class<?> c, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(c, attribute)); }
-	public Date 	attributeAsDate		(Entity<?> e, String attribute)	{ return columnAsDate(statement.context.nameMapper.mapEntity(e, attribute)); }
+	public String 	attributeAsString	(Class<?> c, String attribute) 	{ return columnAsString(nameMapper.mapEntity(c, attribute)); }
+	public String 	attributeAsString	(Entity<?> e, String attribute)	{ return columnAsString(nameMapper.mapEntity(e, attribute)); }
+	public Short 	attributeAsShort	(Class<?> c, String attribute) 	{ return columnAsShort(nameMapper.mapEntity(c, attribute)); }
+	public Short 	attributeAsShort	(Entity<?> e, String attribute)	{ return columnAsShort(nameMapper.mapEntity(e, attribute)); }
+	public Integer 	attributeAsInteger	(Class<?> c, String attribute) 	{ return columnAsInteger(nameMapper.mapEntity(c, attribute)); }
+	public Integer 	attributeAsInteger	(Entity<?> e, String attribute)	{ return columnAsInteger(nameMapper.mapEntity(e, attribute)); }
+	public Long 	attributeAsLong		(Class<?> c, String attribute) 	{ return columnAsLong(nameMapper.mapEntity(c, attribute)); }
+	public Long 	attributeAsLong		(Entity<?> e, String attribute) { return columnAsLong(nameMapper.mapEntity(e, attribute)); }
+	public Float 	attributeAsFloat	(Class<?> c, String attribute) 	{ return columnAsFloat(nameMapper.mapEntity(c, attribute)); }
+	public Float 	attributeAsFloat	(Entity<?> e, String attribute)	{ return columnAsFloat(nameMapper.mapEntity(e, attribute)); }
+	public Double 	attributeAsDouble	(Class<?> c, String attribute) 	{ return columnAsDouble(nameMapper.mapEntity(c, attribute)); }
+	public Double 	attributeAsDouble	(Entity<?> e, String attribute)	{ return columnAsDouble(nameMapper.mapEntity(e, attribute)); }
+	public Boolean 	attributeAsBoolean	(Class<?> c, String attribute) 	{ return columnAsBoolean(nameMapper.mapEntity(c, attribute)); }
+	public Boolean 	attributeAsBoolean	(Entity<?> e, String attribute)	{ return columnAsBoolean(nameMapper.mapEntity(e, attribute)); }
+	public Date 	attributeAsDate		(Class<?> c, String attribute)	{ return columnAsDate(nameMapper.mapEntity(c, attribute)); }
+	public Date 	attributeAsDate		(Entity<?> e, String attribute)	{ return columnAsDate(nameMapper.mapEntity(e, attribute)); }
 
 
 	// @Enumerated
@@ -136,8 +144,8 @@ public class Result {
 	}
 
 	public Long getCount() { return columnAsLong("count(*)"); }
-	public Long getCount(Class<? extends Object> c, String attribute) { return columnAsLong("count("+statement.context.nameMapper.mapDatabase(c, attribute)+")"); }	
-	public Long getCountDistinct(Class<? extends Object> c, String attribute) { return columnAsLong("count(distinct "+statement.context.nameMapper.mapDatabase(c, attribute)+")"); }
+	public Long getCount(Class<? extends Object> c, String attribute) { return columnAsLong("count("+nameMapper.mapDatabase(c, attribute)+")"); }	
+	public Long getCountDistinct(Class<? extends Object> c, String attribute) { return columnAsLong("count(distinct "+nameMapper.mapDatabase(c, attribute)+")"); }
 
 	
 }

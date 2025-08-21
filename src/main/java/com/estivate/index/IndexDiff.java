@@ -129,7 +129,7 @@ public class IndexDiff {
 		
 		List<TableIndex> indexes = new ArrayList<>();
 		for(TableIndex index : compositeIndex) {
-			indexes.add(Context.CompositeIndex(context.nameMapper.mapIndex(index), index.type(), Arrays.asList(index.columns())));
+			indexes.add(Annotations.CompositeIndex(context.nameMapper.mapIndex(index), index.type(), Arrays.asList(index.columns())));
 		}
 		
 		return indexes;

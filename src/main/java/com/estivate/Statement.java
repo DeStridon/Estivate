@@ -33,6 +33,7 @@ import com.estivate.query.Query.Order;
 import com.estivate.query.Select;
 import com.estivate.util.FieldUtils;
 
+import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Statement implements AutoCloseable{
 
-	final Context context;
+	@Getter final Context context;
 	final Connection connection;
 	
 	StringBuilder query = new StringBuilder();

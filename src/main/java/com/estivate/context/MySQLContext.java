@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 
 import com.estivate.Result;
 import com.estivate.Statement;
+import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.IndexType;
@@ -64,7 +65,7 @@ public class MySQLContext extends Context {
 	        
 			
 			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
-				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
+				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
 				
 
 				IndexType indexType = IndexType.DEFAULT;
@@ -75,7 +76,7 @@ public class MySQLContext extends Context {
 					indexType = IndexType.UNIQUE;
 				}
 				
-				TableIndex ci = CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
+				TableIndex ci = Annotations.CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
 				indexes.add(ci);
 			}
 			

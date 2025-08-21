@@ -1,9 +1,7 @@
 package com.estivate.context;
 
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,9 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +19,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.LinkedHashSet;
 
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
@@ -36,22 +32,20 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.estivate.Entity.InsertDate;
 import com.estivate.Entity.UpdateDate;
 import com.estivate.Estivate;
 import com.estivate.IMapper;
-import com.estivate.IMapper.EntityMapper;
-import com.estivate.IMapper.IntegerMapper;
-import com.estivate.IMapper.ShortMapper;
-import com.estivate.IMapper.LongMapper;
-import com.estivate.IMapper.FloatMapper;
-import com.estivate.IMapper.DoubleMapper;
-import com.estivate.IMapper.StringMapper;
 import com.estivate.IMapper.BooleanMapper;
 import com.estivate.IMapper.DateMapper;
-
+import com.estivate.IMapper.DoubleMapper;
+import com.estivate.IMapper.EntityMapper;
+import com.estivate.IMapper.FloatMapper;
+import com.estivate.IMapper.IntegerMapper;
+import com.estivate.IMapper.LongMapper;
+import com.estivate.IMapper.ResultMapper;
+import com.estivate.IMapper.ShortMapper;
+import com.estivate.IMapper.StringMapper;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Result;
@@ -66,6 +60,7 @@ import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,7 +69,7 @@ public abstract class Context {
 	
 	public final DataSource datasource;
 	public boolean tracePerformances = false;
-	public NameMapper nameMapper = new DefaultNameMapper();
+	@Getter public NameMapper nameMapper = new DefaultNameMapper();
 
 	public Consumer<Query<?>> fetchQueryPreProcessor = null;
 	
@@ -85,32 +80,7 @@ public abstract class Context {
 	
 	// ==================== HELPER METHODS ====================
 	
-	/**
-	 * Creates a database connection and statement for the given query
-	 */
-//	private <T> Statement createStatement(Query<T> query) throws SQLException {
-//		Connection connection = datasource.getConnection();
-//		return Statement.toStatement(this, connection, preExecute(query));
-//	}
-	
-	/**
-	 * Creates a database connection and statement for general operations
-	 */
-//	private Statement createStatement() throws SQLException {
-//		Connection connection = datasource.getConnection();
-//		return new Statement(this, connection);
-//	}
-	
-	/**
-	 * Creates a column name to index mapping from ResultSet metadata
-	 */
-//	private Map<String, Integer> createColumnMap(ResultSetMetaData metadata) throws SQLException {
-//		Map<String, Integer> map = new HashMap<>();
-//		for(int i = 1; i <= metadata.getColumnCount(); i++) {
-//			map.put(metadata.getColumnLabel(i), i);
-//		}
-//		return map;
-//	}
+
 	
 	@SneakyThrows
 	private List<String> createColumnNamesSet(ResultSetMetaData metadata) {
@@ -122,53 +92,36 @@ public abstract class Context {
 		return map;
 	}
 	
+	@SneakyThrows
+	private String[] createColumnsArray(ResultSetMetaData metadata) {
+		
+		String[] columns = new String[metadata.getColumnCount()];
+		for(int i = 0; i < metadata.getColumnCount(); i++) {
+			columns[i] = metadata.getColumnLabel(i+1);
+		}
+		return columns;
+		
+	}
+	
 	/**
 	 * Extracts all values from a ResultSet row as String array
 	 */
-	private String[] extractRowValues(ResultSet resultSet, int columnCount) throws SQLException {
-		String[] values = new String[columnCount];
-		for(int i = 0; i < columnCount; i++) { 
+	private String[] extractRowValues(ResultSet resultSet) throws SQLException {
+		String[] values = new String[resultSet.getMetaData().getColumnCount()];
+		for(int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) { 
 			values[i] = resultSet.getString(i+1);
 		}
 		return values;
 	}
 	
-	/**
-	 * Invokes methods with a specific annotation on an entity
-	 */
-	private void invokeLifecycleMethods(Object entity, Class<? extends Annotation> annotationClass) {
-		try {
-			for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), annotationClass)) {
-				method.invoke(entity);
-			}
-		} catch (Exception e) {
-			log.error("Error invoking lifecycle method with annotation " + annotationClass.getSimpleName(), e);
-		}
-	}
 	
-
-	
-	/**
-	 * Gets the ID field from an entity class
-	 */
-	private Field getIdField(Class<?> entityClass) {
-		if(entityClass == null) {
-			return null;
-		}
-		for(Field field : FieldUtils.getEntityFields(entityClass)) {
-			if(field.isAnnotationPresent(Id.class)) {
-				return field;
-			}
-		}
-		return null;
-	}
 	
 	/**
 	 * Pre-processes a query before execution
 	 */
 	private Query<?> preExecute(Query<?> query) {
 		if(fetchQueryPreProcessor == null) {
-			return query;
+			return query;  
 		}
 		Query<?> clonedQuery = query.clone();
 		fetchQueryPreProcessor.accept(clonedQuery);
@@ -176,89 +129,40 @@ public abstract class Context {
 	}
 	
 	// ==================== FETCH METHODS ====================
-	
-	public <T> T fetchSingle(Query<T> query){
-		return fetchSingleAs(query, (Class<T>) query.getEntity().entity);
-	}
-	
-	public <T> Optional<T> fetchSingleOptional(Query<T> query){
-		return Optional.ofNullable(fetchSingle(query));
-	}
-
 	@SneakyThrows
-	public Result fetchSingleAsResult(Query<?> query) {
-//		try(Statement statement = createStatement(query);
-//		ResultSet resultSet = statement.executeForResultSet()) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, preExecute(query));
-			ResultSet resultSet = statement.executeForResultSet()) {
-
-			
-	    	ResultSetMetaData metadata = resultSet.getMetaData();
-	        //Map<String, Integer> map = createColumnMap(metadata);
-	    	List<String> columnNames = createColumnNamesSet(metadata);
-	        if(resultSet.next()) {
-	        	Result result = new Result(resultSet, columnNames, statement);
-				return result;
-	        }
-		}
-		return null;
-	}
-	
-
-
-	public Optional<Result> fetchSingleAsResultOptional(Query<?> query){
-		return Optional.ofNullable(fetchSingleAsResult(query));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@SneakyThrows
-	public <U> U fetchSingleAs(Query<?> query, Class<U> clazz) {
-//		try(Statement statement = createStatement(query);
-//			ResultSet resultSet = statement.executeForResultSet()) {
+	public <T> T fetchSingleWithMapper(Query<?> query, IMapper<T> mapper) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));
 			ResultSet resultSet = statement.executeForResultSet()) {
 			
-			ResultSetMetaData metadata = resultSet.getMetaData();
-			IMapper<U> mapper = generateMapper(clazz, this, createColumnNamesSet(metadata), tracePerformances);
-
 			if(!resultSet.next()) {
 				return null;
 			}
+			mapper.setNameMapper(nameMapper);
+			mapper.setColumnNames(createColumnsArray(resultSet.getMetaData()));
 
-			String[] values = extractRowValues(resultSet, metadata.getColumnCount());
-			return mapper.map(values);
+			return mapper.map(extractRowValues(resultSet));
 		}
-	}
-
-	public <U> Optional<U> fetchSingleAsOptional(Query<?> query, Class<U> clazz) {
-		return Optional.ofNullable(fetchSingleAs(query, clazz));
-	}
-
-	public <T> List<T> fetchList(Query<T> query){
-		return fetchListAs(query, (Class<T>) query.getEntity().entity);
 	}
 	
 	@SneakyThrows
-	public <U> List<U> fetchListAs(Query<?> query, Class<U> clazz) {
-//		try(Statement statement = createStatement(query);
-//			ResultSet resultSet = statement.executeForResultSet()) {
-		try(Connection connection = datasource.getConnection();
-				Statement statement = Statement.toStatement(this, connection, preExecute(query));
-				ResultSet resultSet = statement.executeForResultSet()) {
+	public <T> List<T> fetchListWithMapper(Query<?> query, IMapper<T> mapper) {
 			
-			ResultSetMetaData metadata = resultSet.getMetaData();
-			IMapper<U> mapper = generateMapper(clazz, this, createColumnNamesSet(metadata), tracePerformances);
+		try(Connection connection = datasource.getConnection();
+			Statement statement = Statement.toStatement(this, connection, preExecute(query));
+			ResultSet resultSet = statement.executeForResultSet()) {
+
+			mapper.setNameMapper(nameMapper);
+			mapper.setColumnNames(createColumnsArray(resultSet.getMetaData()));
 	        
 	        List<String[]> rows = new ArrayList<>();
 	        
 	        while(resultSet.next()) {
-	        	String[] values = extractRowValues(resultSet, metadata.getColumnCount());
+	        	String[] values = extractRowValues(resultSet);
 	        	rows.add(values);
 	        }
 	        
-			List<U> output = new ArrayList<>();
+			List<T> output = new ArrayList<>();
 			if(tracePerformances) {
 				for(String[] row : rows) {
 					output.add(mapper.map(row));
@@ -275,80 +179,63 @@ public abstract class Context {
 			return output;
 		}
 	}
+	
+	public <T> T 	fetchSingle(Query<T> query)						{ return fetchSingleAs(query, query.getEntity().entity); }
+	public <U> U 	fetchSingleAs(Query<?> query, Class<U> clazz) 	{ return fetchSingleWithMapper(query, new EntityMapper<U>(clazz)); }
+	public Result 	fetchSingleAsResult(Query<?> query) 			{ return fetchSingleWithMapper(query, new ResultMapper()); }
+	public String 	fetchSingleAsString(Query<?> query)				{ return fetchSingleWithMapper(query, new StringMapper()); }
+	public Short	fetchSingleAsShort(Query<?> query)				{ return fetchSingleWithMapper(query, new ShortMapper()); }
+	public Integer	fetchSingleAsInteger(Query<?> query)			{ return fetchSingleWithMapper(query, new IntegerMapper()); }
+	public Long		fetchSingleAsLong(Query<?> query)				{ return fetchSingleWithMapper(query, new LongMapper()); }
+	public Float	fetchSingleAsFloat(Query<?> query)				{ return fetchSingleWithMapper(query, new FloatMapper()); }
+	public Double	fetchSingleAsDouble(Query<?> query)				{ return fetchSingleWithMapper(query, new DoubleMapper()); }
+	public Date		fetchSingleAsDate(Query<?> query)				{ return fetchSingleWithMapper(query, new DateMapper()); }
+	public Boolean	fetchSingleAsBoolean(Query<?> query)			{ return fetchSingleWithMapper(query, new BooleanMapper()); }
+	
+	
+	public <T> Optional<T> 		fetchSingleOptional(Query<T> query)						{ return Optional.ofNullable(fetchSingle(query)); }
+	public <U> Optional<U> 		fetchSingleAsOptional(Query<?> query, Class<U> clazz) 	{ return Optional.ofNullable(fetchSingleAs(query, clazz)); }
+	public Optional<Result> 	fetchSingleAsResultOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsResult(query)); }
+	public Optional<String>		fetchSingleAsStringOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsString(query)); }
+	public Optional<Short> 		fetchSingleAsShortOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsShort(query)); }
+	public Optional<Integer> 	fetchSingleAsIntegerOptional(Query<?> query)			{ return Optional.ofNullable(fetchSingleAsInteger(query)); }
+	public Optional<Long> 		fetchSingleAsLongOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsLong(query)); }
+	public Optional<Float> 		fetchSingleAsFloatOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsFloat(query)); }
+	public Optional<Double> 	fetchSingleAsDoubleOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsDouble(query)); }
+	public Optional<Date> 		fetchSingleAsDateOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsDate(query)); }
+	public Optional<Boolean> 	fetchSingleAsBooleanOptional(Query<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
+	
 		
-	@SuppressWarnings("unchecked")
-	private <U> IMapper<U> generateMapper(Class<U> clazz, Context context, List<String> columnNames, boolean tracePerformances2) {
-		if(clazz == Integer.class){
-			return (IMapper<U>) new IntegerMapper();
-		}
-		else if(clazz == Short.class){
-			return (IMapper<U>) new ShortMapper();
-		}
-		else if(clazz == Long.class){
-			return (IMapper<U>) new LongMapper();
-		}
-		else if(clazz == Float.class){
-			return (IMapper<U>) new FloatMapper();
-		}
-		else if(clazz == Double.class){
-			return (IMapper<U>) new DoubleMapper();
-		}
-		else if(clazz == String.class){
-			return (IMapper<U>) new StringMapper();
-		}
-		else if(clazz == Boolean.class){
-			return (IMapper<U>) new BooleanMapper();
-		}
-		else if(clazz == java.util.Date.class){
-			return (IMapper<U>) new DateMapper();
-		}
-		else {
-			return new EntityMapper<>(clazz, this, columnNames, tracePerformances2);
-		}
-	}
-
-	@SneakyThrows
-	public List<Result> fetchListAsResults(Query<?> query){
-//		try(Statement statement = createStatement(query);
-//			ResultSet resultSet = statement.executeForResultSet()) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, preExecute(query));
-			ResultSet resultSet = statement.executeForResultSet()) {
-			
-			Chronometer chronometer = new Chronometer("list", tracePerformances);
-			chronometer.timeThreshold(100);
-	        
-	        ResultSetMetaData metadata = resultSet.getMetaData();
-//	        Map<String, Integer> map = createColumnMap(metadata);
-	        List<String> columnNames = createColumnNamesSet(metadata);
-	        
-	        List<Result> results = new ArrayList<>();
-	        
-	        while(resultSet.next()) {
-	        	chronometer.step("resultset next");
-	            
-	        	Result result = new Result(resultSet, columnNames, statement);
-	        	results.add(result);
-	        	chronometer.step("create result");
-	        }
-	        chronometer.end("end");
-	        
-	        return results;
-		}
-	}
+	public <T> List<T> 		fetchList(Query<T> query)					{ return fetchListAs(query, query.getEntity().entity); }
+	public <U> List<U> 		fetchListAs(Query<?> query, Class<U> clazz) { return fetchListWithMapper(query, new EntityMapper<U>(clazz)); }
+	public List<Result> 	fetchListAsResults(Query<?> query) 			{ return fetchListWithMapper(query, new ResultMapper()); }
+	public List<String>		fetchListAsString(Query<?> query)			{ return fetchListWithMapper(query, new StringMapper()); }
+	public List<Short>		fetchListAsShort(Query<?> query)			{ return fetchListWithMapper(query, new ShortMapper()); }
+	public List<Integer>	fetchListAsInteger(Query<?> query)			{ return fetchListWithMapper(query, new IntegerMapper()); }
+	public List<Long>		fetchListAsLong(Query<?> query)				{ return fetchListWithMapper(query, new LongMapper()); }
+	public List<Float>		fetchListAsFloat(Query<?> query)			{ return fetchListWithMapper(query, new FloatMapper()); }
+	public List<Double>		fetchListAsDouble(Query<?> query)			{ return fetchListWithMapper(query, new DoubleMapper()); }
+	public List<Date>		fetchListAsDate(Query<?> query)				{ return fetchListWithMapper(query, new DateMapper()); }
+	public List<Boolean>	fetchListAsBoolean(Query<?> query)			{ return fetchListWithMapper(query, new BooleanMapper()); }
+	
+	
+	
+	
 		
 	protected List<Result> fetchListAsResults(Statement statement) throws SQLException{
 		try(ResultSet resultSet = statement.executeForResultSet()) {
 	        ResultSetMetaData metadata = resultSet.getMetaData();
-	        //Map<String, Integer> map = createColumnMap(metadata);
 	        
-	        List<String> columnNames = createColumnNamesSet(metadata);
+	        String[] columnNames = createColumnsArray(metadata);
 	        
 	        List<Result> results = new ArrayList<>();
 	        
 	        while(resultSet.next()) {
-	        	Result result = new Result(resultSet, columnNames, statement);
+	        	
+	        	
+	        	Result result = new Result(extractRowValues(resultSet), columnNames, statement.getContext().getNameMapper());
 	        	results.add(result);
+	        
 	        }
 	        
 	        return results;
@@ -382,35 +269,11 @@ public abstract class Context {
 	// ==================== PERSISTENCE METHODS ====================
 		
 	@SneakyThrows
-	public <U> U updateOrInsert(U object) {
-		Field idField = getIdField(object.getClass());
-		if(idField != null) {
-			idField.setAccessible(true);
-				
-			if(idField.getLong(object) == 0L) {
-				insert(object);
-			}
-			else {
-				update(object);
-			}
-			
-			if(object instanceof CachedEntity) {
-				((CachedEntity) object).saveState();
-			}
-		}
-		else{
-			insert(object);
-		}
-			
-		return object;
-	}
-	
-	@SneakyThrows
 	public <U> U insert(U object) {
 //		try(Statement statement = createStatement()){
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){		
-			invokeLifecycleMethods(object, PrePersist.class);
+			FieldUtils.invokeLifecycleMethods(object, PrePersist.class);
 
 			List<String> fieldValueList = new ArrayList<>();
 			
@@ -453,7 +316,7 @@ public abstract class Context {
 			
 			try(ResultSet rs = statement.executeForGeneratedKeys()){
 				if (rs.next()) {
-					Field field = getIdField(object.getClass());
+					Field field = FieldUtils.getIdField(object.getClass());
 					field.setAccessible(true);
 					field.setLong(object, rs.getLong(1));
 				}
@@ -461,7 +324,7 @@ public abstract class Context {
 					return null;
 				}
 				
-				invokeLifecycleMethods(object, PostPersist.class);
+				FieldUtils.invokeLifecycleMethods(object, PostPersist.class);
 				return object;
 			}
 		}
@@ -472,7 +335,7 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> boolean merge(U entity){
 		// First try to find entity with same id
-		Field idField = getIdField(entity.getClass());
+		Field idField = FieldUtils.getIdField(entity.getClass());
 
 		if(idField != null){
 			idField.setAccessible(true);
@@ -529,101 +392,44 @@ public abstract class Context {
 		}
 	}
 		
+	
+		
 	@SneakyThrows
-	public <U> boolean create(Class<U> entityClass) {
-		List<String> fields = new ArrayList<>();
-		for(Field field : FieldUtils.getEntityFields(entityClass)) {
-			StringPipe fieldCreation = new StringPipe();
-			fieldCreation.separator(" ");
-			
-			fieldCreation.append(nameMapper.mapDatabaseField(field.getName()));
-			
-			Class<?> returnClass = field.getType();
-			
-			if(field.getDeclaredAnnotation(Convert.class) != null) {
-				returnClass = String.class;
-			}
-			
-			if(returnClass.isEnum()) {
-
-				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
-					returnClass = String.class;
-				}
-				else {
-					returnClass = Integer.class;
-				}
-			}
-			
-			if(returnClass == org.slf4j.Logger.class || returnClass == CachedEntity.class) {
-				continue;
-			}
-			else if(returnClass == Integer.class || returnClass == Integer.TYPE || returnClass == Long.class || returnClass == Long.TYPE) {
-				fieldCreation.append("INT");
-			}
-			else if(returnClass == Float.class || returnClass == Float.TYPE) {
-				fieldCreation.append("FLOAT");
-			}
-			else if(returnClass == Double.class || returnClass == Double.TYPE) {
-				fieldCreation.append("DOUBLE");
-			}
-			else if(returnClass == String.class) {
-				fieldCreation.append("VARCHAR");
-			}
-			else if(returnClass == Boolean.class || returnClass == boolean.class) {
-				fieldCreation.append("BOOL");
-			}
-			else if(returnClass == java.util.Date.class || returnClass == java.sql.Date.class) {
-				fieldCreation.append("DATETIME");
+	public <U> U updateOrInsert(U object) {
+		Field idField = FieldUtils.getIdField(object.getClass());
+		if(idField != null) {
+			idField.setAccessible(true);
+				
+			if(idField.getLong(object) == 0L) {
+				insert(object);
 			}
 			else {
-				throw new RuntimeException("Cannot map field "+entityClass.getSimpleName()+"."+field.getName()+" type="+field.getType());
+				update(object);
 			}
 			
-			if(field.isAnnotationPresent(Id.class)) {
-				fieldCreation.append("PRIMARY KEY");
+			if(object instanceof CachedEntity) {
+				((CachedEntity) object).saveState();
 			}
-			
-			if(field.getDeclaredAnnotation(GeneratedValue.class) != null) {
-				GeneratedValue generatedValue = field.getDeclaredAnnotation(GeneratedValue.class);
-				if(generatedValue.strategy() == GenerationType.IDENTITY) {
-					fieldCreation.append("AUTO_INCREMENT");
-				}
-			}
-			
-			fields.add(fieldCreation.toString());
 		}
-		
-		String result = "CREATE TABLE "+nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
-		
-		try(Connection connection = datasource.getConnection(); 
-			PreparedStatement statement = connection.prepareStatement(result);){
-			return statement.execute();
+		else{
+			insert(object);
 		}
+			
+		return object;
 	}
-	
-	@SneakyThrows
-	public String queryAsString(Query<?> query) {
-//		try(Statement statement = createStatement(query)){
-		try(Connection connection = datasource.getConnection();
-			Statement statement = Statement.toStatement(this, connection, preExecute(query));) {
-			return statement.query();
-		}
-		
-	}
-			
-		
+
 	@SneakyThrows
 	public <U> void update(U entity) {
-		updateAll(Arrays.asList(entity));
+		update(Arrays.asList(entity));
 	}
-	
+
 	@SneakyThrows
-	public <U> void updateAll(List<U> entities) {
+	public <U> void update(List<U> entities) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 					
 			for(Object entity : entities) {
-				invokeLifecycleMethods(entity, PreUpdate.class);
+				FieldUtils.invokeLifecycleMethods(entity, PreUpdate.class);
 				
 				Long id = null;
 				Field idField = null;
@@ -683,12 +489,13 @@ public abstract class Context {
 			boolean check = statement.executeForValidation();
 			
 			for(Object entity : entities) {
-				invokeLifecycleMethods(entity, PostUpdate.class);
+				FieldUtils.invokeLifecycleMethods(entity, PostUpdate.class);
 			}
 		}
 	}
+
 	
-	// ==================== UTILITY METHODS ====================
+	// ==================== TABLE MANAGEMENT ====================
 	
 	@SneakyThrows
 	public List<String> showTables(){
@@ -699,13 +506,85 @@ public abstract class Context {
 			List<String> rows = new ArrayList<>();
 		    
 		    while(resultSet.next()) {
-		    	rows.add(resultSet.getString(1));        	
+		    	rows.add(resultSet.getString(1));
 		    }
 		    
 		    return rows;
 		}
 	}
 	
+	@SneakyThrows
+	public <U> boolean createTable(Class<U> entityClass) {
+		List<String> fields = new ArrayList<>();
+		for(Field field : FieldUtils.getEntityFields(entityClass)) {
+			StringPipe fieldCreation = new StringPipe();
+			fieldCreation.separator(" ");
+			
+			fieldCreation.append(nameMapper.mapDatabaseField(field.getName()));
+			
+			Class<?> returnClass = field.getType();
+			
+			if(field.getDeclaredAnnotation(Convert.class) != null) {
+				returnClass = String.class;
+			}
+			
+			if(returnClass.isEnum()) {
+	
+				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
+					returnClass = String.class;
+				}
+				else {
+					returnClass = Integer.class;
+				}
+			}
+			
+			if(returnClass == org.slf4j.Logger.class || returnClass == CachedEntity.class) {
+				continue;
+			}
+			else if(returnClass == Integer.class || returnClass == Integer.TYPE || returnClass == Long.class || returnClass == Long.TYPE) {
+				fieldCreation.append("INT");
+			}
+			else if(returnClass == Float.class || returnClass == Float.TYPE) {
+				fieldCreation.append("FLOAT");
+			}
+			else if(returnClass == Double.class || returnClass == Double.TYPE) {
+				fieldCreation.append("DOUBLE");
+			}
+			else if(returnClass == String.class) {
+				fieldCreation.append("VARCHAR");
+			}
+			else if(returnClass == Boolean.class || returnClass == boolean.class) {
+				fieldCreation.append("BOOL");
+			}
+			else if(returnClass == java.util.Date.class || returnClass == java.sql.Date.class) {
+				fieldCreation.append("DATETIME");
+			}
+			else {
+				throw new RuntimeException("Cannot map field "+entityClass.getSimpleName()+"."+field.getName()+" type="+field.getType());
+			}
+			
+			if(field.isAnnotationPresent(Id.class)) {
+				fieldCreation.append("PRIMARY KEY");
+			}
+			
+			if(field.getDeclaredAnnotation(GeneratedValue.class) != null) {
+				GeneratedValue generatedValue = field.getDeclaredAnnotation(GeneratedValue.class);
+				if(generatedValue.strategy() == GenerationType.IDENTITY) {
+					fieldCreation.append("AUTO_INCREMENT");
+				}
+			}
+			
+			fields.add(fieldCreation.toString());
+		}
+		
+		String result = "CREATE TABLE "+nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
+		
+		try(Connection connection = datasource.getConnection(); 
+			PreparedStatement statement = connection.prepareStatement(result);){
+			return statement.execute();
+		}
+	}
+
 	@SneakyThrows
 	public boolean truncateTable(Class<?> entity) {
 		try(Connection connection = datasource.getConnection();
@@ -715,6 +594,9 @@ public abstract class Context {
 		}
 	}
 		
+	// ==================== INDEX MANAGEMENT ====================
+	
+	// find field from columnName
 	public String findEntityName(Class<?> c, String columnName) {
 		for(Field field : FieldUtils.getEntityFields(c)) {
 			if(columnName.equals(nameMapper.mapDatabaseField(field.getName()))){
@@ -758,41 +640,86 @@ public abstract class Context {
 		}
 	}
 	
-	public static TableIndex CompositeIndex(String name, IndexType type, List<IndexColumn> columns) {
-		IndexColumn[] array = new IndexColumn[columns.size()];
-		columns.toArray(array);
-		
-		TableIndex index = new TableIndex() {
-			@Override
-			public String name() { return name; }
-
-			@Override
-			public IndexType type() { return type; }
-
-			@Override
-			public Class<? extends Annotation> annotationType() { return null; }
-
-			@Override
-			public IndexColumn[] columns() { return array; }
-		};
-		
-		return index;
-	}
 	
-	public IndexColumn ColumnIndex(String value, Integer length) {
-		IndexColumn index = new IndexColumn() {
-			@Override
-			public Class<? extends Annotation> annotationType() { return null; }
-
-			@Override
-			public String value() { return value; }
-
-			@Override
-			public int length() { return length; }
-		};
-		
-		return index;
-	}
 	
 	public abstract List<TableIndex> listIndexes(Class<?> c);
+	
+	// ==================== MISC ====================
+
+	@SneakyThrows
+	public String queryAsString(Query<?> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = Statement.toStatement(this, connection, preExecute(query));) {
+			return statement.query();
+		}
+		
+	}
+
+//	@SuppressWarnings("unchecked")
+//	private <U> IMapper<U> generateMapper(Class<U> clazz, String[] columnNames, boolean tracePerformances2) {
+//		if(clazz == Integer.class){
+//			return (IMapper<U>) new IntegerMapper();
+//		}
+//		else if(clazz == Short.class){
+//			return (IMapper<U>) new ShortMapper();
+//		}
+//		else if(clazz == Long.class){
+//			return (IMapper<U>) new LongMapper();
+//		}
+//		else if(clazz == Float.class){
+//			return (IMapper<U>) new FloatMapper();
+//		}
+//		else if(clazz == Double.class){
+//			return (IMapper<U>) new DoubleMapper();
+//		}
+//		else if(clazz == String.class){
+//			return (IMapper<U>) new StringMapper();
+//		}
+//		else if(clazz == Boolean.class){
+//			return (IMapper<U>) new BooleanMapper();
+//		}
+//		else if(clazz == java.util.Date.class){
+//			return (IMapper<U>) new DateMapper();
+//		}
+//		else {
+//			return new EntityMapper<>(clazz, tracePerformances2);
+//		}
+//	}
+	
+	@SuppressWarnings("unchecked")
+	private <U> IMapper<U> generateMapper2(Class<U> clazz, ResultSetMetaData resultSetMetaData) {
+		if(clazz == Integer.class){
+			return (IMapper<U>) new IntegerMapper();
+		}
+		else if(clazz == Short.class){
+			return (IMapper<U>) new ShortMapper();
+		}
+		else if(clazz == Long.class){
+			return (IMapper<U>) new LongMapper();
+		}
+		else if(clazz == Float.class){
+			return (IMapper<U>) new FloatMapper();
+		}
+		else if(clazz == Double.class){
+			return (IMapper<U>) new DoubleMapper();
+		}
+		else if(clazz == String.class){
+			return (IMapper<U>) new StringMapper();
+		}
+		else if(clazz == Boolean.class){
+			return (IMapper<U>) new BooleanMapper();
+		}
+		else if(clazz == java.util.Date.class){
+			return (IMapper<U>) new DateMapper();
+		}
+		else if(clazz == Result.class) {
+			return (IMapper<U>) new ResultMapper();
+		}
+		else {
+			return new EntityMapper<>(clazz, false);
+		}
+	}
+	
+	
+	
 }

@@ -3,6 +3,7 @@ package com.estivate.query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -770,42 +771,43 @@ public class Query<T> extends Aggregator{
 	}
 
 
-	public T fetchSingle(Context context) {
-		return context.fetchSingle(this);
-	}
+	public T 		fetchSingle(Context context) 					{ return context.fetchSingle(this); }
+	public Result 	fetchSingleAsResult(Context context)			{ return context.fetchSingleAsResult(this); }
+	public <U> U 	fetchSingleAs(Context context, Class<U> clazz) 	{ return context.fetchSingleAs(this, clazz); }
+	public String 	fetchSingleAsString(Context context) 			{ return context.fetchSingleAsString(this); }
+	public Short 	fetchSingleAsShort(Context context) 			{ return context.fetchSingleAsShort(this); }
+	public Integer 	fetchSingleAsInteger(Context context) 			{ return context.fetchSingleAsInteger(this); }
+	public Long 	fetchSingleAsLong(Context context) 				{ return context.fetchSingleAsLong(this); }
+	public Float 	fetchSingleAsFloat(Context context) 			{ return context.fetchSingleAsFloat(this); }
+	public Double 	fetchSingleAsDouble(Context context) 			{ return context.fetchSingleAsDouble(this); }
+	public Date 	fetchSingleAsDate(Context context) 				{ return context.fetchSingleAsDate(this); }
+	public Boolean 	fetchSingleAsBoolean(Context context) 			{ return context.fetchSingleAsBoolean(this); }
+	
+	public Optional<T> 			fetchSingleOptional(Context context) 			{ return context.fetchSingleOptional(this); }
+	public Optional<Result> 	fetchSingleAsResultOptional(Context context) 	{ return context.fetchSingleAsResultOptional(this); }
+	public Optional<T> 			fetchSingleAsOptional(Context context) 			{ return context.fetchSingleAsOptional(this, (Class<T>) entity.entity); }
+	public Optional<String>		fetchSingleAsStringOptional(Context context) 	{ return context.fetchSingleAsStringOptional(this); }
+	public Optional<Short>		fetchSingleAsShortOptional(Context context) 	{ return context.fetchSingleAsShortOptional(this); }
+	public Optional<Integer>	fetchSingleAsIntegerOptional(Context context) 	{ return context.fetchSingleAsIntegerOptional(this); }
+	public Optional<Long>		fetchSingleAsLongOptional(Context context) 		{ return context.fetchSingleAsLongOptional(this); }
+	public Optional<Float>		fetchSingleAsFloatOptional(Context context) 	{ return context.fetchSingleAsFloatOptional(this); }
+	public Optional<Double>		fetchSingleAsDoubleOptional(Context context) 	{ return context.fetchSingleAsDoubleOptional(this); }
+	public Optional<Date>		fetchSingleAsDateOptional(Context context) 		{ return context.fetchSingleAsDateOptional(this); }
+	public Optional<Boolean>	fetchSingleAsBooleanOptional(Context context) 	{ return context.fetchSingleAsBooleanOptional(this); }
 
-	public Optional<T> fetchSingleOptional(Context context) {
-		return context.fetchSingleOptional(this);
-	}
-
-	public Result fetchSingleAsResult(Context context){
-		return context.fetchSingleAsResult(this);
-	}
-
-	public Optional<Result> fetchSingleAsResultOptional(Context context) {
-		return context.fetchSingleAsResultOptional(this);
-	}
-
-	public <U> U fetchSingleAs(Context context, Class<U> clazz) {
-		return context.fetchSingleAs(this, clazz);
-	}
-
-	public Optional<T> fetchSingleAsOptional(Context context) {
-		return context.fetchSingleAsOptional(this, (Class<T>) entity.entity);
-	}
-
-
-	public List<T> fetchList(Context context){
-		return context.fetchListAs(this, (Class<T>) entity.entity);
-	}
-
-	public <U> List<U> fetchListAs(Context context, Class<U> clazz) {
-		return context.fetchListAs(this, clazz);
-	}
-
-	public List<Result> fetchListAsResults(Context context) {
-		return context.fetchListAsResults(this);
-	}
+	public List<T> fetchList(Context context){ return context.fetchListAs(this, (Class<T>) entity.entity); }
+	public <U> List<U> fetchListAs(Context context, Class<U> clazz) { return context.fetchListAs(this, clazz); }
+	public List<Result> fetchListAsResults(Context context) { return context.fetchListAsResults(this); }
+	public List<String> fetchListAsString(Context context) { return context.fetchListAsString(this); }
+	public List<Short> fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
+	public List<Integer> fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
+	public List<Long> fetchListAsLong(Context context) { return context.fetchListAsLong(this); }
+	public List<Float> fetchListAsFloat(Context context) { return context.fetchListAsFloat(this); }
+	public List<Double> fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
+	public List<Date> fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
+	public List<Boolean> fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
+	
+	
 
 	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
 		return context.aggregateToMap(this, uType, vType);

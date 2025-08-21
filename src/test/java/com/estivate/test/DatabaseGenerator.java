@@ -32,19 +32,19 @@ public class DatabaseGenerator {
 			
 			context.nameMapper = new TestNameMapper();
 
-			context.create(ProductEntity.class);
+			context.createTable(ProductEntity.class);
 			IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
 			productIndexDiff.addUnimplemented();
 
-			context.create(OrderLineEntity.class);
+			context.createTable(OrderLineEntity.class);
 			IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
 			orderLineIndexDiff.addUnimplemented();
 
-			context.create(OrderEntity.class);
+			context.createTable(OrderEntity.class);
 			IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
 			orderIndexDiff.addUnimplemented();
 
-			context.create(CustomerEntity.class);
+			context.createTable(CustomerEntity.class);
 			IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
 			customerIndexDiff.addUnimplemented();
 			
@@ -52,11 +52,11 @@ public class DatabaseGenerator {
 			
 
 			
-			context.create(ParentEntity.class);
+			context.createTable(ParentEntity.class);
 			IndexDiff parentIndexDiff = new IndexDiff(context, ParentEntity.class);
 			parentIndexDiff.addUnimplemented();
 			
-			context.create(ChildEntity.class);
+			context.createTable(ChildEntity.class);
 			IndexDiff childIndexDiff = new IndexDiff(context, ChildEntity.class);
 			childIndexDiff.addUnimplemented();
 		

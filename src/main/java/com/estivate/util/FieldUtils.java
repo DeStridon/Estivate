@@ -9,9 +9,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.Id;
 import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class FieldUtils {
 	
 	static Map<Class<?>, Set<Method>> classPostLoadMethods = new HashMap<>();
@@ -105,5 +109,35 @@ public class FieldUtils {
 		return methods;
 	
 	}
+	
+	/**
+	 * Gets the ID field from an entity class
+	 */
+	public static Field getIdField(Class<?> entityClass) {
+		if(entityClass == null) {
+			return null;
+		}
+		for(Field field : FieldUtils.getEntityFields(entityClass)) {
+			if(field.isAnnotationPresent(Id.class)) {
+				return field;
+			}
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * Invokes methods with a specific annotation on an entity
+	 */
+	public static void invokeLifecycleMethods(Object entity, Class<? extends Annotation> annotationClass) {
+		try {
+			for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), annotationClass)) {
+				method.invoke(entity);
+			}
+		} catch (Exception e) {
+			log.error("Error invoking lifecycle method with annotation " + annotationClass.getSimpleName(), e);
+		}
+	}
+	
 	
 }

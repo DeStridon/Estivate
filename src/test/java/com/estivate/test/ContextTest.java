@@ -31,7 +31,7 @@ public class ContextTest {
 		parent2.setName("Updated Name 2");
 		parent3.setName("Updated Name 3");
 		
-		context.updateAll(Arrays.asList(parent1, parent2, parent3));
+		context.update(Arrays.asList(parent1, parent2, parent3));
 		
 		
 		Query<ParentEntity> query = new Query<>(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
@@ -93,7 +93,7 @@ public class ContextTest {
 		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
 			.selectCount();
 
-		Long count = context.fetchSingleAs(query, Long.class);
+		Long count = context.fetchSingleAsLong(query);
 		Assert.assertNotNull(count);
 		Assert.assertTrue(count > 0);
 	}
