@@ -35,6 +35,7 @@ import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -357,6 +358,35 @@ public abstract class IMapper<U> {
 		}
 
 	}
+
+	@AllArgsConstructor
+	public static class StringEnumMapper<U extends Enum<U>> extends IMapper<U>{
+		
+		final Class<U> enumClass;
+
+		@Override
+		public U map(String[] row) {
+			if(row[0] == null) {
+				return null;
+			}
+			return (U) Enum.valueOf((Class<U>) enumClass, row[0]);
+		}
+	}
+
+	@AllArgsConstructor
+	public static class OrdinalEnumMapper<U extends Enum<U>> extends IMapper<U>{
+
+		final Class<U> enumClass;
+
+		@Override
+		public U map(String[] row) {
+			if(row[0] == null) {
+				return null;
+			}
+			return (U) enumClass.getEnumConstants()[Integer.parseInt(row[0])];
+		}
+	}
+
 	
 	public static class ResultMapper extends IMapper<Result>{
 

@@ -26,38 +26,19 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public class Result {
 
-	//final ResultSetMetaData resultSetMetaData;
 	final String[] columnValues;
 	final String[] columnNames;
 	final NameMapper nameMapper;
 
-	
-//	@SneakyThrows
-//	public Result(String[] values, String[] columns, Statement statement) {
-//		
-//		//this.resultSetMetaData = resultSet.getMetaData();
-//		this.columnValues = new String[resultSet.getMetaData().getColumnCount()];
-//		for(int i = 0; i < columnValues.length; i++) {
-//			this.columnValues[i] = resultSet.getString(i+1);
-//		}
-//		this.columnNames = columnNames;
-//		
-//
-//	}
-	
+	private Map<String, Object> cache = new HashMap<>();
+
 	
 	public Result(String[] values, String[] columns, NameMapper nameMapper) {
 		this.columnValues = values;
 		this.columnNames = columns;
 		this.nameMapper = nameMapper;
 	}
-	
 
-	//final DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]").withZone(ZoneId.systemDefault());
-
-	private Map<String, Object> cache = new HashMap<>();
-	
-	
 	
 	@SneakyThrows
 	public <U> U mapTo(Entity<U> clazz) throws SecurityException, IllegalArgumentException {

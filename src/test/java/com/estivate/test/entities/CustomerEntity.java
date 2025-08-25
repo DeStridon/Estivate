@@ -9,6 +9,8 @@ public class CustomerEntity {
 
     String name;
 
+    String email;
+
     String addreess;
 
     String country;

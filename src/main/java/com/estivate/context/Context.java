@@ -43,8 +43,10 @@ import com.estivate.IMapper.EntityMapper;
 import com.estivate.IMapper.FloatMapper;
 import com.estivate.IMapper.IntegerMapper;
 import com.estivate.IMapper.LongMapper;
+import com.estivate.IMapper.OrdinalEnumMapper;
 import com.estivate.IMapper.ResultMapper;
 import com.estivate.IMapper.ShortMapper;
+import com.estivate.IMapper.StringEnumMapper;
 import com.estivate.IMapper.StringMapper;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
@@ -55,6 +57,7 @@ import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
+import com.estivate.query.UpdateQuery;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
@@ -127,6 +130,18 @@ public abstract class Context {
 		fetchQueryPreProcessor.accept(clonedQuery);
 		return clonedQuery;
 	}
+
+
+
+	// ==================== EXECUTE METHODS ====================
+
+	@SneakyThrows
+	public Boolean execute(Query<?> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = Statement.toStatement(this, connection, preExecute(query))) {
+			return statement.executeForValidation();
+		}
+	}
 	
 	// ==================== FETCH METHODS ====================
 	@SneakyThrows
@@ -191,8 +206,10 @@ public abstract class Context {
 	public Double	fetchSingleAsDouble(Query<?> query)				{ return fetchSingleWithMapper(query, new DoubleMapper()); }
 	public Date		fetchSingleAsDate(Query<?> query)				{ return fetchSingleWithMapper(query, new DateMapper()); }
 	public Boolean	fetchSingleAsBoolean(Query<?> query)			{ return fetchSingleWithMapper(query, new BooleanMapper()); }
-	
-	
+	public <U extends Enum<U>> U 	fetchSingleAsStringEnum(Query<?> query, Class<U> enumClass) { return fetchSingleWithMapper(query, new StringEnumMapper<U>(enumClass)); }
+	public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(Query<?> query, Class<U> enumClass) { return fetchSingleWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
+
+
 	public <T> Optional<T> 		fetchSingleOptional(Query<T> query)						{ return Optional.ofNullable(fetchSingle(query)); }
 	public <U> Optional<U> 		fetchSingleAsOptional(Query<?> query, Class<U> clazz) 	{ return Optional.ofNullable(fetchSingleAs(query, clazz)); }
 	public Optional<Result> 	fetchSingleAsResultOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsResult(query)); }
@@ -204,6 +221,9 @@ public abstract class Context {
 	public Optional<Double> 	fetchSingleAsDoubleOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsDouble(query)); }
 	public Optional<Date> 		fetchSingleAsDateOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsDate(query)); }
 	public Optional<Boolean> 	fetchSingleAsBooleanOptional(Query<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
+	public <U extends Enum<U>> Optional<U> 		fetchSingleAsStringEnumOptional(Query<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsStringEnum(query, enumClass)); }
+	public <U extends Enum<U>> Optional<U> 		fetchSingleAsOrdinalEnumOptional(Query<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsOrdinalEnum(query, enumClass)); }
+
 	
 		
 	public <T> List<T> 		fetchList(Query<T> query)					{ return fetchListAs(query, query.getEntity().entity); }
@@ -217,6 +237,10 @@ public abstract class Context {
 	public List<Double>		fetchListAsDouble(Query<?> query)			{ return fetchListWithMapper(query, new DoubleMapper()); }
 	public List<Date>		fetchListAsDate(Query<?> query)				{ return fetchListWithMapper(query, new DateMapper()); }
 	public List<Boolean>	fetchListAsBoolean(Query<?> query)			{ return fetchListWithMapper(query, new BooleanMapper()); }
+	public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(Query<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new StringEnumMapper<U>(enumClass)); }
+	public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(Query<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
+
+	
 	
 	
 	
@@ -298,7 +322,7 @@ public abstract class Context {
 					}
 					
 					fieldValueList.add(nameMapper.mapDatabaseField(field.getName()));
-					statement.appendValue(object.getClass(), field.getName(), field.get(object));
+					statement.appendObjectAsValue(object.getClass(), field.getName(), field.get(object));
 					
 				}
 				catch(Exception e) {
@@ -478,12 +502,12 @@ public abstract class Context {
 				statement.appendQuery(updatedFields.stream().map(x-> nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
 				
 				for(Field field : updatedFields) {
-					statement.appendValue(entity.getClass(), field.getName(), field.get(entity));
+					statement.appendObjectAsValue(entity.getClass(), field.getName(), field.get(entity));
 				}
 				
 				
 				statement.appendQuery(" WHERE "+nameMapper.mapDatabaseField(idField.getName())+" = ?;");
-				statement.appendValue(entity.getClass(), idField.getName(), idField.getLong(entity));
+				statement.appendObjectAsValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 			}
 			
 			boolean check = statement.executeForValidation();
@@ -655,70 +679,13 @@ public abstract class Context {
 		
 	}
 
-//	@SuppressWarnings("unchecked")
-//	private <U> IMapper<U> generateMapper(Class<U> clazz, String[] columnNames, boolean tracePerformances2) {
-//		if(clazz == Integer.class){
-//			return (IMapper<U>) new IntegerMapper();
-//		}
-//		else if(clazz == Short.class){
-//			return (IMapper<U>) new ShortMapper();
-//		}
-//		else if(clazz == Long.class){
-//			return (IMapper<U>) new LongMapper();
-//		}
-//		else if(clazz == Float.class){
-//			return (IMapper<U>) new FloatMapper();
-//		}
-//		else if(clazz == Double.class){
-//			return (IMapper<U>) new DoubleMapper();
-//		}
-//		else if(clazz == String.class){
-//			return (IMapper<U>) new StringMapper();
-//		}
-//		else if(clazz == Boolean.class){
-//			return (IMapper<U>) new BooleanMapper();
-//		}
-//		else if(clazz == java.util.Date.class){
-//			return (IMapper<U>) new DateMapper();
-//		}
-//		else {
-//			return new EntityMapper<>(clazz, tracePerformances2);
-//		}
-//	}
-	
-	@SuppressWarnings("unchecked")
-	private <U> IMapper<U> generateMapper2(Class<U> clazz, ResultSetMetaData resultSetMetaData) {
-		if(clazz == Integer.class){
-			return (IMapper<U>) new IntegerMapper();
-		}
-		else if(clazz == Short.class){
-			return (IMapper<U>) new ShortMapper();
-		}
-		else if(clazz == Long.class){
-			return (IMapper<U>) new LongMapper();
-		}
-		else if(clazz == Float.class){
-			return (IMapper<U>) new FloatMapper();
-		}
-		else if(clazz == Double.class){
-			return (IMapper<U>) new DoubleMapper();
-		}
-		else if(clazz == String.class){
-			return (IMapper<U>) new StringMapper();
-		}
-		else if(clazz == Boolean.class){
-			return (IMapper<U>) new BooleanMapper();
-		}
-		else if(clazz == java.util.Date.class){
-			return (IMapper<U>) new DateMapper();
-		}
-		else if(clazz == Result.class) {
-			return (IMapper<U>) new ResultMapper();
-		}
-		else {
-			return new EntityMapper<>(clazz, false);
-		}
-	}
+	// public String queryAsString(UpdateQuery<?> query) {
+	// 	try(Connection connection = datasource.getConnection();
+	// 		Statement statement = Statement.toStatement(this, connection, preExecute(query));) {
+	// 		return statement.query();
+	// 	}
+	// }
+
 	
 	
 	

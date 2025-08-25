@@ -228,22 +228,22 @@ public class Aggregator implements EstivateNode {
 	public Aggregator isNotNull(Entity<?> entity, String attribute) { add(Estivate.isNotNull(entity, attribute)); return this; }
 
 	public Aggregator matchAgainst(Entity<?> entity, String attribute, String value) { add(Estivate.matchAgainst(entity, attribute, value)); return this; }
-	public Aggregator matchAgainst(Entity<?> entity, List<String> attributes, String value) { add(Estivate.matchAgainst(entity, attributes, value)); return this; }
+	public Aggregator matchAgainst(Entity<?> entity, Collection<String> attributes, String value) { add(Estivate.matchAgainst(entity, attributes, value)); return this; }
 	public Aggregator matchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.matchAgainstIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator matchAgainstIfNotNull(Entity<?> entity, List<String> attributes, String value) { add(Estivate.matchAgainstIfNotNull(entity, attributes, value)); return this; }
+	public Aggregator matchAgainstIfNotNull(Entity<?> entity, Collection<String> attributes, String value) { add(Estivate.matchAgainstIfNotNull(entity, attributes, value)); return this; }
 	public Aggregator notMatchAgainst(Entity<?> entity, String attribute, String value) { add(Estivate.notMatchAgainst(entity, attribute, value)); return this; }
-	public Aggregator notMatchAgainst(Entity<?> entity, List<String> attributes, String value) { add(Estivate.notMatchAgainst(entity, attributes, value)); return this; }
+	public Aggregator notMatchAgainst(Entity<?> entity, Collection<String> attributes, String value) { add(Estivate.notMatchAgainst(entity, attributes, value)); return this; }
 	public Aggregator notMatchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.notMatchAgainstIfNotNull(entity, attribute, value)); return this; }
-	public Aggregator notMatchAgainstIfNotNull(Entity<?> entity, List<String> attributes, String value) { add(Estivate.notMatchAgainstIfNotNull(entity, attributes, value)); return this; }
+	public Aggregator notMatchAgainstIfNotNull(Entity<?> entity, Collection<String> attributes, String value) { add(Estivate.notMatchAgainstIfNotNull(entity, attributes, value)); return this; }
 
 	public Aggregator matchAgainstIn(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.matchAgainstIn(entity, attribute, values)); return this; }
-	public Aggregator matchAgainstIn(Entity<?> entity, List<String> attributes, Collection<String> values) { add(Estivate.matchAgainstIn(entity, attributes, values)); return this; }
+	public Aggregator matchAgainstIn(Entity<?> entity, Collection<String> attributes, Collection<String> values) { add(Estivate.matchAgainstIn(entity, attributes, values)); return this; }
 	public Aggregator matchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(entity, attribute, values)); return this; }
-	public Aggregator matchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(entity, attributes, values)); return this; }
+	public Aggregator matchAgainstInIfNotEmpty(Entity<?> entity, Collection<String> attributes, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(entity, attributes, values)); return this; }
 	public Aggregator notMatchAgainstIn(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.notMatchAgainstIn(entity, attribute, values)); return this; }
-	public Aggregator notMatchAgainstIn(Entity<?> entity, List<String> attributes, Collection<String> values) { add(Estivate.notMatchAgainstIn(entity, attributes, values)); return this; }
+	public Aggregator notMatchAgainstIn(Entity<?> entity, Collection<String> attributes, Collection<String> values) { add(Estivate.notMatchAgainstIn(entity, attributes, values)); return this; }
 	public Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(entity, attribute, values)); return this; }
-	public Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(entity, attributes, values)); return this; }
+	public Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, Collection<String> attributes, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(entity, attributes, values)); return this; }
 
 
 
@@ -306,8 +306,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notLikeContainsIn	(Class<?> entity, String attribute, Collection<String> value)	{ return notLikeContainsIn(new Entity<>(entity), attribute, value); }
 
 	
-	public Aggregator inSubQuery(Class<?> entity, String attribute, Query subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
-	public Aggregator notInSubQuery(Class<?> entity, String attribute, Query subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
+	public Aggregator inSubQuery(Class<?> entity, String attribute, Query<?> subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
+	public Aggregator notInSubQuery(Class<?> entity, String attribute, Query<?> subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
 
 	public Aggregator gtIfNotNull    	(Class<?> entity, String attribute, Object value)        	{ return gtIfNotNull(new Entity<>(entity), attribute, value); }
 	public Aggregator lteIfNotNull   	(Class<?> entity, String attribute, Object value)        	{ return lteIfNotNull(new Entity<>(entity), attribute, value); }
@@ -345,22 +345,22 @@ public class Aggregator implements EstivateNode {
 	public Aggregator gteOrNull(Class<?> entity, String attribute, Object value) 	{ return gteOrNull(new Entity<>(entity), attribute, value); }
 
 	public Aggregator matchAgainst(Class<?> entity, String attribute, String value) { return matchAgainst(new Entity<>(entity), attribute, value); }
-	public Aggregator matchAgainst(Class<?> entity, List<String> attributes, String value) { return matchAgainst(new Entity<>(entity), attributes, value); }
+	public Aggregator matchAgainst(Class<?> entity, Collection<String> attributes, String value) { return matchAgainst(new Entity<>(entity), attributes, value); }
 	public Aggregator matchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
-	public Aggregator matchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
+	public Aggregator matchAgainstIfNotNull(Class<?> entity, Collection<String> attributes, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
 	public Aggregator notMatchAgainst(Class<?> entity, String attribute, String value) { return notMatchAgainst(new Entity<>(entity), attribute, value); }
-	public Aggregator notMatchAgainst(Class<?> entity, List<String> attributes, String value) { return notMatchAgainst(new Entity<>(entity), attributes, value); }
+	public Aggregator notMatchAgainst(Class<?> entity, Collection<String> attributes, String value) { return notMatchAgainst(new Entity<>(entity), attributes, value); }
 	public Aggregator notMatchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
-	public Aggregator notMatchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
+	public Aggregator notMatchAgainstIfNotNull(Class<?> entity, Collection<String> attributes, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
 
 	public Aggregator matchAgainstIn(Class<?> entity, String attribute, Collection<String> values) { return matchAgainstIn(new Entity<>(entity), attribute, values); }
-	public Aggregator matchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values) { return matchAgainstIn(new Entity<>(entity), attributes, values); }
+	public Aggregator matchAgainstIn(Class<?> entity, Collection<String> attributes, Collection<String> values) { return matchAgainstIn(new Entity<>(entity), attributes, values); }
 	public Aggregator matchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
-	public Aggregator matchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { return matchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
+	public Aggregator matchAgainstInIfNotEmpty(Class<?> entity, Collection<String> attributes, Collection<String> values) { return matchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
 	public Aggregator notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values) { return notMatchAgainstIn(new Entity<>(entity), attribute, values); }
-	public Aggregator notMatchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values) { return notMatchAgainstIn(new Entity<>(entity), attributes, values); }
+	public Aggregator notMatchAgainstIn(Class<?> entity, Collection<String> attributes, Collection<String> values) { return notMatchAgainstIn(new Entity<>(entity), attributes, values); }
 	public Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
-	public Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
+	public Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, Collection<String> attributes, Collection<String> values) { return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
 	
 
 	public Aggregator nativeCriterion(Class<?> entity, String attribute, String criterion) { return nativeCriterion(new Entity<>(entity), attribute, criterion); }

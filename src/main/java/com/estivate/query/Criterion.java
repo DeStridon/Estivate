@@ -155,11 +155,11 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 	@ToString(callSuper = true)
 	public static class MatchAgainst extends Criterion{
 		
-		public List<String> attributes;
+		public Collection<String> attributes;
 		public Object value;
 		public boolean inclusive;
 		
-		public MatchAgainst(Entity<?> entity, List<String> attributes, Function function, Object value, boolean inclusive) {
+		public MatchAgainst(Entity<?> entity, Collection<String> attributes, Function function, Object value, boolean inclusive) {
 			this.entity = entity;
 			this.attributes = attributes;
 			this.function = function;

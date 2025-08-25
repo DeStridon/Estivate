@@ -302,8 +302,8 @@ public class Query<T> extends Aggregator{
 
 	public Query<T> nativeCriterion 	(Class<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 	
-	public Query<T> inSubQuery			(Class<?> entity, String attribute, Query subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
-	public Query<T> notInSubQuery		(Class<?> entity, String attribute, Query subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
+	public Query<T> inSubQuery			(Class<?> entity, String attribute, Query<?> subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
+	public Query<T> notInSubQuery		(Class<?> entity, String attribute, Query<?> subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
 
 	
 	public Query<T> notInIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return this; }
