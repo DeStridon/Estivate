@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.IMapper.EntityMapper;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ParentEntity;
 
@@ -21,7 +21,7 @@ public class MapperTest {
 		
 		ParentEntity newParent = context.updateOrInsert(ParentEntity.builder().name("parent 1 name").build());	
 		
-		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
 				.eq(ParentEntity.class, AbstractEntity.Fields.id, newParent.getId());
 				
 		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);

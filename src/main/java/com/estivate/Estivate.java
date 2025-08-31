@@ -30,8 +30,8 @@ import com.estivate.query.Join;
 import com.estivate.query.Join.JoinType;
 import com.estivate.query.Keyword;
 import com.estivate.query.Keyword.KeywordValue;
-import com.estivate.query.Query;
-import com.estivate.query.Query.Order;
+import com.estivate.query.SelectQuery;
+import com.estivate.query.SelectQuery.Order;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -41,9 +41,9 @@ import net.bytebuddy.matcher.ElementMatchers;
 public class Estivate {
 
 	// Entities Factory
-	public static <U> Query<U> query(Entity<U> entity) { return new Query<>(entity); }
-	public static <U> Query<U> query(Class<U> entity) 	{ return new Query<>(entity); }
-	public static <U> Query<U> query(Query<U> subQuery, String alias) { return new Query<>(new SubQueryEntity<>(subQuery, alias)); }
+	public static <U> SelectQuery<U> query(Entity<U> entity) { return new SelectQuery<>(entity); }
+	public static <U> SelectQuery<U> query(Class<U> entity) 	{ return new SelectQuery<>(entity); }
+	public static <U> SelectQuery<U> query(SelectQuery<U> subQuery, String alias) { return new SelectQuery<>(new SubQueryEntity<>(subQuery, alias)); }
 	
 	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field, null); }
 	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field, null); }
@@ -54,7 +54,7 @@ public class Estivate {
 	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
 	public static <U> Entity<U> entity(Class<U> entity, String alias) { return new Entity<>(entity, alias); }
 
-	public static <U> SubQueryEntity<U> subQueryEntity(Query<U> query, String alias) { return new SubQueryEntity<>(query, alias); }
+	public static <U> SubQueryEntity<U> subQueryEntity(SelectQuery<U> query, String alias) { return new SubQueryEntity<>(query, alias); }
 
 
 	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}
@@ -107,8 +107,8 @@ public class Estivate {
 	public static Join joinInner(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join joinInner(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join joinInner(Class<?> joinerEntity, Class<?> joinedEntity, String joinerAttribute, String joinedAttribute){ return new Join(new Entity<>(joinerEntity), new Entity<>(joinedEntity), joinerAttribute, joinedAttribute, JoinType.INNER); }
-	public static Join joinInner(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.INNER); }
-	public static Join joinInner(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.INNER); }
+	public static Join joinInner(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.INNER); }
+	public static Join joinInner(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join joinInner(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightSubQuery, leftAttribute, rightAttribute, JoinType.INNER); }
 	public static Join joinInner(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute, JoinType.INNER); }
 
@@ -116,8 +116,8 @@ public class Estivate {
 	public static Join joinOuter(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join joinOuter(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join joinOuter(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), new Entity<>(rightClass), leftAttribute, rightAttribute, JoinType.OUTER); }
-	public static Join joinOuter(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.OUTER); }
-	public static Join joinOuter(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.OUTER); }
+	public static Join joinOuter(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.OUTER); }
+	public static Join joinOuter(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join joinOuter(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightSubQuery, leftAttribute, rightAttribute, JoinType.OUTER); }
 	public static Join joinOuter(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute, JoinType.OUTER); }
 
@@ -126,8 +126,8 @@ public class Estivate {
 	public static Join joinLeft(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join joinLeft(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join joinLeft(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), new Entity<>(rightClass), leftAttribute, rightAttribute, JoinType.LEFT); }
-	public static Join joinLeft(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.LEFT); }
-	public static Join joinLeft(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.LEFT); }
+	public static Join joinLeft(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.LEFT); }
+	public static Join joinLeft(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join joinLeft(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightSubQuery, leftAttribute, rightAttribute, JoinType.LEFT); }
 	public static Join joinLeft(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute, JoinType.LEFT); }
 
@@ -135,8 +135,8 @@ public class Estivate {
 	public static Join joinRight(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ return new Join(leftEntity, new Entity<>(rightClass), leftAttribute, rightAttribute, JoinType.RIGHT); }
 	public static Join joinRight(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightEntity, leftAttribute, rightAttribute, JoinType.RIGHT); }
 	public static Join joinRight(Class<?> joinerEntity, Class<?> joinedEntity, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(joinerEntity), new Entity<>(joinedEntity), leftAttribute, rightAttribute, JoinType.RIGHT); }
-	public static Join joinRight(Entity<?> leftEntity, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.RIGHT); }
-	public static Join joinRight(Class<?> leftClass, Query<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.RIGHT); }
+	public static Join joinRight(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.RIGHT); }
+	public static Join joinRight(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute, JoinType.RIGHT); }
 	public static Join joinRight(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(leftEntity, rightSubQuery, leftAttribute, rightAttribute, JoinType.RIGHT); }
 	public static Join joinRight(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ return new Join(new Entity<>(leftClass), rightSubQuery, leftAttribute, rightAttribute, JoinType.RIGHT); }
 	
@@ -257,12 +257,12 @@ public class Estivate {
 	public static Criterion nativeCriterion (Attribute attribute, String criterion) { return new NativeCriterion(attribute, criterion); }
 	
 	// subQuery
-	public static Criterion inSubQuery(Attribute attribute, Query<?> subQuery)	  	{ return new InSubQuery(attribute, subQuery, true); }
-	public static Criterion notInSubQuery(Attribute attribute, Query<?> subQuery)	{ return new InSubQuery(attribute, subQuery, false); }
+	public static Criterion inSubQuery(Attribute attribute, SelectQuery<?> subQuery)	  	{ return new InSubQuery(attribute, subQuery, true); }
+	public static Criterion notInSubQuery(Attribute attribute, SelectQuery<?> subQuery)	{ return new InSubQuery(attribute, subQuery, false); }
 	
 	// exists
-	public static Criterion existsSubQuery(Query<?> subQuery)		{ return new ExistsSubQuery(subQuery, true); }
-	public static Criterion notExistsSubQuery(Query<?> subQuery)	{ return new ExistsSubQuery(subQuery, false); }
+	public static Criterion existsSubQuery(SelectQuery<?> subQuery)		{ return new ExistsSubQuery(subQuery, true); }
+	public static Criterion notExistsSubQuery(SelectQuery<?> subQuery)	{ return new ExistsSubQuery(subQuery, false); }
 	
 
 	public static Keyword keywordTrue() { return new Keyword(KeywordValue.TRUE); }
@@ -397,8 +397,8 @@ public class Estivate {
 	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return new NativeCriterion(entity, attribute, null, criterion); }
 	
 	// subQuery
-	public static Criterion inSubQuery(Entity<?> entity, String attribute, Query subQuery)	  	{ return new InSubQuery(entity, attribute, null, subQuery, true); }
-	public static Criterion notInSubQuery(Entity<?> entity, String attribute, Query subQuery)	{ return new InSubQuery(entity, attribute, null, subQuery, false); }
+	public static Criterion inSubQuery(Entity<?> entity, String attribute, SelectQuery subQuery)	  	{ return new InSubQuery(entity, attribute, null, subQuery, true); }
+	public static Criterion notInSubQuery(Entity<?> entity, String attribute, SelectQuery subQuery)	{ return new InSubQuery(entity, attribute, null, subQuery, false); }
 	
 	
 	
@@ -505,8 +505,8 @@ public class Estivate {
 	public static Criterion nativeCriterion (Class<?> entity, String attribute, String criterion)	{ return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 
 	
-	public static Criterion inSubQuery(Class<?> entity, String attribute, Query subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
-	public static Criterion notInSubQuery(Class<?> entity, String attribute, Query subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
+	public static Criterion inSubQuery(Class<?> entity, String attribute, SelectQuery subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
+	public static Criterion notInSubQuery(Class<?> entity, String attribute, SelectQuery subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
 	
 	
 	

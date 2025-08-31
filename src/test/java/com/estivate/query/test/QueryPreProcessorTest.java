@@ -1,11 +1,12 @@
-package com.estivate.test;
+package com.estivate.query.test;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
+import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ParentEntity;
 
@@ -19,12 +20,12 @@ public class QueryPreProcessorTest {
     	Context context = DatabaseGenerator.getContext();
 
         context.fetchQueryPreProcessor = (query) -> {
-            if(query.getOrders().isEmpty()) {
-                query.orderAsc(AbstractEntity.Fields.id);
+            if(query instanceof SelectQuery && query.getOrders().isEmpty()) {
+                ((SelectQuery) query).orderAsc(AbstractEntity.Fields.id);
             }
         };
 
-        Query<ParentEntity> query = Estivate.query(ParentEntity.class);
+        SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class);
 
         String queryString = context.queryAsString(query);
 

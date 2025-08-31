@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ParentEntity;
 

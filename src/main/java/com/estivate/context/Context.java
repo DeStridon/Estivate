@@ -57,9 +57,8 @@ import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
-import com.estivate.query.UpdateQuery;
+import com.estivate.query.SelectQuery;
 import com.estivate.util.CachedEntity;
-import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
 
@@ -136,7 +135,7 @@ public abstract class Context {
 	// ==================== EXECUTE METHODS ====================
 
 	@SneakyThrows
-	public Boolean execute(Query<?> query) {
+	public Boolean execute(SelectQuery<?> query) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query))) {
 			return statement.executeForValidation();
@@ -145,7 +144,7 @@ public abstract class Context {
 	
 	// ==================== FETCH METHODS ====================
 	@SneakyThrows
-	public <T> T fetchSingleWithMapper(Query<?> query, IMapper<T> mapper) {
+	public <T> T fetchSingleWithMapper(SelectQuery<?> query, IMapper<T> mapper) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));
 			ResultSet resultSet = statement.executeForResultSet()) {
@@ -161,7 +160,7 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
-	public <T> List<T> fetchListWithMapper(Query<?> query, IMapper<T> mapper) {
+	public <T> List<T> fetchListWithMapper(SelectQuery<?> query, IMapper<T> mapper) {
 			
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));
@@ -195,50 +194,50 @@ public abstract class Context {
 		}
 	}
 	
-	public <T> T 	fetchSingle(Query<T> query)						{ return fetchSingleAs(query, query.getEntity().entity); }
-	public <U> U 	fetchSingleAs(Query<?> query, Class<U> clazz) 	{ return fetchSingleWithMapper(query, new EntityMapper<U>(clazz)); }
-	public Result 	fetchSingleAsResult(Query<?> query) 			{ return fetchSingleWithMapper(query, new ResultMapper()); }
-	public String 	fetchSingleAsString(Query<?> query)				{ return fetchSingleWithMapper(query, new StringMapper()); }
-	public Short	fetchSingleAsShort(Query<?> query)				{ return fetchSingleWithMapper(query, new ShortMapper()); }
-	public Integer	fetchSingleAsInteger(Query<?> query)			{ return fetchSingleWithMapper(query, new IntegerMapper()); }
-	public Long		fetchSingleAsLong(Query<?> query)				{ return fetchSingleWithMapper(query, new LongMapper()); }
-	public Float	fetchSingleAsFloat(Query<?> query)				{ return fetchSingleWithMapper(query, new FloatMapper()); }
-	public Double	fetchSingleAsDouble(Query<?> query)				{ return fetchSingleWithMapper(query, new DoubleMapper()); }
-	public Date		fetchSingleAsDate(Query<?> query)				{ return fetchSingleWithMapper(query, new DateMapper()); }
-	public Boolean	fetchSingleAsBoolean(Query<?> query)			{ return fetchSingleWithMapper(query, new BooleanMapper()); }
-	public <U extends Enum<U>> U 	fetchSingleAsStringEnum(Query<?> query, Class<U> enumClass) { return fetchSingleWithMapper(query, new StringEnumMapper<U>(enumClass)); }
-	public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(Query<?> query, Class<U> enumClass) { return fetchSingleWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
+	public <T> T 	fetchSingle(SelectQuery<T> query)						{ return fetchSingleAs(query, query.getEntity().entity); }
+	public <U> U 	fetchSingleAs(SelectQuery<?> query, Class<U> clazz) 	{ return fetchSingleWithMapper(query, new EntityMapper<U>(clazz)); }
+	public Result 	fetchSingleAsResult(SelectQuery<?> query) 			{ return fetchSingleWithMapper(query, new ResultMapper()); }
+	public String 	fetchSingleAsString(SelectQuery<?> query)				{ return fetchSingleWithMapper(query, new StringMapper()); }
+	public Short	fetchSingleAsShort(SelectQuery<?> query)				{ return fetchSingleWithMapper(query, new ShortMapper()); }
+	public Integer	fetchSingleAsInteger(SelectQuery<?> query)			{ return fetchSingleWithMapper(query, new IntegerMapper()); }
+	public Long		fetchSingleAsLong(SelectQuery<?> query)				{ return fetchSingleWithMapper(query, new LongMapper()); }
+	public Float	fetchSingleAsFloat(SelectQuery<?> query)				{ return fetchSingleWithMapper(query, new FloatMapper()); }
+	public Double	fetchSingleAsDouble(SelectQuery<?> query)				{ return fetchSingleWithMapper(query, new DoubleMapper()); }
+	public Date		fetchSingleAsDate(SelectQuery<?> query)				{ return fetchSingleWithMapper(query, new DateMapper()); }
+	public Boolean	fetchSingleAsBoolean(SelectQuery<?> query)			{ return fetchSingleWithMapper(query, new BooleanMapper()); }
+	public <U extends Enum<U>> U 	fetchSingleAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchSingleWithMapper(query, new StringEnumMapper<U>(enumClass)); }
+	public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchSingleWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
 
 
-	public <T> Optional<T> 		fetchSingleOptional(Query<T> query)						{ return Optional.ofNullable(fetchSingle(query)); }
-	public <U> Optional<U> 		fetchSingleAsOptional(Query<?> query, Class<U> clazz) 	{ return Optional.ofNullable(fetchSingleAs(query, clazz)); }
-	public Optional<Result> 	fetchSingleAsResultOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsResult(query)); }
-	public Optional<String>		fetchSingleAsStringOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsString(query)); }
-	public Optional<Short> 		fetchSingleAsShortOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsShort(query)); }
-	public Optional<Integer> 	fetchSingleAsIntegerOptional(Query<?> query)			{ return Optional.ofNullable(fetchSingleAsInteger(query)); }
-	public Optional<Long> 		fetchSingleAsLongOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsLong(query)); }
-	public Optional<Float> 		fetchSingleAsFloatOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsFloat(query)); }
-	public Optional<Double> 	fetchSingleAsDoubleOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsDouble(query)); }
-	public Optional<Date> 		fetchSingleAsDateOptional(Query<?> query)				{ return Optional.ofNullable(fetchSingleAsDate(query)); }
-	public Optional<Boolean> 	fetchSingleAsBooleanOptional(Query<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
-	public <U extends Enum<U>> Optional<U> 		fetchSingleAsStringEnumOptional(Query<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsStringEnum(query, enumClass)); }
-	public <U extends Enum<U>> Optional<U> 		fetchSingleAsOrdinalEnumOptional(Query<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsOrdinalEnum(query, enumClass)); }
+	public <T> Optional<T> 		fetchSingleOptional(SelectQuery<T> query)						{ return Optional.ofNullable(fetchSingle(query)); }
+	public <U> Optional<U> 		fetchSingleAsOptional(SelectQuery<?> query, Class<U> clazz) 	{ return Optional.ofNullable(fetchSingleAs(query, clazz)); }
+	public Optional<Result> 	fetchSingleAsResultOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsResult(query)); }
+	public Optional<String>		fetchSingleAsStringOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsString(query)); }
+	public Optional<Short> 		fetchSingleAsShortOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsShort(query)); }
+	public Optional<Integer> 	fetchSingleAsIntegerOptional(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsInteger(query)); }
+	public Optional<Long> 		fetchSingleAsLongOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsLong(query)); }
+	public Optional<Float> 		fetchSingleAsFloatOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsFloat(query)); }
+	public Optional<Double> 	fetchSingleAsDoubleOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsDouble(query)); }
+	public Optional<Date> 		fetchSingleAsDateOptional(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsDate(query)); }
+	public Optional<Boolean> 	fetchSingleAsBooleanOptional(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
+	public <U extends Enum<U>> Optional<U> 		fetchSingleAsStringEnumOptional(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsStringEnum(query, enumClass)); }
+	public <U extends Enum<U>> Optional<U> 		fetchSingleAsOrdinalEnumOptional(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsOrdinalEnum(query, enumClass)); }
 
 	
 		
-	public <T> List<T> 		fetchList(Query<T> query)					{ return fetchListAs(query, query.getEntity().entity); }
-	public <U> List<U> 		fetchListAs(Query<?> query, Class<U> clazz) { return fetchListWithMapper(query, new EntityMapper<U>(clazz)); }
-	public List<Result> 	fetchListAsResults(Query<?> query) 			{ return fetchListWithMapper(query, new ResultMapper()); }
-	public List<String>		fetchListAsString(Query<?> query)			{ return fetchListWithMapper(query, new StringMapper()); }
-	public List<Short>		fetchListAsShort(Query<?> query)			{ return fetchListWithMapper(query, new ShortMapper()); }
-	public List<Integer>	fetchListAsInteger(Query<?> query)			{ return fetchListWithMapper(query, new IntegerMapper()); }
-	public List<Long>		fetchListAsLong(Query<?> query)				{ return fetchListWithMapper(query, new LongMapper()); }
-	public List<Float>		fetchListAsFloat(Query<?> query)			{ return fetchListWithMapper(query, new FloatMapper()); }
-	public List<Double>		fetchListAsDouble(Query<?> query)			{ return fetchListWithMapper(query, new DoubleMapper()); }
-	public List<Date>		fetchListAsDate(Query<?> query)				{ return fetchListWithMapper(query, new DateMapper()); }
-	public List<Boolean>	fetchListAsBoolean(Query<?> query)			{ return fetchListWithMapper(query, new BooleanMapper()); }
-	public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(Query<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new StringEnumMapper<U>(enumClass)); }
-	public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(Query<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
+	public <T> List<T> 		fetchList(SelectQuery<T> query)					{ return fetchListAs(query, query.getEntity().entity); }
+	public <U> List<U> 		fetchListAs(SelectQuery<?> query, Class<U> clazz) { return fetchListWithMapper(query, new EntityMapper<U>(clazz)); }
+	public List<Result> 	fetchListAsResults(SelectQuery<?> query) 			{ return fetchListWithMapper(query, new ResultMapper()); }
+	public List<String>		fetchListAsString(SelectQuery<?> query)			{ return fetchListWithMapper(query, new StringMapper()); }
+	public List<Short>		fetchListAsShort(SelectQuery<?> query)			{ return fetchListWithMapper(query, new ShortMapper()); }
+	public List<Integer>	fetchListAsInteger(SelectQuery<?> query)			{ return fetchListWithMapper(query, new IntegerMapper()); }
+	public List<Long>		fetchListAsLong(SelectQuery<?> query)				{ return fetchListWithMapper(query, new LongMapper()); }
+	public List<Float>		fetchListAsFloat(SelectQuery<?> query)			{ return fetchListWithMapper(query, new FloatMapper()); }
+	public List<Double>		fetchListAsDouble(SelectQuery<?> query)			{ return fetchListWithMapper(query, new DoubleMapper()); }
+	public List<Date>		fetchListAsDate(SelectQuery<?> query)				{ return fetchListWithMapper(query, new DateMapper()); }
+	public List<Boolean>	fetchListAsBoolean(SelectQuery<?> query)			{ return fetchListWithMapper(query, new BooleanMapper()); }
+	public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new StringEnumMapper<U>(enumClass)); }
+	public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
 
 	
 	
@@ -268,7 +267,7 @@ public abstract class Context {
 
 	// ==================== AGGREGATION METHODS ====================
 	
-	public <U, V> Map<U, V> aggregateToMap(Query<?> query, Function<Result,U> uType, Function<Result,V> vType){
+	public <U, V> Map<U, V> aggregateToMap(SelectQuery<?> query, Function<Result,U> uType, Function<Result,V> vType){
 		List<Result> results = fetchListAsResults(query);
 		Map<U, V> map = new LinkedHashMap<>();
 		
@@ -279,7 +278,7 @@ public abstract class Context {
 		return map;
 	}
 
-	public <U, V> Map<U, List<V>> aggregateToMapList(Query<?> query, Function<Result,U> uType, Function<Result,V> vType){
+	public <U, V> Map<U, List<V>> aggregateToMapList(SelectQuery<?> query, Function<Result,U> uType, Function<Result,V> vType){
 		List<Result> results = fetchListAsResults(query);
 		Map<U, List<V>> map = new LinkedHashMap<>();
 		
@@ -364,7 +363,7 @@ public abstract class Context {
 		if(idField != null){
 			idField.setAccessible(true);
 			if(idField.getLong(entity) != 0L) {
-				Query<U> query = Estivate.query((Class<U>) entity.getClass());
+				SelectQuery<U> query = Estivate.query((Class<U>) entity.getClass());
 				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
 				U duplicatedEntity = fetchSingleAs(query, (Class<U>) entity.getClass());
 				if(duplicatedEntity != null) {
@@ -385,7 +384,7 @@ public abstract class Context {
 				continue;
 			}
 
-			Query<U> query = Estivate.query((Class<U>) entity.getClass());
+			SelectQuery<U> query = Estivate.query((Class<U>) entity.getClass());
 			for(IndexColumn columnIndex : entityIndex.columns()) {
 				Field field = entity.getClass().getDeclaredField(columnIndex.value());
 				field.setAccessible(true);

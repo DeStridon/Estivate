@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -35,9 +35,9 @@ public class Entity<U> {
 	
 	public static class SubQueryEntity<T> extends Entity<T> {
 		
-		public Query<T> query;
+		public SelectQuery<T> query;
 
-		public SubQueryEntity(Query<T> query, String alias){
+		public SubQueryEntity(SelectQuery<T> query, String alias){
 			super(query.getEntity().entity, alias);
 			this.query = query;
 		}

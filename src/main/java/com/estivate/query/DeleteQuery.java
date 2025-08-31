@@ -8,33 +8,29 @@ import com.estivate.Estivate;
 
 import lombok.Getter;
 
-public class DeleteQuery <T> extends Aggregator{
+public class DeleteQuery <T> extends Query<T>{
 
-    @Getter
-	final Entity<T> entity;
 
     public DeleteQuery(Class<T> baseClass) {
-        super(GroupType.AND);
-        this.entity = new Entity<T>(baseClass);
+    	super(baseClass);
     }
 
     public DeleteQuery(Entity<T> entity) {
-        super(GroupType.AND);
-        this.entity = entity;
+    	super(entity);
     }
 
     public DeleteQuery<T> eq   			(Attribute attribute, Object value)	{ super.eq(attribute, value);  return this; }
-	public DeleteQuery<T> eqIfNotNull   	(Attribute attribute, Object value) { super.eqIfNotNull(attribute, value);  return this; }
-	public DeleteQuery<T> eqNullable		(Attribute attribute, Object value) { super.eqNullable(attribute, value); return this; }
+	public DeleteQuery<T> eqIfNotNull   (Attribute attribute, Object value) { super.eqIfNotNull(attribute, value);  return this; }
+	public DeleteQuery<T> eqNullable	(Attribute attribute, Object value) { super.eqNullable(attribute, value); return this; }
 	public DeleteQuery<T> notEq			(Attribute attribute, Object value) { super.notEq(attribute, value);  return this; }
-	public DeleteQuery<T> notEqIfNotNull	(Attribute attribute, Object value) { super.notEqIfNotNull(attribute, value);  return this; }
+	public DeleteQuery<T> notEqIfNotNull(Attribute attribute, Object value) { super.notEqIfNotNull(attribute, value);  return this; }
 	public DeleteQuery<T> notEqNullable	(Attribute attribute, Object value)	{ super.notEqNullable(attribute, value); return this; }
 	
 	public DeleteQuery<T> lt   			(Attribute attribute, Object value) { super.lt(attribute, value);  return this; }
 	public DeleteQuery<T> ltIfNotNull	(Attribute attribute, Object value) { super.ltIfNotNull(attribute, value);  return this; }
 	
 	public DeleteQuery<T> lte  			(Attribute attribute, Object value) { super.lte(attribute, value);  return this; }
-	public DeleteQuery<T> lteIfNotNull  	(Attribute attribute, Object value) { super.lteIfNotNull(attribute, value);  return this; }
+	public DeleteQuery<T> lteIfNotNull  (Attribute attribute, Object value) { super.lteIfNotNull(attribute, value);  return this; }
 	
 	
 	public DeleteQuery<T> gt   	(Attribute attribute, Object value)        		{ super.gt(attribute, value);  return this; }
@@ -46,8 +42,8 @@ public class DeleteQuery <T> extends Aggregator{
 	public DeleteQuery<T> betweenIfNotNull	(Attribute attribute, Object min, Object max) { super.betweenIfNotNull(attribute, min, max); return this; }
 
 	public DeleteQuery<T> in   					(Attribute attribute, Collection<?> values) { super.in(attribute, values); return this; }
-	public DeleteQuery<T> inIfNotEmpty  			(Attribute attribute, Collection<?> values) { super.inIfNotEmpty(attribute, values); return this; }
-	public DeleteQuery<T> inIfNotEmptyNullable  	(Attribute attribute, Collection<?> values) { super.inIfNotEmptyNullable(attribute, values); return this; }
+	public DeleteQuery<T> inIfNotEmpty  		(Attribute attribute, Collection<?> values) { super.inIfNotEmpty(attribute, values); return this; }
+	public DeleteQuery<T> inIfNotEmptyNullable  (Attribute attribute, Collection<?> values) { super.inIfNotEmptyNullable(attribute, values); return this; }
 	public DeleteQuery<T> inOrNull 				(Attribute attribute, Collection<?> values) { super.inOrNull(attribute, values); return this; }
 	public DeleteQuery<T> inIfNotEmptyOrNull 	(Attribute attribute, Collection<?> values) { super.inIfNotEmptyOrNull(attribute, values); return this; }
 	public DeleteQuery<T> notIn  				(Attribute attribute, Collection<?> values) { super.notIn(attribute, values); return this; }
@@ -79,10 +75,10 @@ public class DeleteQuery <T> extends Aggregator{
 
 	public DeleteQuery<T> nativeCriterion 	(Attribute attribute, String criterion) { super.nativeCriterion(attribute, criterion); return this; }
 	
-	public DeleteQuery<T> inSubQuery			(Attribute attribute, Query<?> subQuery){ super.inSubQuery(attribute, subQuery); return this; }
-	public DeleteQuery<T> notInSubQuery		(Attribute attribute, Query<?> subQuery){ super.notInSubQuery(attribute, subQuery); return this; }
-	public DeleteQuery<T> exists		(Query<?> subQuery){ super.exists(subQuery); return this; }
-	public DeleteQuery<T> notExists	(Query<?> subQuery){ super.notExists(subQuery); return this; }
+	public DeleteQuery<T> inSubQuery			(Attribute attribute, SelectQuery<?> subQuery){ super.inSubQuery(attribute, subQuery); return this; }
+	public DeleteQuery<T> notInSubQuery		(Attribute attribute, SelectQuery<?> subQuery){ super.notInSubQuery(attribute, subQuery); return this; }
+	public DeleteQuery<T> exists		(SelectQuery<?> subQuery){ super.exists(subQuery); return this; }
+	public DeleteQuery<T> notExists	(SelectQuery<?> subQuery){ super.notExists(subQuery); return this; }
 
 	
 	public DeleteQuery<T> notInIfNotEmpty   	(Attribute attribute, Collection<?> values) { super.notInIfNotEmpty   (attribute, values); return this; }
@@ -187,8 +183,8 @@ public class DeleteQuery <T> extends Aggregator{
 
 	public DeleteQuery<T> nativeCriterion 	(String attribute, String criterion) { super.nativeCriterion(this.entity, attribute, criterion); return this; }
 	
-	public DeleteQuery<T> inSubQuery			(String attribute, Query<?> subQuery){ super.inSubQuery(this.entity, attribute, subQuery); return this; }
-	public DeleteQuery<T> notInSubQuery		(String attribute, Query<?> subQuery){ super.notInSubQuery(this.entity, attribute, subQuery); return this; }
+	public DeleteQuery<T> inSubQuery			(String attribute, SelectQuery<?> subQuery){ super.inSubQuery(this.entity, attribute, subQuery); return this; }
+	public DeleteQuery<T> notInSubQuery		(String attribute, SelectQuery<?> subQuery){ super.notInSubQuery(this.entity, attribute, subQuery); return this; }
 
 	
 	public DeleteQuery<T> notInIfNotEmpty   	(String attribute, Collection<?> values) { super.notInIfNotEmpty   (this.entity, attribute, values); return this; }
@@ -293,8 +289,8 @@ public class DeleteQuery <T> extends Aggregator{
 
 	public DeleteQuery<T> nativeCriterion 	(Class<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 	
-	public DeleteQuery<T> inSubQuery			(Class<?> entity, String attribute, Query<?> subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
-	public DeleteQuery<T> notInSubQuery		(Class<?> entity, String attribute, Query<?> subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
+	public DeleteQuery<T> inSubQuery			(Class<?> entity, String attribute, SelectQuery<?> subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
+	public DeleteQuery<T> notInSubQuery		(Class<?> entity, String attribute, SelectQuery<?> subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
 
 	
 	public DeleteQuery<T> notInIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return this; }

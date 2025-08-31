@@ -9,11 +9,11 @@ import com.estivate.query.Criterion;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.Join.JoinType;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 
 public class QueryCleaner {
 
-    public static void cleanUnusedJoins(Query<?> query){
+    public static void cleanUnusedJoins(SelectQuery<?> query){
 
         List<Attribute> whereAttributes = listNodeAttributes(query);
         List<Attribute> havingAttributes = listNodeAttributes(query.getHaving());

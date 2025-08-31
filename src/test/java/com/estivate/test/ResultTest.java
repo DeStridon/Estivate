@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
@@ -43,7 +43,7 @@ public class ResultTest {
 			context.updateOrInsert(parent);
 		}
 		
-		Query<ParentEntity> query = new Query<>(ParentEntity.class);
+		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class);
 		query.eq(ParentEntity.class, ParentEntity.Fields.name, "parallel test task");
 		
 		List<ParentEntity> parents = context.fetchList(query);
@@ -64,7 +64,7 @@ public class ResultTest {
 		
 		context.updateOrInsert(parent);
 		
-		Query<ParentEntity> query = new Query<>(ParentEntity.class);
+		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class);
 		query.eq(AbstractEntity.Fields.id, parent.getId());
 		
 		Result results = context.fetchListAsResults(query).get(0);
@@ -104,7 +104,7 @@ public class ResultTest {
 		
 		
 		
-		Query<ParentEntity> query = new Query<>(ParentEntity.class)
+		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class)
 				.likeStartsWith(ParentEntity.Fields.name, "map test");
 		
 		Map<String, JobEnum> map = context.aggregateToMap(query, x -> x.attributeAsString(ParentEntity.class, ParentEntity.Fields.name), x -> (JobEnum) x.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status));

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 
 
 import com.estivate.util.FieldUtils;
@@ -76,7 +76,7 @@ public class ManagerInterceptor<T> {
     		.sorted((a, b) -> Integer.compare(b.length(), a.length())) 
             .collect(Collectors.toList());
         
-        Query query = Estivate.query(entityClass);
+        SelectQuery query = Estivate.query(entityClass);
 
 
 
@@ -113,7 +113,7 @@ public class ManagerInterceptor<T> {
             i += criterion.length();
             
             // match criterion method
-            Method criterionMethod = Arrays.asList(Query.class.getMethods()).stream()
+            Method criterionMethod = Arrays.asList(SelectQuery.class.getMethods()).stream()
                 .filter(x -> x.getName().equals(criterion.isEmpty() ? "eq" : criterion))
                 .filter(x -> x.getParameterTypes()[0].equals(String.class))
                 .findFirst().orElseThrow(() -> new Exception("No criterion method found, available methods: " + criterionList.stream().collect(Collectors.joining(", "))));

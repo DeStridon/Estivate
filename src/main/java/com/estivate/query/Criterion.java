@@ -200,10 +200,10 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 	@ToString(callSuper = true)
 	public static class InSubQuery extends Criterion{
 
-		public Query subQuery;
+		public SelectQuery<?> subQuery;
 		public boolean include;
 
-		public InSubQuery(Entity<?> entity, String attribute, Function function, Query subQuery, boolean include){
+		public InSubQuery(Entity<?> entity, String attribute, Function function, SelectQuery<?> subQuery, boolean include){
 			this.entity = entity;
 			this.attribute = attribute;
 			this.function = function;
@@ -211,7 +211,7 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 			this.include = include;
 		}
 
-		public InSubQuery(Attribute attribute, Query subQuery, boolean include){
+		public InSubQuery(Attribute attribute, SelectQuery subQuery, boolean include){
 			this(attribute.entity, attribute.attribute, attribute.function, subQuery, include);
 		}
 
@@ -223,10 +223,10 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 	@ToString(callSuper = true)
 	public static class ExistsSubQuery extends Criterion{
 
-		public Query subQuery;
+		public SelectQuery subQuery;
 		public boolean include;
 
-		public ExistsSubQuery(Query subQuery, boolean include){
+		public ExistsSubQuery(SelectQuery subQuery, boolean include){
 			this.subQuery = subQuery;
 			this.include = include;
 		}

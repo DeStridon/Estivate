@@ -1,4 +1,4 @@
-package com.estivate.test;
+package com.estivate.query.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,7 +17,8 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.Result;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
+import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
@@ -26,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @NotThreadSafe
-public class QueryJoinTest {
+public class SelectQueryJoinTest {
 
 	
 	Context context = DatabaseGenerator.getContext();
@@ -40,7 +41,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 1").age(3).build());
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
 		
-		Query<ChildEntity> query = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> query = Estivate.query(ChildEntity.class)
 				.comment("Query Join Test")
 				.eq(ChildEntity.class, ChildEntity.Fields.parentId, 2);
 		
@@ -58,7 +59,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
-		Query<ParentEntity> query = new Query<>(ParentEntity.class)
+		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class)
 				.joinInner(ParentEntity.class, ChildEntity.class)
 				.selectAll(ChildEntity.class)
 				.eq(ParentEntity.class, ParentEntity.Fields.name, parent.getName());
@@ -79,7 +80,7 @@ public class QueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
-		Query<?> query = Estivate.query(ParentEntity.class)
+		SelectQuery<?> query = Estivate.query(ParentEntity.class)
 				.eq(ChildEntity.class, ChildEntity.Fields.description, "source content 1");
 		
 		String queryString = context.queryAsString(query);
@@ -94,7 +95,7 @@ public class QueryJoinTest {
 		Entity<ChildEntity> secondChild = new Entity<>(ChildEntity.class, "secondChild");
 		
 		
-		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
 			.select(firstChild, AbstractEntity.Fields.id)
 			.select(secondChild, AbstractEntity.Fields.id)
 			.joinInner(ParentEntity.class, firstChild, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
@@ -119,7 +120,7 @@ public class QueryJoinTest {
 		Entity<ChildEntity> childA = new Entity<>(ChildEntity.class, "ChildA");
 		Entity<ChildEntity> childB = new Entity<>(ChildEntity.class, "ChildB");
 		
-		Query<ParentEntity> query = new Query<>(parentA)
+		SelectQuery<ParentEntity> query = new SelectQuery<>(parentA)
 				.joinInner(parentA, childA)
 				.joinInner(childA, childB, ChildEntity.Fields.description, ChildEntity.Fields.description)
 				.joinInner(childB, parentB)
@@ -141,7 +142,7 @@ public class QueryJoinTest {
 			.in(AbstractEntity.Fields.id, Arrays.asList(1, 2, 3))
 			.asSubQueryEntity("subQuery");
 
-		Query<ParentEntity> query = new Query<>(ParentEntity.class)
+		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class)
 			.joinInner(ParentEntity.class, subQuery, AbstractEntity.Fields.id, AbstractEntity.Fields.id)
 			.select(ParentEntity.class, ParentEntity.Fields.name);
 

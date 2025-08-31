@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.Query;
+import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ParentEntity;
 
@@ -34,7 +34,7 @@ public class ContextTest {
 		context.update(Arrays.asList(parent1, parent2, parent3));
 		
 		
-		Query<ParentEntity> query = new Query<>(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
+		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
 		List<ParentEntity> resultQueries = context.fetchListAs(query, ParentEntity.class);
 		
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 1")));
@@ -49,7 +49,7 @@ public class ContextTest {
 		
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class, "myTask");
 		
-		Query<ParentEntity> query = Estivate.query(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
+		SelectQuery<ParentEntity> query = Estivate.query(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
 		List<ParentEntity> resultQueries = context.fetchList(query);
 		
 	}
@@ -90,7 +90,7 @@ public class ContextTest {
 		context.updateOrInsert(parent2);
 		
 
-		Query<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
 			.selectCount();
 
 		Long count = context.fetchSingleAsLong(query);

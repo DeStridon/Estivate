@@ -11,22 +11,17 @@ import com.estivate.Estivate;
 
 import lombok.Getter;
 
-public class UpdateQuery<T> extends Aggregator{
+public class UpdateQuery<T> extends Query<T>{
 
     @Getter
-	final Entity<T> entity;
-
-	@Getter
     LinkedHashMap<Attribute, Object> updates = new LinkedHashMap<>();
 
     public UpdateQuery(Class<T> baseClass) {
-        super(GroupType.AND);
-        this.entity = new Entity<T>(baseClass);
+    	super(baseClass);
     }
 
     public UpdateQuery(Entity<T> entity) {
-        super(GroupType.AND);
-        this.entity = entity;
+        super(entity);
     }
 
     public UpdateQuery<T> set(Attribute attribute, Object value) {
@@ -96,10 +91,10 @@ public class UpdateQuery<T> extends Aggregator{
 
 	public UpdateQuery<T> nativeCriterion 	(Attribute attribute, String criterion) { super.nativeCriterion(attribute, criterion); return this; }
 	
-	public UpdateQuery<T> inSubQuery			(Attribute attribute, Query<?> subQuery){ super.inSubQuery(attribute, subQuery); return this; }
-	public UpdateQuery<T> notInSubQuery		(Attribute attribute, Query<?> subQuery){ super.notInSubQuery(attribute, subQuery); return this; }
-	public UpdateQuery<T> exists		(Query<?> subQuery){ super.exists(subQuery); return this; }
-	public UpdateQuery<T> notExists	(Query<?> subQuery){ super.notExists(subQuery); return this; }
+	public UpdateQuery<T> inSubQuery			(Attribute attribute, SelectQuery<?> subQuery){ super.inSubQuery(attribute, subQuery); return this; }
+	public UpdateQuery<T> notInSubQuery		(Attribute attribute, SelectQuery<?> subQuery){ super.notInSubQuery(attribute, subQuery); return this; }
+	public UpdateQuery<T> exists		(SelectQuery<?> subQuery){ super.exists(subQuery); return this; }
+	public UpdateQuery<T> notExists	(SelectQuery<?> subQuery){ super.notExists(subQuery); return this; }
 
 	
 	public UpdateQuery<T> notInIfNotEmpty   	(Attribute attribute, Collection<?> values) { super.notInIfNotEmpty   (attribute, values); return this; }
@@ -204,8 +199,8 @@ public class UpdateQuery<T> extends Aggregator{
 
 	public UpdateQuery<T> nativeCriterion 	(String attribute, String criterion) { super.nativeCriterion(this.entity, attribute, criterion); return this; }
 	
-	public UpdateQuery<T> inSubQuery			(String attribute, Query<?> subQuery){ super.inSubQuery(this.entity, attribute, subQuery); return this; }
-	public UpdateQuery<T> notInSubQuery		(String attribute, Query<?> subQuery){ super.notInSubQuery(this.entity, attribute, subQuery); return this; }
+	public UpdateQuery<T> inSubQuery			(String attribute, SelectQuery<?> subQuery){ super.inSubQuery(this.entity, attribute, subQuery); return this; }
+	public UpdateQuery<T> notInSubQuery		(String attribute, SelectQuery<?> subQuery){ super.notInSubQuery(this.entity, attribute, subQuery); return this; }
 
 	
 	public UpdateQuery<T> notInIfNotEmpty   	(String attribute, Collection<?> values) { super.notInIfNotEmpty   (this.entity, attribute, values); return this; }
@@ -310,8 +305,8 @@ public class UpdateQuery<T> extends Aggregator{
 
 	public UpdateQuery<T> nativeCriterion 	(Class<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 	
-	public UpdateQuery<T> inSubQuery			(Class<?> entity, String attribute, Query<?> subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
-	public UpdateQuery<T> notInSubQuery		(Class<?> entity, String attribute, Query<?> subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
+	public UpdateQuery<T> inSubQuery			(Class<?> entity, String attribute, SelectQuery<?> subQuery){ super.inSubQuery(entity, attribute, subQuery); return this; }
+	public UpdateQuery<T> notInSubQuery		(Class<?> entity, String attribute, SelectQuery<?> subQuery){ super.notInSubQuery(entity, attribute, subQuery); return this; }
 
 	
 	public UpdateQuery<T> notInIfNotEmpty   	(Class<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return this; }

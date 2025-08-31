@@ -160,6 +160,9 @@ public class IndexDiff {
 			if(!leftColumn.value().equals(rightColumn.value())) {
 				return false;
 			}
+//			if(leftColumn.length() != rightColumn.length()) {
+//				return false;
+//			}
 		}
 		return true;
 	}

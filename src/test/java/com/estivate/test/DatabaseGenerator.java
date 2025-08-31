@@ -2,6 +2,11 @@ package com.estivate.test;
 
 import java.util.stream.Collectors;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
 
 import com.estivate.NameMapper;
@@ -23,11 +28,11 @@ public class DatabaseGenerator {
 
 	
 	@SneakyThrows
-	static Context getContext() {
+	public static Context getContext() {
 		
 		if(context == null) {
 			
-			context = new H2Context(DatasourceGenerator.datasource());
+			context = new H2Context(datasource());
 			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
 			
 			context.nameMapper = new TestNameMapper();
@@ -97,6 +102,24 @@ public class DatabaseGenerator {
         int x = randomInt(0, clazz.getEnumConstants().length);
         return clazz.getEnumConstants()[x];
     }
+	
+	public static DataSource datasource() throws NamingException {
+	    System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "org.apache.naming.java.javaURLContextFactory");
+        System.setProperty(javax.naming.Context.URL_PKG_PREFIXES, "org.apache.naming");
+        InitialContext ic = new InitialContext();
+
+        ic.createSubcontext("java:");
+        ic.createSubcontext("java:/comp");
+        ic.createSubcontext("java:/comp/env");
+        ic.createSubcontext("java:/comp/env/jdbc");
+        
+        JdbcConnectionPool ds = JdbcConnectionPool.create("jdbc:h2:mem:test;FILE_LOCK=NO;MODE=MySQL;DB_CLOSE_ON_EXIT=TRUE", "sa", "sasasa");
+       
+        ic.bind("java:/dsName", ds);
+        
+        return ds;
+
+	}
 	
 	
 	
