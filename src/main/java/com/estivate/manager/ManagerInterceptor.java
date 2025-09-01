@@ -76,7 +76,7 @@ public class ManagerInterceptor<T> {
     		.sorted((a, b) -> Integer.compare(b.length(), a.length())) 
             .collect(Collectors.toList());
         
-        SelectQuery query = Estivate.query(entityClass);
+        SelectQuery query = Estivate.selectQuery(entityClass);
 
 
 

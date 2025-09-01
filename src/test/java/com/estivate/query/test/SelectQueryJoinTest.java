@@ -41,7 +41,7 @@ public class SelectQueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 1").age(3).build());
 		context.updateOrInsert(ChildEntity.builder().homeId(1).parentId(2).description("source content 2").age(3).build());
 		
-		SelectQuery<ChildEntity> query = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> query = Estivate.selectQuery(ChildEntity.class)
 				.comment("Query Join Test")
 				.eq(ChildEntity.class, ChildEntity.Fields.parentId, 2);
 		
@@ -80,7 +80,7 @@ public class SelectQueryJoinTest {
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 1").build());
 		context.updateOrInsert(ChildEntity.builder().parentId(parent.getId()).description("source content 2").build());
 		
-		SelectQuery<?> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.eq(ChildEntity.class, ChildEntity.Fields.description, "source content 1");
 		
 		String queryString = context.queryAsString(query);
@@ -95,7 +95,7 @@ public class SelectQueryJoinTest {
 		Entity<ChildEntity> secondChild = new Entity<>(ChildEntity.class, "secondChild");
 		
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.select(firstChild, AbstractEntity.Fields.id)
 			.select(secondChild, AbstractEntity.Fields.id)
 			.joinInner(ParentEntity.class, firstChild, AbstractEntity.Fields.id, ChildEntity.Fields.parentId)
@@ -138,7 +138,7 @@ public class SelectQueryJoinTest {
 	@Test
 	public void joinWithSubQueryTest() throws SQLException {
 
-		SubQueryEntity<ParentEntity> subQuery = Estivate.query(ParentEntity.class)
+		SubQueryEntity<ParentEntity> subQuery = Estivate.selectQuery(ParentEntity.class)
 			.in(AbstractEntity.Fields.id, Arrays.asList(1, 2, 3))
 			.asSubQueryEntity("subQuery");
 

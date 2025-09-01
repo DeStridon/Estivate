@@ -464,7 +464,7 @@ public class DeleteQueryCriterionTest {
 	// === EXISTS Tests ===
 	@Test
 	public void existsQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		DeleteQuery<ParentEntity> query = new DeleteQuery<>(ParentEntity.class)
@@ -476,7 +476,7 @@ public class DeleteQueryCriterionTest {
 	// === NOT EXISTS Tests ===
 	@Test
 	public void notExistsQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		DeleteQuery<ParentEntity> query = new DeleteQuery<>(ParentEntity.class)
@@ -488,7 +488,7 @@ public class DeleteQueryCriterionTest {
 	// === IN SUB QUERY Tests ===
 	@Test
 	public void inSubQueryWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.description, "test");
 		
 		DeleteQuery<ParentEntity> query = new DeleteQuery<>(ParentEntity.class)
@@ -499,7 +499,7 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void inSubQueryWithAttributeQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.description, "test");
 		
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
@@ -512,7 +512,7 @@ public class DeleteQueryCriterionTest {
 	// === NOT IN SUB QUERY Tests ===
 	@Test
 	public void notInSubQueryWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.description, "test");
 		
 		DeleteQuery<ParentEntity> query = new DeleteQuery<>(ParentEntity.class)
@@ -523,7 +523,7 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notInSubQueryWithAttributeQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.description, "test");
 		
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);

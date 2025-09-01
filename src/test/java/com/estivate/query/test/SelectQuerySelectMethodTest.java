@@ -29,7 +29,7 @@ public class SelectQuerySelectMethodTest {
 	@Test
 	public void selectMaxTest() throws SQLException {
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.selectMaxAs(ParentEntity.class, AbstractEntity.Fields.id, "maxTaskId")
 				.selectCountAs(ParentEntity.class, AbstractEntity.Fields.id, "countTaskId")
 				.selectMinAs(ParentEntity.class, AbstractEntity.Fields.id, "minTaskId")
@@ -48,7 +48,7 @@ public class SelectQuerySelectMethodTest {
 	
 	@Test
 	public void countTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class);
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class);
 		
 		query.selectCount();
 		
@@ -58,7 +58,7 @@ public class SelectQuerySelectMethodTest {
 	
 	@Test
 	public void selectDistinctTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.selectAll(ParentEntity.class)
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id);
 		

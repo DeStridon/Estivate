@@ -24,12 +24,11 @@ public class SelectQuerySubTest {
 	@Test
 	void inSubQueryTest() throws SQLException{
 
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 				.select(ChildEntity.class, ChildEntity.Fields.parentId)
 				.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
-		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.inSubQuery(ParentEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		try(Connection connection = context.datasource.getConnection()){
@@ -44,11 +43,11 @@ public class SelectQuerySubTest {
     @Test
     void fromSubQueryTest() throws SQLException {
         // Create a subquery selecting parent IDs from ChildEntity
-        SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+        SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
                 .select(ChildEntity.class, ChildEntity.Fields.parentId);
 
         // Create main query using the subquery
-        SelectQuery<ChildEntity> mainQuery = Estivate.query(subQuery, "sub");
+        SelectQuery<ChildEntity> mainQuery = Estivate.selectQuery(subQuery, "sub");
 
 		String sql = context.queryAsString(mainQuery);
 		System.out.println(sql);
@@ -61,10 +60,10 @@ public class SelectQuerySubTest {
 
 	@Test
 	void joinSubQueryTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.selectMax(AbstractEntity.Fields.id);
 
-		SelectQuery<ChildEntity> mainQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> mainQuery = Estivate.selectQuery(ChildEntity.class)
 			.joinInner(ChildEntity.class, Estivate.subQueryEntity(subQuery, "sub"), AbstractEntity.Fields.id, AbstractEntity.Fields.id);
 			
 		context.queryAsString(mainQuery);

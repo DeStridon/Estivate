@@ -21,7 +21,7 @@ public class MapperTest {
 		
 		ParentEntity newParent = context.updateOrInsert(ParentEntity.builder().name("parent 1 name").build());	
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.eq(ParentEntity.class, AbstractEntity.Fields.id, newParent.getId());
 				
 		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);

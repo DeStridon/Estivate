@@ -29,7 +29,7 @@ public class SelectQueryOrderTest {
 	@Test
 	public void orderTest1() throws SQLException {
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.orderAsc(ParentEntity.class, ParentEntity.Fields.name, Estivate.Functions.isNull);
 		
 		String queryString = context.queryAsString(query);
@@ -54,12 +54,12 @@ public class SelectQueryOrderTest {
 		);
 		
 		
-		SelectQuery<ParentEntity> projectIdAscOrderedTaskQuery = Estivate.query(ParentEntity.class).orderAsc(ParentEntity.class, ParentEntity.Fields.homeId).limit(2);
+		SelectQuery<ParentEntity> projectIdAscOrderedTaskQuery = Estivate.selectQuery(ParentEntity.class).orderAsc(ParentEntity.class, ParentEntity.Fields.homeId).limit(2);
 		List<ParentEntity> projectIdAscOrderedTasks = context.fetchListAs(projectIdAscOrderedTaskQuery, ParentEntity.class);
 		Assert.assertEquals(list.stream().mapToLong(x -> x.getHomeId()).min().orElse(0), projectIdAscOrderedTasks.get(0).getHomeId());
 		Assert.assertEquals(2, projectIdAscOrderedTasks.size());
 		
-		SelectQuery<ParentEntity> idDescOrderedTaskQuery = Estivate.query(ParentEntity.class).orderDesc(ParentEntity.class, AbstractEntity.Fields.id);
+		SelectQuery<ParentEntity> idDescOrderedTaskQuery = Estivate.selectQuery(ParentEntity.class).orderDesc(ParentEntity.class, AbstractEntity.Fields.id);
 		List<ParentEntity> idDescOrderedTasks = context.fetchListAs(idDescOrderedTaskQuery, ParentEntity.class);
 		Assert.assertEquals(list.stream().mapToLong(x -> x.getId()).max().orElse(0), idDescOrderedTasks.get(0).getId());
 		

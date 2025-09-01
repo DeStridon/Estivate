@@ -64,7 +64,7 @@ public class SelectQueryCriterionTest {
 		ChildEntity child31 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.1").build());
 		ChildEntity child32 = context.updateOrInsert(ChildEntity.builder().parentId(parent3.getId()).description("source content 3.2").build());
 		
-		SelectQuery<ChildEntity> query = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> query = Estivate.selectQuery(ChildEntity.class)
 				.joinInner(ChildEntity.class, ParentEntity.class)
 				.selectDistinct(ParentEntity.class, AbstractEntity.Fields.id)
 				.selectAll(ParentEntity.class)
@@ -96,7 +96,7 @@ public class SelectQueryCriterionTest {
 		context.updateOrInsert(testTask);
 		
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.eq(ParentEntity.class, ParentEntity.Fields.name, "queryTest test task")
 				.lt(ParentEntity.class, ParentEntity.Fields.homeId, 5)
 				.lte(ParentEntity.class, ParentEntity.Fields.homeId, 4)
@@ -128,7 +128,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void taskEnumTest() throws SQLException {
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1, 2, 3, 4))
 			.in(ParentEntity.class, ParentEntity.Fields.sourceLanguage, Arrays.asList(Language.en_GB, Language.fr_FR))
 			.in(ParentEntity.class, ParentEntity.Fields.status, Arrays.asList(JobEnum.Analysis, JobEnum.Translation));
@@ -145,7 +145,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(1234).name("task 1").build());
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(1235).name("task 2").build());
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1234, 1235));
 		
 		assertEquals(2, context.fetchList(query).size());
@@ -250,7 +250,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeTest() throws SQLException {
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class).like(ParentEntity.class, ParentEntity.Fields.name, "task%");
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class).like(ParentEntity.class, ParentEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
 		query.fetchList(context);
@@ -262,7 +262,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeTest() throws SQLException {
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.notLike(ParentEntity.class, ParentEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
@@ -276,7 +276,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqOrNullTest() throws SQLException {
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 				.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1, 3, 5))
 				.eqOrNull(ParentEntity.class, ParentEntity.Fields.created, new Date());
 		
@@ -309,7 +309,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(3003).name("notIn task 3").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(3001, 3003));
 		
 		String queryString1 = context.queryAsString(query1);
@@ -325,7 +325,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.notIn(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(3001, 3003));
 		
 		String queryString2 = context.queryAsString(query2);
@@ -341,7 +341,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.notIn(homeIdAttribute, Arrays.asList(3001, 3003));
 		
 		String queryString3 = context.queryAsString(query3);
@@ -363,7 +363,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(4002).name("notInIfNotEmpty task 2").build());
 		
 		// Test 1: Class-based method signature with non-empty list
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.notInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(4001));
 		
 		String queryString1 = context.queryAsString(query1);
@@ -377,7 +377,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature with non-empty list
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.notInIfNotEmpty(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(4001));
 		
 		String queryString2 = context.queryAsString(query2);
@@ -391,7 +391,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature with non-empty list
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.notInIfNotEmpty(homeIdAttribute, Arrays.asList(4001));
 		
 		String queryString3 = context.queryAsString(query3);
@@ -404,7 +404,7 @@ public class SelectQueryCriterionTest {
 		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
 		
 		// Test with empty list - should return all results (Class-based example)
-		SelectQuery<ParentEntity> queryEmpty = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> queryEmpty = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(4001, 4002))
 			.notInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.homeId, new ArrayList<>());
 		
@@ -419,7 +419,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(5002).name("notInOrTrueIfEmpty task 2").build());
 		
 		// Test with non-empty list
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.notInOrTrueIfEmpty(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(5001));
 		
 		String queryString1 = context.queryAsString(query1);
@@ -434,7 +434,7 @@ public class SelectQueryCriterionTest {
 		Assert.assertFalse("Should not find task1", foundTask1);
 		
 		// Test with empty list - should return true (all results)
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(5001, 5002))
 			.notInOrTrueIfEmpty(ParentEntity.class, ParentEntity.Fields.homeId, new ArrayList<>());
 		
@@ -452,7 +452,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(6002).name("different content").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.likeContains(ParentEntity.class, ParentEntity.Fields.name, "search");
 		
 		String queryString1 = context.queryAsString(query1);
@@ -466,7 +466,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.likeContains(parentEntity, ParentEntity.Fields.name, "search");
 		
 		String queryString2 = context.queryAsString(query2);
@@ -480,7 +480,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.likeContains(nameAttribute, "search");
 		
 		String queryString3 = context.queryAsString(query3);
@@ -499,7 +499,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(7001).name("notLikeContains exclude test").build());
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(7002).name("different content").build());
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(7001, 7002))
 			.notLikeContains(ParentEntity.class, ParentEntity.Fields.name, "exclude");
 		
@@ -517,7 +517,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void eqWithClassTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 8001);
 
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -526,7 +526,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqWithEntityTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eq(parentEntity, ParentEntity.Fields.homeId, 8001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -535,7 +535,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqWithAttributeTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eq(homeIdAttribute, 8001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -548,7 +548,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(9002).name("different task").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(9001, 9002))
 			.notEq(ParentEntity.class, ParentEntity.Fields.homeId, 9001);
 		
@@ -563,7 +563,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(9001, 9002))
 			.notEq(parentEntity, ParentEntity.Fields.homeId, 9001);
 		
@@ -578,7 +578,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(9001, 9002))
 			.notEq(homeIdAttribute, 9001);
 		
@@ -599,7 +599,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(10002).name("different task").build());
 		
 		// Test 1: Class-based method signature with non-null value
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.eqIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 10001);
 		
 		String queryString1 = context.queryAsString(query1);
@@ -611,7 +611,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature with non-null value
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.eqIfNotNull(parentEntity, ParentEntity.Fields.homeId, 10001);
 		
 		String queryString2 = context.queryAsString(query2);
@@ -623,7 +623,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature with non-null value
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.eqIfNotNull(homeIdAttribute, 10001);
 		
 		String queryString3 = context.queryAsString(query3);
@@ -634,7 +634,7 @@ public class SelectQueryCriterionTest {
 		Assert.assertTrue("Attribute-based: Should find task1 with homeId 10001", foundTask1_3);
 		
 		// Test with null value - should return all results (Class-based example)
-		SelectQuery<ParentEntity> queryNull = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> queryNull = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(10001, 10002))
 			.eqIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, null);
 		
@@ -649,7 +649,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(10102).name("different task").externalName("external").build());
 		
 		// Test with non-null value
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(10101, 10102))
 			.eqNullable(ParentEntity.class, ParentEntity.Fields.externalName, "external");
 		
@@ -661,7 +661,7 @@ public class SelectQueryCriterionTest {
 		Assert.assertTrue("Should find task2 with external name", foundTask2);
 		
 		// Test with null value - should find entities with null external name
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(10101, 10102))
 			.eqNullable(ParentEntity.class, ParentEntity.Fields.externalName, null);
 		
@@ -681,7 +681,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(11003).name("lt test task 3").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(11001, 11002, 11003))
 			.lt(ParentEntity.class, ParentEntity.Fields.homeId, 11003);
 		
@@ -698,7 +698,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(11001, 11002, 11003))
 			.lt(parentEntity, ParentEntity.Fields.homeId, 11003);
 		
@@ -715,7 +715,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(11001, 11002, 11003))
 			.lt(homeIdAttribute, 11003);
 		
@@ -739,7 +739,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(12003).name("lte test task 3").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(12001, 12002, 12003))
 			.lte(ParentEntity.class, ParentEntity.Fields.homeId, 12002);
 		
@@ -756,7 +756,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(12001, 12002, 12003))
 			.lte(parentEntity, ParentEntity.Fields.homeId, 12002);
 		
@@ -773,7 +773,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(12001, 12002, 12003))
 			.lte(homeIdAttribute, 12002);
 		
@@ -797,7 +797,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(13003).name("gt test task 3").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(13001, 13002, 13003))
 			.gt(ParentEntity.class, ParentEntity.Fields.homeId, 13001);
 		
@@ -814,7 +814,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(13001, 13002, 13003))
 			.gt(parentEntity, ParentEntity.Fields.homeId, 13001);
 		
@@ -831,7 +831,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(13001, 13002, 13003))
 			.gt(homeIdAttribute, 13001);
 		
@@ -855,7 +855,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(14003).name("gte test task 3").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(14001, 14002, 14003))
 			.gte(ParentEntity.class, ParentEntity.Fields.homeId, 14002);
 		
@@ -872,7 +872,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(14001, 14002, 14003))
 			.gte(parentEntity, ParentEntity.Fields.homeId, 14002);
 		
@@ -889,7 +889,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(14001, 14002, 14003))
 			.gte(homeIdAttribute, 14002);
 		
@@ -914,7 +914,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task4 = context.updateOrInsert(ParentEntity.builder().homeId(15004).name("between test task 4").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(15001, 15002, 15003, 15004))
 			.between(ParentEntity.class, ParentEntity.Fields.homeId, 15002, 15003);
 		
@@ -933,7 +933,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(15001, 15002, 15003, 15004))
 			.between(parentEntity, ParentEntity.Fields.homeId, 15002, 15003);
 		
@@ -952,7 +952,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(15001, 15002, 15003, 15004))
 			.between(homeIdAttribute, 15002, 15003);
 		
@@ -977,7 +977,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(16002).name("inIfNotEmpty test task 2").build());
 		
 		// Test 1: Class-based method signature with non-empty list
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmpty(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(16001));
 		
 		String queryString1 = context.queryAsString(query1);
@@ -989,7 +989,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature with non-empty list
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmpty(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(16001));
 		
 		String queryString2 = context.queryAsString(query2);
@@ -1001,7 +1001,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature with non-empty list
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmpty(homeIdAttribute, Arrays.asList(16001));
 		
 		String queryString3 = context.queryAsString(query3);
@@ -1012,7 +1012,7 @@ public class SelectQueryCriterionTest {
 		Assert.assertTrue("Attribute-based: Should find task1", foundTask1_3);
 		
 		// Test with empty list - should return all results (Class-based example)
-		SelectQuery<ParentEntity> queryEmpty = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> queryEmpty = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(16001, 16002))
 			.inIfNotEmpty(ParentEntity.class, ParentEntity.Fields.homeId, new ArrayList<>());
 		
@@ -1026,7 +1026,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task1 = context.updateOrInsert(ParentEntity.builder().homeId(17001).name("inOrNull test task 1").build());
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(17002).name("inOrNull test task 2").externalName("external").build());
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(17001, 17002))
 			.inOrNull(ParentEntity.class, ParentEntity.Fields.externalName, Arrays.asList("external"));
 		
@@ -1047,7 +1047,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(18002).name("different_task").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(18001, 18002))
 			.likeStartsWith(ParentEntity.class, ParentEntity.Fields.name, "prefix");
 		
@@ -1062,7 +1062,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(18001, 18002))
 			.likeStartsWith(parentEntity, ParentEntity.Fields.name, "prefix");
 		
@@ -1078,7 +1078,7 @@ public class SelectQueryCriterionTest {
 		// Test 3: Attribute-based method signature
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(18001, 18002))
 			.likeStartsWith(nameAttribute, "prefix");
 		
@@ -1099,7 +1099,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(19002).name("different_task").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(19001, 19002))
 			.likeEndsWith(ParentEntity.class, ParentEntity.Fields.name, "suffix");
 		
@@ -1114,7 +1114,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(19001, 19002))
 			.likeEndsWith(parentEntity, ParentEntity.Fields.name, "suffix");
 		
@@ -1130,7 +1130,7 @@ public class SelectQueryCriterionTest {
 		// Test 3: Attribute-based method signature
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(19001, 19002))
 			.likeEndsWith(nameAttribute, "suffix");
 		
@@ -1151,7 +1151,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(20002).name("pattern2_test").build());
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(20003).name("different_test").build());
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(20001, 20002, 20003))
 			.likeIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("pattern1%", "pattern2%"));
 		
@@ -1176,7 +1176,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(21002).name("pattern2_test").build());
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(21003).name("different_test").build());
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(21001, 21002, 21003))
 			.notLikeIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("pattern1%", "pattern2%"));
 		
@@ -1201,7 +1201,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(22002).name("inOrFalseIfEmpty test task 2").build());
 		
 		// Test with non-empty list
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.inOrFalseIfEmpty(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(22001));
 		
 		String queryString1 = context.queryAsString(query1);
@@ -1212,7 +1212,7 @@ public class SelectQueryCriterionTest {
 		Assert.assertTrue("Should find task1", foundTask1);
 		
 		// Test with empty list - should return false (no results)
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(22001, 22002))
 			.inOrFalseIfEmpty(ParentEntity.class, ParentEntity.Fields.homeId, new ArrayList<>());
 		
@@ -1230,7 +1230,7 @@ public class SelectQueryCriterionTest {
 		ParentEntity task2 = context.updateOrInsert(ParentEntity.builder().homeId(23002).name("native test task 2").build());
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(23001, 23002))
 			.nativeCriterion(ParentEntity.class, ParentEntity.Fields.homeId, "> 23001");
 		
@@ -1245,7 +1245,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(23001, 23002))
 			.nativeCriterion(parentEntity, ParentEntity.Fields.homeId, "> 23001");
 		
@@ -1260,7 +1260,7 @@ public class SelectQueryCriterionTest {
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query3 = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(23001, 23002))
 			.nativeCriterion(homeIdAttribute, "> 23001");
 		
@@ -1282,11 +1282,11 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(24003).name("inSubQuery test task 3").build());
 		
 		// Create subquery that selects homeIds > 24001
-		SelectQuery<ParentEntity> subQuery = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> subQuery = Estivate.selectQuery(ParentEntity.class)
 			.select(ParentEntity.class, ParentEntity.Fields.homeId)
 			.gt(ParentEntity.class, ParentEntity.Fields.homeId, 24001);
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(24001, 24002, 24003))
 			.inSubQuery(ParentEntity.class, ParentEntity.Fields.homeId, subQuery);
 		
@@ -1312,11 +1312,11 @@ public class SelectQueryCriterionTest {
 		ParentEntity task3 = context.updateOrInsert(ParentEntity.builder().homeId(25003).name("notInSubQuery test task 3").build());
 		
 		// Create subquery that selects homeIds > 25001
-		SelectQuery<ParentEntity> subQuery = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> subQuery = Estivate.selectQuery(ParentEntity.class)
 			.select(ParentEntity.class, ParentEntity.Fields.homeId)
 			.gt(ParentEntity.class, ParentEntity.Fields.homeId, 25001);
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(25001, 25002, 25003))
 			.notInSubQuery(ParentEntity.class, ParentEntity.Fields.homeId, subQuery);
 		
@@ -1343,11 +1343,11 @@ public class SelectQueryCriterionTest {
 		ChildEntity child1 = context.updateOrInsert(ChildEntity.builder().parentId(task1.getId()).description("child for task1").build());
 		
 		// Create subquery that checks for children
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.select(ChildEntity.class, AbstractEntity.Fields.id)
 			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(26001, 26002))
 			.exists(subQuery);
 		
@@ -1372,11 +1372,11 @@ public class SelectQueryCriterionTest {
 		ChildEntity child1 = context.updateOrInsert(ChildEntity.builder().parentId(task1.getId()).description("child for task1").build());
 		
 		// Create subquery that checks for children
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.select(ChildEntity.class, AbstractEntity.Fields.id)
 			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(27001, 27002))
 			.notExists(subQuery);
 		
@@ -1399,7 +1399,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void eqWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		String queryString = context.queryAsString(query);
@@ -1410,7 +1410,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eq(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		String queryString = context.queryAsString(query);
@@ -1421,7 +1421,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eq(homeIdAttribute, 1001);
 		
 		String queryString = context.queryAsString(query);
@@ -1431,7 +1431,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notEqWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -1440,7 +1440,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEq(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -1449,7 +1449,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEq(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -1457,7 +1457,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void ltWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lt(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -1466,7 +1466,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void ltWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lt(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -1475,7 +1475,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void ltWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lt(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -1483,7 +1483,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void lteWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lte(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -1492,7 +1492,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void lteWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lte(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -1501,7 +1501,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void lteWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lte(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -1509,7 +1509,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void gtWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gt(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -1518,7 +1518,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gtWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gt(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -1527,7 +1527,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gtWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gt(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -1535,7 +1535,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void gteWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gte(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -1544,7 +1544,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gteWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gte(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -1553,7 +1553,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gteWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gte(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -1561,7 +1561,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void betweenWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.between(ParentEntity.class, ParentEntity.Fields.homeId, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -1570,7 +1570,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void betweenWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.between(parentEntity, ParentEntity.Fields.homeId, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -1579,7 +1579,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void betweenWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.between(homeIdAttribute, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -1587,7 +1587,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void inWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
@@ -1596,7 +1596,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
@@ -1605,7 +1605,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.in(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
@@ -1613,7 +1613,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1622,7 +1622,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notIn(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1631,7 +1631,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notIn(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1639,7 +1639,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void isNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.isNull(ParentEntity.class, ParentEntity.Fields.name);
 		
 		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D  is null"));
@@ -1648,7 +1648,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void isNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.isNull(parentEntity, ParentEntity.Fields.name);
 		
 		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D  is null"));
@@ -1657,7 +1657,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void isNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.isNull(nameAttribute);
 		
 		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D  is null"));
@@ -1665,7 +1665,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void isNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.isNotNull(ParentEntity.class, ParentEntity.Fields.name);
 		
 		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D  is not null"));
@@ -1674,7 +1674,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void isNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.isNotNull(parentEntity, ParentEntity.Fields.name);
 		
 		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D  is not null"));
@@ -1683,7 +1683,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void isNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.isNotNull(nameAttribute);
 		
 		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D  is not null"));
@@ -1691,7 +1691,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.like(ParentEntity.class, ParentEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1700,7 +1700,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.like(parentEntity, ParentEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1709,7 +1709,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.like(nameAttribute, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1717,7 +1717,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLike(ParentEntity.class, ParentEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -1726,7 +1726,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLike(parentEntity, ParentEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -1735,7 +1735,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLike(nameAttribute, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -1743,7 +1743,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeContainsWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContains(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1752,7 +1752,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContains(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1761,7 +1761,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContains(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1769,7 +1769,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void eqIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eqIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -1778,7 +1778,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eqIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -1787,7 +1787,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eqIfNotNull(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -1795,7 +1795,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void eqNullableWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eqNullable(ParentEntity.class, ParentEntity.Fields.externalName, "external");
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
@@ -1804,7 +1804,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqNullableWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eqNullable(parentEntity, ParentEntity.Fields.externalName, "external");
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
@@ -1813,7 +1813,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqNullableWithAttributeQueryStringTest() throws SQLException {
 		Attribute externalNameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.externalName);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.eqNullable(externalNameAttribute, "external");
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
@@ -1821,7 +1821,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void inIfNotEmptyWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmpty(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1830,7 +1830,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmpty(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1839,7 +1839,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmpty(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1847,7 +1847,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void inIfNotEmptyNullableWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmptyNullable(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1856,7 +1856,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyNullableWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmptyNullable(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1865,7 +1865,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyNullableWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmptyNullable(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1873,7 +1873,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void inOrNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inOrNull(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1882,7 +1882,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inOrNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inOrNull(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1891,7 +1891,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inOrNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1899,7 +1899,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void inIfNotEmptyOrNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmptyOrNull(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1908,7 +1908,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyOrNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmptyOrNull(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1917,7 +1917,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyOrNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.inIfNotEmptyOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
@@ -1925,7 +1925,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notInOrNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notInOrNull(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1934,7 +1934,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInOrNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notInOrNull(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1943,7 +1943,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInOrNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notInOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1951,7 +1951,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notInIfNotEmptyOrNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notInIfNotEmptyOrNull(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1960,7 +1960,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInIfNotEmptyOrNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notInIfNotEmptyOrNull(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1969,7 +1969,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInIfNotEmptyOrNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notInIfNotEmptyOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
@@ -1977,7 +1977,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1986,7 +1986,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -1995,7 +1995,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeIn(nameAttribute, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2003,7 +2003,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2012,7 +2012,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2021,7 +2021,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeIn(nameAttribute, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2029,7 +2029,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeStartsWithInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2038,7 +2038,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2047,7 +2047,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2055,7 +2055,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeStartsWithWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeStartsWith(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2064,7 +2064,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeStartsWithWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeStartsWith(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2073,7 +2073,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeStartsWithWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeStartsWith(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2081,7 +2081,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWith(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2090,7 +2090,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWith(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2099,7 +2099,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWith(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2107,7 +2107,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeEndsWithWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeEndsWith(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2116,7 +2116,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeEndsWithWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeEndsWith(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2125,7 +2125,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeEndsWithWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeEndsWith(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2133,7 +2133,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeContainsWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeContains(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2142,7 +2142,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeContainsWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeContains(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2151,7 +2151,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeContainsWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeContains(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2159,7 +2159,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2168,7 +2168,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2177,7 +2177,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2185,7 +2185,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeContainsInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2194,7 +2194,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2203,7 +2203,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsIn(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2211,7 +2211,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeStartsWithInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeStartsWithIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2220,7 +2220,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeStartsWithInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeStartsWithIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2229,7 +2229,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeStartsWithInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeStartsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2237,7 +2237,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeEndsWithInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeEndsWithIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2246,7 +2246,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeEndsWithInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeEndsWithIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2255,7 +2255,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeEndsWithInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeEndsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2263,7 +2263,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notLikeContainsInWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeContainsIn(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2272,7 +2272,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeContainsInWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeContainsIn(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2281,7 +2281,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeContainsInWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notLikeContainsIn(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -2289,7 +2289,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notEqIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEqIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -2298,7 +2298,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEqIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -2307,7 +2307,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEqIfNotNull(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -2315,7 +2315,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void notEqNullableWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEqNullable(ParentEntity.class, ParentEntity.Fields.externalName, "external");
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
@@ -2324,7 +2324,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqNullableWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEqNullable(parentEntity, ParentEntity.Fields.externalName, "external");
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
@@ -2333,7 +2333,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqNullableWithAttributeQueryStringTest() throws SQLException {
 		Attribute externalNameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.externalName);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.notEqNullable(externalNameAttribute, "external");
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
@@ -2341,7 +2341,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void ltIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.ltIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -2350,7 +2350,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void ltIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.ltIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -2359,7 +2359,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void ltIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.ltIfNotNull(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -2367,7 +2367,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void lteIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lteIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -2376,7 +2376,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void lteIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lteIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -2385,7 +2385,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void lteIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.lteIfNotNull(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -2393,7 +2393,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void gtIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gtIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -2402,7 +2402,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gtIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gtIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -2411,7 +2411,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gtIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gtIfNotNull(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -2419,7 +2419,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void gteIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gteIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -2428,7 +2428,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gteIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gteIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -2437,7 +2437,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gteIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.gteIfNotNull(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -2445,7 +2445,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void betweenIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.betweenIfNotNull(ParentEntity.class, ParentEntity.Fields.homeId, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -2454,7 +2454,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void betweenIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.betweenIfNotNull(parentEntity, ParentEntity.Fields.homeId, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -2463,7 +2463,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void betweenIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.betweenIfNotNull(homeIdAttribute, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -2471,7 +2471,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeIfNotNull(ParentEntity.class, ParentEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2480,7 +2480,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeIfNotNull(parentEntity, ParentEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2489,7 +2489,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeIfNotNull(nameAttribute, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2497,7 +2497,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeStartsWithIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithIfNotNull(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2506,7 +2506,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithIfNotNull(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2515,7 +2515,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithIfNotNull(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2523,7 +2523,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithIfNotNull(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2532,7 +2532,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithIfNotNull(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2541,7 +2541,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithIfNotNull(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2549,7 +2549,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeContainsIfNotNullWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsIfNotNull(ParentEntity.class, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2558,7 +2558,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsIfNotNullWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsIfNotNull(parentEntity, ParentEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2567,7 +2567,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsIfNotNullWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsIfNotNull(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2575,7 +2575,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeInIfNotEmptyWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2584,7 +2584,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeInIfNotEmpty(parentEntity, ParentEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2593,7 +2593,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeInIfNotEmptyWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeInIfNotEmpty(nameAttribute, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2601,7 +2601,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeStartsWithInIfNotEmptyWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2610,7 +2610,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithInIfNotEmpty(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2619,7 +2619,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithInIfNotEmptyWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeStartsWithInIfNotEmpty(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2627,7 +2627,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithInIfNotEmptyWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2636,7 +2636,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithInIfNotEmpty(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2645,7 +2645,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithInIfNotEmptyWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeEndsWithInIfNotEmpty(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2653,7 +2653,7 @@ public class SelectQueryCriterionTest {
 	
 	@Test
 	public void likeContainsInIfNotEmptyWithClassQueryStringTest() throws SQLException {
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsInIfNotEmpty(ParentEntity.class, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2662,7 +2662,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsInIfNotEmpty(parentEntity, ParentEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -2671,7 +2671,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsInIfNotEmptyWithAttributeQueryStringTest() throws SQLException {
 		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.likeContainsInIfNotEmpty(nameAttribute, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));

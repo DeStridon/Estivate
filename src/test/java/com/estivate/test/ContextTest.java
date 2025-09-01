@@ -49,7 +49,7 @@ public class ContextTest {
 		
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class, "myTask");
 		
-		SelectQuery<ParentEntity> query = Estivate.query(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
 		List<ParentEntity> resultQueries = context.fetchList(query);
 		
 	}
@@ -90,7 +90,7 @@ public class ContextTest {
 		context.updateOrInsert(parent2);
 		
 
-		SelectQuery<ParentEntity> query = Estivate.query(ParentEntity.class)
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
 			.selectCount();
 
 		Long count = context.fetchSingleAsLong(query);
@@ -100,7 +100,7 @@ public class ContextTest {
 
 //	@Test
 //	public void rawListFetchTest() {
-//		Query query = Estivate.query(ParentEntity.class)
+//		Query query = Estivate.selectQuery(ParentEntity.class)
 //			.selectDistinct(ParentEntity.Fields.name);
 //
 //		List<Long> count = context.fetchListAs(query, Long.class);

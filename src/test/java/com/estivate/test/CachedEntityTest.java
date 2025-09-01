@@ -22,8 +22,8 @@ public class CachedEntityTest {
 		
 		ParentEntity parent = context.updateOrInsert(ParentEntity.builder().name("intial name").externalName("initial external name").build());
 		
-		ParentEntity parentA = context.fetchSingleAs(Estivate.query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
-		ParentEntity parentB = context.fetchSingleAs(Estivate.query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
+		ParentEntity parentA = context.fetchSingleAs(Estivate.selectQuery(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
+		ParentEntity parentB = context.fetchSingleAs(Estivate.selectQuery(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
 		
 		parentA.setName("new name");
 		parentB.setExternalName("new external name");
@@ -37,7 +37,7 @@ public class CachedEntityTest {
 		
 		
 		
-		ParentEntity taskC = context.fetchSingleAs(Estivate.query(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
+		ParentEntity taskC = context.fetchSingleAs(Estivate.selectQuery(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
 		
 		assertEquals(parentA.getName(), taskC.getName());
 		assertEquals(parentB.getExternalName(), taskC.getExternalName());

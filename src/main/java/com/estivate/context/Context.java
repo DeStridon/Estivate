@@ -363,7 +363,7 @@ public abstract class Context {
 		if(idField != null){
 			idField.setAccessible(true);
 			if(idField.getLong(entity) != 0L) {
-				SelectQuery<U> query = Estivate.query((Class<U>) entity.getClass());
+				SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
 				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
 				U duplicatedEntity = fetchSingleAs(query, (Class<U>) entity.getClass());
 				if(duplicatedEntity != null) {
@@ -384,7 +384,7 @@ public abstract class Context {
 				continue;
 			}
 
-			SelectQuery<U> query = Estivate.query((Class<U>) entity.getClass());
+			SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
 			for(IndexColumn columnIndex : entityIndex.columns()) {
 				Field field = entity.getClass().getDeclaredField(columnIndex.value());
 				field.setAccessible(true);

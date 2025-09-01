@@ -25,13 +25,15 @@ import com.estivate.query.Criterion.NotIn;
 import com.estivate.query.Criterion.NullCheck;
 import com.estivate.query.Criterion.Operator;
 import com.estivate.query.Criterion.Operator.OperatorType;
+import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.Join.JoinType;
 import com.estivate.query.Keyword;
 import com.estivate.query.Keyword.KeywordValue;
+import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
-import com.estivate.query.SelectQuery.Order;
+import com.estivate.query.UpdateQuery;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -41,9 +43,14 @@ import net.bytebuddy.matcher.ElementMatchers;
 public class Estivate {
 
 	// Entities Factory
-	public static <U> SelectQuery<U> query(Entity<U> entity) { return new SelectQuery<>(entity); }
-	public static <U> SelectQuery<U> query(Class<U> entity) 	{ return new SelectQuery<>(entity); }
-	public static <U> SelectQuery<U> query(SelectQuery<U> subQuery, String alias) { return new SelectQuery<>(new SubQueryEntity<>(subQuery, alias)); }
+	public static <U> SelectQuery<U> selectQuery(Entity<U> entity) 	{ return new SelectQuery<>(entity); }
+	public static <U> SelectQuery<U> selectQuery(Class<U> entity) 	{ return new SelectQuery<>(entity); }
+	public static <U> SelectQuery<U> selectQuery(SelectQuery<U> subQuery, String alias) { return new SelectQuery<>(new SubQueryEntity<>(subQuery, alias)); }
+	public static <U> UpdateQuery<U> updateQuery(Entity<U> entity) 	{ return new UpdateQuery<>(entity); }
+	public static <U> UpdateQuery<U> updateQuery(Class<U> entity) 	{ return new UpdateQuery<>(entity); }
+	public static <U> DeleteQuery<U> deleteQuery(Entity<U> entity) 	{ return new DeleteQuery<>(entity); }
+	public static <U> DeleteQuery<U> deleteQuery(Class<U> entity)	{ return new DeleteQuery<>(entity); }
+
 	
 	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field, null); }
 	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field, null); }

@@ -31,10 +31,10 @@ import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
 import com.estivate.query.Keyword;
 import com.estivate.query.Query;
+import com.estivate.query.Query.Order;
 import com.estivate.query.Select;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.SelectQuery.Group;
-import com.estivate.query.SelectQuery.Order;
 import com.estivate.query.UpdateQuery;
 import com.estivate.util.FieldUtils;
 

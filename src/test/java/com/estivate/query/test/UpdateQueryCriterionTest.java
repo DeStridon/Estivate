@@ -452,7 +452,7 @@ public class UpdateQueryCriterionTest {
 	// === EXISTS Tests ===
 	@Test
 	public void existsQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
@@ -465,7 +465,7 @@ public class UpdateQueryCriterionTest {
 	// === NOT EXISTS Tests ===
 	@Test
 	public void notExistsQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.query(ChildEntity.class)
+		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
 			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
 		
 		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)

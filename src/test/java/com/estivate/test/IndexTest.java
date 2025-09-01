@@ -30,7 +30,7 @@ public class IndexTest {
 	@Test
 	public void uniqueTest() {
 		
-		List<ParentEntity> parentEntities = context.fetchListAs(Estivate.query(ParentEntity.class), ParentEntity.class);
+		List<ParentEntity> parentEntities = context.fetchListAs(Estivate.selectQuery(ParentEntity.class), ParentEntity.class);
 		
 		List<TableIndex> indexes = context.listIndexes(ParentEntity.class);
 		
