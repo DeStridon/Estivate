@@ -18,40 +18,53 @@ public class QueryCleaner {
         List<Attribute> whereAttributes = listNodeAttributes(query);
         List<Attribute> havingAttributes = listNodeAttributes(query.getHaving());
             
-        for(Join join : query.getJoins()){
-            // if join is inner or right, it is used
-            if(join.joinType == JoinType.INNER || join.joinType == JoinType.RIGHT){
-                continue;
-            }
+        boolean joinsUpdated;
+        
+        do {
+        	joinsUpdated = false;
+        	
+	        for(Join join : query.getJoins()){
+	            // if join is inner or right, it is used
+	            if(join.joinType == JoinType.INNER || join.joinType == JoinType.RIGHT){
+	                continue;
+	            }
+	
+	            // if any field of joined entity in select, it is used
+	            if(query.getSelects().stream().anyMatch(select -> select.getEntity().equals(join.rightEntity))){
+	                continue;
+	            }
+	
+	            // if any field of joined entity in where, it is used
+	            if(whereAttributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
+	                continue;
+	            }
+	            
+	            // if any field of joined entity in group by, it is used
+	            if(query.getGroupBys().stream().anyMatch(groupBy -> groupBy.entity.equals(join.rightEntity))){
+	                continue;
+	            }
+	            
+	            // if any field of joined entity in having, it is used
+	            if(havingAttributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
+	                continue;
+	            }
+	
+	            // if any field of joined entity in order by, it is used
+	            if(query.getOrders().stream().anyMatch(order -> order.entity.equals(join.rightEntity))){
+	                continue;
+	            }
 
-            // if any field of joined entity in select, it is used
-            if(query.getSelects().stream().anyMatch(select -> select.getEntity().equals(join.rightEntity))){
-                continue;
-            }
+				if(query.getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity == join.rightEntity)){
+					continue;
+				}
+	
+	            // remove join
+	            query.getJoins().remove(join);
+	            joinsUpdated = true;
+	        }
+	        
+        }while(joinsUpdated);
 
-            // if any field of joined entity in where, it is used
-            if(whereAttributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
-                continue;
-            }
-            
-            // if any field of joined entity in group by, it is used
-            if(query.getGroupBys().stream().anyMatch(groupBy -> groupBy.entity.equals(join.rightEntity))){
-                continue;
-            }
-            
-            // if any field of joined entity in having, it is used
-            if(havingAttributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
-                continue;
-            }
-
-            // if any field of joined entity in order by, it is used
-            if(query.getOrders().stream().anyMatch(order -> order.entity.equals(join.rightEntity))){
-                continue;
-            }
-
-            // remove join
-            query.getJoins().remove(join);
-        }
  
     }
 

@@ -239,10 +239,13 @@ public abstract class Context {
 	public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new StringEnumMapper<U>(enumClass)); }
 	public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
 
-	
-	
-	
-	
+	public Long fetchCount(SelectQuery<?> query) {
+		return fetchSingleAsLong(query.clone()
+			.clearSelects()
+			.clearGroupBys()
+			.clearOrders()
+			.selectCount());
+	}
 	
 		
 	protected List<Result> fetchListAsResults(Statement statement) throws SQLException{

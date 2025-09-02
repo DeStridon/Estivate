@@ -157,6 +157,10 @@ public abstract class Query<T> extends Aggregator {
 	public Query<T> orderDescAlias(String alias)								{ return orderAlias(alias, Order.Direction.Desc); }
 	
 	
+	public Query<T> clearOrders(){
+		orders.clear();
+		return this;
+	}
 
 
 	public Query<T> limit(Integer limit) { this.limit = limit; return this; }

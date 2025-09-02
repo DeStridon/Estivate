@@ -194,8 +194,8 @@ public class SelectQuery<T> extends Query<T>{
 
 	public SelectQuery<T> nativeCriterion 	(String attribute, String criterion) { super.nativeCriterion(this.entity, attribute, criterion); return this; }
 	
-	public SelectQuery<T> inSubQuery			(String attribute, SelectQuery subQuery){ super.inSubQuery(this.entity, attribute, subQuery); return this; }
-	public SelectQuery<T> notInSubQuery		(String attribute, SelectQuery subQuery){ super.notInSubQuery(this.entity, attribute, subQuery); return this; }
+	public SelectQuery<T> inSubQuery			(String attribute, SelectQuery<?> subQuery){ super.inSubQuery(this.entity, attribute, subQuery); return this; }
+	public SelectQuery<T> notInSubQuery		(String attribute, SelectQuery<?> subQuery){ super.notInSubQuery(this.entity, attribute, subQuery); return this; }
 
 	
 	public SelectQuery<T> notInIfNotEmpty   	(String attribute, Collection<?> values) { super.notInIfNotEmpty   (this.entity, attribute, values); return this; }
@@ -702,6 +702,8 @@ public class SelectQuery<T> extends Query<T>{
 	public SelectQuery<T> selectGroupConcatAs(String attribute, String alias) 			{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, alias); }
 
 	public SelectQuery<T> clearSelects(){ selects.clear(); return this; }
+	public SelectQuery<T> clearOrders(){ super.clearOrders(); return this; }
+	
 	
 	// Having
 	public SelectQuery<T> having(EstivateNode node) { this.having = node; return this; }
@@ -779,7 +781,8 @@ public class SelectQuery<T> extends Query<T>{
 	public List<Date> fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
 	public List<Boolean> fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
 	
-	
+	public Long fetchCount(Context context) { return context.fetchCount(this); }
+
 
 	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
 		return context.aggregateToMap(this, uType, vType);
