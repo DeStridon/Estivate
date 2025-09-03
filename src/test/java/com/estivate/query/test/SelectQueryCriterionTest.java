@@ -190,7 +190,7 @@ public class SelectQueryCriterionTest {
 		
 		List<Long> taskIds = Arrays.asList(1L, 2L, 3L, 4L);
 		
-		SelectQuery query = new SelectQuery(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, taskIds);
+		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class).in(ParentEntity.class, AbstractEntity.Fields.id, taskIds);
 
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
@@ -203,21 +203,21 @@ public class SelectQueryCriterionTest {
 	public void isNullTest() throws SQLException {
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = new SelectQuery(ParentEntity.class).isNull(ParentEntity.class, AbstractEntity.Fields.id);
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class).isNull(ParentEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
 		query1.fetchList(context);
 		Assert.assertTrue(queryString1.contains(" is null"));
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = new SelectQuery(ParentEntity.class).isNull(parentEntity, AbstractEntity.Fields.id);
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class).isNull(parentEntity, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
 		query2.fetchList(context);
 		Assert.assertTrue(queryString2.contains(" is null"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id);
-		SelectQuery<ParentEntity> query3 = new SelectQuery(ParentEntity.class).isNull(idAttribute);
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class).isNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
 		query3.fetchList(context);
 		Assert.assertTrue(queryString3.contains(" is null"));
@@ -227,21 +227,21 @@ public class SelectQueryCriterionTest {
 	public void isNotNullTest() throws SQLException {
 		
 		// Test 1: Class-based method signature
-		SelectQuery<ParentEntity> query1 = new SelectQuery(ParentEntity.class).isNotNull(ParentEntity.class, AbstractEntity.Fields.id);
+		SelectQuery<ParentEntity> query1 = Estivate.selectQuery(ParentEntity.class).isNotNull(ParentEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
 		query1.fetchList(context);
 		Assert.assertTrue(queryString1.contains(" is not null"));
 		
 		// Test 2: Entity-based method signature
 		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		SelectQuery<ParentEntity> query2 = new SelectQuery(ParentEntity.class).isNotNull(parentEntity, AbstractEntity.Fields.id);
+		SelectQuery<ParentEntity> query2 = Estivate.selectQuery(ParentEntity.class).isNotNull(parentEntity, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
 		query2.fetchList(context);
 		Assert.assertTrue(queryString2.contains(" is not null"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id);
-		SelectQuery<ParentEntity> query3 = new SelectQuery(ParentEntity.class).isNotNull(idAttribute);
+		SelectQuery<ParentEntity> query3 = Estivate.selectQuery(ParentEntity.class).isNotNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
 		query3.fetchList(context);
 		Assert.assertTrue(queryString3.contains(" is not null"));

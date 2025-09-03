@@ -73,7 +73,7 @@ public abstract class Context {
 	public boolean tracePerformances = false;
 	@Getter public NameMapper nameMapper = new DefaultNameMapper();
 
-	public Consumer<Query<?>> fetchQueryPreProcessor = null;
+	public Consumer<Query<?,?>> fetchQueryPreProcessor = null;
 	
 		
 	public Context(DataSource datasource) {
@@ -121,11 +121,11 @@ public abstract class Context {
 	/**
 	 * Pre-processes a query before execution
 	 */
-	private Query<?> preExecute(Query<?> query) {
+	private Query<?,?> preExecute(Query<?,?> query) {
 		if(fetchQueryPreProcessor == null) {
 			return query;  
 		}
-		Query<?> clonedQuery = query.clone();
+		Query<?,?> clonedQuery = query.clone();
 		fetchQueryPreProcessor.accept(clonedQuery);
 		return clonedQuery;
 	}
@@ -135,7 +135,7 @@ public abstract class Context {
 	// ==================== EXECUTE METHODS ====================
 
 	@SneakyThrows
-	public Boolean execute(SelectQuery<?> query) {
+	public Boolean execute(Query<?,?> query) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query))) {
 			return statement.executeForValidation();
@@ -673,7 +673,7 @@ public abstract class Context {
 	// ==================== MISC ====================
 
 	@SneakyThrows
-	public String queryAsString(Query<?> query) {
+	public String queryAsString(Query<?,?> query) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));) {
 			return statement.query();
