@@ -26,7 +26,7 @@ public class UpdateQueryCriterionTest {
 	// === EQ Tests ===
 	@Test
 	public void eqWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
+		UpdateQuery<ParentEntity> query = Estivate.updateQuery(ParentEntity.class)
 			.set(ParentEntity.Fields.name, "updated")
 			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
 		

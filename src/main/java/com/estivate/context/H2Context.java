@@ -46,7 +46,7 @@ public class H2Context extends Context {
 			for(Result indexResult : indexResults) {
 				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.columnAsString("INDEX_NAME").equals(indexResult.columnAsString("INDEX_NAME"))).collect(Collectors.toList());
 				
-				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.columnAsString("COLUMN_NAME")), null)).collect(Collectors.toList());
+				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.columnAsString("COLUMN_NAME")), 0)).collect(Collectors.toList());
 
 				TableIndex ci = Annotations.CompositeIndex(indexResult.columnAsString("INDEX_NAME"), getIndexType(indexResult.columnAsString("INDEX_TYPE_NAME")), indexColumns);
 				indexes.add(ci);

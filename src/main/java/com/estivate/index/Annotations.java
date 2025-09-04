@@ -64,7 +64,7 @@ public class Annotations {
 		return index;
 	}
 	
-	public static IndexColumn ColumnIndex(String value, Integer length) {
+	public static IndexColumn ColumnIndex(String value, int length) {
 		IndexColumn index = new IndexColumn() {
 			@Override
 			public Class<? extends Annotation> annotationType() { return null; }

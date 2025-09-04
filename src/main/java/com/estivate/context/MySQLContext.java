@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -14,8 +15,8 @@ import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
-import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.IndexType;
+import com.estivate.index.Annotations.TableIndex;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,6 +56,7 @@ public class MySQLContext extends Context {
 					.nonUnique(result.columnAsBoolean("Non_unique"))
 					.seqInIndex(result.columnAsInteger("Seq_in_index"))
 					.columnName(result.columnAsString("Column_name"))
+					.columnLength(result.columnAsInteger("Sub_part"))
 					.build();
 			
 				indexRows.add(indexRow);
@@ -65,8 +67,8 @@ public class MySQLContext extends Context {
 	        
 			
 			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
-				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.getColumnName()), null)).collect(Collectors.toList());
-				
+
+				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.getColumnName()), x.getColumnLength() != null ? x.getColumnLength() : 0)).collect(Collectors.toList());
 
 				IndexType indexType = IndexType.DEFAULT;
 				if(indexRowMapEntry.getKey().equals("PRIMARY")) {
@@ -93,7 +95,8 @@ public class MySQLContext extends Context {
 		String keyName;
 		Boolean nonUnique;
 		Integer seqInIndex;
-		String columnName;
+		String columnName; 
+		Integer columnLength;
 		
 	}
 	
