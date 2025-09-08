@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -29,7 +30,6 @@ import javax.persistence.Enumerated;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.estivate.context.Context;
 //github.com/DeStridon/Estivate.git
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
@@ -217,48 +217,26 @@ public abstract class IMapper<U> {
 				
 				Type type = field.getGenericType();
 				
-				if(type == String.class) {
-					field.set(obj, value);
-				}
-				else if(type == long.class) {
-					field.setLong(obj, Long.parseLong(value));
-				}
-				else if(type == Long.class) {
-					field.set(obj, Long.parseLong(value));
-				}
-				else if(type == boolean.class) {
-					field.setBoolean(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value));
-				}
-				else if(type == Boolean.class) {
-					field.set(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value));
-				}
-				else if(type == Byte.class) {
-					field.set(obj, Byte.parseByte(value));
-				}
-				else if(type == double.class) {
-					field.setDouble(obj, Double.parseDouble(value));
-				}
-				else if(type == Double.class) {
-					field.set(obj, Double.parseDouble(value));
-				}
-				else if(type == Character.class && value.length() > 0) {
-					field.set(obj, value.charAt(0));
-				}
-				else if(type == Float.class) {
-					field.set(obj, Float.parseFloat(value));
-				}
-				else if(type == int.class) {
-					field.setInt(obj, Integer.parseInt(value));
-				}
-				else if(type == Integer.class) {
-					field.set(obj, Integer.parseInt(value));
-				}
-				else if(type == short.class) {
-					field.setShort(obj, Short.parseShort(value));
-				}
-				else if(type == Short.class) {
-					field.set(obj, Short.parseShort(value));
-				}
+				if(type == String.class) { field.set(obj, value); }
+				else if(type == short.class) { field.setShort(obj, Short.parseShort(value)); }
+				else if(type == Short.class) { field.set(obj, Short.parseShort(value)); }
+				else if(type == int.class) { field.setInt(obj, Integer.parseInt(value)); }
+				else if(type == Integer.class) { field.set(obj, Integer.parseInt(value)); }
+				else if(type == long.class) { field.setLong(obj, Long.parseLong(value)); }
+				else if(type == Long.class) { field.set(obj, Long.parseLong(value)); }
+				
+				else if(type == float.class) { field.setFloat(obj, Float.parseFloat(value)); }
+				else if(type == Float.class) { field.set(obj, Float.parseFloat(value));}
+				else if(type == double.class) { field.setDouble(obj, Double.parseDouble(value)); }
+				else if(type == Double.class) { field.set(obj, Double.parseDouble(value)); }
+				else if(type == BigDecimal.class) { field.set(obj, new BigDecimal(value)); }
+				
+				else if(type == boolean.class) { field.setBoolean(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value)); }
+				else if(type == Boolean.class) { field.set(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value)); }
+				else if(type == Byte.class) { field.set(obj, Byte.parseByte(value)); }
+				else if(type == Character.class && value.length() > 0) { field.set(obj, value.charAt(0)); }
+				
+				
 				else if(type == Date.class) {
 					LocalDateTime dateTime = DateMapper.mapDate(value);
 					field.set(obj, Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()));

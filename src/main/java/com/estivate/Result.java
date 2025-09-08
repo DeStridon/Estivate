@@ -1,8 +1,8 @@
 package com.estivate;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -70,18 +70,23 @@ public class Result {
 	
 	@SneakyThrows
 	public String 			columnAsString(String column) { Integer index = ArrayUtils.indexOf(columnNames, column); return index == null ? null : columnValues[index]; }
+	// Numbers
 	public Short 			columnAsShort(String column) { String value = columnAsString(column); return value == null ? null : Short.valueOf(value); } 
 	public Integer 			columnAsInteger(String column) { String value = columnAsString(column); return value == null ? null : Integer.valueOf(value); }
 	public Long 			columnAsLong(String column) { String value = columnAsString(column); return value == null ? null : Long.valueOf(value); }
 	public Float 			columnAsFloat(String column) { String value = columnAsString(column); return value == null ? null : Float.valueOf(value); }
 	public Double 			columnAsDouble(String column) { String value = columnAsString(column); return value == null ? null : Double.valueOf(value); }
-	public Boolean 			columnAsBoolean(String column) { String value = columnAsString(column); return value == null ? null : Boolean.valueOf(value); }
-	public Byte 			columnAsByte(String column) { String value = columnAsString(column); return value == null ? null : Byte.valueOf(value); }
-	public Character 		columnAsChar(String column) { String value = columnAsString(column); return value == null ? null : value.charAt(0); }
+	public BigDecimal		columnAsBigDecimal(String column) { String value = columnAsString(column); return value == null ? null : new BigDecimal(value); }
+	
+	// Dates
 	public LocalDateTime	columnAsLocalDateTime(String column) { String value = columnAsString(column); return value == null ? null : LocalDateTime.parse(value, DateMapper.formatter); }
 	public LocalDate		columnAsLocalDate(String column) { LocalDateTime ldt = columnAsLocalDateTime(column); return ldt == null ? null : ldt.toLocalDate(); }
 	public Date 			columnAsDate(String column) { LocalDateTime ldt = columnAsLocalDateTime(column); return ldt == null ? null : Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant()); } 
 
+	public Boolean 			columnAsBoolean(String column) { String value = columnAsString(column); return value == null ? null : Boolean.valueOf(value); }
+	public Byte 			columnAsByte(String column) { String value = columnAsString(column); return value == null ? null : Byte.valueOf(value); }
+	public Character 		columnAsChar(String column) { String value = columnAsString(column); return value == null ? null : value.charAt(0); }
+	
 	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
 	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
 	
@@ -165,6 +170,7 @@ public class Result {
 
 	public String 			attributeAsString		(Class<?> c, String attribute) 	{ return columnAsString(nameMapper.mapEntity(c, attribute)); }
 	public String 			attributeAsString		(Entity<?> e, String attribute)	{ return columnAsString(nameMapper.mapEntity(e, attribute)); }
+	// Numbers
 	public Short 			attributeAsShort		(Class<?> c, String attribute) 	{ return columnAsShort(nameMapper.mapEntity(c, attribute)); }
 	public Short 			attributeAsShort		(Entity<?> e, String attribute)	{ return columnAsShort(nameMapper.mapEntity(e, attribute)); }
 	public Integer 			attributeAsInteger		(Class<?> c, String attribute) 	{ return columnAsInteger(nameMapper.mapEntity(c, attribute)); }
@@ -175,18 +181,23 @@ public class Result {
 	public Float 			attributeAsFloat		(Entity<?> e, String attribute)	{ return columnAsFloat(nameMapper.mapEntity(e, attribute)); }
 	public Double 			attributeAsDouble		(Class<?> c, String attribute) 	{ return columnAsDouble(nameMapper.mapEntity(c, attribute)); }
 	public Double 			attributeAsDouble		(Entity<?> e, String attribute)	{ return columnAsDouble(nameMapper.mapEntity(e, attribute)); }
-	public Boolean 			attributeAsBoolean		(Class<?> c, String attribute) 	{ return columnAsBoolean(nameMapper.mapEntity(c, attribute)); }
-	public Boolean 			attributeAsBoolean		(Entity<?> e, String attribute)	{ return columnAsBoolean(nameMapper.mapEntity(e, attribute)); }
-	public Byte				attributeAsByte			(Class<?> c, String attribute) 	{ return columnAsByte(nameMapper.mapEntity(c, attribute)); }
-	public Byte				attributeAsByte			(Entity<?> e, String attribute) { return columnAsByte(nameMapper.mapEntity(e, attribute)); }
-	public Character		attributeAsChar			(Class<?> c, String attribute)  { return columnAsChar(nameMapper.mapEntity(c, attribute)); }
-	public Character		attributeAsChar			(Entity<?> e, String attribute)	{ return columnAsChar(nameMapper.mapEntity(e, attribute)); }
+	public BigDecimal		attributeAsBigDecimal 	(Class<?> c, String attribute) 	{ return columnAsBigDecimal(nameMapper.mapEntity(c, attribute)); }
+	public BigDecimal		attributeAsBigDecimal	(Entity<?> e, String attribute)	{ return columnAsBigDecimal(nameMapper.mapEntity(e, attribute)); }
+	// Date
 	public Date 			attributeAsDate			(Class<?> c, String attribute)	{ return columnAsDate(nameMapper.mapEntity(c, attribute)); }
 	public Date 			attributeAsDate			(Entity<?> e, String attribute)	{ return columnAsDate(nameMapper.mapEntity(e, attribute)); }
 	public LocalDateTime	attributeAsLocalDateTime(Class<?> c, String attribute)	{ return columnAsLocalDateTime(nameMapper.mapEntity(c, attribute)); }
 	public LocalDateTime 	attributeAsLocalDateTime(Entity<?> e, String attribute) { return columnAsLocalDateTime(nameMapper.mapEntity(e, attribute)); }
 	public LocalDate		attributeAsLocalDate	(Class<?> c, String attribute)	{ return columnAsLocalDate(nameMapper.mapEntity(c, attribute)); }
 	public LocalDate	 	attributeAsLocalDate	(Entity<?> e, String attribute) { return columnAsLocalDate(nameMapper.mapEntity(e, attribute)); }
+	// Other
+	public Boolean 			attributeAsBoolean		(Class<?> c, String attribute) 	{ return columnAsBoolean(nameMapper.mapEntity(c, attribute)); }
+	public Boolean 			attributeAsBoolean		(Entity<?> e, String attribute)	{ return columnAsBoolean(nameMapper.mapEntity(e, attribute)); }
+	public Byte				attributeAsByte			(Class<?> c, String attribute) 	{ return columnAsByte(nameMapper.mapEntity(c, attribute)); }
+	public Byte				attributeAsByte			(Entity<?> e, String attribute) { return columnAsByte(nameMapper.mapEntity(e, attribute)); }
+	public Character		attributeAsChar			(Class<?> c, String attribute)  { return columnAsChar(nameMapper.mapEntity(c, attribute)); }
+	public Character		attributeAsChar			(Entity<?> e, String attribute)	{ return columnAsChar(nameMapper.mapEntity(e, attribute)); }
+	
 	
 	
 
