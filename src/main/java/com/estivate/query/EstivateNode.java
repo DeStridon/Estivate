@@ -4,4 +4,6 @@ public interface EstivateNode {
 	
 	public EstivateNode clone();
 
+	public boolean isEmpty();
+
 }

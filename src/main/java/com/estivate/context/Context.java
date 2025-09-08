@@ -680,15 +680,5 @@ public abstract class Context {
 		}
 		
 	}
-
-	// public String queryAsString(UpdateQuery<?> query) {
-	// 	try(Connection connection = datasource.getConnection();
-	// 		Statement statement = Statement.toStatement(this, connection, preExecute(query));) {
-	// 		return statement.query();
-	// 	}
-	// }
-
-	
-	
 	
 }

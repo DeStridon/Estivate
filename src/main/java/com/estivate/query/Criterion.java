@@ -19,6 +19,11 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 
 	
 	public abstract Criterion clone();
+
+	@Override
+	public boolean isEmpty() { return false; }
+
+	
 		
 	
 	@ToString(callSuper = true)
@@ -223,10 +228,10 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 	@ToString(callSuper = true)
 	public static class ExistsSubQuery extends Criterion{
 
-		public SelectQuery subQuery;
+		public SelectQuery<?> subQuery;
 		public boolean include;
 
-		public ExistsSubQuery(SelectQuery subQuery, boolean include){
+		public ExistsSubQuery(SelectQuery<?> subQuery, boolean include){
 			this.subQuery = subQuery;
 			this.include = include;
 		}

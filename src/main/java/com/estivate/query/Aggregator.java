@@ -395,6 +395,11 @@ public class Aggregator implements EstivateNode {
 		return joinAggregator;
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return criterions.stream().allMatch(x -> x == null || x.isEmpty());
+	}
+
 
 
 

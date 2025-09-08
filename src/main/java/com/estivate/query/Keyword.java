@@ -20,4 +20,9 @@ public class Keyword implements EstivateNode{
 		return new Keyword(value);
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return value == null;
+	}
+
 }

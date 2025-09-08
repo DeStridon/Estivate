@@ -14,6 +14,7 @@ import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.ProductEntity;
 
 public class SelectQuerySubTest {
 
@@ -69,4 +70,29 @@ public class SelectQuerySubTest {
 		context.queryAsString(mainQuery);
 	
 	}
+	
+	@Test
+	void joinSubQueryTest2() {
+		 SelectQuery<ProductEntity> subQuery = Estivate.selectQuery(ProductEntity.class)
+		            .selectMaxAs(ProductEntity.class, ProductEntity.Fields.id, "maxId")
+		            .groupBy(ProductEntity.class, ProductEntity.Fields.category);
+
+        // Main query to get step ID, status, and count grouped by step and status
+        SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
+            .select(ProductEntity.class, ProductEntity.Fields.id)
+            .select(ProductEntity.class, ProductEntity.Fields.category)
+            .joinInner(ProductEntity.class, Estivate.subQueryEntity(subQuery, "latest"), AbstractEntity.Fields.id, "maxId");
+        
+        String queryString = context.queryAsString(query);
+        
+        context.fetchList(query);
+	}
+	
+	/*
+	 * SELECT PRODUCTENTITY_D.ID_D as `PRODUCTENTITY_E.ID_E`, PRODUCTENTITY_D.CATEGORY_D as `PRODUCTENTITY_E.CATEGORY_E`
+ FROM PRODUCTENTITY_D INNER JOIN (SELECT max(PRODUCTENTITY_D.ID_D) as `maxId`
+ FROM PRODUCTENTITY_D GROUP BY PRODUCTENTITY_D.CATEGORY_D
+ ) AS latest ON PRODUCTENTITY_D.ID_D = latest.MAXID_D 
+
+	 */
 }

@@ -390,16 +390,24 @@ public class Statement implements AutoCloseable{
 		
 		if(node instanceof Aggregator) {
 			Aggregator aggregator = (Aggregator) node;
-			if(!rootNode && aggregator.getCriterions().size() > 1) {
+
+			List<EstivateNode> criterions = aggregator.getCriterions()
+				.stream()
+				.filter(x -> x != null && !x.isEmpty())
+				.collect(Collectors.toList());
+
+				
+
+			if(!rootNode && criterions.size() > 1) {
 				appendQuery("("); 
 			}
-			for(int i = 0; i < aggregator.getCriterions().size(); i++) {
+			for(int i = 0; i < criterions.size(); i++) {
 				if(i > 0) {
 					appendQuery(aggregator.getGroupType().toString());
 				}
-				appendNodeToStatement(aggregator.getCriterions().get(i), false);
+				appendNodeToStatement(criterions.get(i), false);
 			}
-			if(!rootNode && aggregator.getCriterions().size() > 1) {
+			if(!rootNode && criterions.size() > 1) {
 				appendQuery(")");
 			}
 			
