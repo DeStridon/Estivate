@@ -1,5 +1,7 @@
 package com.estivate.test.entities;
 
+import java.util.Date;
+
 import lombok.experimental.FieldNameConstants;
 
 @FieldNameConstants
@@ -11,8 +13,17 @@ public class CustomerEntity {
 
     String email;
 
-    String addreess;
+    String address;
 
-    String country;
+    Country country;
+
+    Date created;
+    
+    enum Country{
+    	GERMANY,
+    	SPAIN,
+    	FRANCE,
+    	UNITED_STATES,
+    }
 
 }

@@ -1,7 +1,9 @@
 package com.estivate.query;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +12,7 @@ import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.query.Attribute.Function;
-import com.estivate.query.Query.Order;
+import com.estivate.query.Join.JoinType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -128,63 +130,9 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q joinRight(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ return join(Estivate.joinRight(leftEntity, Estivate.subQueryEntity(rightQuery, alias), leftAttribute, rightAttribute)); }
 
 	
-	public Q order(Order order) { orders.add(order); return self(); }
-	public Q order(Entity<?> entity, String attribute, Order.Direction direction, Function function) {
-		orders.add(Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build()); 
-		return self(); 
-	}
-	public Q order(Class<?> entity, String attribute, Order.Direction direction, Function function) { return order(new Entity<>(entity), attribute, direction, function); }
-	public Q order(String attribute, Order.Direction direction, Function function) 					{ return order(this.entity, attribute, direction, function); }
-	public Q order(Entity<?> entity, String attribute, Order.Direction direction) 					{ return order(entity, attribute, direction, null); }
-	public Q order(Class<?> entity, String attribute, Order.Direction direction) 					{ return order(new Entity<>(entity), attribute, direction, null); }
-	public Q order(String attribute, Order.Direction direction) 									{ return order(this.entity, attribute, direction, null); }
-	public Q order(Attribute attribute, Order.Direction direction) 									{ return order(attribute.entity, attribute.attribute, direction, attribute.function); }
-	public Q orderAlias(String alias, Order.Direction direction) 									{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
+	
+	
 
-	public Q orderAsc(Entity<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Asc); }
-	public Q orderAsc(Entity<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
-	public Q orderAsc(Class<?> c, String attribute) 						{ return order(c, attribute, Order.Direction.Asc); }
-	public Q orderAsc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
-	public Q orderAsc(String attribute) 									{ return order(this.entity, attribute, Order.Direction.Asc); }
-	public Q orderAsc(String attribute, Function function) 				{ return order(this.entity, attribute, Order.Direction.Asc, function); }
-	public Q orderAsc(Attribute attribute) 								{ return order(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
-	public Q orderAscAlias(String alias)									{ return orderAlias(alias, Order.Direction.Asc); }
-	
-	public Q orderDesc(Entity<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Desc); }
-	public Q orderDesc(Entity<?> c, String attribute, Function function)	{ return order(c, attribute, Order.Direction.Desc, function); }
-	public Q orderDesc(Class<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Desc); }
-	public Q orderDesc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Desc, function); }
-	public Q orderDesc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Desc); }
-	public Q orderDesc(String attribute, Function function) 				{ return order(this.entity, attribute, Order.Direction.Desc, function); }
-	public Q orderDesc(Attribute attribute) 								{ return order(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
-	public Q orderDescAlias(String alias)								{ return orderAlias(alias, Order.Direction.Desc); }
-	
-	
-	public Q clearOrders(){
-		orders.clear();
-		return self();
-	}
-
-
-	public Q limit(Integer limit) { this.limit = limit; return self(); }
-	public Q limitIfNotNull(Integer limit) { if(limit != null) { this.limit = limit; } return self(); }
-	public Q limitIfNotNullOr(Integer limit, Integer fallbackLimit) { if(limit != null) { this.limit = limit; } else { this.limit = fallbackLimit; } return self(); }
-	public Q offset(Integer offset) { this.offset = offset; return self();}
-	public Q offsetIfNotNull(Integer offset) { if(offset != null) { this.offset = offset; } return self(); }
-	public Q offsetIfNotNullOr(Integer offset, Integer fallbackOffset) { if(offset != null) { this.offset = offset; } else { this.offset = fallbackOffset; } return self(); }
-
-	
-	@SuperBuilder
-	@Data
-	@AllArgsConstructor
-	public static class Order extends Attribute{
-		public Direction direction;
-		public enum Direction{
-			Asc,
-			Desc
-		}
-	}
-	
 	
 	public Q eq   			(Attribute attribute, Object value)	{ super.eq(attribute, value);  return self(); }
 	public Q eqIfNotNull   	(Attribute attribute, Object value) { super.eqIfNotNull(attribute, value);  return self(); }
@@ -604,5 +552,387 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 
+	
+	public Q importCriterion(Object object) {
+		if (object == null) {
+			return self();
+		}
+		
+		Class<?> objectClass = object.getClass();
+		Field[] fields = objectClass.getDeclaredFields();
+		
+		for (Field field : fields) {
+			field.setAccessible(true);
+			
+			try {
+				Object value = field.get(object);
+				processFieldAnnotations(field, value);
+			} catch (IllegalAccessException e) {
+				// Skip fields that cannot be accessed
+				continue;
+			}
+		}
+		
+		return self();
+	}
+	
+	private Q processFieldAnnotations(Field field, Object value) {
+		// Handle @Eq annotation
+		QueryBuilder.Eq eq = field.getAnnotation(QueryBuilder.Eq.class);
+		if (eq != null) {
+			String attribute = (QueryBuilder.Eq.attribute != null) ? QueryBuilder.Eq.attribute : field.getName();
+			return this.eq(eq.entity() == void.class ? this.entity.entity : eq.entity(), attribute, value);
+		}
+		
+		// Handle @EqIfNotNull annotation
+		QueryBuilder.EqIfNotNull eqIfNotNull = field.getAnnotation(QueryBuilder.EqIfNotNull.class);
+		if (eqIfNotNull != null) {
+			String attribute = (eqIfNotNull.attribute() != null) ? eqIfNotNull.attribute() : field.getName();
+			return this.eqIfNotNull(eqIfNotNull.entity() == void.class ? this.entity.entity : eqIfNotNull.entity(), attribute, value);
+		}
+		
+		// Handle @EqNullable annotation
+		QueryBuilder.EqNullable eqNullable = field.getAnnotation(QueryBuilder.EqNullable.class);
+		if (eqNullable != null) {
+			String attribute = (eqNullable.attribute() != null) ? eqNullable.attribute() : field.getName();
+			return this.eqNullable(eqNullable.entity() == void.class ? this.entity.entity : eqNullable.entity(), attribute, value);
+		}
+		
+		// Handle @NotEq annotation
+		QueryBuilder.NotEq notEq = field.getAnnotation(QueryBuilder.NotEq.class);
+		if (notEq != null) {
+			String attribute = (notEq.attribute() != null) ? notEq.attribute() : field.getName();
+			return this.notEq(notEq.entity() == void.class ? this.entity.entity : notEq.entity(), attribute, value);
+		}
+		
+		// Handle @NotEqIfNotNull annotation
+		QueryBuilder.NotEqIfNotNull notEqIfNotNull = field.getAnnotation(QueryBuilder.NotEqIfNotNull.class);
+		if (notEqIfNotNull != null) {
+			String attribute = (notEqIfNotNull.attribute() != null) ? notEqIfNotNull.attribute() : field.getName();
+			return this.notEqIfNotNull(notEqIfNotNull.entity() == void.class ? this.entity.entity : notEqIfNotNull.entity(), attribute, value);
+		}
+		
+		// Handle @NotEqNullable annotation
+		QueryBuilder.NotEqNullable notEqNullable = field.getAnnotation(QueryBuilder.NotEqNullable.class);
+		if (notEqNullable != null) {
+			String attribute = (notEqNullable.attribute() != null) ? notEqNullable.attribute() : field.getName();
+			return this.notEqNullable(notEqNullable.entity() == void.class ? this.entity.entity : notEqNullable.entity(), attribute, value);
+		}
+		
+		// Handle @Lt annotation
+		QueryBuilder.Lt lt = field.getAnnotation(QueryBuilder.Lt.class);
+		if (lt != null) {
+			String attribute = (lt.attribute() != null) ? lt.attribute() : field.getName();
+			return this.lt(lt.entity() == void.class ? this.entity.entity : lt.entity(), attribute, value);
+		}
+		
+		// Handle @LtIfNotNull annotation
+		QueryBuilder.LtIfNotNull ltIfNotNull = field.getAnnotation(QueryBuilder.LtIfNotNull.class);
+		if (ltIfNotNull != null) {
+			String attribute = (ltIfNotNull.attribute() != null) ? ltIfNotNull.attribute() : field.getName();
+			return this.ltIfNotNull(ltIfNotNull.entity() == void.class ? this.entity.entity : ltIfNotNull.entity(), attribute, value);
+		}
+		
+		// Handle @Lte annotation
+		QueryBuilder.Lte lte = field.getAnnotation(QueryBuilder.Lte.class);
+		if (lte != null) {
+			String attribute = (lte.attribute() != null) ? lte.attribute() : field.getName();
+			return this.lte(lte.entity() == void.class ? this.entity.entity : lte.entity(), attribute, value);
+		}
+		
+		// Handle @LteIfNotNull annotation
+		QueryBuilder.LteIfNotNull lteIfNotNull = field.getAnnotation(QueryBuilder.LteIfNotNull.class);
+		if (lteIfNotNull != null) {
+			String attribute = (lteIfNotNull.attribute() != null) ? lteIfNotNull.attribute() : field.getName();
+			return this.lteIfNotNull(lteIfNotNull.entity() == void.class ? this.entity.entity : lteIfNotNull.entity(), attribute, value);
+		}
+		
+		// Handle @Gte annotation
+		QueryBuilder.Gt gt = field.getAnnotation(QueryBuilder.Gt.class);
+		if (gt != null) {
+			String attribute = (gt.attribute() != null) ? gt.attribute() : field.getName();
+			return this.gt(gt.entity() == void.class ? this.entity.entity : gt.entity(), attribute, value);
+		}
+		
+		// Handle @GteIfNotNull annotation
+		QueryBuilder.GtIfNotNull gtIfNotNull = field.getAnnotation(QueryBuilder.GtIfNotNull.class);
+		if (gtIfNotNull != null) {
+			String attribute = (gtIfNotNull.attribute() != null) ? gtIfNotNull.attribute() : field.getName();
+			return this.gtIfNotNull(gtIfNotNull.entity() == void.class ? this.entity.entity : gtIfNotNull.entity(), attribute, value);
+		}
+		
+		// Handle @Gte annotation
+		QueryBuilder.Gte gte = field.getAnnotation(QueryBuilder.Gte.class);
+		if (gte != null) {
+			String attribute = (gte.attribute() != null) ? gte.attribute() : field.getName();
+			return this.gte(gte.entity() == void.class ? this.entity.entity : gte.entity(), attribute, value);
+		}
+		
+		// Handle @GteIfNotNull annotation
+		QueryBuilder.GteIfNotNull gteIfNotNull = field.getAnnotation(QueryBuilder.GteIfNotNull.class);
+		if (gteIfNotNull != null) {
+			String attribute = (gteIfNotNull.attribute() != null) ? gteIfNotNull.attribute() : field.getName();
+			return this.gteIfNotNull(gteIfNotNull.entity() == void.class ? this.entity.entity : gteIfNotNull.entity(), attribute, value);
+		}
+	
+		// Handle @Like annotation
+		QueryBuilder.Like like = field.getAnnotation(QueryBuilder.Like.class);
+		if (like != null && value instanceof String) {
+			String attribute = (like.attribute() != null) ? like.attribute() : field.getName();
+			return this.like(like.entity() == void.class ? this.entity.entity : like.entity(), attribute, (String) value);
+		}
+		
+		// Handle @LikeIfNotNull annotation
+		QueryBuilder.LikeIfNotNull likeIfNotNull = field.getAnnotation(QueryBuilder.LikeIfNotNull.class);
+		if (likeIfNotNull != null && value instanceof String) {
+			String attribute = (likeIfNotNull.attribute() != null) ? likeIfNotNull.attribute() : field.getName();
+			return this.likeIfNotNull(likeIfNotNull.entity() == void.class ? this.entity.entity : likeIfNotNull.entity(), attribute, (String) value);
+		}
+		
+		// Handle @LikeContains annotation
+		QueryBuilder.LikeContains likeContains = field.getAnnotation(QueryBuilder.LikeContains.class);
+		if (likeContains != null && value instanceof String) {
+			String attribute = (likeContains.attribute() != null) ? likeContains.attribute() : field.getName();
+			return this.likeContains(likeContains.entity() == void.class ? this.entity.entity : likeContains.entity(), attribute, (String) value);
+		}
+		
+		// Handle @LikeContainsIfNotNull annotation
+		QueryBuilder.LikeContainsIfNotNull likeContainsIfNotNull = field.getAnnotation(QueryBuilder.LikeContainsIfNotNull.class);
+		if (likeContainsIfNotNull != null && value instanceof String) {
+			String attribute = (likeContainsIfNotNull.attribute() != null) ? likeContainsIfNotNull.attribute() : field.getName();
+			return this.likeContainsIfNotNull(likeContainsIfNotNull.entity() == void.class ? this.entity.entity : likeContainsIfNotNull.entity(), attribute, (String) value);
+		}
+		
+		// Handle @LikeStartsWith annotation
+		QueryBuilder.LikeStartsWith likeStartsWith = field.getAnnotation(QueryBuilder.LikeStartsWith.class);
+		if (likeStartsWith != null && value instanceof String) {
+			String attribute = (likeStartsWith.attribute() != null) ? likeStartsWith.attribute() : field.getName();
+			return this.likeStartsWith(likeStartsWith.entity() == void.class ? this.entity.entity : likeStartsWith.entity(), attribute, (String) value);
+		}
+		
+		// Handle @LikeStartsWithIfNotNull annotation
+		QueryBuilder.LikeStartsWithIfNotNull likeStartsWithIfNotNull = field.getAnnotation(QueryBuilder.LikeStartsWithIfNotNull.class);
+		if (likeStartsWithIfNotNull != null && value instanceof String) {
+			String attribute = (likeStartsWithIfNotNull.attribute() != null) ? likeStartsWithIfNotNull.attribute() : field.getName();
+			return this.likeStartsWithIfNotNull(likeStartsWithIfNotNull.entity() == void.class ? this.entity.entity : likeStartsWithIfNotNull.entity(), attribute, (String) value);
+		}
+	
+		// Handle @In annotation
+		QueryBuilder.In in = field.getAnnotation(QueryBuilder.In.class);
+		if (in != null && value instanceof Collection) {
+			String attribute = (in.attribute() != null) ? in.attribute() : field.getName();
+			return this.in(in.entity() == void.class ? this.entity.entity : in.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @InIfNotEmpty annotation
+		QueryBuilder.InIfNotEmpty inIfNotEmpty = field.getAnnotation(QueryBuilder.InIfNotEmpty.class);
+		if (inIfNotEmpty != null && value instanceof Collection) {
+			String attribute = (inIfNotEmpty.attribute() != null) ? inIfNotEmpty.attribute() : field.getName();
+			return this.inIfNotEmpty(inIfNotEmpty.entity() == void.class ? this.entity.entity : inIfNotEmpty.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @InOrFalseIfEmpty annotation
+		QueryBuilder.InOrFalseIfEmpty inOrFalseIfEmpty = field.getAnnotation(QueryBuilder.InOrFalseIfEmpty.class);
+		if (inOrFalseIfEmpty != null && value instanceof Collection) {
+			String attribute = (inOrFalseIfEmpty.attribute() != null) ? inOrFalseIfEmpty.attribute() : field.getName();
+			return this.inOrFalseIfEmpty(inOrFalseIfEmpty.entity() == void.class ? this.entity.entity : inOrFalseIfEmpty.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @InOrNull annotation
+		QueryBuilder.InOrNull inOrNull = field.getAnnotation(QueryBuilder.InOrNull.class);
+		if (inOrNull != null && value instanceof Collection) {
+			String attribute = (inOrNull.attribute() != null) ? inOrNull.attribute() : field.getName();
+			return this.inOrNull(inOrNull.entity() == void.class ? this.entity.entity : inOrNull.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @NotIn annotation
+		QueryBuilder.NotIn notIn = field.getAnnotation(QueryBuilder.NotIn.class);
+		if (notIn != null && value instanceof Collection) {
+			String attribute = (notIn.attribute() != null) ? notIn.attribute() : field.getName();
+			return this.notIn(notIn.entity() == void.class ? this.entity.entity : notIn.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @NotInIfNotEmpty annotation
+		QueryBuilder.NotInIfNotEmpty notInIfNotEmpty = field.getAnnotation(QueryBuilder.NotInIfNotEmpty.class);
+		if (notInIfNotEmpty != null && value instanceof Collection) {
+			String attribute = (notInIfNotEmpty.attribute() != null) ? notInIfNotEmpty.attribute() : field.getName();
+			return this.notInIfNotEmpty(notInIfNotEmpty.entity() == void.class ? this.entity.entity : notInIfNotEmpty.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @NotInOrTrueIfEmpty annotation
+		QueryBuilder.NotInOrTrueIfEmpty notInOrTrueIfEmpty = field.getAnnotation(QueryBuilder.NotInOrTrueIfEmpty.class);
+		if (notInOrTrueIfEmpty != null && value instanceof Collection) {
+			String attribute = (notInOrTrueIfEmpty.attribute() != null) ? notInOrTrueIfEmpty.attribute() : field.getName();
+			return this.notInOrTrueIfEmpty(notInOrTrueIfEmpty.entity() == void.class ? this.entity.entity : notInOrTrueIfEmpty.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @NotInOrNull annotation
+		QueryBuilder.NotInOrNull notInOrNull = field.getAnnotation(QueryBuilder.NotInOrNull.class);
+		if (notInOrNull != null && value instanceof Collection) {
+			String attribute = (notInOrNull.attribute() != null) ? notInOrNull.attribute() : field.getName();
+			return this.notInOrNull(notInOrNull.entity() == void.class ? this.entity.entity : notInOrNull.entity(), attribute, (Collection<?>) value);
+		}
+		
+		// Handle @LikeInContains annotation
+		QueryBuilder.LikeInContains likeInContains = field.getAnnotation(QueryBuilder.LikeInContains.class);
+		if (likeInContains != null && value instanceof Collection) {
+			String attribute = (likeInContains.attribute() != null) ? likeInContains.attribute() : field.getName();
+			Collection<String> stringValues = (Collection<String>) value;
+			return this.likeContainsIn(likeInContains.entity() == void.class ? this.entity.entity : likeInContains.entity(), attribute, stringValues);
+		}
+		
+		// Handle @LikeInStartsWith annotation
+		QueryBuilder.LikeInStartsWith likeInStartsWith = field.getAnnotation(QueryBuilder.LikeInStartsWith.class);
+		if (likeInStartsWith != null && value instanceof Collection) {
+			String attribute = (likeInStartsWith.attribute() != null) ? likeInStartsWith.attribute() : field.getName();
+			Collection<String> stringValues = (Collection<String>) value;
+			return this.likeStartsWithIn(likeInStartsWith.entity() == void.class ? this.entity.entity : likeInStartsWith.entity(), attribute, stringValues);
+		}
+		
+		// Handle @LikeInEndsWith annotation
+		QueryBuilder.LikeInEndsWith likeInEndsWith = field.getAnnotation(QueryBuilder.LikeInEndsWith.class);
+		if (likeInEndsWith != null && value instanceof Collection) {
+			String attribute = (likeInEndsWith.attribute() != null) ? likeInEndsWith.attribute() : field.getName();
+			Collection<String> stringValues = (Collection<String>) value;
+			return this.likeEndsWithIn(likeInEndsWith.entity() == void.class ? this.entity.entity : likeInEndsWith.entity(), attribute, stringValues);
+		}
+		
+		return self();
+	}
+	
+	/* Order */
+
+	@SuperBuilder
+	@Data
+	@AllArgsConstructor
+	public static class Order extends Attribute{
+		public Direction direction;
+		public enum Direction{
+			Asc,
+			Desc
+		}
+	}
+	
+	
+	public Q order(Order order) { orders.add(order); return self(); }
+	public Q order(Entity<?> entity, String attribute, Order.Direction direction, Function function) {
+		orders.add(Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build()); 
+		return self(); 
+	}
+	public Q order(Class<?> entity, String attribute, Order.Direction direction, Function function) { return order(new Entity<>(entity), attribute, direction, function); }
+	public Q order(String attribute, Order.Direction direction, Function function) 					{ return order(this.entity, attribute, direction, function); }
+	public Q order(Entity<?> entity, String attribute, Order.Direction direction) 					{ return order(entity, attribute, direction, null); }
+	public Q order(Class<?> entity, String attribute, Order.Direction direction) 					{ return order(new Entity<>(entity), attribute, direction, null); }
+	public Q order(String attribute, Order.Direction direction) 									{ return order(this.entity, attribute, direction, null); }
+	public Q order(Attribute attribute, Order.Direction direction) 									{ return order(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public Q orderAlias(String alias, Order.Direction direction) 									{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
+
+	public Q orderAsc(Entity<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Asc); }
+	public Q orderAsc(Entity<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
+	public Q orderAsc(Class<?> c, String attribute) 						{ return order(c, attribute, Order.Direction.Asc); }
+	public Q orderAsc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
+	public Q orderAsc(String attribute) 									{ return order(this.entity, attribute, Order.Direction.Asc); }
+	public Q orderAsc(String attribute, Function function) 				{ return order(this.entity, attribute, Order.Direction.Asc, function); }
+	public Q orderAsc(Attribute attribute) 								{ return order(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
+	public Q orderAscAlias(String alias)									{ return orderAlias(alias, Order.Direction.Asc); }
+	
+	public Q orderDesc(Entity<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Desc); }
+	public Q orderDesc(Entity<?> c, String attribute, Function function)	{ return order(c, attribute, Order.Direction.Desc, function); }
+	public Q orderDesc(Class<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Desc); }
+	public Q orderDesc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Desc, function); }
+	public Q orderDesc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Desc); }
+	public Q orderDesc(String attribute, Function function) 				{ return order(this.entity, attribute, Order.Direction.Desc, function); }
+	public Q orderDesc(Attribute attribute) 								{ return order(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
+	public Q orderDescAlias(String alias)								{ return orderAlias(alias, Order.Direction.Desc); }
+	
+	
+	public Q clearOrders(){
+		orders.clear();
+		return self();
+	}
+
+
+	/* Limit & Offset */
+	
+	public Q limit(Integer limit) { this.limit = limit; return self(); }
+	public Q limitIfNotNull(Integer limit) { if(limit != null) { this.limit = limit; } return self(); }
+	public Q limitIfNotNullOr(Integer limit, Integer fallbackLimit) { if(limit != null) { this.limit = limit; } else { this.limit = fallbackLimit; } return self(); }
+	public Q offset(Integer offset) { this.offset = offset; return self();}
+	public Q offsetIfNotNull(Integer offset) { if(offset != null) { this.offset = offset; } return self(); }
+	public Q offsetIfNotNullOr(Integer offset, Integer fallbackOffset) { if(offset != null) { this.offset = offset; } else { this.offset = fallbackOffset; } return self(); }
+
+	
+
+	
+	
+	 public void pruneUnusedJoins(){
+
+        List<Attribute> attributes = listNodeAttributes(this);
+        
+        if(this instanceof SelectQuery) {
+        	attributes.addAll(listNodeAttributes(((SelectQuery<?>) this).getHaving()));
+        }
+            
+        boolean joinsUpdated;
+        
+        do {
+        	joinsUpdated = false;
+        	
+	        for(Join join : getJoins()){
+	
+	        	// if any field of joined entity in where, it is used
+	            if(attributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
+	                continue;
+	            }
+	            
+	            // if any field of joined entity in order by, it is used
+	            if(getOrders().stream().anyMatch(order -> order.entity.equals(join.rightEntity))){
+	                continue;
+	            }
+
+	            // if any other join is using this join, it is used
+				if(getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity == join.rightEntity)){
+					continue;
+				}
+				
+	            // if any field of joined entity in select, it is used
+	        	if(this instanceof SelectQuery) {
+		            if(((SelectQuery<?>) this).getSelects().stream().anyMatch(select -> select.getEntity().equals(join.rightEntity))){
+		                continue;
+		            }
+		            // if any field of joined entity in group by, it is used
+		            if(((SelectQuery<?>) this).getGroupBys().stream().anyMatch(groupBy -> groupBy.entity.equals(join.rightEntity))){
+		                continue;
+		            }
+	        	}
+	
+	            // remove join
+	            getJoins().remove(join);
+	            joinsUpdated = true;
+	        }
+	        
+        }while(joinsUpdated);
+
+ 
+    }
+
+    public static List<Attribute> listNodeAttributes(EstivateNode node){
+
+        List<Attribute> attributes = new ArrayList<>();
+
+        if(node instanceof Aggregator) {
+            for(EstivateNode criterion : ((Aggregator)node).getCriterions()) {
+                attributes.addAll(listNodeAttributes(criterion));
+        
+            }
+        }
+        else if(node instanceof Criterion) {
+            attributes.add((Attribute)(Criterion)node);
+        }
+
+        return attributes;
+    
+    }
+	
 
 }

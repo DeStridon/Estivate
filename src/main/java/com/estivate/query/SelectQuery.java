@@ -2,7 +2,6 @@ package com.estivate.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,9 +13,8 @@ import java.util.stream.Collectors;
 import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
-import com.estivate.Result;
 import com.estivate.context.Context;
-import com.estivate.query.Attribute.Function;
+import com.estivate.result.Result;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -28,11 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	
-
-
-	
-
-
 
 	public SelectQuery<T> nativeCriterion  	(Entity<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 
@@ -81,110 +74,12 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		super.join(join);
 		return this;
 	}
-		
-//	public SelectQuery<T> joinInner(Entity<?> leftEntity, Entity<?> rightEntity)			{ super.joinInner(leftEntity, rightEntity); return this; }
-//	public SelectQuery<T> joinInner(Entity<?> leftEntity, Class<?> rightClass)			{ super.joinInner(leftEntity, rightClass); return this;}
-//	public SelectQuery<T> joinInner(Class<?> leftClass, 	Entity<?> rightEntity)			{ super.joinInner(leftClass, rightEntity); return this; }
-//	public SelectQuery<T> joinInner(Class<?> leftClass, 	Class<?> rightClass)			{ super.joinInner(leftClass, rightClass); return this; }
-//
-//	public SelectQuery<T> joinOuter(Entity<?> leftEntity, Entity<?> rightEntity)			{ super.joinOuter(leftEntity, rightEntity); return this; }
-//	public SelectQuery<T> joinOuter(Entity<?> leftEntity, Class<?> rightClass)			{ super.joinOuter(leftEntity, rightClass); return this; }
-//	public SelectQuery<T> joinOuter(Class<?> leftClass, 	Entity<?> rightEntity)			{ super.joinOuter(leftClass, rightEntity); return this; }
-//	public SelectQuery<T> joinOuter(Class<?> leftClass, 	Class<?> rightClass)			{ super.joinOuter(leftClass, rightClass); return this; }
-//
-//	public SelectQuery<T> joinLeft(Entity<?> leftEntity, 	Entity<?> rightEntity)			{ super.joinLeft(leftEntity, rightEntity); return this; }
-//	public SelectQuery<T> joinLeft(Entity<?> leftEntity, 	Class<?> rightClass)			{ super.joinLeft(leftEntity, rightClass); return this; }
-//	public SelectQuery<T> joinLeft(Class<?> leftClass, 	Entity<?> rightEntity)			{ super.joinLeft(leftClass, rightEntity); return this; }
-//	public SelectQuery<T> joinLeft(Class<?> leftClass, 	Class<?> rightClass)			{ super.joinLeft(leftClass, rightClass); return this; }
-//
-//	public SelectQuery<T> joinRight(Entity<?> leftEntity, Entity<?> rightEntity)			{ super.joinRight(leftEntity, rightEntity); return this; }
-//	public SelectQuery<T> joinRight(Entity<?> leftEntity, Class<?> rightClass)			{ super.joinRight(leftEntity, rightClass); return this; }
-//	public SelectQuery<T> joinRight(Class<?> leftClass, 	Entity<?> rightEntity)			{ super.joinRight(leftClass, rightEntity); return this; }
-//	public SelectQuery<T> joinRight(Class<?> leftClass, 	Class<?> rightClass)			{ super.joinRight(leftClass, rightClass); return this; }
-//
-//
-//	public SelectQuery<T> joinInner(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinInner(leftEntity, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinInner(leftEntity, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinInner(leftClass, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinInner(leftClass, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinInner(leftClass, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinInner(leftEntity, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinInner(leftClass, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinInner(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinInner(leftEntity, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//
-//	public SelectQuery<T> joinOuter(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinOuter(leftEntity, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinOuter(leftEntity, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinOuter(leftClass, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinOuter(leftClass, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinOuter(leftClass, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinOuter(leftEntity, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinOuter(leftClass, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinOuter(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinOuter(leftEntity, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//
-//	public SelectQuery<T> joinLeft(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinLeft(leftEntity, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinLeft(leftEntity, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinLeft(leftClass, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinLeft(leftClass, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinLeft(leftClass, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinLeft(leftEntity, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinLeft(leftClass, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinLeft(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinLeft(leftEntity, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//
-//	public SelectQuery<T> joinRight(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinRight(leftEntity, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Entity<?> leftEntity, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinRight(leftEntity, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Class<?> leftClass, Entity<?> rightEntity, String leftAttribute, String rightAttribute){ super.joinRight(leftClass, rightEntity, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Class<?> leftClass, Class<?> rightClass, String leftAttribute, String rightAttribute){ super.joinRight(leftClass, rightClass, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Class<?> leftClass, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinRight(leftClass, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Entity<?> leftEntity, SubQueryEntity<?> rightSubQuery, String leftAttribute, String rightAttribute){ super.joinRight(leftEntity, rightSubQuery, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Class<?> leftClass, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinRight(leftClass, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-//	public SelectQuery<T> joinRight(Entity<?> leftEntity, SelectQuery<?> rightQuery, String alias, String leftAttribute, String rightAttribute){ super.joinRight(leftEntity, rightQuery, alias, leftAttribute, rightAttribute); return this; }
-
-//	public SelectQuery<T> order(Order order) { super.order(order); return this; }
-//	public SelectQuery<T> order(Entity<?> entity, String attribute, Order.Direction direction, Function function) {
-//		super.order(entity, attribute, direction, function);
-//		return this;
-//	}
-//	public SelectQuery<T> order(Class<?> entity, String attribute, Order.Direction direction, Function function) { super.order(entity, attribute, direction, function); return this; }
-//	public SelectQuery<T> order(String attribute, Order.Direction direction, Function function) { super.order(this.entity, attribute, direction, function); return this; }
-//	public SelectQuery<T> order(Entity<?> entity, String attribute, Order.Direction direction) { super.order(entity, attribute, direction, null); return this; }
-//	public SelectQuery<T> order(Class<?> entity, String attribute, Order.Direction direction) { super.order(new Entity<>(entity), attribute, direction, null); return this; }
-//	public SelectQuery<T> order(String attribute, Order.Direction direction) { super.order(this.entity, attribute, direction, null); return this; }
-//	public SelectQuery<T> order(Attribute attribute, Order.Direction direction) { super.order(attribute.entity, attribute.attribute, direction, attribute.function); return this; }
-//	public SelectQuery<T> orderAlias(String alias, Order.Direction direction) { super.orderAlias(alias, direction); return this; }
-//
-//	public SelectQuery<T> orderAsc(Entity<?> c, String attribute) { super.orderAsc(c, attribute); return this; }
-//	public SelectQuery<T> orderAsc(Entity<?> c, String attribute, Function function) { super.orderAsc(c, attribute, function); return this; }
-//	public SelectQuery<T> orderAsc(Class<?> c, String attribute) { super.orderAsc(c, attribute); return this; }
-//	public SelectQuery<T> orderAsc(Class<?> c, String attribute, Function function) { super.orderAsc(c, attribute, function); return this; }
-//	public SelectQuery<T> orderAsc(String attribute) { super.orderAsc(attribute); return this; }
-//	public SelectQuery<T> orderAsc(String attribute, Function function) { super.orderAsc(attribute, function); return this; }
-//	public SelectQuery<T> orderAsc(Attribute attribute) { super.orderAsc(attribute); return this; }
-//	public SelectQuery<T> orderAscAlias(String alias){ super.orderAscAlias(alias); return this; }
-//	
-//	public SelectQuery<T> orderDesc(Entity<?> c, String attribute) { super.orderDesc(c, attribute); return this; }
-//	public SelectQuery<T> orderDesc(Entity<?> c, String attribute, Function function){ super.orderDesc(c, attribute, function); return this; }
-//	public SelectQuery<T> orderDesc(Class<?> c, String attribute) { super.orderDesc(c, attribute); return this; }
-//	public SelectQuery<T> orderDesc(Class<?> c, String attribute, Function function) { super.orderDesc(c, attribute, function); return this; }
-//	public SelectQuery<T> orderDesc(String attribute) { super.orderDesc(attribute); return this; }
-//	public SelectQuery<T> orderDesc(String attribute, Function function) { super.orderDesc(attribute, function); return this; }
-//	public SelectQuery<T> orderDesc(Attribute attribute) { super.orderDesc(attribute); return this; }
-//	public SelectQuery<T> orderDescAlias(String alias) { super.orderDescAlias(alias); return this; }
-	
-	public SelectQuery<T> limit(Integer limit) { this.limit = limit; return this; }
-	public SelectQuery<T> limitIfNotNull(Integer limit) { if(limit != null) { this.limit = limit; } return this; }
-	public SelectQuery<T> limitIfNotNullOr(Integer limit, Integer fallbackLimit) { if(limit != null) { this.limit = limit; } else { this.limit = fallbackLimit; } return this; }
-	public SelectQuery<T> offset(Integer offset) { this.offset = offset; return this;}
-	public SelectQuery<T> offsetIfNotNull(Integer offset) { if(offset != null) { this.offset = offset; } return this; }
-	public SelectQuery<T> offsetIfNotNullOr(Integer offset, Integer fallbackOffset) { if(offset != null) { this.offset = offset; } else { this.offset = fallbackOffset; } return this; }
-	
-	
 	
 	@AllArgsConstructor
 	public static class Group{
 		public Entity<?> entity;
 		public String attribute;
 	}
-	
 	
 	public SelectQuery<T> selectFunctionAs(Entity<?> c, String attribute, Attribute.Function function, String alias) {
 		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
@@ -234,53 +129,34 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SelectQuery<T> selectDistinctAs(String attribute, String alias) { return selectFunctionAs(this.entity, attribute, Estivate.Functions.distinct, alias); }
 
 	// Select count
-	public SelectQuery<T> selectCount() { return selectFunctionAs(new Entity<>(null), null, Estivate.Functions.count, null); }
 	public SelectQuery<T> selectCountAs(String alias) { return selectFunctionAs(new Entity<>(null), null, Estivate.Functions.count, alias); }
 
 	// Select count field 
-	public SelectQuery<T> selectCount(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.count, null); }
-	public SelectQuery<T> selectCount(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, Estivate.Functions.count, null); }
-	public SelectQuery<T> selectCount(String attribute) 							{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.count, null); }
 	public SelectQuery<T> selectCountAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.count, alias); }
 	public SelectQuery<T> selectCountAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.count, alias); }
 	public SelectQuery<T> selectCountAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.count, alias); }
 	
 	// Select count distinct field
-	public SelectQuery<T> selectCountDistinct(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.countDistinct, null); }
-	public SelectQuery<T> selectCountDistinct(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, Estivate.Functions.countDistinct, null); }
-	public SelectQuery<T> selectCountDistinct(String attribute) 							{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.countDistinct, null); }
 	public SelectQuery<T> selectCountDistinctAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.countDistinct, alias); }
 	public SelectQuery<T> selectCountDistinctAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.countDistinct, alias); }
 	public SelectQuery<T> selectCountDistinctAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.countDistinct, alias); }
 	
 	// Select min
-	public SelectQuery<T> selectMin(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.min, null); }
-	public SelectQuery<T> selectMin(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, Estivate.Functions.min, null); }
-	public SelectQuery<T> selectMin(String attribute) 								{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.min, null); }
 	public SelectQuery<T> selectMinAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.min, alias); }
 	public SelectQuery<T> selectMinAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.min, alias); }
 	public SelectQuery<T> selectMinAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.min, alias); }
 	
 	// Select max
-	public SelectQuery<T> selectMax(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.max, null); }
-	public SelectQuery<T> selectMax(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, Estivate.Functions.max, null); }
-	public SelectQuery<T> selectMax(String attribute) 								{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.max, null); }
 	public SelectQuery<T> selectMaxAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.max, alias); }
 	public SelectQuery<T> selectMaxAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.max, alias); }
 	public SelectQuery<T> selectMaxAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.max, alias); }
 
 	// Select Sum
-	public SelectQuery<T> selectSum(Class<?> c, String attribute) 					{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.sum, null); }
-	public SelectQuery<T> selectSum(Entity<?> c, String attribute) 					{ return selectFunctionAs(c, attribute, Estivate.Functions.sum, null); }
-	public SelectQuery<T> selectSum(String attribute) 								{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.sum, null); }
 	public SelectQuery<T> selectSumAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.sum, alias); }
 	public SelectQuery<T> selectSumAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.sum, alias); }
 	public SelectQuery<T> selectSumAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.sum, alias); }
 	
 	// Select Group Concat
-	public SelectQuery<T> selectGroupConcat(Class<?> c, String attribute) 				{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, null); }
-	public SelectQuery<T> selectGroupConcat(Entity<?> c, String attribute) 				{ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, null); }
-	public SelectQuery<T> selectGroupConcat(String attribute) 							{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, null); }
 	public SelectQuery<T> selectGroupConcatAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, alias); }
 	public SelectQuery<T> selectGroupConcatAs(Entity<?> c, String attribute, String alias){ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, alias); }
 	public SelectQuery<T> selectGroupConcatAs(String attribute, String alias) 			{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, alias); }

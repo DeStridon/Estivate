@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.Result;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;

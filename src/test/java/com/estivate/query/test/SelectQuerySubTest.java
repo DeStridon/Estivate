@@ -2,6 +2,7 @@ package com.estivate.query.test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -10,11 +11,13 @@ import com.estivate.Estivate;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.Result;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.ParentEntity;
 import com.estivate.test.entities.ProductEntity;
+import com.estivate.test.entities.ProductEntity.ProductCategory;
 
 public class SelectQuerySubTest {
 
@@ -62,7 +65,7 @@ public class SelectQuerySubTest {
 	@Test
 	void joinSubQueryTest() throws SQLException {
 		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
-			.selectMax(AbstractEntity.Fields.id);
+			.selectMaxAs(AbstractEntity.Fields.id, "maxId");
 
 		SelectQuery<ChildEntity> mainQuery = Estivate.selectQuery(ChildEntity.class)
 			.joinInner(ChildEntity.class, Estivate.subQueryEntity(subQuery, "sub"), AbstractEntity.Fields.id, AbstractEntity.Fields.id);
@@ -74,7 +77,7 @@ public class SelectQuerySubTest {
 	@Test
 	void joinSubQueryTest2() {
 		 SelectQuery<ProductEntity> subQuery = Estivate.selectQuery(ProductEntity.class)
-		            .selectMaxAs(ProductEntity.class, ProductEntity.Fields.id, "maxId")
+		            .selectMaxAs(ProductEntity.class, ProductEntity.Fields.id, "MAXID_D")
 		            .groupBy(ProductEntity.class, ProductEntity.Fields.category);
 
         // Main query to get step ID, status, and count grouped by step and status
@@ -86,6 +89,14 @@ public class SelectQuerySubTest {
         String queryString = context.queryAsString(query);
         
         context.fetchList(query);
+        
+        List<Result> results = context.fetchListAsResults(query);
+        
+        for(Result result : results) {
+        	ProductCategory productCategory = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
+        }
+        
+        
 	}
 	
 	/*

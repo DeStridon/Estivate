@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
+import com.estivate.result.Result;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

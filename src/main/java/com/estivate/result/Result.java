@@ -1,4 +1,4 @@
-package com.estivate;
+package com.estivate.result;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,8 +18,9 @@ import javax.persistence.Enumerated;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.estivate.IMapper.DateMapper;
-import com.estivate.IMapper.EntityMapper;
+import com.estivate.Entity;
+import com.estivate.NameMapper;
+import com.estivate.result.IMapper.DateMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -69,7 +71,7 @@ public class Result {
 
 	
 	@SneakyThrows
-	public String 			columnAsString(String column) { Integer index = ArrayUtils.indexOf(columnNames, column); return index == null ? null : columnValues[index]; }
+	public String 			columnAsString(String column) { Integer index = indexOf(column); return index == null ? null : columnValues[index]; }
 	// Numbers
 	public Short 			columnAsShort(String column) { String value = columnAsString(column); return value == null ? null : Short.valueOf(value); } 
 	public Integer 			columnAsInteger(String column) { String value = columnAsString(column); return value == null ? null : Integer.valueOf(value); }
@@ -90,7 +92,17 @@ public class Result {
 	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
 	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
 	
-	public Object 	attribute(Class<?> c, String attribute) { 
+
+	private Integer indexOf(String column){
+		int index = ArrayUtils.indexOf(columnNames, column);
+		if(index == -1){
+			log.error("Column not found: "+column + ", available columns: " + Arrays.toString(columnNames));
+			return null;
+		}
+		return index;
+	}
+	
+	public Object attribute(Class<?> c, String attribute) { 
 		try {
 			Field field = c.getDeclaredField(attribute);
 			Type type = field.getGenericType();

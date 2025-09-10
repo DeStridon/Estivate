@@ -35,22 +35,8 @@ import javax.sql.DataSource;
 import com.estivate.Entity.InsertDate;
 import com.estivate.Entity.UpdateDate;
 import com.estivate.Estivate;
-import com.estivate.IMapper;
-import com.estivate.IMapper.BooleanMapper;
-import com.estivate.IMapper.DateMapper;
-import com.estivate.IMapper.DoubleMapper;
-import com.estivate.IMapper.EntityMapper;
-import com.estivate.IMapper.FloatMapper;
-import com.estivate.IMapper.IntegerMapper;
-import com.estivate.IMapper.LongMapper;
-import com.estivate.IMapper.OrdinalEnumMapper;
-import com.estivate.IMapper.ResultMapper;
-import com.estivate.IMapper.ShortMapper;
-import com.estivate.IMapper.StringEnumMapper;
-import com.estivate.IMapper.StringMapper;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
-import com.estivate.Result;
 import com.estivate.Statement;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
@@ -58,6 +44,20 @@ import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.IMapper;
+import com.estivate.result.Result;
+import com.estivate.result.IMapper.BooleanMapper;
+import com.estivate.result.IMapper.DateMapper;
+import com.estivate.result.IMapper.DoubleMapper;
+import com.estivate.result.EntityMapper;
+import com.estivate.result.IMapper.FloatMapper;
+import com.estivate.result.IMapper.IntegerMapper;
+import com.estivate.result.IMapper.LongMapper;
+import com.estivate.result.IMapper.OrdinalEnumMapper;
+import com.estivate.result.IMapper.ResultMapper;
+import com.estivate.result.IMapper.ShortMapper;
+import com.estivate.result.IMapper.StringEnumMapper;
+import com.estivate.result.IMapper.StringMapper;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
@@ -244,7 +244,7 @@ public abstract class Context {
 			.clearSelects()
 			.clearGroupBys()
 			.clearOrders()
-			.selectCount());
+			.selectCountAs("count"));
 	}
 	
 		

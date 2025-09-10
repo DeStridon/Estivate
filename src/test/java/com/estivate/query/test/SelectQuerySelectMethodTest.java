@@ -9,9 +9,9 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
-import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.Result;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ParentEntity;
@@ -50,7 +50,7 @@ public class SelectQuerySelectMethodTest {
 	public void countTest() throws SQLException {
 		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class);
 		
-		query.selectCount();
+		query.selectCountAs("count");
 		
 		System.out.println(context.queryAsString(query));
 		

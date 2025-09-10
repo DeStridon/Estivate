@@ -15,12 +15,12 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Entity;
 import com.estivate.Estivate;
-import com.estivate.Result;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.Result;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ChildEntity;

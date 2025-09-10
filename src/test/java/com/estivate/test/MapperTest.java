@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
-import com.estivate.IMapper.EntityMapper;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
