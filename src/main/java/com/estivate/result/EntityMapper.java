@@ -1,9 +1,5 @@
 package com.estivate.result;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -29,6 +25,8 @@ import javax.persistence.Enumerated;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Entity;
+import com.estivate.query.Attribute;
+import com.estivate.result.ResultMapping.Column;
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
@@ -144,8 +142,8 @@ public class EntityMapper<U> extends IMapper<U>{
             for(Field field : fields) {
 
                 // check if field has mapping annotation
-                if(field.getDeclaredAnnotation(Attribute.class) != null) {
-                    Attribute mappingAnnotation = field.getDeclaredAnnotation(Attribute.class);
+                if(field.getDeclaredAnnotation(ResultMapping.Attribute.class) != null) {
+                    ResultMapping.Attribute mappingAnnotation = field.getDeclaredAnnotation(ResultMapping.Attribute.class);
 
                     Field mappingField = FieldUtils.getEntityFields(mappingAnnotation.entity()).stream().filter(x -> x.getName().equals(mappingAnnotation.attribute())).findFirst().orElse(null);
                     if(mappingField == null){
@@ -272,20 +270,7 @@ public class EntityMapper<U> extends IMapper<U>{
         return chronometer.getLog();
     }
 
-    @Target( ElementType.FIELD )
-	@Retention( RetentionPolicy.RUNTIME )
-	public @interface Attribute {
-		
-		public Class<?> entity();
-		public String attribute();
-
-	}
-
-	@Target( ElementType.FIELD )
-	@Retention( RetentionPolicy.RUNTIME )
-	public @interface Column {
-		public String column();
-	}
+    
 }
 	
 

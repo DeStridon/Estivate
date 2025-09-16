@@ -12,10 +12,10 @@ public class NoUseEntity {
 	@Id
 	long id;
 	
-	@VirtualForeignKey(entity = HomeEntity.class)
-	long projectId;
+	@VirtualForeignKey(entity = CustomerEntity.class)
+	long customerId;
 	
-	@VirtualForeignKey(entity = ParentEntity.class)
-	long taskId;
+	@VirtualForeignKey(entity = OrderEntity.class)
+	long orderId;
 
 }

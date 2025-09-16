@@ -257,6 +257,17 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SubQueryEntity<T> asSubQueryEntity(String alias){
 		return Estivate.subQueryEntity(this, alias);
 	}
+	
+	/*
+	 * Imports an object with fields annotated with ReturnBuilder annotation to build select
+	 */
+	public SelectQuery<T> importReturnBuilder(Object object){
+		
+		
+		
+
+		return self();
+	}
 
 
 	

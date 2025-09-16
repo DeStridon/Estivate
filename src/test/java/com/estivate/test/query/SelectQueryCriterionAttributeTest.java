@@ -1,4 +1,4 @@
-package com.estivate.query.test;
+package com.estivate.test.query;
 
 import org.junit.jupiter.api.Test;
 
@@ -6,7 +6,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 public class SelectQueryCriterionAttributeTest {
 
@@ -16,8 +16,8 @@ public class SelectQueryCriterionAttributeTest {
 	@Test
 	public void attributeTest() {
 		
-		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
-				.lt(Estivate.attribute(ParentEntity.class, ParentEntity.Fields.archived, Estivate.Functions.date_add(1, "DAY")), Estivate.attribute(ParentEntity.class, ParentEntity.Fields.created, Estivate.Functions.date_add(1, "DAY")));
+		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+				.lt(Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.archived, Estivate.Functions.date_add(1, "DAY")), Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.created, Estivate.Functions.date_add(1, "DAY")));
 		
 		System.out.println(context.queryAsString(query));
 		

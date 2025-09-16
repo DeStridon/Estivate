@@ -1,4 +1,4 @@
-package com.estivate.query.test;
+package com.estivate.test.query;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;

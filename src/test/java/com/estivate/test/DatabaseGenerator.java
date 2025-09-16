@@ -13,11 +13,9 @@ import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.index.IndexDiff;
-import com.estivate.test.entities.ChildEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.OrderLineEntity;
-import com.estivate.test.entities.ParentEntity;
 import com.estivate.test.entities.ProductEntity;
 
 import lombok.SneakyThrows;
@@ -57,13 +55,6 @@ public class DatabaseGenerator {
 			
 
 			
-			context.createTable(ParentEntity.class);
-			IndexDiff parentIndexDiff = new IndexDiff(context, ParentEntity.class);
-			parentIndexDiff.addUnimplemented();
-			
-			context.createTable(ChildEntity.class);
-			IndexDiff childIndexDiff = new IndexDiff(context, ChildEntity.class);
-			childIndexDiff.addUnimplemented();
 		
 			
 			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
@@ -77,13 +68,17 @@ public class DatabaseGenerator {
 				
 	}
 	
-	public static ParentEntity createRandomParent() {
+	public static CustomerEntity createRandomCustomer() {
 		
-		ParentEntity parentEntity = new ParentEntity();
-		parentEntity.setHomeId((long) randomInt(1, 100));
-		parentEntity.setName("Random Task "+randomInt(1, 1000));
+		CustomerEntity customerEntity = new CustomerEntity();
+		customerEntity.setId((long) randomInt(1, 100));
+		customerEntity.setName("Random Customer "+randomInt(1, 1000));
+		customerEntity.setEmail("customer" + randomInt(1, 1000) + "@example.com");
+		customerEntity.setAddress("Random Address " + randomInt(1, 100));
+		customerEntity.setCountry(randomEnum(CustomerEntity.Country.class));
+		customerEntity.setCreated(new java.util.Date());
 	
-		return parentEntity;
+		return customerEntity;
 
 	}
 	

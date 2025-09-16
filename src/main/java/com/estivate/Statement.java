@@ -147,50 +147,56 @@ public class Statement implements AutoCloseable{
 	
 	private boolean execute(Connection connection) throws SQLException {
 		
-		statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
+		try{
+			statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
 
-		for(int i = 0; i < parameters.size(); i++) {
-			
-			Object object = parameters.get(i);
-			
-			if(object instanceof String) {
-				String s = (String) object;
-				statement.setString(i+1, s);
-			}
-			else if(object instanceof Integer) {
-				Integer n = (Integer) object;
-				statement.setInt(i+1, n);
-			}
-			else if(object instanceof Long) {
-				Long l = (Long) object;
-				statement.setLong(i+1, l);
-			}
-			else if(object instanceof Float) {
-				Float f = (Float) object;
-				statement.setFloat(i+1, f);
-			}
-			else if(object instanceof Double) {
-				Double f = (Double) object;
-				statement.setDouble(i+1, f);
-			}
-			else if(object instanceof Boolean) {
-				Boolean b = (Boolean) object;
-				statement.setBoolean(i+1, b);
-			}
-			else if(object instanceof Date) {
-				Date d = (Date) object;
-				statement.setTimestamp(i+1, new Timestamp(d.getTime()));
-			}
-			else if(object == null) {
-				statement.setObject(i+1, null);
-			}
-			else {
-				log.error("Cannot map object of type "+object.getClass());
-			}
+			for(int i = 0; i < parameters.size(); i++) {
+				
+				Object object = parameters.get(i);
+				
+				if(object instanceof String) {
+					String s = (String) object;
+					statement.setString(i+1, s);
+				}
+				else if(object instanceof Integer) {
+					Integer n = (Integer) object;
+					statement.setInt(i+1, n);
+				}
+				else if(object instanceof Long) {
+					Long l = (Long) object;
+					statement.setLong(i+1, l);
+				}
+				else if(object instanceof Float) {
+					Float f = (Float) object;
+					statement.setFloat(i+1, f);
+				}
+				else if(object instanceof Double) {
+					Double f = (Double) object;
+					statement.setDouble(i+1, f);
+				}
+				else if(object instanceof Boolean) {
+					Boolean b = (Boolean) object;
+					statement.setBoolean(i+1, b);
+				}
+				else if(object instanceof Date) {
+					Date d = (Date) object;
+					statement.setTimestamp(i+1, new Timestamp(d.getTime()));
+				}
+				else if(object == null) {
+					statement.setObject(i+1, null);
+				}
+				else {
+					log.error("Cannot map object of type "+object.getClass());
+				}
 
-		}
+			}
 		
-		return statement.execute();
+			return statement.execute();
+		}
+		catch(Exception e) {
+			log.error("Error executing statement : "+query, e);
+			throw e;
+		}
 						
 		
 	

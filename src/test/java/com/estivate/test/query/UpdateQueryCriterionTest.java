@@ -1,4 +1,4 @@
-package com.estivate.query.test;
+package com.estivate.test.query;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -14,8 +14,8 @@ import com.estivate.query.UpdateQuery;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.ChildEntity;
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.OrderEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 public class UpdateQueryCriterionTest {
 
@@ -26,28 +26,28 @@ public class UpdateQueryCriterionTest {
 	// === EQ Tests ===
 	@Test
 	public void eqWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = Estivate.updateQuery(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = Estivate.updateQuery(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
 	}
 	
 	@Test
 	public void eqWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.eq(parentEntity, ParentEntity.Fields.homeId, 1001);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.eq(parentEntity, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
 	}
 	
 	@Test
 	public void eqWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.eq(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
@@ -56,28 +56,28 @@ public class UpdateQueryCriterionTest {
 	// === NOT EQ Tests ===
 	@Test
 	public void notEqWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.notEq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.notEq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
 	}
 	
 	@Test
 	public void notEqWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.notEq(parentEntity, ParentEntity.Fields.homeId, 1001);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.notEq(parentEntity, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
 	}
 	
 	@Test
 	public void notEqWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.notEq(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
@@ -86,28 +86,28 @@ public class UpdateQueryCriterionTest {
 	// === LT Tests ===
 	@Test
 	public void ltWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.lt(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.lt(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
 	}
 	
 	@Test
 	public void ltWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.lt(parentEntity, ParentEntity.Fields.homeId, 1001);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.lt(parentEntity, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
 	}
 	
 	@Test
 	public void ltWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.lt(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
@@ -116,28 +116,28 @@ public class UpdateQueryCriterionTest {
 	// === LTE Tests ===
 	@Test
 	public void lteWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.lte(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.lte(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
 	}
 	
 	@Test
 	public void lteWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.lte(parentEntity, ParentEntity.Fields.homeId, 1001);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.lte(parentEntity, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
 	}
 	
 	@Test
 	public void lteWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.lte(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
@@ -146,28 +146,28 @@ public class UpdateQueryCriterionTest {
 	// === GT Tests ===
 	@Test
 	public void gtWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.gt(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.gt(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
 	}
 	
 	@Test
 	public void gtWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.gt(parentEntity, ParentEntity.Fields.homeId, 1001);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.gt(parentEntity, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
 	}
 	
 	@Test
 	public void gtWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.gt(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
@@ -176,28 +176,28 @@ public class UpdateQueryCriterionTest {
 	// === GTE Tests ===
 	@Test
 	public void gteWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.gte(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.gte(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
 	}
 	
 	@Test
 	public void gteWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.gte(parentEntity, ParentEntity.Fields.homeId, 1001);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.gte(parentEntity, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
 	}
 	
 	@Test
 	public void gteWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.gte(homeIdAttribute, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
@@ -206,28 +206,28 @@ public class UpdateQueryCriterionTest {
 	// === BETWEEN Tests ===
 	@Test
 	public void betweenWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.between(ParentEntity.class, ParentEntity.Fields.homeId, 1001, 1010);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.between(CustomerEntity.class, AbstractEntity.Fields.id, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
 	}
 	
 	@Test
 	public void betweenWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.between(parentEntity, ParentEntity.Fields.homeId, 1001, 1010);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.between(parentEntity, AbstractEntity.Fields.id, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
 	}
 	
 	@Test
 	public void betweenWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.between(homeIdAttribute, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
@@ -236,28 +236,28 @@ public class UpdateQueryCriterionTest {
 	// === IN Tests ===
 	@Test
 	public void inWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.in(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002, 1003));
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
 	}
 	
 	@Test
 	public void inWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.in(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002, 1003));
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
 	}
 	
 	@Test
 	public void inWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.in(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
@@ -266,28 +266,28 @@ public class UpdateQueryCriterionTest {
 	// === NOT IN Tests ===
 	@Test
 	public void notInWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.notIn(ParentEntity.class, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002, 1003));
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?, ?)"));
 	}
 	
 	@Test
 	public void notInWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
-			.notIn(parentEntity, ParentEntity.Fields.homeId, Arrays.asList(1001, 1002, 1003));
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.notIn(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?, ?)"));
 	}
 	
 	@Test
 	public void notInWithAttributeQueryStringTest() throws SQLException {
-		Attribute homeIdAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.homeId);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.notIn(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?, ?)"));
@@ -296,9 +296,9 @@ public class UpdateQueryCriterionTest {
 	// === IS NULL Tests ===
 	@Test
 	public void isNullWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.isNull(ParentEntity.class, ParentEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.isNull(CustomerEntity.class, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D  is null"));
@@ -306,10 +306,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void isNullWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.isNull(parentEntity, ParentEntity.Fields.name);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.isNull(parentEntity, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D  is null"));
@@ -317,9 +317,9 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void isNullWithAttributeQueryStringTest() throws SQLException {
-		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
+		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.isNull(nameAttribute);
 		
 		String actualSQL = context.queryAsString(query);
@@ -329,9 +329,9 @@ public class UpdateQueryCriterionTest {
 	// === IS NOT NULL Tests ===
 	@Test
 	public void isNotNullWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.isNotNull(ParentEntity.class, ParentEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.isNotNull(CustomerEntity.class, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D  is not null"));
@@ -339,10 +339,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void isNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.isNotNull(parentEntity, ParentEntity.Fields.name);
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.isNotNull(parentEntity, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D  is not null"));
@@ -350,9 +350,9 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void isNotNullWithAttributeQueryStringTest() throws SQLException {
-		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
+		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.isNotNull(nameAttribute);
 		
 		String actualSQL = context.queryAsString(query);
@@ -362,28 +362,28 @@ public class UpdateQueryCriterionTest {
 	// === LIKE Tests ===
 	@Test
 	public void likeWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.like(ParentEntity.class, ParentEntity.Fields.name, "test%");
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.like(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
 	
 	@Test
 	public void likeWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.like(parentEntity, ParentEntity.Fields.name, "test%");
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.like(parentEntity, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
 	
 	@Test
 	public void likeWithAttributeQueryStringTest() throws SQLException {
-		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
+		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.like(nameAttribute, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -392,28 +392,28 @@ public class UpdateQueryCriterionTest {
 	// === NOT LIKE Tests ===
 	@Test
 	public void notLikeWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.notLike(ParentEntity.class, ParentEntity.Fields.name, "test%");
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.notLike(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
 	
 	@Test
 	public void notLikeWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.notLike(parentEntity, ParentEntity.Fields.name, "test%");
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.notLike(parentEntity, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
 	
 	@Test
 	public void notLikeWithAttributeQueryStringTest() throws SQLException {
-		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
+		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.notLike(nameAttribute, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
@@ -422,28 +422,28 @@ public class UpdateQueryCriterionTest {
 	// === LIKE CONTAINS Tests ===
 	@Test
 	public void likeContainsWithClassQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.likeContains(ParentEntity.class, ParentEntity.Fields.name, "test");
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.likeContains(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
 	
 	@Test
 	public void likeContainsWithEntityQueryStringTest() throws SQLException {
-		Entity<ParentEntity> parentEntity = new Entity<>(ParentEntity.class);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
-			.likeContains(parentEntity, ParentEntity.Fields.name, "test");
+		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
+			.likeContains(parentEntity, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
 	
 	@Test
 	public void likeContainsWithAttributeQueryStringTest() throws SQLException {
-		Attribute nameAttribute = Estivate.attribute(ParentEntity.class, ParentEntity.Fields.name);
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.externalName, "updated")
+		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.likeContains(nameAttribute, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
@@ -452,11 +452,11 @@ public class UpdateQueryCriterionTest {
 	// === EXISTS Tests ===
 	@Test
 	public void existsQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
-			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
+		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)
+			.eq(OrderEntity.class, OrderEntity.Fields.customerId, Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id));
 		
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.exists(subQuery);
 		
 		Assert.assertTrue("Should generate EXISTS operator", context.queryAsString(query).contains("EXISTS"));
@@ -465,11 +465,11 @@ public class UpdateQueryCriterionTest {
 	// === NOT EXISTS Tests ===
 	@Test
 	public void notExistsQueryStringTest() throws SQLException {
-		SelectQuery<ChildEntity> subQuery = Estivate.selectQuery(ChildEntity.class)
-			.eq(ChildEntity.class, ChildEntity.Fields.parentId, Estivate.attribute(ParentEntity.class, AbstractEntity.Fields.id));
+		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)
+			.eq(OrderEntity.class, OrderEntity.Fields.customerId, Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id));
 		
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated")
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated")
 			.notExists(subQuery);
 		
 		Assert.assertTrue("Should generate NOT EXISTS operator", context.queryAsString(query).contains("NOT EXISTS"));
@@ -478,9 +478,9 @@ public class UpdateQueryCriterionTest {
 	// === SET Method Tests ===
 	@Test
 	public void setWithFieldNameQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated value")
-			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated value")
+			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate SET clause", actualSQL.contains("SET") && actualSQL.contains("NAME_D  = ?"));
@@ -489,9 +489,9 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void setWithStringFieldNameQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set("name", "updated value")
-			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate SET clause", actualSQL.contains("SET") && actualSQL.contains("NAME_D  = ?"));
@@ -500,10 +500,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void multipleSetQueryStringTest() throws SQLException {
-		UpdateQuery<ParentEntity> query = new UpdateQuery<>(ParentEntity.class)
-			.set(ParentEntity.Fields.name, "updated name")
-			.set(ParentEntity.Fields.externalName, "updated external")
-			.eq(ParentEntity.class, ParentEntity.Fields.homeId, 1001);
+		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
+			.set(CustomerEntity.Fields.name, "updated name")
+			.set(CustomerEntity.Fields.name, "updated external")
+			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate SET clause for name", actualSQL.contains("NAME_D  = ?"));

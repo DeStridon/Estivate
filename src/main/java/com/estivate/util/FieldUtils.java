@@ -26,20 +26,15 @@ public class FieldUtils {
 	
 	public static Set<Field> getEntityFields(Class<?> objectClass){
 		
-		//System.out.println("getEntityFields("+(objectClass != null ? objectClass.getCanonicalName() : "null")+") starting");
-		
 		if(objectClass == null || objectClass == Object.class || objectClass == CachedEntity.class){
-			//System.out.println("getEntityFields("+objectClass.getSimpleName()+") returning new HashSet");
 			return new HashSet<>();
 		}
 		
 		Set<Field> fields = classFields.get(objectClass);
 		if(fields == null) {
-			//System.out.println("getEntityFields("+objectClass.getSimpleName()+") generating new fieldSet"); 
 			fields = new HashSet<>();
 			fields.addAll(getEntityFields(objectClass.getSuperclass()));
 			
-			//System.out.println("getEntityFields("+objectClass.getSimpleName()+") got fields from upper class : "+fields.toString());
 			
 			for(Field field : objectClass.getDeclaredFields()) {
 				
@@ -59,13 +54,11 @@ public class FieldUtils {
 				fields.add(field);
 				
 			}
-			
-			//System.out.println("getEntityFields("+objectClass.getSimpleName()+") creating new map entry class "+objectClass.getSimpleName()+" : "+fields.toString());
-			
+				
 			classFields.put(objectClass, fields);
+		
 		}
 		
-		//System.out.println("getEntityFields("+objectClass.getSimpleName()+") returning field set for class "+objectClass.getSimpleName()+" : "+fields.toString());
 		return fields;
 		
 	}

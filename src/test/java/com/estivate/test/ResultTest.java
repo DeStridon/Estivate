@@ -16,10 +16,10 @@ import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.Result;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.ChildEntity;
-import com.estivate.test.entities.ParentEntity;
-import com.estivate.test.entities.ParentEntity.JobEnum;
-import com.estivate.test.entities.ParentEntity.StringEnum;
+import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.OrderEntity;
+import com.estivate.test.entities.ProductEntity;
+import com.estivate.test.entities.ProductEntity.ProductCategory;
 import com.estivate.util.Chronometer;
 
 public class ResultTest {
@@ -31,22 +31,25 @@ public class ResultTest {
 	public void testParallel() {
 		
 		
-		ParentEntity parent = ParentEntity.builder()
-				.homeId(10)
-				.name("parallel test parent")
-				.updated(new Date())
+		CustomerEntity customer = CustomerEntity.builder()
+				.id(10)
+				.name("parallel test customer")
+				.email("test@example.com")
+				.address("Test Address")
+				.country(CustomerEntity.Country.FRANCE)
+				.created(new Date())
 				.build();
 		
 		for(int i = 0; i < 5000; i++) {
-			parent.setName(parent.getName()+" - "+i);
-			parent.setId(0);
-			context.updateOrInsert(parent);
+			customer.setName(customer.getName() + " - " + i);
+			customer.setId(0);
+			context.updateOrInsert(customer);
 		}
 		
-		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class);
-		query.eq(ParentEntity.class, ParentEntity.Fields.name, "parallel test task");
+		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class);
+		query.eq(CustomerEntity.class, CustomerEntity.Fields.name, "parallel test customer");
 		
-		List<ParentEntity> parents = context.fetchList(query);
+		List<CustomerEntity> customers = context.fetchList(query);
 		
 		
 	}
@@ -54,28 +57,26 @@ public class ResultTest {
 	@Test
 	public void testMapEnum() {
 		
-		ParentEntity parent = ParentEntity.builder()
-				.homeId(10)
-				.name("parallel test task")
-				.updated(new Date())
-				.status(JobEnum.Correction)
-				.stringEnum(StringEnum.DEF)
+		ProductEntity product = ProductEntity.builder()
+				.id(10)
+				.name("Test Product")
+				.price(99.99f)
+				.available(100)
+				.category(ProductCategory.Computer)
 				.build();
 		
-		context.updateOrInsert(parent);
+		context.updateOrInsert(product);
 		
-		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class);
-		query.eq(AbstractEntity.Fields.id, parent.getId());
+		SelectQuery<ProductEntity> query = new SelectQuery<>(ProductEntity.class);
+		query.eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
 		
 		Result results = context.fetchListAsResults(query).get(0);
 		
-		JobEnum status = (JobEnum) results.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status);
-		assertEquals(JobEnum.Correction, status);
+		ProductCategory category = (ProductCategory) results.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
+		assertEquals(ProductCategory.Computer, category);
 		
-		StringEnum stringEnum = (StringEnum) results.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.stringEnum);
-		assertEquals(StringEnum.DEF, stringEnum);
-	
-		Date updatedDate = results.attributeAsDate(ParentEntity.class, ParentEntity.Fields.updated);
+		Float price = results.attributeAsFloat(ProductEntity.class, ProductEntity.Fields.price);
+		assertEquals(Float.valueOf(99.99f), price);
 		
 		
 		
@@ -84,33 +85,37 @@ public class ResultTest {
 	@Test
 	public void testMap() {
 		
-		ParentEntity parent1 = ParentEntity.builder()
-				.homeId(22)
-				.name("map test 1")
-				.status(JobEnum.Legal)
-				.updated(new Date())
+		CustomerEntity customer1 = CustomerEntity.builder()
+				.id(22)
+				.name("map test customer 1")
+				.email("customer1@test.com")
+				.address("Address 1")
+				.country(CustomerEntity.Country.GERMANY)
+				.created(new Date())
 				.build();
 		
-		context.insert(parent1);
+		context.insert(customer1);
 		
-		ParentEntity parent2 = ParentEntity.builder()
-				.homeId(23)
-				.name("map test 2")
-				.status(JobEnum.Analysis)
-				.updated(new Date())
+		CustomerEntity customer2 = CustomerEntity.builder()
+				.id(23)
+				.name("map test customer 2")
+				.email("customer2@test.com")
+				.address("Address 2")
+				.country(CustomerEntity.Country.SPAIN)
+				.created(new Date())
 				.build();
 		
-		context.insert(parent2);
+		context.insert(customer2);
 		
 		
 		
-		SelectQuery<ParentEntity> query = new SelectQuery<>(ParentEntity.class)
-				.likeStartsWith(ParentEntity.Fields.name, "map test");
+		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class)
+				.likeStartsWith(CustomerEntity.Fields.name, "map test customer");
 		
-		Map<String, JobEnum> map = context.aggregateToMap(query, x -> x.attributeAsString(ParentEntity.class, ParentEntity.Fields.name), x -> (JobEnum) x.attributeAsEnum(ParentEntity.class, ParentEntity.Fields.status));
+		Map<String, CustomerEntity.Country> map = context.aggregateToMap(query, x -> x.attributeAsString(CustomerEntity.class, CustomerEntity.Fields.name), x -> (CustomerEntity.Country) x.attributeAsEnum(CustomerEntity.class, CustomerEntity.Fields.country));
 		
-		assertEquals(JobEnum.Legal, map.get("map test 1"));
-		assertEquals(JobEnum.Analysis, map.get("map test 2"));
+		assertEquals(CustomerEntity.Country.GERMANY, map.get("map test customer 1"));
+		assertEquals(CustomerEntity.Country.SPAIN, map.get("map test customer 2"));
 		
 		
 	}

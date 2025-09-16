@@ -13,7 +13,7 @@ import com.estivate.index.IndexDiff;
 import com.estivate.index.IndexScan;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.Annotations.IndexType;
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 public class IndexTest {
 
@@ -30,9 +30,9 @@ public class IndexTest {
 	@Test
 	public void uniqueTest() {
 		
-		List<ParentEntity> parentEntities = context.fetchListAs(Estivate.selectQuery(ParentEntity.class), ParentEntity.class);
+		List<CustomerEntity> parentEntities = context.fetchListAs(Estivate.selectQuery(CustomerEntity.class), CustomerEntity.class);
 		
-		List<TableIndex> indexes = context.listIndexes(ParentEntity.class);
+		List<TableIndex> indexes = context.listIndexes(CustomerEntity.class);
 		
 		Assert.assertTrue(indexes.stream().anyMatch(x -> x.type() == IndexType.UNIQUE));
 		
@@ -42,7 +42,7 @@ public class IndexTest {
 	@Test
 	public void entityIndexTest() {
 		
-		IndexDiff id = new IndexDiff(context, ParentEntity.class);
+		IndexDiff id = new IndexDiff(context, CustomerEntity.class);
 		
 		List<TableIndex> indexes = id.getEntityIndexes();
 		Assert.assertEquals(3, indexes.size());

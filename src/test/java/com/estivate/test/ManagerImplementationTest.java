@@ -11,7 +11,7 @@ import com.estivate.context.Context;
 
 import com.estivate.manager.ManagerInterceptor.EntityManager;
 
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 public class ManagerImplementationTest {
 
@@ -22,30 +22,30 @@ public class ManagerImplementationTest {
     @Test
     public void testOneLiner() {
 
-    	ParentManager parentManager = Estivate.implementManager(ParentManager.class, context);
-        ParentEntity parent1 = parentManager.findById(1L);
-        List<ParentEntity> parents1 = parentManager.findByIdInIfNotEmpty(Arrays.asList(1L, 2L, 3L));
-        List<ParentEntity> parents2 = parentManager.findByHomeIdAndName(1L, "John");
-        List<ParentEntity> parents3 = parentManager.findByHomeIdBetween(1L, 2L);
+    	CustomerManager customerManager = Estivate.implementManager(CustomerManager.class, context);
+        CustomerEntity customer1 = customerManager.findById(1L);
+        List<CustomerEntity> customers1 = customerManager.findByIdInIfNotEmpty(Arrays.asList(1L, 2L, 3L));
+        List<CustomerEntity> customers2 = customerManager.findByNameAndEmail("John", "john@example.com");
+        List<CustomerEntity> customers3 = customerManager.findByIdBetween(1L, 2L);
 
-        parentManager.findByHomeIdBetween(1L, 2L);
+        customerManager.findByIdBetween(1L, 2L);
 
         
     }
     
-    public static abstract class ParentManager extends EntityManager<ParentEntity>{
+    public static abstract class CustomerManager extends EntityManager<CustomerEntity>{
     	
-        public abstract ParentEntity findById(long id);
+        public abstract CustomerEntity findById(long id);
 
-        public abstract List<ParentEntity> findByIdInIfNotEmpty(List<Long> ids);
+        public abstract List<CustomerEntity> findByIdInIfNotEmpty(List<Long> ids);
 
-        public abstract List<ParentEntity> findByHomeIdAndName(long homeId, String name);
+        public abstract List<CustomerEntity> findByNameAndEmail(String name, String email);
 
-        public abstract List<ParentEntity> findByHomeIdAndNameAndAge(long homeId, String name, int age);
+        public abstract List<CustomerEntity> findByNameAndEmailAndAddress(String name, String email, String address);
 
-        public abstract List<ParentEntity> findByHomeIdBetween(long homeId1, long homeId2);
+        public abstract List<CustomerEntity> findByIdBetween(long id1, long id2);
         
-        public abstract List<ParentEntity> findByHomeIdOrderByCreatedDesc(long homeId);
+        public abstract List<CustomerEntity> findByCountryOrderByCreatedDesc(CustomerEntity.Country country);
         
     }
 

@@ -9,7 +9,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 public class MapperTest {
 	
@@ -18,12 +18,12 @@ public class MapperTest {
 	@Test
 	public void testPerf() {
 		
-		ParentEntity newParent = context.updateOrInsert(ParentEntity.builder().name("parent 1 name").build());	
+		CustomerEntity newParent = context.updateOrInsert(CustomerEntity.builder().name("parent 1 name").build());	
 		
-		SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class)
-				.eq(ParentEntity.class, AbstractEntity.Fields.id, newParent.getId());
+		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+				.eq(CustomerEntity.class, AbstractEntity.Fields.id, newParent.getId());
 				
-		List<ParentEntity> parents = context.fetchListAs(query, ParentEntity.class);
+		List<CustomerEntity> parents = context.fetchListAs(query, CustomerEntity.class);
 		
 		Assert.assertEquals(1, parents.size());
 		

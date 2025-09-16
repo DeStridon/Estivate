@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * Output object : Mapping object
  */
 
-public class QueryBuilder {
+public class QueryMapping {
 	
 	
 	@Target( ElementType.FIELD )
@@ -233,5 +233,25 @@ public class QueryBuilder {
 		public String attribute() default "";
 	}
 
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface LikeInContainsIfNotEmpty{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface LikeInStartsWithIfNotEmpty{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
+	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface LikeInEndsWithIfNotEmpty{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
 
 }

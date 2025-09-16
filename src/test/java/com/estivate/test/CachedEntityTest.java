@@ -10,7 +10,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 public class CachedEntityTest {
 
@@ -20,16 +20,16 @@ public class CachedEntityTest {
 	@Test
 	public void cachedEntityTest() {
 		
-		ParentEntity parent = context.updateOrInsert(ParentEntity.builder().name("intial name").externalName("initial external name").build());
+		CustomerEntity parent = context.updateOrInsert(CustomerEntity.builder().name("intial name").email("initial email").build());
 		
-		ParentEntity parentA = context.fetchSingleAs(Estivate.selectQuery(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
-		ParentEntity parentB = context.fetchSingleAs(Estivate.selectQuery(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
+		CustomerEntity parentA = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, parent.getId()), CustomerEntity.class);
+		CustomerEntity parentB = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, parent.getId()), CustomerEntity.class);
 		
 		parentA.setName("new name");
-		parentB.setExternalName("new external name");
+		parentB.setEmail("new email");
 		
-		assertTrue(parentA.isFieldUpdated(ParentEntity.Fields.name));
-		assertFalse(parentA.isFieldUpdated(ParentEntity.Fields.externalName));
+		assertTrue(parentA.isFieldUpdated(CustomerEntity.Fields.name));
+		assertFalse(parentA.isFieldUpdated(CustomerEntity.Fields.name));
 		
 		
 		context.updateOrInsert(parentA);
@@ -37,10 +37,10 @@ public class CachedEntityTest {
 		
 		
 		
-		ParentEntity taskC = context.fetchSingleAs(Estivate.selectQuery(ParentEntity.class).eq(ParentEntity.class, AbstractEntity.Fields.id, parent.getId()), ParentEntity.class);
+		CustomerEntity taskC = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, parent.getId()), CustomerEntity.class);
 		
 		assertEquals(parentA.getName(), taskC.getName());
-		assertEquals(parentB.getExternalName(), taskC.getExternalName());
+		assertEquals(parentB.getEmail(), taskC.getEmail());
 		
 	}
 	

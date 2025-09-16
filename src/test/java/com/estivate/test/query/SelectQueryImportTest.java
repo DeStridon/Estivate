@@ -1,4 +1,4 @@
-package com.estivate.query.test;
+package com.estivate.test.query;
 
 import java.util.Date;
 
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.QueryBuilder;
+import com.estivate.query.QueryMapping;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
@@ -47,13 +47,13 @@ public class SelectQueryImportTest {
     @NoArgsConstructor
     public static class CustomerFilter{
 
-        @QueryBuilder.EqIfNotNull
+        @QueryMapping.EqIfNotNull
         private String name;
 
-        @QueryBuilder.GtIfNotNull(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.created)
+        @QueryMapping.GtIfNotNull(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.created)
         private Date createdFrom;
 
-        @QueryBuilder.LtIfNotNull(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.created)
+        @QueryMapping.LtIfNotNull(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.created)
         private Date createdTo;
 
     }

@@ -1,4 +1,4 @@
-package com.estivate.query.test;
+package com.estivate.test.query;
 
 
 

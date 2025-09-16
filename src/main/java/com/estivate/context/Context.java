@@ -187,7 +187,7 @@ public abstract class Context {
 			}
 			
 			if(tracePerformances && mapper instanceof EntityMapper) {
-				System.out.println(((EntityMapper) mapper).getStats());
+				log.info(((EntityMapper) mapper).getStats());
 			}
 		
 			return output;

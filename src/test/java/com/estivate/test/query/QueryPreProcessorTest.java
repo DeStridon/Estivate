@@ -1,4 +1,4 @@
-package com.estivate.query.test;
+package com.estivate.test.query;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -8,7 +8,7 @@ import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
-import com.estivate.test.entities.ParentEntity;
+import com.estivate.test.entities.CustomerEntity;
 
 
 public class QueryPreProcessorTest {
@@ -25,7 +25,7 @@ public class QueryPreProcessorTest {
             }
         };
 
-        SelectQuery<ParentEntity> query = Estivate.selectQuery(ParentEntity.class);
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
         String queryString = context.queryAsString(query);
 

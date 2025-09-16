@@ -578,203 +578,203 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	
 	private Q processFieldAnnotations(Field field, Object value) {
 		// Handle @Eq annotation
-		QueryBuilder.Eq eq = field.getAnnotation(QueryBuilder.Eq.class);
+		QueryMapping.Eq eq = field.getAnnotation(QueryMapping.Eq.class);
 		if (eq != null) {
-			String attribute = (QueryBuilder.Eq.attribute != null) ? QueryBuilder.Eq.attribute : field.getName();
+			String attribute = (QueryMapping.Eq.attribute != null) ? QueryMapping.Eq.attribute : field.getName();
 			return this.eq(eq.entity() == void.class ? this.entity.entity : eq.entity(), attribute, value);
 		}
 		
 		// Handle @EqIfNotNull annotation
-		QueryBuilder.EqIfNotNull eqIfNotNull = field.getAnnotation(QueryBuilder.EqIfNotNull.class);
+		QueryMapping.EqIfNotNull eqIfNotNull = field.getAnnotation(QueryMapping.EqIfNotNull.class);
 		if (eqIfNotNull != null) {
 			String attribute = (eqIfNotNull.attribute() != null) ? eqIfNotNull.attribute() : field.getName();
 			return this.eqIfNotNull(eqIfNotNull.entity() == void.class ? this.entity.entity : eqIfNotNull.entity(), attribute, value);
 		}
 		
 		// Handle @EqNullable annotation
-		QueryBuilder.EqNullable eqNullable = field.getAnnotation(QueryBuilder.EqNullable.class);
+		QueryMapping.EqNullable eqNullable = field.getAnnotation(QueryMapping.EqNullable.class);
 		if (eqNullable != null) {
 			String attribute = (eqNullable.attribute() != null) ? eqNullable.attribute() : field.getName();
 			return this.eqNullable(eqNullable.entity() == void.class ? this.entity.entity : eqNullable.entity(), attribute, value);
 		}
 		
 		// Handle @NotEq annotation
-		QueryBuilder.NotEq notEq = field.getAnnotation(QueryBuilder.NotEq.class);
+		QueryMapping.NotEq notEq = field.getAnnotation(QueryMapping.NotEq.class);
 		if (notEq != null) {
 			String attribute = (notEq.attribute() != null) ? notEq.attribute() : field.getName();
 			return this.notEq(notEq.entity() == void.class ? this.entity.entity : notEq.entity(), attribute, value);
 		}
 		
 		// Handle @NotEqIfNotNull annotation
-		QueryBuilder.NotEqIfNotNull notEqIfNotNull = field.getAnnotation(QueryBuilder.NotEqIfNotNull.class);
+		QueryMapping.NotEqIfNotNull notEqIfNotNull = field.getAnnotation(QueryMapping.NotEqIfNotNull.class);
 		if (notEqIfNotNull != null) {
 			String attribute = (notEqIfNotNull.attribute() != null) ? notEqIfNotNull.attribute() : field.getName();
 			return this.notEqIfNotNull(notEqIfNotNull.entity() == void.class ? this.entity.entity : notEqIfNotNull.entity(), attribute, value);
 		}
 		
 		// Handle @NotEqNullable annotation
-		QueryBuilder.NotEqNullable notEqNullable = field.getAnnotation(QueryBuilder.NotEqNullable.class);
+		QueryMapping.NotEqNullable notEqNullable = field.getAnnotation(QueryMapping.NotEqNullable.class);
 		if (notEqNullable != null) {
 			String attribute = (notEqNullable.attribute() != null) ? notEqNullable.attribute() : field.getName();
 			return this.notEqNullable(notEqNullable.entity() == void.class ? this.entity.entity : notEqNullable.entity(), attribute, value);
 		}
 		
 		// Handle @Lt annotation
-		QueryBuilder.Lt lt = field.getAnnotation(QueryBuilder.Lt.class);
+		QueryMapping.Lt lt = field.getAnnotation(QueryMapping.Lt.class);
 		if (lt != null) {
 			String attribute = (lt.attribute() != null) ? lt.attribute() : field.getName();
 			return this.lt(lt.entity() == void.class ? this.entity.entity : lt.entity(), attribute, value);
 		}
 		
 		// Handle @LtIfNotNull annotation
-		QueryBuilder.LtIfNotNull ltIfNotNull = field.getAnnotation(QueryBuilder.LtIfNotNull.class);
+		QueryMapping.LtIfNotNull ltIfNotNull = field.getAnnotation(QueryMapping.LtIfNotNull.class);
 		if (ltIfNotNull != null) {
 			String attribute = (ltIfNotNull.attribute() != null) ? ltIfNotNull.attribute() : field.getName();
 			return this.ltIfNotNull(ltIfNotNull.entity() == void.class ? this.entity.entity : ltIfNotNull.entity(), attribute, value);
 		}
 		
 		// Handle @Lte annotation
-		QueryBuilder.Lte lte = field.getAnnotation(QueryBuilder.Lte.class);
+		QueryMapping.Lte lte = field.getAnnotation(QueryMapping.Lte.class);
 		if (lte != null) {
 			String attribute = (lte.attribute() != null) ? lte.attribute() : field.getName();
 			return this.lte(lte.entity() == void.class ? this.entity.entity : lte.entity(), attribute, value);
 		}
 		
 		// Handle @LteIfNotNull annotation
-		QueryBuilder.LteIfNotNull lteIfNotNull = field.getAnnotation(QueryBuilder.LteIfNotNull.class);
+		QueryMapping.LteIfNotNull lteIfNotNull = field.getAnnotation(QueryMapping.LteIfNotNull.class);
 		if (lteIfNotNull != null) {
 			String attribute = (lteIfNotNull.attribute() != null) ? lteIfNotNull.attribute() : field.getName();
 			return this.lteIfNotNull(lteIfNotNull.entity() == void.class ? this.entity.entity : lteIfNotNull.entity(), attribute, value);
 		}
 		
 		// Handle @Gte annotation
-		QueryBuilder.Gt gt = field.getAnnotation(QueryBuilder.Gt.class);
+		QueryMapping.Gt gt = field.getAnnotation(QueryMapping.Gt.class);
 		if (gt != null) {
 			String attribute = (gt.attribute() != null) ? gt.attribute() : field.getName();
 			return this.gt(gt.entity() == void.class ? this.entity.entity : gt.entity(), attribute, value);
 		}
 		
 		// Handle @GteIfNotNull annotation
-		QueryBuilder.GtIfNotNull gtIfNotNull = field.getAnnotation(QueryBuilder.GtIfNotNull.class);
+		QueryMapping.GtIfNotNull gtIfNotNull = field.getAnnotation(QueryMapping.GtIfNotNull.class);
 		if (gtIfNotNull != null) {
 			String attribute = (gtIfNotNull.attribute() != null) ? gtIfNotNull.attribute() : field.getName();
 			return this.gtIfNotNull(gtIfNotNull.entity() == void.class ? this.entity.entity : gtIfNotNull.entity(), attribute, value);
 		}
 		
 		// Handle @Gte annotation
-		QueryBuilder.Gte gte = field.getAnnotation(QueryBuilder.Gte.class);
+		QueryMapping.Gte gte = field.getAnnotation(QueryMapping.Gte.class);
 		if (gte != null) {
 			String attribute = (gte.attribute() != null) ? gte.attribute() : field.getName();
 			return this.gte(gte.entity() == void.class ? this.entity.entity : gte.entity(), attribute, value);
 		}
 		
 		// Handle @GteIfNotNull annotation
-		QueryBuilder.GteIfNotNull gteIfNotNull = field.getAnnotation(QueryBuilder.GteIfNotNull.class);
+		QueryMapping.GteIfNotNull gteIfNotNull = field.getAnnotation(QueryMapping.GteIfNotNull.class);
 		if (gteIfNotNull != null) {
 			String attribute = (gteIfNotNull.attribute() != null) ? gteIfNotNull.attribute() : field.getName();
 			return this.gteIfNotNull(gteIfNotNull.entity() == void.class ? this.entity.entity : gteIfNotNull.entity(), attribute, value);
 		}
 	
 		// Handle @Like annotation
-		QueryBuilder.Like like = field.getAnnotation(QueryBuilder.Like.class);
+		QueryMapping.Like like = field.getAnnotation(QueryMapping.Like.class);
 		if (like != null && value instanceof String) {
 			String attribute = (like.attribute() != null) ? like.attribute() : field.getName();
 			return this.like(like.entity() == void.class ? this.entity.entity : like.entity(), attribute, (String) value);
 		}
 		
 		// Handle @LikeIfNotNull annotation
-		QueryBuilder.LikeIfNotNull likeIfNotNull = field.getAnnotation(QueryBuilder.LikeIfNotNull.class);
+		QueryMapping.LikeIfNotNull likeIfNotNull = field.getAnnotation(QueryMapping.LikeIfNotNull.class);
 		if (likeIfNotNull != null && value instanceof String) {
 			String attribute = (likeIfNotNull.attribute() != null) ? likeIfNotNull.attribute() : field.getName();
 			return this.likeIfNotNull(likeIfNotNull.entity() == void.class ? this.entity.entity : likeIfNotNull.entity(), attribute, (String) value);
 		}
 		
 		// Handle @LikeContains annotation
-		QueryBuilder.LikeContains likeContains = field.getAnnotation(QueryBuilder.LikeContains.class);
+		QueryMapping.LikeContains likeContains = field.getAnnotation(QueryMapping.LikeContains.class);
 		if (likeContains != null && value instanceof String) {
 			String attribute = (likeContains.attribute() != null) ? likeContains.attribute() : field.getName();
 			return this.likeContains(likeContains.entity() == void.class ? this.entity.entity : likeContains.entity(), attribute, (String) value);
 		}
 		
 		// Handle @LikeContainsIfNotNull annotation
-		QueryBuilder.LikeContainsIfNotNull likeContainsIfNotNull = field.getAnnotation(QueryBuilder.LikeContainsIfNotNull.class);
+		QueryMapping.LikeContainsIfNotNull likeContainsIfNotNull = field.getAnnotation(QueryMapping.LikeContainsIfNotNull.class);
 		if (likeContainsIfNotNull != null && value instanceof String) {
 			String attribute = (likeContainsIfNotNull.attribute() != null) ? likeContainsIfNotNull.attribute() : field.getName();
 			return this.likeContainsIfNotNull(likeContainsIfNotNull.entity() == void.class ? this.entity.entity : likeContainsIfNotNull.entity(), attribute, (String) value);
 		}
 		
 		// Handle @LikeStartsWith annotation
-		QueryBuilder.LikeStartsWith likeStartsWith = field.getAnnotation(QueryBuilder.LikeStartsWith.class);
+		QueryMapping.LikeStartsWith likeStartsWith = field.getAnnotation(QueryMapping.LikeStartsWith.class);
 		if (likeStartsWith != null && value instanceof String) {
 			String attribute = (likeStartsWith.attribute() != null) ? likeStartsWith.attribute() : field.getName();
 			return this.likeStartsWith(likeStartsWith.entity() == void.class ? this.entity.entity : likeStartsWith.entity(), attribute, (String) value);
 		}
 		
 		// Handle @LikeStartsWithIfNotNull annotation
-		QueryBuilder.LikeStartsWithIfNotNull likeStartsWithIfNotNull = field.getAnnotation(QueryBuilder.LikeStartsWithIfNotNull.class);
+		QueryMapping.LikeStartsWithIfNotNull likeStartsWithIfNotNull = field.getAnnotation(QueryMapping.LikeStartsWithIfNotNull.class);
 		if (likeStartsWithIfNotNull != null && value instanceof String) {
 			String attribute = (likeStartsWithIfNotNull.attribute() != null) ? likeStartsWithIfNotNull.attribute() : field.getName();
 			return this.likeStartsWithIfNotNull(likeStartsWithIfNotNull.entity() == void.class ? this.entity.entity : likeStartsWithIfNotNull.entity(), attribute, (String) value);
 		}
 	
 		// Handle @In annotation
-		QueryBuilder.In in = field.getAnnotation(QueryBuilder.In.class);
+		QueryMapping.In in = field.getAnnotation(QueryMapping.In.class);
 		if (in != null && value instanceof Collection) {
 			String attribute = (in.attribute() != null) ? in.attribute() : field.getName();
 			return this.in(in.entity() == void.class ? this.entity.entity : in.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @InIfNotEmpty annotation
-		QueryBuilder.InIfNotEmpty inIfNotEmpty = field.getAnnotation(QueryBuilder.InIfNotEmpty.class);
+		QueryMapping.InIfNotEmpty inIfNotEmpty = field.getAnnotation(QueryMapping.InIfNotEmpty.class);
 		if (inIfNotEmpty != null && value instanceof Collection) {
 			String attribute = (inIfNotEmpty.attribute() != null) ? inIfNotEmpty.attribute() : field.getName();
 			return this.inIfNotEmpty(inIfNotEmpty.entity() == void.class ? this.entity.entity : inIfNotEmpty.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @InOrFalseIfEmpty annotation
-		QueryBuilder.InOrFalseIfEmpty inOrFalseIfEmpty = field.getAnnotation(QueryBuilder.InOrFalseIfEmpty.class);
+		QueryMapping.InOrFalseIfEmpty inOrFalseIfEmpty = field.getAnnotation(QueryMapping.InOrFalseIfEmpty.class);
 		if (inOrFalseIfEmpty != null && value instanceof Collection) {
 			String attribute = (inOrFalseIfEmpty.attribute() != null) ? inOrFalseIfEmpty.attribute() : field.getName();
 			return this.inOrFalseIfEmpty(inOrFalseIfEmpty.entity() == void.class ? this.entity.entity : inOrFalseIfEmpty.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @InOrNull annotation
-		QueryBuilder.InOrNull inOrNull = field.getAnnotation(QueryBuilder.InOrNull.class);
+		QueryMapping.InOrNull inOrNull = field.getAnnotation(QueryMapping.InOrNull.class);
 		if (inOrNull != null && value instanceof Collection) {
 			String attribute = (inOrNull.attribute() != null) ? inOrNull.attribute() : field.getName();
 			return this.inOrNull(inOrNull.entity() == void.class ? this.entity.entity : inOrNull.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @NotIn annotation
-		QueryBuilder.NotIn notIn = field.getAnnotation(QueryBuilder.NotIn.class);
+		QueryMapping.NotIn notIn = field.getAnnotation(QueryMapping.NotIn.class);
 		if (notIn != null && value instanceof Collection) {
 			String attribute = (notIn.attribute() != null) ? notIn.attribute() : field.getName();
 			return this.notIn(notIn.entity() == void.class ? this.entity.entity : notIn.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @NotInIfNotEmpty annotation
-		QueryBuilder.NotInIfNotEmpty notInIfNotEmpty = field.getAnnotation(QueryBuilder.NotInIfNotEmpty.class);
+		QueryMapping.NotInIfNotEmpty notInIfNotEmpty = field.getAnnotation(QueryMapping.NotInIfNotEmpty.class);
 		if (notInIfNotEmpty != null && value instanceof Collection) {
 			String attribute = (notInIfNotEmpty.attribute() != null) ? notInIfNotEmpty.attribute() : field.getName();
 			return this.notInIfNotEmpty(notInIfNotEmpty.entity() == void.class ? this.entity.entity : notInIfNotEmpty.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @NotInOrTrueIfEmpty annotation
-		QueryBuilder.NotInOrTrueIfEmpty notInOrTrueIfEmpty = field.getAnnotation(QueryBuilder.NotInOrTrueIfEmpty.class);
+		QueryMapping.NotInOrTrueIfEmpty notInOrTrueIfEmpty = field.getAnnotation(QueryMapping.NotInOrTrueIfEmpty.class);
 		if (notInOrTrueIfEmpty != null && value instanceof Collection) {
 			String attribute = (notInOrTrueIfEmpty.attribute() != null) ? notInOrTrueIfEmpty.attribute() : field.getName();
 			return this.notInOrTrueIfEmpty(notInOrTrueIfEmpty.entity() == void.class ? this.entity.entity : notInOrTrueIfEmpty.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @NotInOrNull annotation
-		QueryBuilder.NotInOrNull notInOrNull = field.getAnnotation(QueryBuilder.NotInOrNull.class);
+		QueryMapping.NotInOrNull notInOrNull = field.getAnnotation(QueryMapping.NotInOrNull.class);
 		if (notInOrNull != null && value instanceof Collection) {
 			String attribute = (notInOrNull.attribute() != null) ? notInOrNull.attribute() : field.getName();
 			return this.notInOrNull(notInOrNull.entity() == void.class ? this.entity.entity : notInOrNull.entity(), attribute, (Collection<?>) value);
 		}
 		
 		// Handle @LikeInContains annotation
-		QueryBuilder.LikeInContains likeInContains = field.getAnnotation(QueryBuilder.LikeInContains.class);
+		QueryMapping.LikeInContains likeInContains = field.getAnnotation(QueryMapping.LikeInContains.class);
 		if (likeInContains != null && value instanceof Collection) {
 			String attribute = (likeInContains.attribute() != null) ? likeInContains.attribute() : field.getName();
 			Collection<String> stringValues = (Collection<String>) value;
@@ -782,7 +782,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 		}
 		
 		// Handle @LikeInStartsWith annotation
-		QueryBuilder.LikeInStartsWith likeInStartsWith = field.getAnnotation(QueryBuilder.LikeInStartsWith.class);
+		QueryMapping.LikeInStartsWith likeInStartsWith = field.getAnnotation(QueryMapping.LikeInStartsWith.class);
 		if (likeInStartsWith != null && value instanceof Collection) {
 			String attribute = (likeInStartsWith.attribute() != null) ? likeInStartsWith.attribute() : field.getName();
 			Collection<String> stringValues = (Collection<String>) value;
@@ -790,11 +790,35 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 		}
 		
 		// Handle @LikeInEndsWith annotation
-		QueryBuilder.LikeInEndsWith likeInEndsWith = field.getAnnotation(QueryBuilder.LikeInEndsWith.class);
+		QueryMapping.LikeInEndsWith likeInEndsWith = field.getAnnotation(QueryMapping.LikeInEndsWith.class);
 		if (likeInEndsWith != null && value instanceof Collection) {
 			String attribute = (likeInEndsWith.attribute() != null) ? likeInEndsWith.attribute() : field.getName();
 			Collection<String> stringValues = (Collection<String>) value;
 			return this.likeEndsWithIn(likeInEndsWith.entity() == void.class ? this.entity.entity : likeInEndsWith.entity(), attribute, stringValues);
+		}
+		
+		// Handle @LikeInContains annotation
+		QueryMapping.LikeInContainsIfNotEmpty likeInContainsIfNotEmpty = field.getAnnotation(QueryMapping.LikeInContainsIfNotEmpty.class);
+		if (likeInContainsIfNotEmpty != null && value instanceof Collection) {
+			String attribute = (likeInContainsIfNotEmpty.attribute() != null) ? likeInContainsIfNotEmpty.attribute() : field.getName();
+			Collection<String> stringValues = (Collection<String>) value;
+			return this.likeContainsInIfNotEmpty(likeInContainsIfNotEmpty.entity() == void.class ? this.entity.entity : likeInContainsIfNotEmpty.entity(), attribute, stringValues);
+		}
+		
+		// Handle @LikeInStartsWith annotation
+		QueryMapping.LikeInStartsWithIfNotEmpty likeInStartsWithIfNotEmpty = field.getAnnotation(QueryMapping.LikeInStartsWithIfNotEmpty.class);
+		if (likeInStartsWithIfNotEmpty != null && value instanceof Collection) {
+			String attribute = (likeInStartsWithIfNotEmpty.attribute() != null) ? likeInStartsWithIfNotEmpty.attribute() : field.getName();
+			Collection<String> stringValues = (Collection<String>) value;
+			return this.likeStartsWithIn(likeInStartsWithIfNotEmpty.entity() == void.class ? this.entity.entity : likeInStartsWithIfNotEmpty.entity(), attribute, stringValues);
+		}
+		
+		// Handle @LikeInEndsWith annotation
+		QueryMapping.LikeInEndsWithIfNotEmpty likeInEndsWithIfNotEmpty = field.getAnnotation(QueryMapping.LikeInEndsWithIfNotEmpty.class);
+		if (likeInEndsWithIfNotEmpty != null && value instanceof Collection) {
+			String attribute = (likeInEndsWithIfNotEmpty.attribute() != null) ? likeInEndsWithIfNotEmpty.attribute() : field.getName();
+			Collection<String> stringValues = (Collection<String>) value;
+			return this.likeEndsWithIn(likeInEndsWithIfNotEmpty.entity() == void.class ? this.entity.entity : likeInEndsWithIfNotEmpty.entity(), attribute, stringValues);
 		}
 		
 		return self();

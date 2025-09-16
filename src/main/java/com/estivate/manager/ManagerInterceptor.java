@@ -63,8 +63,6 @@ public class ManagerInterceptor<T> {
         Type entityType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
         Class<T> entityClass = (Class<T>) entityType;
 
-        //System.out.println("criterion: " + getMethods().stream().collect(Collectors.joining(", ")));
-
         List<String> criterionList = getMethods().stream()
             .map(x -> x.substring(0, 1).toUpperCase() + x.substring(1))
             .sorted((a, b) -> Integer.compare(b.length(), a.length())) // Sort by length descending
@@ -76,7 +74,7 @@ public class ManagerInterceptor<T> {
     		.sorted((a, b) -> Integer.compare(b.length(), a.length())) 
             .collect(Collectors.toList());
         
-        SelectQuery query = Estivate.selectQuery(entityClass);
+        SelectQuery<?> query = Estivate.selectQuery(entityClass);
 
 
 

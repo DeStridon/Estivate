@@ -101,7 +101,7 @@ public class Chronometer {
 		this.step(finalStepName);
 		
 		if(this.timeThreshold != null && (this.lastStep - this.begin) > this.timeThreshold) {
-			System.out.println(getLog());
+			log.info(getLog());
 		}
 		return this;
 	}
