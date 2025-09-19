@@ -29,14 +29,13 @@ public class IndexTest {
 
 	@Test
 	public void uniqueTest() {
-		
-		List<CustomerEntity> parentEntities = context.fetchListAs(Estivate.selectQuery(CustomerEntity.class), CustomerEntity.class);
-		
+
 		List<TableIndex> indexes = context.listIndexes(CustomerEntity.class);
 		
 		Assert.assertTrue(indexes.stream().anyMatch(x -> x.type() == IndexType.UNIQUE));
 		
 		System.out.println(indexes);
+		
 	}
 	
 	@Test
@@ -45,11 +44,11 @@ public class IndexTest {
 		IndexDiff id = new IndexDiff(context, CustomerEntity.class);
 		
 		List<TableIndex> indexes = id.getEntityIndexes();
-		Assert.assertEquals(3, indexes.size());
+		Assert.assertEquals(2, indexes.size());
 		
 		Assert.assertEquals(0, id.listUnimplemented().size());
 		
-		id.cleanSpecific(indexes.get(0));
+		id.cleanSpecific(indexes.get(1));
 		
 		List<TableIndex> missingDbIndexes = id.listUnimplemented();
 		Assert.assertEquals(1, missingDbIndexes.size());

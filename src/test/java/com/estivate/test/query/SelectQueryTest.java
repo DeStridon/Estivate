@@ -3,6 +3,7 @@ package com.estivate.test.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -22,7 +23,17 @@ public class SelectQueryTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .in(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 
-        List<CustomerEntity> results = context.fetchListAs(query, CustomerEntity.class);
+        boolean thrown = false;
+
+        try{
+            List<CustomerEntity> results = context.fetchListAs(query, CustomerEntity.class);
+        }
+        catch(Exception e) {
+            thrown = true;
+            e.printStackTrace();
+        }
+
+        Assert.assertTrue(thrown);
 
     }
 

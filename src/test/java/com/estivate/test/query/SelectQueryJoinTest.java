@@ -21,6 +21,8 @@ import com.estivate.result.Result;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
+import com.estivate.test.entities.OrderLineEntity;
+import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.CustomerEntity;
 
 import lombok.extern.slf4j.Slf4j;
@@ -37,13 +39,13 @@ public class SelectQueryJoinTest {
 	public void selectJoiningTest() {
 		
 		
-		
-		context.updateOrInsert(OrderEntity.builder().id(1).status(OrderEntity.OrderStatus.PENDING).build());
-		context.updateOrInsert(OrderEntity.builder().id(1).status(OrderEntity.OrderStatus.PENDING).build());
+		CustomerEntity customer = context.updateOrInsert(CustomerEntity.builder().name("join test customer").build());
+		context.updateOrInsert(OrderEntity.builder().status(OrderEntity.OrderStatus.PENDING).customerId(customer.getId()).build());
+		context.updateOrInsert(OrderEntity.builder().status(OrderEntity.OrderStatus.PENDING).customerId(customer.getId()).build());
 		
 		SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
 				.comment("Query Join Test")
-				.eq(OrderEntity.class, OrderEntity.Fields.customerId, 2);
+				.eq(OrderEntity.class, OrderEntity.Fields.customerId, customer.getId());
 		
 		List<OrderEntity> results = context.fetchListAs(query, OrderEntity.class);
 		
@@ -106,8 +108,8 @@ public class SelectQueryJoinTest {
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);
 		
-		assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D firstChild"));
-		assertTrue(queryString.contains("firstChild.ID_D != secondChild.ID_D"));
+		assertTrue(queryString.contains("INNER JOIN ORDERENTITY_D firstOrder"));
+		assertTrue(queryString.contains("firstOrder.ID_D < secondOrder.ID_D"));
 
 	}
 
@@ -115,22 +117,26 @@ public class SelectQueryJoinTest {
 	public void squareJoinTest() throws SQLException {
 		
 		
-		Entity<CustomerEntity> parentA = new Entity<>(CustomerEntity.class, "ParentA");
-		Entity<CustomerEntity> parentB = new Entity<>(CustomerEntity.class, "ParentB");
-		Entity<OrderEntity> childA = new Entity<>(OrderEntity.class, "ChildA");
-		Entity<OrderEntity> childB = new Entity<>(OrderEntity.class, "ChildB");
+		Entity<OrderEntity> orderA = new Entity<>(OrderEntity.class, "OrderA");
+		Entity<OrderEntity> orderB = new Entity<>(OrderEntity.class, "OrderB");
+		Entity<OrderLineEntity> orderLineA = new Entity<>(OrderLineEntity.class, "OrderLineA");
+		Entity<OrderLineEntity> orderLineB = new Entity<>(OrderLineEntity.class, "OrderLineB");
 		
-		SelectQuery<CustomerEntity> query = new SelectQuery<>(parentA)
-				.joinInner(parentA, childA)
-				.joinInner(childB, parentB)
-				.joinInner(childB, parentB)
-				.joinLeft(childB, parentB)
-				.select(parentB, CustomerEntity.Fields.name);
+		SelectQuery<OrderEntity> query = new SelectQuery<>(orderA)
+				.joinInner(orderA, orderLineA)
+				.joinInner(orderLineA, ProductEntity.class)
+				.joinInner(ProductEntity.class, orderLineB)
+				.joinLeft(orderLineB, orderB)
+				.select(ProductEntity.class, ProductEntity.Fields.name);
 		
 		String queryString = context.queryAsString(query);
+		System.out.println(queryString);
 		
-		Assert.assertTrue(queryString.contains("INNER JOIN CHILDENTITY_D ChildB ON ChildA.DESCRIPTION_D = ChildB.DESCRIPTION_D"));
-		Assert.assertTrue(queryString.contains("INNER JOIN PARENTENTITY_D ParentB ON ChildB.PARENTID_D = ParentB.ID_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY_D OrderLineA ON OrderA.ID_D = OrderLineA.ORDERID_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN PRODUCTENTITY_D ON OrderLineA.PRODUCTID_D = PRODUCTENTITY_D.ID_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY_D OrderLineB ON PRODUCTENTITY_D.ID_D = OrderLineB.PRODUCTID_D"));
+		Assert.assertTrue(queryString.contains("LEFT JOIN ORDERENTITY_D OrderB ON OrderLineB.ORDERID_D = OrderB.ID_D"));
+		
 
 	}
 

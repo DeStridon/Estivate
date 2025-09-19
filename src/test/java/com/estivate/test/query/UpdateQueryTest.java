@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.query.UpdateQuery;
+import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
@@ -23,6 +24,45 @@ public class UpdateQueryTest {
         String query = context.queryAsString(updateQuery);
         Assert.assertEquals("UPDATE CUSTOMERENTITY_D SET CUSTOMERENTITY_D.NAME_D  = ? , CUSTOMERENTITY_D.EMAIL_D  = ? WHERE CUSTOMERENTITY_D.ID_D = ?", query);
         
+    }
+
+    @Test
+    public void testUpdateNullEntity() {
+        context.update(null);
+    }
+
+    @Test 
+    public void testUpdateUnchangedEntity() {
+        // 1. Create entity
+        CustomerEntity customer = CustomerEntity.builder()
+            .name("Test Customer")
+            .email("test@example.com")
+            .address("123 Test Street")
+            .country(CustomerEntity.Country.USA)
+            .emailVerified(true)
+            .build();
+
+        // 2. Save it
+        CustomerEntity savedCustomer = context.updateOrInsert(customer);
+        Assert.assertNotNull("Customer should be saved", savedCustomer);
+        Assert.assertTrue("Customer should have an ID", savedCustomer.getId() > 0);
+
+        // 3. Load the entity again from id
+        SelectQuery<CustomerEntity> selectQuery = new SelectQuery<>(CustomerEntity.class)
+            .eq(AbstractEntity.Fields.id, savedCustomer.getId());
+        CustomerEntity loadedCustomer = context.fetchSingle(selectQuery);
+        Assert.assertNotNull("Customer should be loaded", loadedCustomer);
+        Assert.assertEquals("Names should match", savedCustomer.getName(), loadedCustomer.getName());
+
+        // 4. Update without changing any fields - this should work without issues
+        context.update(loadedCustomer);
+        
+        // Verify the entity is still the same after update
+        CustomerEntity updatedCustomer = context.fetchSingle(selectQuery);
+        Assert.assertNotNull("Customer should still exist after update", updatedCustomer);
+        Assert.assertEquals("ID should remain the same", loadedCustomer.getId(), updatedCustomer.getId());
+        Assert.assertEquals("Name should remain unchanged", loadedCustomer.getName(), updatedCustomer.getName());
+        Assert.assertEquals("Email should remain unchanged", loadedCustomer.getEmail(), updatedCustomer.getEmail());
     }
 
 }

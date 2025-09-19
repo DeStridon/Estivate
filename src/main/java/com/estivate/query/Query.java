@@ -889,7 +889,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 
 	
 	
-	 public void pruneUnusedJoins(){
+	public void pruneUnusedJoins(){
 
         List<Attribute> attributes = listNodeAttributes(this);
         

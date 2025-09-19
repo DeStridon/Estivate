@@ -102,46 +102,46 @@ public class Result {
 		return index;
 	}
 	
-	public Object attribute(Class<?> c, String attribute) { 
+	public <T> T attribute(Class<?> c, String attribute) { 
 		try {
 			Field field = c.getDeclaredField(attribute);
 			Type type = field.getGenericType();
 
 			if(type == String.class) {
-				return attributeAsString(c, attribute);
+				return (T) attributeAsString(c, attribute);
 			}
 			else if(type == boolean.class || type == Boolean.class) {
-				return attributeAsBoolean(c, attribute);
+				return (T) attributeAsBoolean(c, attribute);
 			}
 			else if(type == byte.class || type == Byte.class) {
-				return attributeAsByte(c, attribute);
+				return (T) attributeAsByte(c, attribute);
 			}
 			else if(type == short.class || type == Short.class) {
-				return attributeAsShort(c, attribute);
+				return (T) attributeAsShort(c, attribute);
 			}
 			else if(type == int.class || type == Integer.class) {
-				return attributeAsInteger(c, attribute);
+				return (T) attributeAsInteger(c, attribute);
 			}
 			else if(type == long.class || type == Long.class) {
-				return attributeAsLong(c, attribute);
+				return (T) attributeAsLong(c, attribute);
 			}
 			else if(type == float.class || type == Float.class) {
-				return attributeAsFloat(c, attribute);
+				return (T) attributeAsFloat(c, attribute);
 			}
 			else if(type == double.class || type == Double.class) {
-				return attributeAsDouble(c, attribute);
+				return (T) attributeAsDouble(c, attribute);
 			}
 			else if(type == char.class || type == Character.class) {
-				return attributeAsChar(c, attribute);
+				return (T) attributeAsChar(c, attribute);
 			}
 			else if(type == Date.class) {
-				return attributeAsDate(c, attribute);
+				return (T) attributeAsDate(c, attribute);
 			}
 			else if(type == LocalDateTime.class) {
-				return attributeAsLocalDateTime(c, attribute);
+				return (T) attributeAsLocalDateTime(c, attribute);
 			}
 			else if(type == LocalDate.class) {
-				return attributeAsLocalDate(c, attribute);
+				return (T) attributeAsLocalDate(c, attribute);
 			}
 			// @Convert (might be enum, this condition should be tested before classic enum)
 			else if(field.getDeclaredAnnotation(Convert.class) != null) {
@@ -153,7 +153,7 @@ public class Result {
 						return null;
 					}
 					AttributeConverter attributeConverter = (AttributeConverter) converter;
-					return attributeConverter.convertToEntityAttribute(attributeAsString(c, attribute));
+					return (T) attributeConverter.convertToEntityAttribute(attributeAsString(c, attribute));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -164,10 +164,10 @@ public class Result {
 	
 				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
-					return columnAsStringEnum(nameMapper.mapEntity(c, attribute), (Class) type);
+					return (T) columnAsStringEnum(nameMapper.mapEntity(c, attribute), (Class) type);
 				}
 				else {
-					return columnAsOrdinalEnum(nameMapper.mapEntity(c, attribute), (Class) type);
+					return (T) columnAsOrdinalEnum(nameMapper.mapEntity(c, attribute), (Class) type);
 				}
 			}
 			else {

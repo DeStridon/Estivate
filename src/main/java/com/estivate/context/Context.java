@@ -165,7 +165,7 @@ public abstract class Context {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = Statement.toStatement(this, connection, preExecute(query));
 			ResultSet resultSet = statement.executeForResultSet()) {
-
+			
 			mapper.setNameMapper(nameMapper);
 			mapper.setColumnNames(createColumnsArray(resultSet.getMetaData()));
 	        
@@ -451,10 +451,16 @@ public abstract class Context {
 
 	@SneakyThrows
 	public <U> void update(List<U> entities) {
+		if(entities == null) {
+			return;
+		}
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 					
 			for(Object entity : entities) {
+				if(entity == null) {
+					continue;
+				}
 				FieldUtils.invokeLifecycleMethods(entity, PreUpdate.class);
 				
 				Long id = null;

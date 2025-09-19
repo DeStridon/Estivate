@@ -441,8 +441,10 @@ public class DeleteQueryCriterionTest {
 	public void eqNullableWithClassQueryStringTest() throws SQLException {
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
 			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.name, "external");
+
+		String actualSQL = context.queryAsString(query);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
+		Assert.assertTrue("Should generate = operator", actualSQL.contains("NAME_D = ?"));
 	}
 	
 	@Test
@@ -460,7 +462,7 @@ public class DeleteQueryCriterionTest {
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
 			.eqNullable(externalNameAttribute, "external");
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("NAME_D = ?"));
 	}
 	
 	// === EXISTS Tests ===
@@ -1054,7 +1056,7 @@ public class DeleteQueryCriterionTest {
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
 			.notEqNullable(CustomerEntity.class, CustomerEntity.Fields.name, "external");
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
 	
 	@Test
@@ -1063,7 +1065,7 @@ public class DeleteQueryCriterionTest {
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
 			.notEqNullable(parentEntity, CustomerEntity.Fields.name, "external");
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
 	
 	@Test
@@ -1072,7 +1074,7 @@ public class DeleteQueryCriterionTest {
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
 			.notEqNullable(externalNameAttribute, "external");
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
 	
 	// === LT IF NOT NULL Tests ===

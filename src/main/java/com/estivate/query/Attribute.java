@@ -1,5 +1,9 @@
 package com.estivate.query;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.estivate.Entity;
 
 import lombok.AllArgsConstructor;
@@ -33,5 +37,13 @@ public class Attribute {
 			boolean result = before.equals(function.before) && after.equals(function.after);
 			return result;
 		}
+
+        public static Function compose(List<Function> functions) {
+            String before = functions.stream().map(x -> x.before).collect(Collectors.joining());
+            Collections.reverse(functions);
+			String after =  functions.stream() .map(x -> x.after).collect(Collectors.joining());
+			return new Function(before, after);
+        }
+
 	}
 }

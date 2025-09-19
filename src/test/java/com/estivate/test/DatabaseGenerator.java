@@ -71,7 +71,6 @@ public class DatabaseGenerator {
 	public static CustomerEntity createRandomCustomer() {
 		
 		CustomerEntity customerEntity = new CustomerEntity();
-		customerEntity.setId((long) randomInt(1, 100));
 		customerEntity.setName("Random Customer "+randomInt(1, 1000));
 		customerEntity.setEmail("customer" + randomInt(1, 1000) + "@example.com");
 		customerEntity.setAddress("Random Address " + randomInt(1, 100));

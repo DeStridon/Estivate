@@ -34,15 +34,14 @@ public class ResultTest {
 		CustomerEntity customer = CustomerEntity.builder()
 				.id(10)
 				.name("parallel test customer")
-				.email("test@example.com")
 				.address("Test Address")
 				.country(CustomerEntity.Country.FRANCE)
 				.created(new Date())
 				.build();
 		
 		for(int i = 0; i < 5000; i++) {
+			customer.setEmail("test"+i+"@test.com");
 			customer.setName(customer.getName() + " - " + i);
-			customer.setId(0);
 			context.updateOrInsert(customer);
 		}
 		
@@ -58,24 +57,23 @@ public class ResultTest {
 	public void testMapEnum() {
 		
 		ProductEntity product = ProductEntity.builder()
-				.id(10)
 				.name("Test Product")
 				.price(99.99f)
-				.available(100)
+				.stock(100)
 				.category(ProductCategory.Computer)
 				.build();
 		
 		context.updateOrInsert(product);
 		
-		SelectQuery<ProductEntity> query = new SelectQuery<>(ProductEntity.class);
-		query.eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
+		SelectQuery<ProductEntity> query = new SelectQuery<>(ProductEntity.class)
+			.eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
+
+		Result result = context.fetchSingleAsResult(query);
 		
-		Result results = context.fetchListAsResults(query).get(0);
-		
-		ProductCategory category = (ProductCategory) results.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
+		ProductCategory category = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
 		assertEquals(ProductCategory.Computer, category);
 		
-		Float price = results.attributeAsFloat(ProductEntity.class, ProductEntity.Fields.price);
+		Float price = result.attributeAsFloat(ProductEntity.class, ProductEntity.Fields.price);
 		assertEquals(Float.valueOf(99.99f), price);
 		
 		

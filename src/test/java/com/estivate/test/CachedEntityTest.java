@@ -20,27 +20,26 @@ public class CachedEntityTest {
 	@Test
 	public void cachedEntityTest() {
 		
-		CustomerEntity parent = context.updateOrInsert(CustomerEntity.builder().name("intial name").email("initial email").build());
+		CustomerEntity customer = context.updateOrInsert(CustomerEntity.builder().name("initial name").email("initial email").build());
 		
-		CustomerEntity parentA = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, parent.getId()), CustomerEntity.class);
-		CustomerEntity parentB = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, parent.getId()), CustomerEntity.class);
+		CustomerEntity customerA = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
+		CustomerEntity customerB = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
 		
-		parentA.setName("new name");
-		parentB.setEmail("new email");
+		customerA.setName("new name");
+		customerB.setEmail("new email");
 		
-		assertTrue(parentA.isFieldUpdated(CustomerEntity.Fields.name));
-		assertFalse(parentA.isFieldUpdated(CustomerEntity.Fields.name));
-		
-		
-		context.updateOrInsert(parentA);
-		context.updateOrInsert(parentB);
+		assertTrue(customerA.isFieldUpdated(CustomerEntity.Fields.name));
+		assertFalse(customerA.isFieldUpdated(CustomerEntity.Fields.email));
 		
 		
+		context.updateOrInsert(customerA);
+		context.updateOrInsert(customerB);
 		
-		CustomerEntity taskC = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, parent.getId()), CustomerEntity.class);
 		
-		assertEquals(parentA.getName(), taskC.getName());
-		assertEquals(parentB.getEmail(), taskC.getEmail());
+		CustomerEntity customerC = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
+		
+		assertEquals(customerA.getName(), customerC.getName());
+		assertEquals(customerB.getEmail(), customerC.getEmail());
 		
 	}
 	

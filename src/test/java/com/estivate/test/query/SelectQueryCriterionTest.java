@@ -33,7 +33,7 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void insertTest() {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().id(1).name("customer 1").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("customer 1").build());
 		
 		assertEquals(new Date().getTime(), customer1.getCreated().getTime(), 100);
 		assertNull(customer1.getUpdated());
@@ -51,13 +51,13 @@ public class SelectQueryCriterionTest {
 	@Test 
 	public void automatedJoinTest() {
 		
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().id(1).name("customer 2").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("customer 2").build());
 
 		OrderEntity order21 = context.updateOrInsert(OrderEntity.builder().customerId(customer2.getId()).build());
 		OrderEntity order22 = context.updateOrInsert(OrderEntity.builder().customerId(customer2.getId()).build());
 		OrderEntity order23 = context.updateOrInsert(OrderEntity.builder().customerId(customer2.getId()).build());
 		
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().id(1).name("customer 3").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("customer 3").build());
 
 		OrderEntity order31 = context.updateOrInsert(OrderEntity.builder().customerId(customer3.getId()).build());
 		OrderEntity order32 = context.updateOrInsert(OrderEntity.builder().customerId(customer3.getId()).build());
@@ -67,7 +67,7 @@ public class SelectQueryCriterionTest {
 				.selectDistinct(CustomerEntity.class, AbstractEntity.Fields.id)
 				.selectAll(CustomerEntity.class)
 				
-				.eq(CustomerEntity.class, CustomerEntity.Fields.name, "parent 2");
+				.eq(CustomerEntity.class, CustomerEntity.Fields.name, "customer 2");
 		
 		List<Result> results = query.fetchListAsResults(context);
 		
@@ -84,7 +84,6 @@ public class SelectQueryCriterionTest {
 	public void queryTest() {
 		
 		CustomerEntity testTask = CustomerEntity.builder()
-				.id(4)
 				.name("queryTest test task")
 				.email("queryTest test task@test.com")
 				.address("queryTest test task address")
@@ -100,20 +99,20 @@ public class SelectQueryCriterionTest {
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.eq(CustomerEntity.class, CustomerEntity.Fields.name, "queryTest test task")
-				.lt(CustomerEntity.class, AbstractEntity.Fields.id, 5)
-				.lte(CustomerEntity.class, AbstractEntity.Fields.id, 4)
-				.gt(CustomerEntity.class, AbstractEntity.Fields.id, 1)
-				.gte(CustomerEntity.class,  AbstractEntity.Fields.id, 4)
-				.between(CustomerEntity.class, AbstractEntity.Fields.id, 3, 7)
+				.lt(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()+1)
+				.lte(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId())
+				.gt(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()-1)
+				.gte(CustomerEntity.class,  AbstractEntity.Fields.id, testTask.getId())
+				.between(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()-2, testTask.getId()+2)
 				.notEq(CustomerEntity.class, CustomerEntity.Fields.name, "external Name 2")
 				.in(CustomerEntity.class, CustomerEntity.Fields.country, Arrays.asList(CustomerEntity.Country.USA, CustomerEntity.Country.UK))
 				
 				.eqIfNotNull(CustomerEntity.class, CustomerEntity.Fields.created, null)
-				.ltIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 5)
-				.lteIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 4)
-				.gtIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1)
-				.gteIfNotNull(CustomerEntity.class,  AbstractEntity.Fields.id, 4)
-				.betweenIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 3, 7)
+				.ltIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()+1)
+				.lteIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId())
+				.gtIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()-1)
+				.gteIfNotNull(CustomerEntity.class,  AbstractEntity.Fields.id, testTask.getId())
+				.betweenIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()-2, testTask.getId()+2)
 				.notEqIfNotNull(CustomerEntity.class, CustomerEntity.Fields.name, "external Name 2");
 		
 		List<CustomerEntity> tasks = query.fetchListAs(context, CustomerEntity.class);
@@ -138,42 +137,36 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inTest() {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(1234).name("task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(1235).name("task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("task 2").build());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1234, 1235));
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()));
 		
 		assertEquals(2, context.fetchList(query).size());
-		
-		SelectQuery<CustomerEntity> query2 = query.clone().in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1235));
-		assertEquals(1, context.fetchList(query2).size());
 
-		SelectQuery<CustomerEntity> query3 = query.clone().notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1235));
-		assertEquals(1, context.fetchList(query3).size());
-
-		SelectQuery<CustomerEntity> query4 = query.clone().notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1235));
-		assertEquals(1, context.fetchList(query4).size());
+		query.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer2.getId()));
+		assertEquals(1, context.fetchList(query).size());
 		
 	}
 	
 	@Test
 	public void in2Test() {
 		
-		CustomerEntity parent1 = context.updateOrInsert(CustomerEntity.builder().id(2234).name("task 1").build());
-		CustomerEntity parent2 = context.updateOrInsert(CustomerEntity.builder().id(2235).name("task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("task 2").build());
 		
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class);
 
 		Entity<CustomerEntity> taskEntity = new Entity<>(CustomerEntity.class);
 		
-		query.in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(2234, 2235));
+		query.in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()));
 		assertEquals(2, context.fetchList(query).size());
 		
-		query.in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(2235));
+		query.in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(customer2.getId()));
 		assertEquals(1, context.fetchList(query).size());
 		
-		query.notIn(taskEntity, AbstractEntity.Fields.id, Arrays.asList(2235));
+		query.notIn(taskEntity, AbstractEntity.Fields.id, Arrays.asList(customer2.getId()));
 		assertEquals(0, context.fetchList(query).size());
 		
 	}
@@ -300,108 +293,108 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(3001).name("notIn task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(3002).name("notIn task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(3003).name("notIn task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notIn customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notIn customer 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("notIn customer 3").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(3001, 3003));
+			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer3.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains("not in (?, ?)"));
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 3002);
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 3001);
-		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == 3003);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
-		Assert.assertFalse("Class-based: Should not find task1", foundTask1_1);
-		Assert.assertFalse("Class-based: Should not find task3", foundTask3_1);
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Class-based: Should find customer2", foundCustomer2_1);
+		Assert.assertFalse("Class-based: Should not find customer1", foundCustomer1_1);
+		Assert.assertFalse("Class-based: Should not find customer3", foundCustomer3_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.notIn(parentEntity, AbstractEntity.Fields.id, Arrays.asList(3001, 3003));
+			.notIn(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer3.getId()));
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains("not in (?, ?)"));
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 3002);
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 3001);
-		boolean foundTask3_2 = results2.stream().anyMatch(t -> t.getId() == 3003);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertFalse("Entity-based: Should not find task1", foundTask1_2);
-		Assert.assertFalse("Entity-based: Should not find task3", foundTask3_2);
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
+		Assert.assertFalse("Entity-based: Should not find customer1", foundCustomer1_2);
+		Assert.assertFalse("Entity-based: Should not find customer3", foundCustomer3_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.notIn(homeIdAttribute, Arrays.asList(3001, 3003));
+			.notIn(homeIdAttribute, Arrays.asList(customer1.getId(), customer3.getId()));
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains("not in (?, ?)"));
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 3002);
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 3001);
-		boolean foundTask3_3 = results3.stream().anyMatch(t -> t.getId() == 3003);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
-		Assert.assertFalse("Attribute-based: Should not find task3", foundTask3_3);
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
+		Assert.assertFalse("Attribute-based: Should not find customer1", foundCustomer1_3);
+		Assert.assertFalse("Attribute-based: Should not find customer3", foundCustomer3_3);
 	}
 	
 	@Test
 	public void notInIfNotEmptyTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(4001).name("notInIfNotEmpty task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(4002).name("notInIfNotEmpty task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notInIfNotEmpty task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notInIfNotEmpty task 2").build());
 		
 		// Test 1: Class-based method signature with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.notInIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(4001));
+			.notInIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains("not in (?)"));
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 4002);
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 4001);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
-		Assert.assertFalse("Class-based: Should not find task1", foundTask1_1);
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Class-based: Should find customer2", foundCustomer2_1);
+		Assert.assertFalse("Class-based: Should not find customer1", foundCustomer1_1);
 		
 		// Test 2: Entity-based method signature with non-empty list
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.notInIfNotEmpty(parentEntity, AbstractEntity.Fields.id, Arrays.asList(4001));
+			.notInIfNotEmpty(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains("not in (?)"));
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 4002);
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 4001);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertFalse("Entity-based: Should not find task1", foundTask1_2);
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
+		Assert.assertFalse("Entity-based: Should not find customer1", foundCustomer1_2);
 		
 		// Test 3: Attribute-based method signature with non-empty list
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.notInIfNotEmpty(homeIdAttribute, Arrays.asList(4001));
+			.notInIfNotEmpty(homeIdAttribute, Arrays.asList(customer1.getId()));
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains("not in (?)"));
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 4002);
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 4001);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
+		Assert.assertFalse("Attribute-based: Should not find customer1", foundCustomer1_3);
 		
 		// Test with empty list - should return all results (Class-based example)
 		SelectQuery<CustomerEntity> queryEmpty = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(4001, 4002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.notInIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
 		List<CustomerEntity> resultsEmpty = context.fetchList(queryEmpty);
@@ -411,27 +404,27 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInOrTrueIfEmptyTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(5001).name("notInOrTrueIfEmpty task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(5002).name("notInOrTrueIfEmpty task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notInOrTrueIfEmpty customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notInOrTrueIfEmpty customer 2").build());
 		
 		// Test with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.notInOrTrueIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(5001));
+			.notInOrTrueIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains("not in (?)"));
 		
-		boolean foundTask2 = results1.stream().anyMatch(t -> t.getId() == 5002);
-		boolean foundTask1 = results1.stream().anyMatch(t -> t.getId() == 5001);
+		boolean foundCustomer2 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		
-		Assert.assertTrue("Should find task2", foundTask2);
-		Assert.assertFalse("Should not find task1", foundTask1);
+		Assert.assertTrue("Should find customer2", foundCustomer2);
+		Assert.assertFalse("Should not find customer1", foundCustomer1);
 		
 		// Test with empty list - should return true (all results)
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(5001, 5002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.notInOrTrueIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
 		String queryString2 = context.queryAsString(query2);
@@ -444,8 +437,8 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(6001).name("likeContains search test").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(6002).name("different content").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("likeContains search test").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different content").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -455,10 +448,10 @@ public class SelectQueryCriterionTest {
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" like ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 6001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 6002);
-		Assert.assertTrue("Class-based: Should find task1 with 'search' in name", foundTask1_1);
-		Assert.assertFalse("Class-based: Should not find task2 without 'search' in name", foundTask2_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Class-based: Should find customer1 with 'search' in name", foundCustomer1_1);
+		Assert.assertFalse("Class-based: Should not find customer2 without 'search' in name", foundCustomer2_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
@@ -469,10 +462,10 @@ public class SelectQueryCriterionTest {
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" like ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 6001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 6002);
-		Assert.assertTrue("Entity-based: Should find task1 with 'search' in name", foundTask1_2);
-		Assert.assertFalse("Entity-based: Should not find task2 without 'search' in name", foundTask2_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Entity-based: Should find customer1 with 'search' in name", foundCustomer1_2);
+		Assert.assertFalse("Entity-based: Should not find customer2 without 'search' in name", foundCustomer2_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
@@ -481,22 +474,22 @@ public class SelectQueryCriterionTest {
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
-		
+			
 		Assert.assertTrue(queryString3.contains(" like ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 6001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 6002);
-		Assert.assertTrue("Attribute-based: Should find task1 with 'search' in name", foundTask1_3);
-		Assert.assertFalse("Attribute-based: Should not find task2 without 'search' in name", foundTask2_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Attribute-based: Should find customer1 with 'search' in name", foundCustomer1_3);
+		Assert.assertFalse("Attribute-based: Should not find customer2 without 'search' in name", foundCustomer2_3);
 	}
 	
 	@Test
 	public void notLikeContainsTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(7001).name("notLikeContains exclude test").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(7002).name("different content").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notLikeContains exclude test").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different content").build());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(7001, 7002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.notLikeContains(CustomerEntity.class, CustomerEntity.Fields.name, "exclude");
 		
 		String queryString = context.queryAsString(query);
@@ -504,134 +497,134 @@ public class SelectQueryCriterionTest {
 		
 		Assert.assertTrue(queryString.contains(" not like ?"));
 		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 7001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 7002);
+		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
 		
-		Assert.assertFalse("Should not find task1 with 'exclude' in name", foundTask1);
-		Assert.assertTrue("Should find task2 without 'exclude' in name", foundTask2);
+		Assert.assertFalse("Should not find customer1 with 'exclude' in name", foundCustomer1);
+		Assert.assertTrue("Should find customer2 without 'exclude' in name", foundCustomer2);
 	}
 	
 	@Test
 	public void eqWithClassTest() throws SQLException {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 8001);
+			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1);
 
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
 	
 	@Test
 	public void eqWithEntityTest() throws SQLException {
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.eq(parentEntity, AbstractEntity.Fields.id, 8001);
+			.eq(parentEntity, AbstractEntity.Fields.id, 1);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
 	
 	@Test
 	public void eqWithAttributeTest() throws SQLException {
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.eq(homeIdAttribute, 8001);
+			.eq(homeIdAttribute, 1);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
 	
 	@Test
 	public void notEqTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(9001).name("notEq test task").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(9002).name("different task").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notEq test task").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different task").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(9001, 9002))
-			.notEq(CustomerEntity.class, AbstractEntity.Fields.id, 9001);
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.notEq(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" != ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 9001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 9002);
-		Assert.assertFalse("Class-based: Should not find task1 with homeId 9001", foundTask1_1);
-		Assert.assertTrue("Class-based: Should find task2 with different homeId", foundTask2_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertFalse("Class-based: Should not find customer1 with homeId " + customer1.getId(), foundCustomer1_1);
+		Assert.assertTrue("Class-based: Should find customer2 with different id", foundCustomer2_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(9001, 9002))
-			.notEq(parentEntity, AbstractEntity.Fields.id, 9001);
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.notEq(parentEntity, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" != ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 9001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 9002);
-		Assert.assertFalse("Entity-based: Should not find task1 with homeId 9001", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2 with different homeId", foundTask2_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertFalse("Entity-based: Should not find customer1 with id " + customer1.getId(), foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find customer2 with different id", foundCustomer2_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(9001, 9002))
-			.notEq(homeIdAttribute, 9001);
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId()))
+			.notEq(homeIdAttribute, customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" != ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 9001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 9002);
-		Assert.assertFalse("Attribute-based: Should not find task1 with homeId 9001", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2 with different homeId", foundTask2_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertFalse("Attribute-based: Should not find customer1 with id 9001", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find customer2 with different id", foundCustomer2_3);
 	}
 	
 	@Test
 	public void eqIfNotNullTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(10001).name("eqIfNotNull test task").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(10002).name("different task").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("eqIfNotNull test task").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different task").build());
 		
 		// Test 1: Class-based method signature with non-null value
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.eqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 10001);
+			.eqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" = ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 10001);
-		Assert.assertTrue("Class-based: Should find task1 with homeId 10001", foundTask1_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Class-based: Should find customer1 with id " + customer1.getId(), foundCustomer1_1);
 		
 		// Test 2: Entity-based method signature with non-null value
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.eqIfNotNull(parentEntity, AbstractEntity.Fields.id, 10001);
+			.eqIfNotNull(parentEntity, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" = ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 10001);
-		Assert.assertTrue("Entity-based: Should find task1 with homeId 10001", foundTask1_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Entity-based: Should find customer1 with id " + customer1.getId(), foundCustomer1_2);
 		
 		// Test 3: Attribute-based method signature with non-null value
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.eqIfNotNull(homeIdAttribute, 10001);
+			.eqIfNotNull(homeIdAttribute, customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" = ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 10001);
-		Assert.assertTrue("Attribute-based: Should find task1 with homeId 10001", foundTask1_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Attribute-based: Should find customer1 with id " + customer1.getId(), foundCustomer1_3);
 		
 		// Test with null value - should return all results (Class-based example)
 		SelectQuery<CustomerEntity> queryNull = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(10001, 10002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.eqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, null);
 		
 		List<CustomerEntity> resultsNull = context.fetchList(queryNull);
@@ -641,53 +634,53 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqNullableTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(10101).name("eqNullable test task").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(10102).name("different task").email("external").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different task").email("external").build());
 		
 		// Test with non-null value
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(10101, 10102))
-			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.name, "external");
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.email, "external");
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" = ?"));
-		boolean foundTask2 = results1.stream().anyMatch(t -> t.getId() == 10102);
-		Assert.assertTrue("Should find task2 with external name", foundTask2);
+		boolean foundCustomer2 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Should find customer2 with external name", foundCustomer2);
 		
 		// Test with null value - should find entities with null external name
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(10101, 10102))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.name, null);
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" is null"));
-		boolean foundTask1 = results2.stream().anyMatch(t -> t.getId() == 10101);
+		boolean foundTask1 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Should find task1 with null external name", foundTask1);
 	}
 	
 	@Test
 	public void ltTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(11001).name("lt test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(11002).name("lt test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(11003).name("lt test task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("lt test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("lt test customer 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("lt test customer 3").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(11001, 11002, 11003))
-			.lt(CustomerEntity.class, AbstractEntity.Fields.id, 11003);
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.lt(CustomerEntity.class, AbstractEntity.Fields.id, customer3.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" < ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 11001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 11002);
-		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == 11003);
+		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
 		Assert.assertTrue("Class-based: Should find task1", foundTask1_1);
 		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
 		Assert.assertFalse("Class-based: Should not find task3", foundTask3_1);
@@ -695,321 +688,321 @@ public class SelectQueryCriterionTest {
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(11001, 11002, 11003))
-			.lt(parentEntity, AbstractEntity.Fields.id, 11003);
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.lt(parentEntity, AbstractEntity.Fields.id, customer3.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" < ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 11001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 11002);
-		boolean foundTask3_2 = results2.stream().anyMatch(t -> t.getId() == 11003);
-		Assert.assertTrue("Entity-based: Should find task1", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertFalse("Entity-based: Should not find task3", foundTask3_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Entity-based: Should find task1", foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find task2", foundCustomer2_2);
+		Assert.assertFalse("Entity-based: Should not find task3", foundCustomer3_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(11001, 11002, 11003))
-			.lt(homeIdAttribute, 11003);
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.lt(homeIdAttribute, customer3.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" < ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 11001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 11002);
-		boolean foundTask3_3 = results3.stream().anyMatch(t -> t.getId() == 11003);
-		Assert.assertTrue("Attribute-based: Should find task1", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertFalse("Attribute-based: Should not find task3", foundTask3_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Attribute-based: Should find task1", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find task2", foundCustomer2_3);
+		Assert.assertFalse("Attribute-based: Should not find task3", foundCustomer3_3);
 	}
 	
 	@Test
 	public void lteTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(12001).name("lte test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(12002).name("lte test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(12003).name("lte test task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("lte test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("lte test customer 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("lte test customer 3").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(12001, 12002, 12003))
-			.lte(CustomerEntity.class, AbstractEntity.Fields.id, 12002);
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.lte(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" <= ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 12001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 12002);
-		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == 12003);
-		Assert.assertTrue("Class-based: Should find task1", foundTask1_1);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
-		Assert.assertFalse("Class-based: Should not find task3", foundTask3_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Class-based: Should find task1", foundCustomer1_1);
+		Assert.assertTrue("Class-based: Should find task2", foundCustomer2_1);
+		Assert.assertFalse("Class-based: Should not find task3", foundCustomer3_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(12001, 12002, 12003))
-			.lte(parentEntity, AbstractEntity.Fields.id, 12002);
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.lte(parentEntity, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" <= ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 12001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 12002);
-		boolean foundTask3_2 = results2.stream().anyMatch(t -> t.getId() == 12003);
-		Assert.assertTrue("Entity-based: Should find task1", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertFalse("Entity-based: Should not find task3", foundTask3_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Entity-based: Should find customer1", foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
+		Assert.assertFalse("Entity-based: Should not find customer3", foundCustomer3_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(12001, 12002, 12003))
-			.lte(homeIdAttribute, 12002);
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.lte(homeIdAttribute, customer2.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" <= ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 12001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 12002);
-		boolean foundTask3_3 = results3.stream().anyMatch(t -> t.getId() == 12003);
-		Assert.assertTrue("Attribute-based: Should find task1", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertFalse("Attribute-based: Should not find task3", foundTask3_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertTrue("Attribute-based: Should find customer1", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
+		Assert.assertFalse("Attribute-based: Should not find customer3", foundCustomer3_3);
 	}
 	
 	@Test
 	public void gtTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(13001).name("gt test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(13002).name("gt test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(13003).name("gt test task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("gt test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("gt test customer 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("gt test customer 3").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(13001, 13002, 13003))
-			.gt(CustomerEntity.class, AbstractEntity.Fields.id, 13001);
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.gt(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" > ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 13001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 13002);
-		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == 13003);
-		Assert.assertFalse("Class-based: Should not find task1", foundTask1_1);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
-		Assert.assertTrue("Class-based: Should find task3", foundTask3_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertFalse("Class-based: Should not find customer1", foundCustomer1_1);
+		Assert.assertTrue("Class-based: Should find customer2", foundCustomer2_1);
+		Assert.assertTrue("Class-based: Should find customer3", foundCustomer3_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(13001, 13002, 13003))
-			.gt(parentEntity, AbstractEntity.Fields.id, 13001);
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.gt(parentEntity, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" > ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 13001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 13002);
-		boolean foundTask3_2 = results2.stream().anyMatch(t -> t.getId() == 13003);
-		Assert.assertFalse("Entity-based: Should not find task1", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertTrue("Entity-based: Should find task3", foundTask3_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertFalse("Entity-based: Should not find customer1", foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
+		Assert.assertTrue("Entity-based: Should find customer3", foundCustomer3_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(13001, 13002, 13003))
-			.gt(homeIdAttribute, 13001);
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.gt(homeIdAttribute, customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" > ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 13001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 13002);
-		boolean foundTask3_3 = results3.stream().anyMatch(t -> t.getId() == 13003);
-		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertTrue("Attribute-based: Should find task3", foundTask3_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertFalse("Attribute-based: Should not find customer1", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
+		Assert.assertTrue("Attribute-based: Should find customer3", foundCustomer3_3);
 	}
 	
 	@Test
 	public void gteTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(14001).name("gte test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(14002).name("gte test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(14003).name("gte test task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("gte test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("gte test customer 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("gte test customer 3").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(14001, 14002, 14003))
-			.gte(CustomerEntity.class, AbstractEntity.Fields.id, 14002);
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.gte(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" >= ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 14001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 14002);
-		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == 14003);
-		Assert.assertFalse("Class-based: Should not find task1", foundTask1_1);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
-		Assert.assertTrue("Class-based: Should find task3", foundTask3_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertFalse("Class-based: Should not find customer1", foundCustomer1_1);
+		Assert.assertTrue("Class-based: Should find customer2", foundCustomer2_1);
+		Assert.assertTrue("Class-based: Should find customer3", foundCustomer3_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(14001, 14002, 14003))
-			.gte(parentEntity, AbstractEntity.Fields.id, 14002);
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.gte(parentEntity, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" >= ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 14001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 14002);
-		boolean foundTask3_2 = results2.stream().anyMatch(t -> t.getId() == 14003);
-		Assert.assertFalse("Entity-based: Should not find task1", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertTrue("Entity-based: Should find task3", foundTask3_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertFalse("Entity-based: Should not find customer1", foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
+		Assert.assertTrue("Entity-based: Should find customer3", foundCustomer3_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(14001, 14002, 14003))
-			.gte(homeIdAttribute, 14002);
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
+			.gte(homeIdAttribute, customer2.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" >= ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 14001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 14002);
-		boolean foundTask3_3 = results3.stream().anyMatch(t -> t.getId() == 14003);
-		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertTrue("Attribute-based: Should find task3", foundTask3_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
+		Assert.assertFalse("Attribute-based: Should not find customer1", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
+		Assert.assertTrue("Attribute-based: Should find customer3", foundCustomer3_3);
 	}
 	
 	@Test
 	public void betweenTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(15001).name("between test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(15002).name("between test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(15003).name("between test task 3").build());
-		CustomerEntity task4 = context.updateOrInsert(CustomerEntity.builder().id(15004).name("between test task 4").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 3").build());
+		CustomerEntity customer4 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 4").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(15001, 15002, 15003, 15004))
-			.between(CustomerEntity.class, AbstractEntity.Fields.id, 15002, 15003);
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId(), customer4.getId()))
+			.between(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId(), customer3.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" between ? and ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 15001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 15002);
-		boolean foundTask3_1 = results1.stream().anyMatch(t -> t.getId() == 15003);
-		boolean foundTask4_1 = results1.stream().anyMatch(t -> t.getId() == 15004);
-		Assert.assertFalse("Class-based: Should not find task1", foundTask1_1);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
-		Assert.assertTrue("Class-based: Should find task3", foundTask3_1);
-		Assert.assertFalse("Class-based: Should not find task4", foundTask4_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
+		boolean foundCustomer4_1 = results1.stream().anyMatch(t -> t.getId() == customer4.getId());
+		Assert.assertFalse("Class-based: Should not find customer1", foundCustomer1_1);
+		Assert.assertTrue("Class-based: Should find customer2", foundCustomer2_1);
+		Assert.assertTrue("Class-based: Should find customer3", foundCustomer3_1);
+		Assert.assertFalse("Class-based: Should not find customer4", foundCustomer4_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(15001, 15002, 15003, 15004))
-			.between(parentEntity, AbstractEntity.Fields.id, 15002, 15003);
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId(), customer4.getId()))
+			.between(parentEntity, AbstractEntity.Fields.id, customer2.getId(), customer3.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" between ? and ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 15001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 15002);
-		boolean foundTask3_2 = results2.stream().anyMatch(t -> t.getId() == 15003);
-		boolean foundTask4_2 = results2.stream().anyMatch(t -> t.getId() == 15004);
-		Assert.assertFalse("Entity-based: Should not find task1", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
-		Assert.assertTrue("Entity-based: Should find task3", foundTask3_2);
-		Assert.assertFalse("Entity-based: Should not find task4", foundTask4_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
+		boolean foundCustomer4_2 = results2.stream().anyMatch(t -> t.getId() == customer4.getId());
+		Assert.assertFalse("Entity-based: Should not find customer1", foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
+		Assert.assertTrue("Entity-based: Should find customer3", foundCustomer3_2);
+		Assert.assertFalse("Entity-based: Should not find customer4", foundCustomer4_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(15001, 15002, 15003, 15004))
-			.between(homeIdAttribute, 15002, 15003);
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId(), customer4.getId()))
+			.between(homeIdAttribute, customer2.getId(), customer3.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" between ? and ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 15001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 15002);
-		boolean foundTask3_3 = results3.stream().anyMatch(t -> t.getId() == 15003);
-		boolean foundTask4_3 = results3.stream().anyMatch(t -> t.getId() == 15004);
-		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
-		Assert.assertTrue("Attribute-based: Should find task3", foundTask3_3);
-		Assert.assertFalse("Attribute-based: Should not find task4", foundTask4_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
+		boolean foundCustomer4_3 = results3.stream().anyMatch(t -> t.getId() == customer4.getId());
+		Assert.assertFalse("Attribute-based: Should not find customer1", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
+		Assert.assertTrue("Attribute-based: Should find customer3", foundCustomer3_3);
+		Assert.assertFalse("Attribute-based: Should not find customer4", foundCustomer4_3);
 	}
 	
 	@Test
 	public void inIfNotEmptyTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(16001).name("inIfNotEmpty test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(16002).name("inIfNotEmpty test task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inIfNotEmpty test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("inIfNotEmpty test customer 2").build());
 		
 		// Test 1: Class-based method signature with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(16001));
+			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" in (?)"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 16001);
-		Assert.assertTrue("Class-based: Should find task1", foundTask1_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Class-based: Should find customer1", foundCustomer1_1);
 		
 		// Test 2: Entity-based method signature with non-empty list
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.inIfNotEmpty(parentEntity, AbstractEntity.Fields.id, Arrays.asList(16001));
+			.inIfNotEmpty(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" in (?)"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 16001);
-		Assert.assertTrue("Entity-based: Should find task1", foundTask1_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Entity-based: Should find customer1", foundCustomer1_2);
 		
 		// Test 3: Attribute-based method signature with non-empty list
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.inIfNotEmpty(homeIdAttribute, Arrays.asList(16001));
+			.inIfNotEmpty(homeIdAttribute, Arrays.asList(customer1.getId()));
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" in (?)"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 16001);
+		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Attribute-based: Should find task1", foundTask1_3);
 		
 		// Test with empty list - should return all results (Class-based example)
 		SelectQuery<CustomerEntity> queryEmpty = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(16001, 16002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
 		List<CustomerEntity> resultsEmpty = context.fetchList(queryEmpty);
@@ -1019,12 +1012,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inOrNullTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(17001).name("inOrNull test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(17002).name("inOrNull test task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inOrNull test customer 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name(null).build());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(17001, 17002))
-			.inOrNull(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("external"));
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.inOrNull(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("inOrNull test customer 1"));
 		
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
@@ -1039,116 +1032,116 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(18001).name("prefix_test_task").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(18002).name("different_task").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("prefix_test_task").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different_task").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(18001, 18002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.likeStartsWith(CustomerEntity.class, CustomerEntity.Fields.name, "prefix");
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" like ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 18001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 18002);
-		Assert.assertTrue("Class-based: Should find task1 with name starting with 'prefix'", foundTask1_1);
-		Assert.assertFalse("Class-based: Should not find task2 without 'prefix' at start", foundTask2_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Class-based: Should find customer1 with name starting with 'prefix'", foundCustomer1_1);
+		Assert.assertFalse("Class-based: Should not find customer2 without 'prefix' at start", foundCustomer2_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(18001, 18002))
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.likeStartsWith(parentEntity, CustomerEntity.Fields.name, "prefix");
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" like ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 18001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 18002);
-		Assert.assertTrue("Entity-based: Should find task1 with name starting with 'prefix'", foundTask1_2);
-		Assert.assertFalse("Entity-based: Should not find task2 without 'prefix' at start", foundTask2_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Entity-based: Should find customer1 with name starting with 'prefix'", foundCustomer1_2);
+		Assert.assertFalse("Entity-based: Should not find customer2 without 'prefix' at start", foundCustomer2_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(18001, 18002))
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId()))
 			.likeStartsWith(nameAttribute, "prefix");
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" like ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 18001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 18002);
-		Assert.assertTrue("Attribute-based: Should find task1 with name starting with 'prefix'", foundTask1_3);
-		Assert.assertFalse("Attribute-based: Should not find task2 without 'prefix' at start", foundTask2_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Attribute-based: Should find customer1 with name starting with 'prefix'", foundCustomer1_3);
+		Assert.assertFalse("Attribute-based: Should not find customer2 without 'prefix' at start", foundCustomer2_3);
 	}
 	
 	@Test
 	public void likeEndsWithTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(19001).name("test_task_suffix").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(19002).name("different_task").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("test_task_suffix").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different_task").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(19001, 19002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.likeEndsWith(CustomerEntity.class, CustomerEntity.Fields.name, "suffix");
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" like ?"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 19001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 19002);
-		Assert.assertTrue("Class-based: Should find task1 with name ending with 'suffix'", foundTask1_1);
-		Assert.assertFalse("Class-based: Should not find task2 without 'suffix' at end", foundTask2_1);
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Class-based: Should find task1 with name ending with 'suffix'", foundCustomer1_1);
+		Assert.assertFalse("Class-based: Should not find task2 without 'suffix' at end", foundCustomer2_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(19001, 19002))
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.likeEndsWith(parentEntity, CustomerEntity.Fields.name, "suffix");
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" like ?"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 19001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 19002);
-		Assert.assertTrue("Entity-based: Should find task1 with name ending with 'suffix'", foundTask1_2);
-		Assert.assertFalse("Entity-based: Should not find task2 without 'suffix' at end", foundTask2_2);
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Entity-based: Should find task1 with name ending with 'suffix'", foundCustomer1_2);
+		Assert.assertFalse("Entity-based: Should not find task2 without 'suffix' at end", foundCustomer2_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute nameAttribute = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(19001, 19002))
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId()))
 			.likeEndsWith(nameAttribute, "suffix");
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" like ?"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 19001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 19002);
-		Assert.assertTrue("Attribute-based: Should find task1 with name ending with 'suffix'", foundTask1_3);
-		Assert.assertFalse("Attribute-based: Should not find task2 without 'suffix' at end", foundTask2_3);
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertTrue("Attribute-based: Should find task1 with name ending with 'suffix'", foundCustomer1_3);
+		Assert.assertFalse("Attribute-based: Should not find task2 without 'suffix' at end", foundCustomer2_3);
 	}
 	
 	@Test
 	public void likeInTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(20001).name("pattern1_test").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(20002).name("pattern2_test").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(20003).name("different_test").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("pattern1_test").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("pattern2_test").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("different_test").build());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(20001, 20002, 20003))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
 			.likeIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("pattern1%", "pattern2%"));
 		
 		String queryString = context.queryAsString(query);
@@ -1156,24 +1149,24 @@ public class SelectQueryCriterionTest {
 		
 		Assert.assertTrue(queryString.contains(" like ?"));
 		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 20001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 20002);
-		boolean foundTask3 = results.stream().anyMatch(t -> t.getId() == 20003);
+		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3 = results.stream().anyMatch(t -> t.getId() == customer3.getId());
 		
-		Assert.assertTrue("Should find task1 matching pattern1", foundTask1);
-		Assert.assertTrue("Should find task2 matching pattern2", foundTask2);
-		Assert.assertFalse("Should not find task3 not matching patterns", foundTask3);
+		Assert.assertTrue("Should find customer1 matching pattern1", foundCustomer1);
+		Assert.assertTrue("Should find customer2 matching pattern2", foundCustomer2);
+		Assert.assertFalse("Should not find customer3 not matching patterns", foundCustomer3);
 	}
 	
 	@Test
 	public void notLikeInTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(21001).name("pattern1_test").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(21002).name("pattern2_test").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(21003).name("different_test").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("pattern1_test").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("pattern2_test").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("different_test").build());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(21001, 21002, 21003))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
 			.notLikeIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("pattern1%", "pattern2%"));
 		
 		String queryString = context.queryAsString(query);
@@ -1181,35 +1174,35 @@ public class SelectQueryCriterionTest {
 		
 		Assert.assertTrue(queryString.contains(" not like ?"));
 		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 21001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 21002);
-		boolean foundTask3 = results.stream().anyMatch(t -> t.getId() == 21003);
+		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3 = results.stream().anyMatch(t -> t.getId() == customer3.getId());
 		
-		Assert.assertFalse("Should not find task1 matching pattern1", foundTask1);
-		Assert.assertFalse("Should not find task2 matching pattern2", foundTask2);
-		Assert.assertTrue("Should find task3 not matching patterns", foundTask3);
+		Assert.assertFalse("Should not find task1 matching pattern1", foundCustomer1);
+		Assert.assertFalse("Should not find task2 matching pattern2", foundCustomer2);
+		Assert.assertTrue("Should find task3 not matching patterns", foundCustomer3);
 	}
 	
 	@Test
 	public void inOrFalseIfEmptyTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(22001).name("inOrFalseIfEmpty test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(22002).name("inOrFalseIfEmpty test task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inOrFalseIfEmpty test task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("inOrFalseIfEmpty test task 2").build());
 		
 		// Test with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.inOrFalseIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(22001));
+			.inOrFalseIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" in (?)"));
-		boolean foundTask1 = results1.stream().anyMatch(t -> t.getId() == 22001);
-		Assert.assertTrue("Should find task1", foundTask1);
+		boolean foundCustomer1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		Assert.assertTrue("Should find task1", foundCustomer1);
 		
 		// Test with empty list - should return false (no results)
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(22001, 22002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.inOrFalseIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
 		String queryString2 = context.queryAsString(query2);
@@ -1222,68 +1215,68 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void nativeCriterionTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(23001).name("native test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(23002).name("native test task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("native test task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("native test task 2").build());
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(23001, 23002))
-			.nativeCriterion(CustomerEntity.class, AbstractEntity.Fields.id, "> 23001");
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.nativeCriterion(CustomerEntity.class, AbstractEntity.Fields.id, "> "+customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains("> 23001"));
-		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == 23001);
-		boolean foundTask2_1 = results1.stream().anyMatch(t -> t.getId() == 23002);
-		Assert.assertFalse("Class-based: Should not find task1", foundTask1_1);
-		Assert.assertTrue("Class-based: Should find task2", foundTask2_1);
+		Assert.assertTrue(queryString1.contains("> "+customer1.getId()));
+		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertFalse("Class-based: Should not find task1", foundCustomer1_1);
+		Assert.assertTrue("Class-based: Should find task2", foundCustomer2_1);
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(23001, 23002))
-			.nativeCriterion(parentEntity, AbstractEntity.Fields.id, "> 23001");
+			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.nativeCriterion(parentEntity, AbstractEntity.Fields.id, "> "+customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains("> 23001"));
-		boolean foundTask1_2 = results2.stream().anyMatch(t -> t.getId() == 23001);
-		boolean foundTask2_2 = results2.stream().anyMatch(t -> t.getId() == 23002);
-		Assert.assertFalse("Entity-based: Should not find task1", foundTask1_2);
-		Assert.assertTrue("Entity-based: Should find task2", foundTask2_2);
+		Assert.assertTrue(queryString2.contains("> "+customer1.getId()));
+		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertFalse("Entity-based: Should not find customer1", foundCustomer1_2);
+		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
 		
 		// Test 3: Attribute-based method signature
 		Attribute homeIdAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class)
-			.in(homeIdAttribute, Arrays.asList(23001, 23002))
-			.nativeCriterion(homeIdAttribute, "> 23001");
+			.in(homeIdAttribute, Arrays.asList(customer1.getId(), customer2.getId()))
+			.nativeCriterion(homeIdAttribute, "> "+customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains("> 23001"));
-		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == 23001);
-		boolean foundTask2_3 = results3.stream().anyMatch(t -> t.getId() == 23002);
-		Assert.assertFalse("Attribute-based: Should not find task1", foundTask1_3);
-		Assert.assertTrue("Attribute-based: Should find task2", foundTask2_3);
+		Assert.assertTrue(queryString3.contains("> "+customer1.getId()));
+		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
+		Assert.assertFalse("Attribute-based: Should not find customer1", foundCustomer1_3);
+		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
 	}
 	
 	@Test
 	public void inSubQueryTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(24001).name("inSubQuery test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(24002).name("inSubQuery test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(24003).name("inSubQuery test task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inSubQuery test task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("inSubQuery test task 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("inSubQuery test task 3").build());
 		
 		// Create subquery that selects homeIds > 24001
 		SelectQuery<CustomerEntity> subQuery = Estivate.selectQuery(CustomerEntity.class)
 			.select(CustomerEntity.class, AbstractEntity.Fields.id)
-			.gt(CustomerEntity.class, AbstractEntity.Fields.id, 24001);
+			.gt(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(24001, 24002, 24003))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
 			.inSubQuery(CustomerEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		String queryString = context.queryAsString(query);
@@ -1291,29 +1284,29 @@ public class SelectQueryCriterionTest {
 		
 		Assert.assertTrue(queryString.contains(" in (SELECT"));
 		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 24001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 24002);
-		boolean foundTask3 = results.stream().anyMatch(t -> t.getId() == 24003);
+		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3 = results.stream().anyMatch(t -> t.getId() == customer3.getId());
 		
-		Assert.assertFalse("Should not find task1", foundTask1);
-		Assert.assertTrue("Should find task2", foundTask2);
-		Assert.assertTrue("Should find task3", foundTask3);
+		Assert.assertFalse("Should not find customer1", foundCustomer1);
+		Assert.assertTrue("Should find customer2", foundCustomer2);
+		Assert.assertTrue("Should find customer3", foundCustomer3);
 	}
 	
 	@Test
 	public void notInSubQueryTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(25001).name("notInSubQuery test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(25002).name("notInSubQuery test task 2").build());
-		CustomerEntity task3 = context.updateOrInsert(CustomerEntity.builder().id(25003).name("notInSubQuery test task 3").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notInSubQuery test task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notInSubQuery test task 2").build());
+		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("notInSubQuery test task 3").build());
 		
 		// Create subquery that selects homeIds > 25001
 		SelectQuery<CustomerEntity> subQuery = Estivate.selectQuery(CustomerEntity.class)
 			.select(CustomerEntity.class, AbstractEntity.Fields.id)
-			.gt(CustomerEntity.class, AbstractEntity.Fields.id, 25001);
+			.gt(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(25001, 25002, 25003))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
 			.notInSubQuery(CustomerEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		String queryString = context.queryAsString(query);
@@ -1321,49 +1314,20 @@ public class SelectQueryCriterionTest {
 		
 		Assert.assertTrue(queryString.contains(" not in (SELECT"));
 		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 25001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 25002);
-		boolean foundTask3 = results.stream().anyMatch(t -> t.getId() == 25003);
+		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
+		boolean foundCustomer3 = results.stream().anyMatch(t -> t.getId() == customer3.getId());
 		
-		Assert.assertTrue("Should find task1", foundTask1);
-		Assert.assertFalse("Should not find task2", foundTask2);
-		Assert.assertFalse("Should not find task3", foundTask3);
+		Assert.assertTrue("Should find customer1", foundCustomer1);
+		Assert.assertFalse("Should not find customer2", foundCustomer2);
+		Assert.assertFalse("Should not find customer3", foundCustomer3);
 	}
 	
 	@Test
 	public void existsTest() throws SQLException {
 		
-		CustomerEntity task1 = context.updateOrInsert(CustomerEntity.builder().id(26001).name("exists test task 1").build());
-		CustomerEntity task2 = context.updateOrInsert(CustomerEntity.builder().id(26002).name("exists test task 2").build());
-		
-		OrderEntity child1 = context.updateOrInsert(OrderEntity.builder().customerId(task1.getId()).build());
-		
-		// Create subquery that checks for children
-		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)
-			.select(OrderEntity.class, AbstractEntity.Fields.id)
-			.eq(OrderEntity.class, OrderEntity.Fields.customerId, Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id));
-		
-		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(26001, 26002))
-			.exists(subQuery);
-		
-		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
-		
-		Assert.assertTrue(queryString.contains("EXISTS"));
-		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 26001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 26002);
-		
-		Assert.assertTrue("Should find task1 which has children", foundTask1);
-		Assert.assertFalse("Should not find task2 which has no children", foundTask2);
-	}
-	
-	@Test
-	public void notExistsTest() throws SQLException {
-		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().id(27001).name("notExists test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().id(27002).name("notExists test task 2").build());
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("exists test task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("exists test task 2").build());
 		
 		OrderEntity child1 = context.updateOrInsert(OrderEntity.builder().customerId(customer1.getId()).build());
 		
@@ -1373,7 +1337,36 @@ public class SelectQueryCriterionTest {
 			.eq(OrderEntity.class, OrderEntity.Fields.customerId, Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id));
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(27001, 27002))
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
+			.exists(subQuery);
+		
+		String queryString = context.queryAsString(query);
+		List<CustomerEntity> results = context.fetchList(query);
+		
+		Assert.assertTrue(queryString.contains("EXISTS"));
+		
+		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
+		
+		Assert.assertTrue("Should find customer1 which has children", foundCustomer1);
+		Assert.assertFalse("Should not find customer2 which has no children", foundCustomer2);
+	}
+	
+	@Test
+	public void notExistsTest() throws SQLException {
+		
+		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notExists test task 1").build());
+		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notExists test task 2").build());
+		
+		OrderEntity child1 = context.updateOrInsert(OrderEntity.builder().customerId(customer1.getId()).build());
+		
+		// Create subquery that checks for children
+		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)
+			.select(OrderEntity.class, AbstractEntity.Fields.id)
+			.eq(OrderEntity.class, OrderEntity.Fields.customerId, Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id));
+		
+		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.notExists(subQuery);
 		
 		String queryString = context.queryAsString(query);
@@ -1381,8 +1374,8 @@ public class SelectQueryCriterionTest {
 		
 		Assert.assertTrue(queryString.contains("NOT EXISTS"));
 		
-		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == 27001);
-		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == 27002);
+		boolean foundTask1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
+		boolean foundTask2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
 		
 		Assert.assertFalse("Should not find task1 which has children", foundTask1);
 		Assert.assertTrue("Should find task2 which has no children", foundTask2);
@@ -1400,7 +1393,7 @@ public class SelectQueryCriterionTest {
 		
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue("Should generate = operator", queryString.contains(" = ?"));
-		Assert.assertTrue("Should reference homeId field", queryString.contains("HOMEID_D"));
+		Assert.assertTrue("Should reference homeId field", queryString.contains("ID_D"));
 	}
 	
 	@Test
@@ -1411,7 +1404,7 @@ public class SelectQueryCriterionTest {
 		
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue("Should generate = operator", queryString.contains(" = ?"));
-		Assert.assertTrue("Should reference homeId field", queryString.contains("HOMEID_D"));
+		Assert.assertTrue("Should reference homeId field", queryString.contains("ID_D"));
 	}
 	
 	@Test
@@ -1422,7 +1415,7 @@ public class SelectQueryCriterionTest {
 		
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue("Should generate = operator", queryString.contains(" = ?"));
-		Assert.assertTrue("Should reference homeId field", queryString.contains("HOMEID_D"));
+		Assert.assertTrue("Should reference homeId field", queryString.contains("ID_D"));
 	}
 	
 	@Test
@@ -1430,7 +1423,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
 	
 	@Test
@@ -1439,7 +1432,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEq(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
 	
 	@Test
@@ -1448,7 +1441,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEq(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
 	
 	@Test
@@ -1456,7 +1449,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lt(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
 	
 	@Test
@@ -1465,7 +1458,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lt(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
 	
 	@Test
@@ -1474,7 +1467,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lt(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
 	
 	@Test
@@ -1482,7 +1475,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lte(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
 	
 	@Test
@@ -1491,7 +1484,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lte(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
 	
 	@Test
@@ -1500,7 +1493,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lte(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
 	
 	@Test
@@ -1508,7 +1501,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gt(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
 	
 	@Test
@@ -1517,7 +1510,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gt(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
 	
 	@Test
@@ -1526,7 +1519,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gt(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
 	
 	@Test
@@ -1534,7 +1527,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gte(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
 	
 	@Test
@@ -1543,7 +1536,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gte(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
 	
 	@Test
@@ -1552,7 +1545,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gte(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
 	
 	@Test
@@ -1560,7 +1553,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.between(CustomerEntity.class, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
 	
 	@Test
@@ -1569,7 +1562,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.between(parentEntity, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
 	
 	@Test
@@ -1578,7 +1571,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.between(homeIdAttribute, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
 	
 	@Test
@@ -1586,7 +1579,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
 	}
 	
 	@Test
@@ -1595,7 +1588,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
 	}
 	
 	@Test
@@ -1604,7 +1597,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
 	}
 	
 	@Test
@@ -1612,7 +1605,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1621,7 +1614,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notIn(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1630,7 +1623,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notIn(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1768,7 +1761,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.eqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
 	
 	@Test
@@ -1777,7 +1770,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.eqIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
 	
 	@Test
@@ -1786,7 +1779,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.eqIfNotNull(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("HOMEID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
 	
 	@Test
@@ -1794,7 +1787,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.name, "external");
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("NAME_D = ?"));
 	}
 	
 	@Test
@@ -1803,7 +1796,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.eqNullable(parentEntity, CustomerEntity.Fields.name, "external");
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("NAME_D = ?"));
 	}
 	
 	@Test
@@ -1812,7 +1805,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.eqNullable(externalNameAttribute, "external");
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("EXTERNALNAME_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("NAME_D = ?"));
 	}
 	
 	@Test
@@ -1820,7 +1813,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1829,7 +1822,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmpty(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1838,7 +1831,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmpty(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1846,7 +1839,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyNullable(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1855,7 +1848,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyNullable(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1864,7 +1857,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyNullable(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1872,7 +1865,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1881,7 +1874,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1890,7 +1883,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1898,7 +1891,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1907,7 +1900,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1916,7 +1909,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("HOMEID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
 	
 	@Test
@@ -1924,7 +1917,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1933,7 +1926,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1942,7 +1935,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1950,7 +1943,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInIfNotEmptyOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1959,7 +1952,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInIfNotEmptyOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -1968,7 +1961,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInIfNotEmptyOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("HOMEID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
 	
 	@Test
@@ -2288,7 +2281,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
 	
 	@Test
@@ -2297,7 +2290,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEqIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
 	
 	@Test
@@ -2306,7 +2299,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEqIfNotNull(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("HOMEID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
 	
 	@Test
@@ -2314,7 +2307,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEqNullable(CustomerEntity.class, CustomerEntity.Fields.name, "external");
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
 	
 	@Test
@@ -2323,7 +2316,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEqNullable(parentEntity, CustomerEntity.Fields.name, "external");
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
 	
 	@Test
@@ -2332,7 +2325,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notEqNullable(externalNameAttribute, "external");
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("EXTERNALNAME_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
 	
 	@Test
@@ -2340,7 +2333,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.ltIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
 	
 	@Test
@@ -2349,7 +2342,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.ltIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
 	
 	@Test
@@ -2358,7 +2351,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.ltIfNotNull(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("HOMEID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
 	
 	@Test
@@ -2366,7 +2359,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lteIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
 	
 	@Test
@@ -2375,7 +2368,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lteIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
 	
 	@Test
@@ -2384,7 +2377,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lteIfNotNull(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("HOMEID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
 	
 	@Test
@@ -2392,7 +2385,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gtIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
 	
 	@Test
@@ -2401,7 +2394,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gtIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
 	
 	@Test
@@ -2410,7 +2403,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gtIfNotNull(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("HOMEID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
 	
 	@Test
@@ -2418,7 +2411,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gteIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
 	
 	@Test
@@ -2427,7 +2420,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gteIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
 	
 	@Test
@@ -2436,7 +2429,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.gteIfNotNull(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("HOMEID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
 	
 	@Test
@@ -2444,7 +2437,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.betweenIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
 	
 	@Test
@@ -2453,7 +2446,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.betweenIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
 	
 	@Test
@@ -2462,7 +2455,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.betweenIfNotNull(homeIdAttribute, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("HOMEID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
 	
 	@Test

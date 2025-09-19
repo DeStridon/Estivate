@@ -11,13 +11,14 @@ import lombok.experimental.SuperBuilder;
 
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Data
 @SuperBuilder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Select extends Attribute implements Comparable {
 	
 	public String alias;
+	public java.util.function.Function<String, ?> converter;
 
 	@Override
 	public int compareTo(Object o) {
