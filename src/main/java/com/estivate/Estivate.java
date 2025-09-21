@@ -524,9 +524,6 @@ public class Estivate {
 	
 	 
 	 public static class Functions{
-		 
-		/* Keyword / Modifiers */
-		public static Attribute.Function distinct = new Attribute.Function("distinct ", "");
 		
 		/* Math Functions */
 		public static Attribute.Function abs = new Attribute.Function("abs(", ")");

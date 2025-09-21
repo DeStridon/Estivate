@@ -43,8 +43,7 @@ public class UpdateQueryTest {
             .build();
 
         // 2. Save it
-        CustomerEntity savedCustomer = context.updateOrInsert(customer);
-        Assert.assertNotNull("Customer should be saved", savedCustomer);
+        CustomerEntity savedCustomer = context.insert(customer);
         Assert.assertTrue("Customer should have an ID", savedCustomer.getId() > 0);
 
         // 3. Load the entity again from id

@@ -30,12 +30,11 @@ public class SelectQueryImportTest {
             .createdTo(new Date(System.currentTimeMillis()))
             .build();
 
-
-
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-            .importCriterion(filter);
+            .importCriterionFromQueryMapping(filter);
 
         System.out.println(context.queryAsString(query));
+        
     }
 
 

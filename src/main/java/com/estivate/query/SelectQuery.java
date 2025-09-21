@@ -1,5 +1,6 @@
 package com.estivate.query;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,7 +37,8 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SelectQuery<T> or(EstivateNode... nodes) 	{ criterions.add(Estivate.or(nodes));  return this; }
 	
 	
-
+	@Getter
+	boolean distinct = false;
 	
 	@Getter
 	Set<Select> selects = new LinkedHashSet<>();
@@ -70,6 +72,15 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		return this;
 	}
 	
+	public SelectQuery<T> distinct(){
+		return distinct(true);
+	}
+	
+	public SelectQuery<T> distinct(boolean distinct){
+		this.distinct = distinct;
+		return this;
+	}
+	
 	public SelectQuery<T> join(Join join) { 
 		super.join(join);
 		return this;
@@ -81,7 +92,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		public String attribute;
 	}
 	
-	public SelectQuery selectFunctionAs(Entity<?> c, String attribute, Attribute.Function function, String alias) {
+	public SelectQuery<T> selectFunctionAs(Entity<?> c, String attribute, Attribute.Function function, String alias) {
 		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
 		if(select != null) {
 			selects.remove(select);
@@ -120,14 +131,6 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		}
 		return this;
 	}
-
-	
-	public SelectQuery<T> selectDistinct(Class<?> c, String attribute) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.distinct, null); }
-	public SelectQuery<T> selectDistinct(Entity<?> c, String attribute) { return selectFunctionAs(c, attribute, Estivate.Functions.distinct, null); }
-	public SelectQuery<T> selectDistinct(String attribute) { return selectFunctionAs(this.entity, attribute, Estivate.Functions.distinct, null); }
-	public SelectQuery<T> selectDistinctAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.distinct, alias); }
-	public SelectQuery<T> selectDistinctAs(Entity<?> c, String attribute, String alias) { return selectFunctionAs(c, attribute, Estivate.Functions.distinct, alias); }
-	public SelectQuery<T> selectDistinctAs(String attribute, String alias) { return selectFunctionAs(this.entity, attribute, Estivate.Functions.distinct, alias); }
 
 	// Select count
 	public SelectQuery<T> selectCountAs(String alias) { return selectFunctionAs(new Entity<>(null), null, Estivate.Functions.count, alias); }
@@ -262,8 +265,22 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	/*
 	 * Imports an object with fields annotated with ReturnBuilder annotation to build select
 	 */
-	public SelectQuery<T> importReturnBuilder(Object object){
+	public SelectQuery<T> importSelectFromResultMapping(Class<?> objectClass){
 		
+		if (objectClass == null) {
+			return self();
+		}
+		
+		
+		Field[] fields = objectClass.getDeclaredFields();
+		
+		for (Field field : fields) {
+			field.setAccessible(true);
+			// TODO : add select field
+			
+			
+			
+		}
 		
 		
 

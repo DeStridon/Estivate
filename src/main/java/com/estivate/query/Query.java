@@ -553,7 +553,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 
 	
-	public Q importCriterion(Object object) {
+	public Q importCriterionFromQueryMapping(Object object) {
 		if (object == null) {
 			return self();
 		}

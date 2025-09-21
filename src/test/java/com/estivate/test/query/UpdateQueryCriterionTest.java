@@ -35,10 +35,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void eqWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.eq(parentEntity, AbstractEntity.Fields.id, 1001);
+			.eq(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
@@ -65,10 +65,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void notEqWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.notEq(parentEntity, AbstractEntity.Fields.id, 1001);
+			.notEq(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
@@ -95,10 +95,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void ltWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.lt(parentEntity, AbstractEntity.Fields.id, 1001);
+			.lt(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
@@ -125,10 +125,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void lteWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.lte(parentEntity, AbstractEntity.Fields.id, 1001);
+			.lte(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
@@ -155,10 +155,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void gtWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.gt(parentEntity, AbstractEntity.Fields.id, 1001);
+			.gt(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
@@ -185,10 +185,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void gteWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.gte(parentEntity, AbstractEntity.Fields.id, 1001);
+			.gte(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
@@ -215,10 +215,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void betweenWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.between(parentEntity, AbstractEntity.Fields.id, 1001, 1010);
+			.between(customer, AbstractEntity.Fields.id, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
@@ -245,10 +245,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void inWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
+			.in(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
 	}
@@ -275,10 +275,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void notInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.notIn(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
+			.notIn(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?, ?)"));
 	}
@@ -306,10 +306,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void isNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.isNull(parentEntity, CustomerEntity.Fields.name);
+			.isNull(customer, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D  is null"));
@@ -339,10 +339,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void isNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.isNotNull(parentEntity, CustomerEntity.Fields.name);
+			.isNotNull(customer, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D  is not null"));
@@ -371,10 +371,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void likeWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.like(parentEntity, CustomerEntity.Fields.name, "test%");
+			.like(customer, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -401,10 +401,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void notLikeWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.notLike(parentEntity, CustomerEntity.Fields.name, "test%");
+			.notLike(customer, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -431,10 +431,10 @@ public class UpdateQueryCriterionTest {
 	
 	@Test
 	public void likeContainsWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		UpdateQuery<CustomerEntity> query = new UpdateQuery<>(CustomerEntity.class)
 			.set(CustomerEntity.Fields.name, "updated")
-			.likeContains(parentEntity, CustomerEntity.Fields.name, "test");
+			.likeContains(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}

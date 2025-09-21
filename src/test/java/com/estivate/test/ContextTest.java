@@ -23,18 +23,18 @@ public class ContextTest {
 		
 		context.truncateTable(CustomerEntity.class);
 		
-		CustomerEntity parent1 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
-		CustomerEntity parent2 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
-		CustomerEntity parent3 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
+		CustomerEntity customer1 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
+		CustomerEntity customer2 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
+		CustomerEntity customer3 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
 
-		parent1.setName("Updated Name 1");
-		parent2.setName("Updated Name 2");
-		parent3.setName("Updated Name 3");
+		customer1.setName("Updated Name 1");
+		customer2.setName("Updated Name 2");
+		customer3.setName("Updated Name 3");
 		
-		context.update(Arrays.asList(parent1, parent2, parent3));
+		context.update(Arrays.asList(customer1, customer2, customer3));
 		
 		
-		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class).in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(parent1.getId(), parent2.getId(), parent3.getId()));
+		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class).in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()));
 		List<CustomerEntity> resultQueries = context.fetchListAs(query, CustomerEntity.class);
 		
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 1")));
@@ -47,9 +47,9 @@ public class ContextTest {
 	@Test
 	public void queryAliasTest() {
 		
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class, "myTask");
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class, "myTask");
 		
-		SelectQuery<CustomerEntity> query = Estivate.selectQuery(parentEntity).in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
+		SelectQuery<CustomerEntity> query = Estivate.selectQuery(customer).in(customer, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
 		List<CustomerEntity> resultQueries = context.fetchList(query);
 		
 	}
@@ -71,10 +71,10 @@ public class ContextTest {
 
 	@Test
 	public void mergeTest2() {
-		CustomerEntity parent1 = CustomerEntity.builder().id(1).name("parent1").build();
+		CustomerEntity parent1 = CustomerEntity.builder().name("parent1").build();
 		context.updateOrInsert(parent1);
 		
-		CustomerEntity parent2 = CustomerEntity.builder().id(1).name("parent2").build();
+		CustomerEntity parent2 = CustomerEntity.builder().id(parent1.getId()).name("parent2").build();
 		parent2.setId(parent1.getId());
 		context.merge(parent2);
 

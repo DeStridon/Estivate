@@ -36,9 +36,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void eqWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.eq(parentEntity, AbstractEntity.Fields.id, 1001);
+			.eq(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
@@ -63,9 +63,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notEqWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notEq(parentEntity, AbstractEntity.Fields.id, 1001);
+			.notEq(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
@@ -90,9 +90,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void ltWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.lt(parentEntity, AbstractEntity.Fields.id, 1001);
+			.lt(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
@@ -117,9 +117,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void lteWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.lte(parentEntity, AbstractEntity.Fields.id, 1001);
+			.lte(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
@@ -144,9 +144,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void gtWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.gt(parentEntity, AbstractEntity.Fields.id, 1001);
+			.gt(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
@@ -171,9 +171,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void gteWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.gte(parentEntity, AbstractEntity.Fields.id, 1001);
+			.gte(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
@@ -198,9 +198,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void betweenWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.between(parentEntity, AbstractEntity.Fields.id, 1001, 1010);
+			.between(customer, AbstractEntity.Fields.id, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
@@ -225,9 +225,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void inWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.in(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
+			.in(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
 	}
@@ -252,9 +252,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notIn(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
+			.notIn(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?, ?)"));
 	}
@@ -280,9 +280,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void isNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.isNull(parentEntity, CustomerEntity.Fields.name);
+			.isNull(customer, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D  is null"));
@@ -310,9 +310,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void isNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.isNotNull(parentEntity, CustomerEntity.Fields.name);
+			.isNotNull(customer, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
 		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D  is not null"));
@@ -339,9 +339,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.like(parentEntity, CustomerEntity.Fields.name, "test%");
+			.like(customer, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -366,9 +366,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLike(parentEntity, CustomerEntity.Fields.name, "test%");
+			.notLike(customer, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -393,9 +393,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeContainsWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeContains(parentEntity, CustomerEntity.Fields.name, "test");
+			.likeContains(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -420,9 +420,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void eqIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.eqIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
+			.eqIfNotNull(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
 	}
@@ -449,9 +449,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void eqNullableWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.eqNullable(parentEntity, CustomerEntity.Fields.name, "external");
+			.eqNullable(customer, CustomerEntity.Fields.name, "external");
 		
 		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("NAME_D = ?"));
 	}
@@ -548,9 +548,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void inIfNotEmptyWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.inIfNotEmpty(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
+			.inIfNotEmpty(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
@@ -575,9 +575,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void inIfNotEmptyNullableWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.inIfNotEmptyNullable(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
+			.inIfNotEmptyNullable(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
@@ -602,9 +602,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void inOrNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.inOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
+			.inOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
@@ -629,9 +629,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void inIfNotEmptyOrNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.inIfNotEmptyOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
+			.inIfNotEmptyOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
 	}
@@ -656,9 +656,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notInOrNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notInOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
+			.notInOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
@@ -683,9 +683,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notInIfNotEmptyOrNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notInIfNotEmptyOrNull(parentEntity, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
+			.notInIfNotEmptyOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
 		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
 	}
@@ -710,9 +710,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
+			.likeIn(customer, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -737,9 +737,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
+			.notLikeIn(customer, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -764,9 +764,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeStartsWithInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeStartsWithIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.likeStartsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -791,9 +791,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeStartsWithWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeStartsWith(parentEntity, CustomerEntity.Fields.name, "test");
+			.notLikeStartsWith(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -818,9 +818,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeEndsWith(parentEntity, CustomerEntity.Fields.name, "test");
+			.likeEndsWith(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -845,9 +845,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeEndsWithWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeEndsWith(parentEntity, CustomerEntity.Fields.name, "test");
+			.notLikeEndsWith(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -872,9 +872,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeContainsWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeContains(parentEntity, CustomerEntity.Fields.name, "test");
+			.notLikeContains(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -899,9 +899,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeEndsWithIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.likeEndsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -926,9 +926,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeContainsInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeContainsIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.likeContainsIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -953,9 +953,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeStartsWithInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeStartsWithIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.notLikeStartsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -980,9 +980,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeEndsWithInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeEndsWithIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.notLikeEndsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -1007,9 +1007,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notLikeContainsInWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notLikeContainsIn(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.notLikeContainsIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
 	}
@@ -1034,9 +1034,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notEqIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notEqIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
+			.notEqIfNotNull(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
 	}
@@ -1061,9 +1061,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void notEqNullableWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notEqNullable(parentEntity, CustomerEntity.Fields.name, "external");
+			.notEqNullable(customer, CustomerEntity.Fields.name, "external");
 		
 		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("NAME_D != ?"));
 	}
@@ -1088,9 +1088,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void ltIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.ltIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
+			.ltIfNotNull(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
 	}
@@ -1115,9 +1115,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void lteIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.lteIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
+			.lteIfNotNull(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
 	}
@@ -1142,9 +1142,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void gtIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.gtIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
+			.gtIfNotNull(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
 	}
@@ -1169,9 +1169,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void gteIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.gteIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001);
+			.gteIfNotNull(customer, AbstractEntity.Fields.id, 1001);
 		
 		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
 	}
@@ -1196,9 +1196,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void betweenIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.betweenIfNotNull(parentEntity, AbstractEntity.Fields.id, 1001, 1010);
+			.betweenIfNotNull(customer, AbstractEntity.Fields.id, 1001, 1010);
 		
 		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
 	}
@@ -1223,9 +1223,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeIfNotNull(parentEntity, CustomerEntity.Fields.name, "test%");
+			.likeIfNotNull(customer, CustomerEntity.Fields.name, "test%");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1250,9 +1250,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeStartsWithIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeStartsWithIfNotNull(parentEntity, CustomerEntity.Fields.name, "test");
+			.likeStartsWithIfNotNull(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1277,9 +1277,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeEndsWithIfNotNull(parentEntity, CustomerEntity.Fields.name, "test");
+			.likeEndsWithIfNotNull(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1304,9 +1304,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeContainsIfNotNullWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeContainsIfNotNull(parentEntity, CustomerEntity.Fields.name, "test");
+			.likeContainsIfNotNull(customer, CustomerEntity.Fields.name, "test");
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1331,9 +1331,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeInIfNotEmpty(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
+			.likeInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1358,9 +1358,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeStartsWithInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeStartsWithInIfNotEmpty(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.likeStartsWithInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1385,9 +1385,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeEndsWithInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeEndsWithInIfNotEmpty(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.likeEndsWithInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}
@@ -1412,9 +1412,9 @@ public class DeleteQueryCriterionTest {
 	
 	@Test
 	public void likeContainsInIfNotEmptyWithEntityQueryStringTest() throws SQLException {
-		Entity<CustomerEntity> parentEntity = new Entity<>(CustomerEntity.class);
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.likeContainsInIfNotEmpty(parentEntity, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
+			.likeContainsInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
 		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
 	}

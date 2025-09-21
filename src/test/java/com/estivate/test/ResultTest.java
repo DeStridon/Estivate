@@ -60,7 +60,7 @@ public class ResultTest {
 				.name("Test Product")
 				.price(99.99f)
 				.stock(100)
-				.category(ProductCategory.Computer)
+				.category(ProductCategory.Electronics)
 				.build();
 		
 		context.updateOrInsert(product);
@@ -71,7 +71,7 @@ public class ResultTest {
 		Result result = context.fetchSingleAsResult(query);
 		
 		ProductCategory category = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
-		assertEquals(ProductCategory.Computer, category);
+		assertEquals(ProductCategory.Electronics, category);
 		
 		Float price = result.attributeAsFloat(ProductEntity.class, ProductEntity.Fields.price);
 		assertEquals(Float.valueOf(99.99f), price);

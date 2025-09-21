@@ -213,24 +213,28 @@ public class Statement implements AutoCloseable{
 		
 		// 2. Select or update or delete
 		if(query instanceof SelectQuery) {
-			statement.appendQuery("SELECT ");
+			statement.appendQuery("SELECT");
+			
+			if(((SelectQuery<?>) query).isDistinct()) {
+				statement.appendQuery("DISTINCT");
+			}
 			
 			if(((SelectQuery<?>) query).getSelects().isEmpty()) {
 				((SelectQuery<?>) query).selectAll(query.getEntity());
 			}
 			
-			List<Select> selects = ((SelectQuery<?>) query).getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
+			//List<Select> selects = ((SelectQuery<?>) query).getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
 			
-			statement.appendQuery(String.join(", ", selects.stream().map(statement::selectString).collect(Collectors.toList()))+"\n");
+			statement.appendQuery(String.join(", ", ((SelectQuery<?>) query).getSelects().stream().map(statement::selectString).collect(Collectors.toList()))+"\n");
 			
 			statement.appendQuery("FROM");
 
 		}
 		else if(query instanceof UpdateQuery) {
-			statement.appendQuery("UPDATE ");
+			statement.appendQuery("UPDATE");
 		}
 		else if(query instanceof DeleteQuery) {
-			statement.appendQuery("DELETE FROM ");
+			statement.appendQuery("DELETE FROM");
 		}
 		
 		// 3. Append entity
@@ -238,7 +242,7 @@ public class Statement implements AutoCloseable{
 		
 		// 4. If update query, add set
 		if(query instanceof UpdateQuery) {
-			statement.appendQuery("SET ");
+			statement.appendQuery("SET");
 			
 			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery) query).getUpdates();
 			boolean first = true;
@@ -381,9 +385,9 @@ public class Statement implements AutoCloseable{
 		if(select.function != null && select.function.equals(Estivate.Functions.count) && (select.entity == null || select.entity.entity == null)) {
 			return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
-		else if (select.function != null && select.function.equals(Estivate.Functions.distinct)) {
-			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
-		}
+//		else if (select.function != null && select.function.equals(Estivate.Functions.distinct)) {
+//			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
+//		}
 		else if (select.function != null) {
 			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}

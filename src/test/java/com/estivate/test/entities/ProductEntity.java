@@ -6,6 +6,7 @@ import javax.persistence.Convert;
 import javax.persistence.Enumerated;
 
 import com.estivate.test.entities.CustomerEntity.Country;
+import com.estivate.test.entities.misc.CountryListConverter;
 import com.estivate.test.entities.misc.StringListConverter;
 
 import lombok.AllArgsConstructor;
@@ -35,14 +36,28 @@ public class ProductEntity extends AbstractEntity{
     @Convert(converter = StringListConverter.class)
     List<String> tags;
 
-    @Enumerated
+    @Convert(converter = CountryListConverter.class)
     List<Country> availableCountries;
 
     public enum ProductCategory{
-        Camera,
-        Computer,
-        Screen,
-        Accessories
+        Clothing,
+        Shoes,
+        Jewelry,
+        Home,
+        Garden,
+        Sports,
+        Toys,
+        Books,
+        Music,
+        Movies,
+        Games,
+        Electronics,
+        Other,
+        Food,
+        Drink,
+        Health,
+        Beauty,
+        Pet
     }
 
 }

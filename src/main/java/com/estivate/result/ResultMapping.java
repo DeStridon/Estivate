@@ -24,4 +24,49 @@ public class ResultMapping {
 	
 	//TODO : add for function
 	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface CountAttribute {
+		
+		public Class<?> entity();
+		public String attribute();
+
+	}
+	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface SumAttribute {
+		
+		public Class<?> entity();
+		public String attribute();
+
+	}
+	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface MinAttribute {
+		
+		public Class<?> entity();
+		public String attribute();
+
+	}
+	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface MaxAttribute {
+		
+		public Class<?> entity();
+		public String attribute();
+
+	}
+	
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface AvgAttribute {
+		
+		public Class<?> entity();
+		public String attribute();
+
+	}
+	
 }
