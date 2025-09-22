@@ -22,8 +22,6 @@ public class ResultMapping {
 		public String column();
 	}
 	
-	//TODO : add for function
-	
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface CountAttribute {

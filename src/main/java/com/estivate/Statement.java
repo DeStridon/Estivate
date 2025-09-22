@@ -21,6 +21,8 @@ import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
@@ -80,10 +82,10 @@ public class Statement implements AutoCloseable{
 	public Statement appendAttributeAsParameter(Attribute attribute){
 
 		if(attribute.function != null) {
-			appendQuery(attribute.function.render(context.nameMapper.mapDatabase(attribute.entity, attribute.attribute)));
+			appendQuery(attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)));
 		}
 		else {
-			appendQuery(context.nameMapper.mapDatabase(attribute.entity, attribute.attribute));
+			appendQuery(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute));
 		}
 
 		return this;
@@ -109,7 +111,7 @@ public class Statement implements AutoCloseable{
 		
 		if(parameter instanceof Attribute) {
 			Attribute attribute = (Attribute) parameter;
-			String attributeField = attribute.entity == null ? attribute.attribute : context.nameMapper.mapDatabase(attribute.entity, attribute.attribute);
+			String attributeField = attribute.entity == null ? attribute.attribute : context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
 			if(attribute.function != null) {
 				return attribute.function.render(attributeField)+" = ";
 			}
@@ -147,8 +149,13 @@ public class Statement implements AutoCloseable{
 	
 	private boolean execute(Connection connection) throws SQLException {
 		
+		String queryString = query.toString();
+		if(StringUtils.isBlank(queryString)) {
+			return true;
+		}
+		
 		try{
-			statement = connection.prepareStatement(query.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
+			statement = connection.prepareStatement(queryString, java.sql.Statement.RETURN_GENERATED_KEYS);
 
 			for(int i = 0; i < parameters.size(); i++) {
 				
@@ -364,10 +371,10 @@ public class Statement implements AutoCloseable{
 		StringBuilder sb = new StringBuilder();
 	
 		if(order.function != null) {
-			sb.append(order.function.render(context.nameMapper.mapDatabase(order.entity, order.attribute)));
+			sb.append(order.function.render(context.nameMapper.toTableNameAttribute(order.entity, order.attribute)));
 		}
 		else {
-			sb.append(context.nameMapper.mapDatabase(order.entity, order.attribute));
+			sb.append(context.nameMapper.toTableNameAttribute(order.entity, order.attribute));
 		}
 		sb.append(order.direction != null ? " " + order.direction.toString().toUpperCase() : "");
 	
@@ -377,7 +384,7 @@ public class Statement implements AutoCloseable{
 		
 	
 	public String groupString(Group group) {
-		return context.nameMapper.mapDatabase(group.entity, group.attribute);
+		return context.nameMapper.toTableNameAttribute(group.entity, group.attribute);
 	}
 	
 	public String selectString(Select select) {
@@ -389,12 +396,16 @@ public class Statement implements AutoCloseable{
 //			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
 //		}
 		else if (select.function != null) {
-			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+(select.alias != null ? " as `"+select.alias+"`" : "");
+			return select.function.render(context.nameMapper.toTableNameAttribute(select.entity, select.attribute))+(select.alias != null ? " as `"+select.alias+"`" : "");
 		}
 
-		return context.nameMapper.mapDatabase(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
+		return context.nameMapper.toTableNameAttribute(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.toEntityNameAttribute(select.entity, select.attribute))+"`";
 	
 	}
+
+
+	
+
 	
 	public void appendNodeToStatement(EstivateNode node, boolean rootNode) {
 		
@@ -462,7 +473,7 @@ public class Statement implements AutoCloseable{
 			if(!matchAgainst.inclusive){
 				appendQuery("NOT");
 			}
-			appendQuery("MATCH" + matchAgainst.attributes.stream().map(x -> context.nameMapper.mapDatabase(matchAgainst.entity, x)).collect(Collectors.joining(", ", "(", ")")));
+			appendQuery("MATCH" + matchAgainst.attributes.stream().map(x -> context.nameMapper.toTableNameAttribute(matchAgainst.entity, x)).collect(Collectors.joining(", ", "(", ")")));
 			appendQuery("AGAINST(");
 			appendParameterAsValue(matchAgainst.entity.entity, matchAgainst.attributes.iterator().next(), matchAgainst.value);
 			appendQuery(")");

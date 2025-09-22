@@ -73,6 +73,7 @@ public class ProductSearchShowcase {
 
 		// Building the query
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
+        	.joinInner(ProductEntity.class, UserProductRatingEntity.class)
             .importCriterionFromQueryMapping(searchInput)
         	.importSelectFromResultMapping(ProductSearchOutput.class);
         

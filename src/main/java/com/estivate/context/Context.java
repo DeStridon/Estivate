@@ -518,9 +518,9 @@ public abstract class Context {
 				statement.appendObjectAsValue(entity.getClass(), idField.getName(), idField.getLong(entity));
 			}
 			
-			if(!statement.query().isBlank()){
-				boolean check = statement.executeForValidation();
-			}
+			
+			boolean check = statement.executeForValidation();
+			
 			
 			for(Object entity : entities) {
 				FieldUtils.invokeLifecycleMethods(entity, PostUpdate.class);

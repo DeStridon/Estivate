@@ -16,6 +16,7 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.result.Result;
+import com.estivate.result.ResultMapping;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -277,7 +278,31 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		for (Field field : fields) {
 			field.setAccessible(true);
 			// TODO : add select field
-			
+
+			if(field.getDeclaredAnnotation(ResultMapping.Attribute.class) != null) {
+				ResultMapping.Attribute attribute = field.getDeclaredAnnotation(ResultMapping.Attribute.class);
+				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			}
+			// else if(field.getDeclaredAnnotation(ResultMapping.CountAttribute.class) != null) {
+			// 	ResultMapping.CountAttribute attribute = field.getDeclaredAnnotation(ResultMapping.CountAttribute.class);
+			// 	selectCount(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			// }
+			// else if(field.getDeclaredAnnotation(ResultMapping.SumAttribute.class) != null) {
+			// 	ResultMapping.SumAttribute attribute = field.getDeclaredAnnotation(ResultMapping.SumAttribute.class);
+			// 	selectSum(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			// }
+			// else if(field.getDeclaredAnnotation(ResultMapping.MinAttribute.class) != null) {
+			// 	ResultMapping.MinAttribute attribute = field.getDeclaredAnnotation(ResultMapping.MinAttribute.class);
+			// 	selectMin(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			// }
+			// else if(field.getDeclaredAnnotation(ResultMapping.MaxAttribute.class) != null) {
+			// 	ResultMapping.MaxAttribute attribute = field.getDeclaredAnnotation(ResultMapping.MaxAttribute.class);
+			// 	selectMax(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			// }
+			// else if(field.getDeclaredAnnotation(ResultMapping.AvgAttribute.class) != null) {
+			// 	ResultMapping.AvgAttribute attribute = field.getDeclaredAnnotation(ResultMapping.AvgAttribute.class);
+			// 	selectAvg(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			// }
 			
 			
 		}

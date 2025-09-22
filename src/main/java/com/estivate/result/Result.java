@@ -49,7 +49,7 @@ public class Result {
 	@SneakyThrows
 	public <U> U mapTo(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
 		
-		String key = nameMapper.mapEntityClass(clazz);
+		String key = nameMapper.toEntityName(clazz);
 		
 		U u = (U) cache.get(key);
 		
@@ -164,10 +164,10 @@ public class Result {
 	
 				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
-					return (T) columnAsStringEnum(nameMapper.mapEntity(c, attribute), (Class) type);
+					return (T) columnAsStringEnum(nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
 				}
 				else {
-					return (T) columnAsOrdinalEnum(nameMapper.mapEntity(c, attribute), (Class) type);
+					return (T) columnAsOrdinalEnum(nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
 				}
 			}
 			else {
@@ -180,35 +180,35 @@ public class Result {
 		return null;
 	}
 
-	public String 			attributeAsString		(Class<?> c, String attribute) 	{ return columnAsString(nameMapper.mapEntity(c, attribute)); }
-	public String 			attributeAsString		(Entity<?> e, String attribute)	{ return columnAsString(nameMapper.mapEntity(e, attribute)); }
+	public String 			attributeAsString		(Class<?> c, String attribute) 	{ return columnAsString(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public String 			attributeAsString		(Entity<?> e, String attribute)	{ return columnAsString(nameMapper.toEntityNameAttribute(e, attribute)); }
 	// Numbers
-	public Short 			attributeAsShort		(Class<?> c, String attribute) 	{ return columnAsShort(nameMapper.mapEntity(c, attribute)); }
-	public Short 			attributeAsShort		(Entity<?> e, String attribute)	{ return columnAsShort(nameMapper.mapEntity(e, attribute)); }
-	public Integer 			attributeAsInteger		(Class<?> c, String attribute) 	{ return columnAsInteger(nameMapper.mapEntity(c, attribute)); }
-	public Integer 			attributeAsInteger		(Entity<?> e, String attribute)	{ return columnAsInteger(nameMapper.mapEntity(e, attribute)); }
-	public Long 			attributeAsLong			(Class<?> c, String attribute) 	{ return columnAsLong(nameMapper.mapEntity(c, attribute)); }
-	public Long 			attributeAsLong			(Entity<?> e, String attribute)	{ return columnAsLong(nameMapper.mapEntity(e, attribute)); }
-	public Float 			attributeAsFloat		(Class<?> c, String attribute) 	{ return columnAsFloat(nameMapper.mapEntity(c, attribute)); }
-	public Float 			attributeAsFloat		(Entity<?> e, String attribute)	{ return columnAsFloat(nameMapper.mapEntity(e, attribute)); }
-	public Double 			attributeAsDouble		(Class<?> c, String attribute) 	{ return columnAsDouble(nameMapper.mapEntity(c, attribute)); }
-	public Double 			attributeAsDouble		(Entity<?> e, String attribute)	{ return columnAsDouble(nameMapper.mapEntity(e, attribute)); }
-	public BigDecimal		attributeAsBigDecimal 	(Class<?> c, String attribute) 	{ return columnAsBigDecimal(nameMapper.mapEntity(c, attribute)); }
-	public BigDecimal		attributeAsBigDecimal	(Entity<?> e, String attribute)	{ return columnAsBigDecimal(nameMapper.mapEntity(e, attribute)); }
+	public Short 			attributeAsShort		(Class<?> c, String attribute) 	{ return columnAsShort(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Short 			attributeAsShort		(Entity<?> e, String attribute)	{ return columnAsShort(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public Integer 			attributeAsInteger		(Class<?> c, String attribute) 	{ return columnAsInteger(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Integer 			attributeAsInteger		(Entity<?> e, String attribute)	{ return columnAsInteger(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public Long 			attributeAsLong			(Class<?> c, String attribute) 	{ return columnAsLong(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Long 			attributeAsLong			(Entity<?> e, String attribute)	{ return columnAsLong(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public Float 			attributeAsFloat		(Class<?> c, String attribute) 	{ return columnAsFloat(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Float 			attributeAsFloat		(Entity<?> e, String attribute)	{ return columnAsFloat(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public Double 			attributeAsDouble		(Class<?> c, String attribute) 	{ return columnAsDouble(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Double 			attributeAsDouble		(Entity<?> e, String attribute)	{ return columnAsDouble(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public BigDecimal		attributeAsBigDecimal 	(Class<?> c, String attribute) 	{ return columnAsBigDecimal(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public BigDecimal		attributeAsBigDecimal	(Entity<?> e, String attribute)	{ return columnAsBigDecimal(nameMapper.toEntityNameAttribute(e, attribute)); }
 	// Date
-	public Date 			attributeAsDate			(Class<?> c, String attribute)	{ return columnAsDate(nameMapper.mapEntity(c, attribute)); }
-	public Date 			attributeAsDate			(Entity<?> e, String attribute)	{ return columnAsDate(nameMapper.mapEntity(e, attribute)); }
-	public LocalDateTime	attributeAsLocalDateTime(Class<?> c, String attribute)	{ return columnAsLocalDateTime(nameMapper.mapEntity(c, attribute)); }
-	public LocalDateTime 	attributeAsLocalDateTime(Entity<?> e, String attribute) { return columnAsLocalDateTime(nameMapper.mapEntity(e, attribute)); }
-	public LocalDate		attributeAsLocalDate	(Class<?> c, String attribute)	{ return columnAsLocalDate(nameMapper.mapEntity(c, attribute)); }
-	public LocalDate	 	attributeAsLocalDate	(Entity<?> e, String attribute) { return columnAsLocalDate(nameMapper.mapEntity(e, attribute)); }
+	public Date 			attributeAsDate			(Class<?> c, String attribute)	{ return columnAsDate(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Date 			attributeAsDate			(Entity<?> e, String attribute)	{ return columnAsDate(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public LocalDateTime	attributeAsLocalDateTime(Class<?> c, String attribute)	{ return columnAsLocalDateTime(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public LocalDateTime 	attributeAsLocalDateTime(Entity<?> e, String attribute) { return columnAsLocalDateTime(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public LocalDate		attributeAsLocalDate	(Class<?> c, String attribute)	{ return columnAsLocalDate(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public LocalDate	 	attributeAsLocalDate	(Entity<?> e, String attribute) { return columnAsLocalDate(nameMapper.toEntityNameAttribute(e, attribute)); }
 	// Other
-	public Boolean 			attributeAsBoolean		(Class<?> c, String attribute) 	{ return columnAsBoolean(nameMapper.mapEntity(c, attribute)); }
-	public Boolean 			attributeAsBoolean		(Entity<?> e, String attribute)	{ return columnAsBoolean(nameMapper.mapEntity(e, attribute)); }
-	public Byte				attributeAsByte			(Class<?> c, String attribute) 	{ return columnAsByte(nameMapper.mapEntity(c, attribute)); }
-	public Byte				attributeAsByte			(Entity<?> e, String attribute) { return columnAsByte(nameMapper.mapEntity(e, attribute)); }
-	public Character		attributeAsChar			(Class<?> c, String attribute)  { return columnAsChar(nameMapper.mapEntity(c, attribute)); }
-	public Character		attributeAsChar			(Entity<?> e, String attribute)	{ return columnAsChar(nameMapper.mapEntity(e, attribute)); }
+	public Boolean 			attributeAsBoolean		(Class<?> c, String attribute) 	{ return columnAsBoolean(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Boolean 			attributeAsBoolean		(Entity<?> e, String attribute)	{ return columnAsBoolean(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public Byte				attributeAsByte			(Class<?> c, String attribute) 	{ return columnAsByte(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Byte				attributeAsByte			(Entity<?> e, String attribute) { return columnAsByte(nameMapper.toEntityNameAttribute(e, attribute)); }
+	public Character		attributeAsChar			(Class<?> c, String attribute)  { return columnAsChar(nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Character		attributeAsChar			(Entity<?> e, String attribute)	{ return columnAsChar(nameMapper.toEntityNameAttribute(e, attribute)); }
 	
 	
 	
@@ -239,8 +239,8 @@ public class Result {
 	}
 
 	public Long getCount() { return columnAsLong("count(*)"); }
-	public Long getCount(Class<? extends Object> c, String attribute) { return columnAsLong("count("+nameMapper.mapDatabase(c, attribute)+")"); }	
-	public Long getCountDistinct(Class<? extends Object> c, String attribute) { return columnAsLong("count(distinct "+nameMapper.mapDatabase(c, attribute)+")"); }
+	public Long getCount(Class<? extends Object> c, String attribute) { return columnAsLong("count("+nameMapper.toTableNameAttribute(c, attribute)+")"); }	
+	public Long getCountDistinct(Class<? extends Object> c, String attribute) { return columnAsLong("count(distinct "+nameMapper.toTableNameAttribute(c, attribute)+")"); }
 
 	
 }

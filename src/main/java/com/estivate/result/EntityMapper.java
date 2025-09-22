@@ -184,7 +184,7 @@ public class EntityMapper<U> extends IMapper<U>{
         int hash = Objects.hash(entity, field);
         String fieldName = fieldNames.get(hash);
         if(fieldName == null) {
-            fieldName = nameMapper.mapEntity(entity, field.getName());
+            fieldName = nameMapper.toEntityNameAttribute(entity, field.getName());
             fieldNames.put(hash, fieldName);
         }
         return fieldName;

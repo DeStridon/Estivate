@@ -8,41 +8,56 @@ import org.apache.commons.lang3.StringUtils;
 import com.estivate.index.Annotations.TableIndex;
 
 public abstract class NameMapper {
-	
+
+	// Custom database class name
 	// database mapping : maps names in query to find table
 	public abstract String mapDatabaseClass(Class<?> c);
-	public String mapDatabaseClass(Entity<?> e) {
+	public abstract String mapDatabaseField(String field);
+	
+	// entity mapping : maps names in query to aliases
+	public abstract String mapEntityClass(Class<?> c);
+	public abstract String mapEntityField(String field);
+
+	
+	
+	public String toTableName(Class<?> c) {
+		javax.persistence.Table javaxPersistenceTableAnnotation = c.getDeclaredAnnotation(javax.persistence.Table.class);
+		if(javaxPersistenceTableAnnotation != null && StringUtils.isNotBlank(javaxPersistenceTableAnnotation.name())) {
+			return javaxPersistenceTableAnnotation.name();
+		}
+		return mapDatabaseClass(c);
+	}
+	
+	public String toTableName(Entity<?> e) {
 		return e.alias != null ? e.alias : mapDatabaseClass(e.entity);
 	}
 	
-	public abstract String mapDatabaseField(String field);
 
-	public String mapDatabase(Class<?> c, String field) 	{ 
+	public String toTableNameAttribute(Class<?> c, String field) 	{ 
 		// Case attribute alias
 		if(c == null) {
 			return field;
 		}
 		return mapDatabaseClass(c)+"."+mapDatabaseField(field); 
 	}
-	public String mapDatabase(Entity<?> e, String field) 	{
+	
+	public String toTableNameAttribute(Entity<?> e, String field) 	{
 		// Case attribute alias
 		if(e == null || e.entity == null) {
 			return field;
 		}
-		return mapDatabaseClass(e)+"."+mapDatabaseField(field); 
+		return toTableName(e)+"."+mapDatabaseField(field); 
 	}
 
 
-	// entity mapping : maps names in query to aliases
-	public abstract String mapEntityClass(Class<?> c);
-	public String mapEntityClass(Entity<?> e) {
+	
+	public String toEntityName(Entity<?> e) {
 		return e.alias != null ? e.alias : mapEntityClass(e.entity);
 	}
 	
-	public abstract String mapEntityField(String field);
 
-	public String mapEntity(Class<?> c, String field) 	{ return mapEntityClass(c) + "." + mapEntityField(field); }
-	public String mapEntity(Entity<?> e, String field) { return mapEntityClass(e) + "." + mapEntityField(field); }
+	public String toEntityNameAttribute(Class<?> c, String field) 	{ return mapEntityClass(c) + "." + mapEntityField(field); }
+	public String toEntityNameAttribute(Entity<?> e, String field) { return toEntityName(e) + "." + mapEntityField(field); }
 
 	
 	

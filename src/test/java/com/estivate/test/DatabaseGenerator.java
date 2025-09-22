@@ -17,6 +17,7 @@ import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ProductEntity;
+import com.estivate.test.entities.UserProductRatingEntity;
 
 import lombok.SneakyThrows;
 
@@ -51,11 +52,10 @@ public class DatabaseGenerator {
 			IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
 			customerIndexDiff.addUnimplemented();
 			
+			context.createTable(UserProductRatingEntity.class);
+			IndexDiff userProductRatingIndexDiff = new IndexDiff(context, UserProductRatingEntity.class);
+			userProductRatingIndexDiff.addUnimplemented();
 
-			
-
-			
-		
 			
 			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
 			System.out.println();
