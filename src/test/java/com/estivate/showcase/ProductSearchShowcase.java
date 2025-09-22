@@ -1,5 +1,6 @@
 package com.estivate.showcase;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ public class ProductSearchShowcase {
 			.ratingMin(4)
 			.priceMin(100f)
 			.priceMax(1000f)
-			.categoryIn(List.of(ProductCategory.Clothing, ProductCategory.Shoes, ProductCategory.Jewelry))
+			.categoryIn(Arrays.asList(ProductCategory.Clothing, ProductCategory.Shoes, ProductCategory.Jewelry))
         .build();
 
 		// Building the query
