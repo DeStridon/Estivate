@@ -446,62 +446,55 @@ public abstract class Context {
 
 	@SneakyThrows
 	public <U> void update(U entity) {
-		update(Arrays.asList(entity));
-	}
-
-	@SneakyThrows
-	public <U> void update(List<U> entities) {
-		if(entities == null) {
+		
+		if(entity == null) {
 			return;
 		}
+
+		FieldUtils.invokeLifecycleMethods(entity, PreUpdate.class);
+				
+		Long id = null;
+		Field idField = null;
+		
+		Set<Field> updatedFields = new LinkedHashSet<>(FieldUtils.getEntityFields(entity.getClass()));
+		
+		for(Field field : updatedFields) {
+			field.setAccessible(true);
+			
+			if(field.isAnnotationPresent(Id.class)) {
+				idField = field;
+				id = field.getLong(entity);
+			}
+			else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+				field.set(entity, new Date());
+			}
+			
+		}
+		
+		if(entity instanceof CachedEntity) {
+			updatedFields = new LinkedHashSet<>(((CachedEntity) entity).updatedFields());
+		}
+		
+		// Remove id field from update set
+		if(idField != null) {
+			updatedFields.remove(idField);
+		}
+		
+		// No change to entity
+		if(updatedFields.isEmpty()) {
+			return;
+		}
+		
+		if(idField == null || id == null || id == 0) {
+			log.error("No id with value found, no update possible");
+			return;
+		}
+	
+		
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
-					
-			for(Object entity : entities) {
-				if(entity == null) {
-					continue;
-				}
-				FieldUtils.invokeLifecycleMethods(entity, PreUpdate.class);
-				
-				Long id = null;
-				Field idField = null;
-				
-				Set<Field> updatedFields = new LinkedHashSet<>(FieldUtils.getEntityFields(entity.getClass()));
-				
-				for(Field field : updatedFields) {
-					field.setAccessible(true);
-					
-					if(field.isAnnotationPresent(Id.class)) {
-						idField = field;
-						id = field.getLong(entity);
-					}
-					else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
-						field.set(entity, new Date());
-					}
-					
-				}
-				
-				if(entity instanceof CachedEntity) {
-					updatedFields = new LinkedHashSet<>(((CachedEntity) entity).updatedFields());
-				}
-				
-				// Remove id field from update set
-				if(idField != null) {
-					updatedFields.remove(idField);
-				}
-				
-				// No change to entity
-				if(updatedFields.isEmpty()) {
-					continue;
-				}
-				
-				if(idField == null || id == null || id == 0) {
-					log.error("No id with value found, no update possible");
-					continue;
-				}
 				
 				// 1. Create query
-				
 				statement.appendQuery("UPDATE ")
 						.appendQuery(nameMapper.mapDatabaseClass(entity.getClass()))
 						.appendQuery(" SET ");
@@ -516,16 +509,25 @@ public abstract class Context {
 				
 				statement.appendQuery(" WHERE "+nameMapper.mapDatabaseField(idField.getName())+" = ?;");
 				statement.appendObjectAsValue(entity.getClass(), idField.getName(), idField.getLong(entity));
-			}
-			
-			
-			boolean check = statement.executeForValidation();
-			
-			
-			for(Object entity : entities) {
-				FieldUtils.invokeLifecycleMethods(entity, PostUpdate.class);
-			}
+
+				boolean check = statement.executeForValidation();
+
 		}
+
+		FieldUtils.invokeLifecycleMethods(entity, PostUpdate.class);
+		
+	}
+
+	@SneakyThrows
+	public <U> void update(List<U> entities) {
+		if(entities == null) {
+			return;
+		}
+
+		for(U entity : entities) {
+			update(entity);
+		}
+		
 	}
 
 	

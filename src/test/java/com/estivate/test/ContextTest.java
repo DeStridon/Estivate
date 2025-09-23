@@ -2,6 +2,7 @@ package com.estivate.test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -84,8 +85,8 @@ public class ContextTest {
 
 	@Test
 	public void rawSingleFetchTest() {
-		CustomerEntity parent1 = CustomerEntity.builder().id(1).name("parent1-1").build();
-		CustomerEntity parent2 = CustomerEntity.builder().id(1).name("parent2-1").build();
+		CustomerEntity parent1 = CustomerEntity.builder().name("parent1-1").build();
+		CustomerEntity parent2 = CustomerEntity.builder().name("parent2-1").build();
 		context.updateOrInsert(parent1);
 		context.updateOrInsert(parent2);
 		
@@ -98,13 +99,39 @@ public class ContextTest {
 		Assert.assertTrue(count > 0);
 	}
 
-//	@Test
-//	public void rawListFetchTest() {
-//		Query query = Estivate.selectQuery(CustomerEntity.class)
-//			.selectDistinct(CustomerEntity.Fields.name);
-//
-//		List<Long> count = context.fetchListAs(query, Long.class);
-//		Assert.assertNotNull(count);
-//		Assert.assertTrue(count.size() > 0);
-//	}
+	@Test
+	public void batchUpdateTest() {
+		// Create initial entities
+		CustomerEntity customer1 = CustomerEntity.builder().name("customer1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("customer2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("customer3").build();
+		
+		List<CustomerEntity> customers = Arrays.asList(customer1, customer2, customer3);
+		
+		// Insert all customers
+		for (CustomerEntity customer : customers) {
+			context.updateOrInsert(customer);
+		}
+		
+		// Modify the entities
+		customer1.setName("customer1-updated");
+		customer2.setName("customer2-updated"); 
+		customer3.setName("customer3-updated");
+		
+		// Update all modified customers at once
+		context.update(customers);
+		
+		// Verify changes were saved
+		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, customers.stream().map(c -> c.getId()).collect(Collectors.toList()));
+		
+		List<CustomerEntity> updatedCustomers = context.fetchList(query);
+		
+		Assert.assertEquals(3, updatedCustomers.size());
+		Assert.assertTrue(updatedCustomers.stream().anyMatch(c -> c.getName().equals("customer1-updated")));
+		Assert.assertTrue(updatedCustomers.stream().anyMatch(c -> c.getName().equals("customer2-updated")));
+		Assert.assertTrue(updatedCustomers.stream().anyMatch(c -> c.getName().equals("customer3-updated")));
+	}
+	
+	
 }
