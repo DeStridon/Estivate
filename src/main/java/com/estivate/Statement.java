@@ -144,7 +144,7 @@ public class Statement implements AutoCloseable{
 		if(statement == null) {
 			execute(connection);
 		}
-		return statement.getResultSet();	
+		return statement.getResultSet();
 	}
 	
 	private boolean execute(Connection connection) throws SQLException {
@@ -247,7 +247,20 @@ public class Statement implements AutoCloseable{
 		// 3. Append entity
 		statement.appendEntity(query.getEntity());
 		
-		// 4. If update query, add set
+		
+		
+		// 4. Add Hint
+		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getIndexHint() != null && ((SelectQuery<?>) query).getIndexNames() != null && !((SelectQuery<?>) query).getIndexNames().isEmpty()) {
+			statement.appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
+		}
+		
+		// 5. Add Join
+		for(Join join : query.getJoins()) {
+        	statement.appendJoin(join);
+        	statement.appendQuery("\n");
+        }
+
+		// 6. If update query, add set
 		if(query instanceof UpdateQuery) {
 			statement.appendQuery("SET");
 			
@@ -270,30 +283,19 @@ public class Statement implements AutoCloseable{
 			
 		}
 		
-		// 5. Add Hint
-		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getIndexHint() != null && ((SelectQuery<?>) query).getIndexNames() != null && !((SelectQuery<?>) query).getIndexNames().isEmpty()) {
-			statement.appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
-		}
-		
-		// 6. Add Join
-		for(Join join : query.getJoins()) {
-        	statement.appendJoin(join);
-        	statement.appendQuery("\n");
-        }
-		
-		// 6. Add Where
+		// 7. Add Where
 		if(!query.getCriterions().isEmpty()) {
         	statement.appendQuery("WHERE");
         	statement.appendNodeToStatement(query, true);
         }
 		
-		// 7. Add Group by
+		// 8. Add Group by
 		if(query instanceof SelectQuery && !((SelectQuery<?>) query).getGroupBys().isEmpty()) {
 			List<Group> groups = ((SelectQuery<?>) query).getGroupBys();
 			statement.appendQuery(groups.stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}
 		
-		// 8. Add Having
+		// 9. Add Having
 		// Append having (if any)
 		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getHaving() != null) {
 			statement.appendQuery("HAVING");
@@ -301,12 +303,12 @@ public class Statement implements AutoCloseable{
 		}
 		
 		
-		// Append order
+		// 10. Append order
 		if(!query.getOrders().isEmpty()) {
 			statement.appendQuery(query.getOrders().stream().map(x -> statement.orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
 		}
 		
-		// Append limit & offset
+		// 11. Append limit & offset
 		if(query.getLimit() != null) {
 			statement.appendQuery("LIMIT "+query.getLimit()+"\n");
 		}
@@ -333,7 +335,7 @@ public class Statement implements AutoCloseable{
 			parameters.addAll(subStatement.parameters);
 		}
 		else{
-			appendQuery(context.nameMapper.mapDatabaseClass(join.rightEntity.entity));
+			appendQuery(context.nameMapper.toTableName(join.rightEntity.entity));
 			if(join.rightEntity.alias != null) { appendQuery(join.rightEntity.alias);}
 			if(join.indexHint != null && join.indexNames != null && !join.indexNames.isEmpty()) {
 				appendQuery(join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
@@ -359,7 +361,7 @@ public class Statement implements AutoCloseable{
 
 		}
 		else{
-			appendQuery(context.nameMapper.mapDatabaseClass(entity.entity));
+			appendQuery(context.nameMapper.toTableName(entity.entity));
 			if(entity.alias != null) {
 				appendQuery(entity.alias);
 			}

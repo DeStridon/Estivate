@@ -36,6 +36,9 @@ public class UpdateQuery<T> extends Query<UpdateQuery<T>, T> {
 		
 		queryClone.updates = new LinkedHashMap<>(this.updates);
 		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
+		queryClone.joins = this.joins.stream().map(x -> x.clone()).collect(Collectors.toSet());
+		queryClone.limit = this.limit;
+		queryClone.offset = this.offset;
 		
 		return queryClone;
 	}

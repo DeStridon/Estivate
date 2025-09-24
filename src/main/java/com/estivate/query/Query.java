@@ -897,13 +897,14 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
         	attributes.addAll(listNodeAttributes(((SelectQuery<?>) this).getHaving()));
         }
             
-        boolean joinsUpdated;
-        
+
+        List<Join> joinsToRemove = new ArrayList<>();
         do {
-        	joinsUpdated = false;
+        	
+        	joinsToRemove = new ArrayList<>();
         	
 	        for(Join join : getJoins()){
-	
+
 	        	// if any field of joined entity in where, it is used
 	            if(attributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
 	                continue;
@@ -918,7 +919,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 				if(getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity == join.rightEntity)){
 					continue;
 				}
-				
+			
 	            // if any field of joined entity in select, it is used
 	        	if(this instanceof SelectQuery) {
 		            if(((SelectQuery<?>) this).getSelects().stream().anyMatch(select -> select.getEntity().equals(join.rightEntity))){
@@ -929,13 +930,18 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 		                continue;
 		            }
 	        	}
-	
-	            // remove join
-	            getJoins().remove(join);
-	            joinsUpdated = true;
+
+	            // collect join to remove
+	            joinsToRemove.add(join);
 	        }
 	        
-        }while(joinsUpdated);
+	        // remove collected joins outside the iteration
+	        if(!joinsToRemove.isEmpty()) {
+	        	getJoins().removeAll(joinsToRemove);
+	        }
+	        
+        }
+		while(!joinsToRemove.isEmpty());
 
  
     }

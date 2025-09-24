@@ -24,6 +24,9 @@ public class DeleteQuery<T> extends Query<DeleteQuery<T>, T> {
 		DeleteQuery<T> queryClone = new DeleteQuery<T>(entity);
 		
 		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
+		queryClone.joins = this.joins.stream().map(x -> x.clone()).collect(Collectors.toSet());
+		queryClone.limit = this.limit;
+		queryClone.offset = this.offset;
 		
 		return queryClone;
 	}

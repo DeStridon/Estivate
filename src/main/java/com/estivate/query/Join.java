@@ -126,5 +126,13 @@ public class Join {
 		return this;
 	}
 
+	public Join clone() {
+		Join join = new Join();
+		join.leftEntity = this.leftEntity;
+		join.rightEntity = this.rightEntity;
+		join.joiningCriterion = this.joiningCriterion.clone();
+		return join;
+	}
+
 
 }

@@ -13,12 +13,11 @@ import com.estivate.test.entities.CustomerEntity;
 
 public class QueryPreProcessorTest {
  
+    Context context = DatabaseGenerator.getContext();
 
     @Test
     public void testPreProcessor() {
     	
-    	Context context = DatabaseGenerator.getContext();
-
         context.fetchQueryPreProcessor = (query) -> {
             if(query instanceof SelectQuery && query.getOrders().isEmpty()) {
                 ((SelectQuery) query).orderAsc(AbstractEntity.Fields.id);
