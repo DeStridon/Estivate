@@ -179,7 +179,9 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		
 		queryClone.comments = new ArrayList<>(this.comments);
 		
+		queryClone.distinct = this.distinct;
 		queryClone.selects = new LinkedHashSet<>(this.selects);
+
 		queryClone.joins = new LinkedHashSet<>(this.joins);
 
 		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
