@@ -580,7 +580,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 		// Handle @Eq annotation
 		QueryMapping.Eq eq = field.getAnnotation(QueryMapping.Eq.class);
 		if (eq != null) {
-			String attribute = (QueryMapping.Eq.attribute != null) ? QueryMapping.Eq.attribute : field.getName();
+			String attribute = (eq.attribute() != null) ? eq.attribute() : field.getName();
 			return this.eq(eq.entity() == void.class ? this.entity.entity : eq.entity(), attribute, value);
 		}
 		

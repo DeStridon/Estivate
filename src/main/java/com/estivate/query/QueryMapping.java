@@ -19,7 +19,7 @@ public class QueryMapping {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Eq{
 		public Class<?> entity() default void.class;
-		public static final String attribute = null;
+		public String attribute() default "";
 	}
 	
 	@Target( ElementType.FIELD )

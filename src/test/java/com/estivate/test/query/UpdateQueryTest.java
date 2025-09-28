@@ -9,6 +9,7 @@ import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.OrderEntity;
 
 public class UpdateQueryTest {
 
@@ -62,6 +63,20 @@ public class UpdateQueryTest {
         Assert.assertEquals("ID should remain the same", loadedCustomer.getId(), updatedCustomer.getId());
         Assert.assertEquals("Name should remain unchanged", loadedCustomer.getName(), updatedCustomer.getName());
         Assert.assertEquals("Email should remain unchanged", loadedCustomer.getEmail(), updatedCustomer.getEmail());
+    }
+
+    @Test
+    public void testUpdateQueryWithJoinsSqlGeneration() {
+        // Test UPDATE query with JOIN SQL generation (without executing due to H2 limitations)
+        UpdateQuery<OrderEntity> updateQuery = new UpdateQuery<>(OrderEntity.class)
+            .set(OrderEntity.Fields.status, OrderEntity.OrderStatus.COMPLETED)
+            .joinInner(OrderEntity.class, CustomerEntity.class)
+            .eq(CustomerEntity.Fields.name, "Test Customer")
+            .eq(OrderEntity.Fields.totalAmount, 100.0f);
+
+        String query = context.queryAsString(updateQuery);
+        Assert.assertTrue(query.contains("UPDATE ORDERENTITY_D INNER JOIN CUSTOMERENTITY_D"));
+        
     }
 
 }

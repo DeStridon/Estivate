@@ -69,6 +69,7 @@ public class SelectQueryCriterionTest {
 				.eq(CustomerEntity.class, CustomerEntity.Fields.name, "customer 2");
 		
 		String queryString = context.queryAsString(query);
+		Assert.assertTrue(queryString.contains("DISTINCT"));
 		
 		List<Result> results = query.fetchListAsResults(context);
 		
