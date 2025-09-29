@@ -241,7 +241,11 @@ public class Statement implements AutoCloseable{
 			statement.appendQuery("UPDATE");
 		}
 		else if(query instanceof DeleteQuery) {
-			statement.appendQuery("DELETE FROM");
+			statement.appendQuery("DELETE");
+			if(!query.getJoins().isEmpty()){
+				statement.appendEntity(query.getEntity());
+			}
+			statement.appendQuery("FROM");
 		}
 		
 		// 3. Append entity
