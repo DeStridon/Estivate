@@ -113,7 +113,7 @@ public class Statement implements AutoCloseable{
 			Attribute attribute = (Attribute) parameter;
 			String attributeField = attribute.entity == null ? attribute.attribute : context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
 			if(attribute.function != null) {
-				return attribute.function.render(attributeField)+" = ";
+				return attribute.function.render(attributeField);
 			}
 			else {
 				return attributeField;
