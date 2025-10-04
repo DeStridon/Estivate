@@ -356,6 +356,17 @@ public abstract class Context {
 		}
 	}
 
+	@SneakyThrows
+	public <U> List<U> insert(List<U> entities) {
+		
+		if(entities != null) {
+			for(U entity : entities) {
+				insert(entity);
+			}
+		}
+		return entities;
+	}
+
 	// Tries to find entity with same id, and if not found, tries to find entity with same unicity constraints
 	// Returns true if entity was merged to existing entity
 	@SneakyThrows
@@ -442,6 +453,16 @@ public abstract class Context {
 		}
 			
 		return object;
+	}
+
+	@SneakyThrows
+	public <U> List<U> updateOrInsert(List<U> entities) {
+		if(entities != null) {
+			for(U entity : entities) {
+				updateOrInsert(entity);
+			}
+		}
+		return entities;
 	}
 
 	@SneakyThrows

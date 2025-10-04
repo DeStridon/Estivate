@@ -3,6 +3,7 @@ package com.estivate.showcase;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -53,11 +54,11 @@ public class ProductSearchShowcase {
     	@ResultMapping.Attribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.price)
     	Float price;
     	
-    	@ResultMapping.CountAttribute(entity = OrderLineEntity.class, attribute = AbstractEntity.Fields.id)
+    	@ResultMapping.Count(entity = OrderLineEntity.class, attribute = AbstractEntity.Fields.id, alias = "inCartCount")
     	Integer inCartCount;
     	
-    	@ResultMapping.AvgAttribute(entity = UserProductRatingEntity.class, attribute = UserProductRatingEntity.Fields.rating)
-    	Float rating;
+		@ResultMapping.Avg(entity = UserProductRatingEntity.class, attribute = UserProductRatingEntity.Fields.rating, alias = "rating")
+		Float rating;
     	
     }
 
@@ -74,12 +75,16 @@ public class ProductSearchShowcase {
 
 		// Building the query
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
+        	.joinInner(ProductEntity.class, OrderLineEntity.class)
         	.joinInner(ProductEntity.class, UserProductRatingEntity.class)
+			.groupBy(ProductEntity.class, AbstractEntity.Fields.id)
             .importCriterionFromQueryMapping(searchInput)
         	.importSelectFromResultMapping(ProductSearchOutput.class);
         
         // Executing the query
         List<ProductSearchOutput> results = query.fetchListAs(context, ProductSearchOutput.class);
+
+		Assert.assertEquals(4, query.getSelects().size());
 
 		System.out.println(results);
 

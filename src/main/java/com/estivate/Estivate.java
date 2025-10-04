@@ -71,10 +71,9 @@ public class Estivate {
 	
 	public static EstivateNode addIf(boolean condition, EstivateNode node) { return condition ? node : null; }
 	
-	public static Attribute.Function function(String before, String after) { return new Attribute.Function(before, after); }
+	public static Attribute.Function function(String prefix, String suffix) { return new Attribute.Function(prefix, suffix); }
 	public static Attribute.Function function(Function... functions) { return Attribute.Function.compose(Arrays.asList(functions));}
 	
-
 	public static Order order(Entity<?> entity, String attribute, Order.Direction direction, Function function){  return Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build(); }
 
 	public static Order order(Entity<?> entity, String attribute){ return order(entity, attribute, null, null); }
