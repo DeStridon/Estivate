@@ -37,8 +37,8 @@ public class H2Context extends Context {
 			Statement indexQueryStatement = new Statement(this, connection);
 			Statement indexColumnQueryStatement = new Statement(this, connection); ){
 			
-			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
-			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.mapDatabaseClass(c)+"'");
+			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
+			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
 			
 			List<Result> indexResults = fetchListAsResults(indexQueryStatement);
 			List<Result> columnResults = fetchListAsResults(indexColumnQueryStatement);

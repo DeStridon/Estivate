@@ -29,7 +29,7 @@ public abstract class NameMapper {
 	}
 	
 	public String toTableName(Entity<?> e) {
-		return e.alias != null ? e.alias : mapDatabaseClass(e.entity);
+		return e.alias != null ? e.alias : toTableName(e.entity);
 	}
 	
 

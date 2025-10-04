@@ -304,7 +304,7 @@ public abstract class Context {
 			List<String> fieldValueList = new ArrayList<>();
 			
 			statement.appendQuery("INSERT INTO ")
-					.appendQuery(nameMapper.mapDatabaseClass(object.getClass()));
+					.appendQuery(nameMapper.toTableName(object.getClass()));
 			
 			
 			for(Field field : FieldUtils.getEntityFields(object.getClass())) {
@@ -517,7 +517,7 @@ public abstract class Context {
 				
 				// 1. Create query
 				statement.appendQuery("UPDATE ")
-						.appendQuery(nameMapper.mapDatabaseClass(entity.getClass()))
+						.appendQuery(nameMapper.toTableName(entity.getClass()))
 						.appendQuery(" SET ");
 						
 				// 2. List updated fields
@@ -634,7 +634,7 @@ public abstract class Context {
 			fields.add(fieldCreation.toString());
 		}
 		
-		String result = "CREATE TABLE "+nameMapper.mapDatabaseClass(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
+		String result = "CREATE TABLE "+nameMapper.toTableName(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
 		
 		try(Connection connection = datasource.getConnection(); 
 			PreparedStatement statement = connection.prepareStatement(result);){
@@ -646,7 +646,7 @@ public abstract class Context {
 	public boolean truncateTable(Class<?> entity) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
-			statement.appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.mapDatabaseClass(entity));
+			statement.appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.toTableName(entity));
 			return statement.executeForValidation();
 		}
 	}
@@ -674,7 +674,7 @@ public abstract class Context {
 				.appendQuery(name)
 				.appendQuery("ON");
 
-			statement.appendQuery(nameMapper.mapDatabaseClass(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
+			statement.appendQuery(nameMapper.toTableName(c)+columns.stream().collect(Collectors.joining(", ", "(", ")")));
 			
 			return statement.executeForValidation();
 		}
@@ -692,7 +692,7 @@ public abstract class Context {
 				.appendQuery("DROP INDEX")
 				.appendQuery(name)
 				.appendQuery("ON")
-				.appendQuery(nameMapper.mapDatabaseClass(c));
+				.appendQuery(nameMapper.toTableName(c));
 			return statement.executeForValidation();
 		}
 	}
