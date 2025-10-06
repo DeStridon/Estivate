@@ -575,6 +575,9 @@ public class Estivate {
 
 		/* JSON Functions */
 		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
+		public static Attribute.Function json_unquote = new Attribute.Function("JSON_UNQUOTE(", ")");
+		public static Attribute.Function json_keys = new Attribute.Function("JSON_KEYS(", ")");
+		public static Attribute.Function json_length = new Attribute.Function("JSON_LENGTH(", ")");
 
 		 
 	}
