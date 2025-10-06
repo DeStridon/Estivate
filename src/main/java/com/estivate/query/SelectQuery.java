@@ -161,6 +161,11 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SelectQuery<T> selectSumAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.sum, alias); }
 	public SelectQuery<T> selectSumAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.sum, alias); }
 	
+	// Select Avg
+	public SelectQuery<T> selectAvgAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.avg, alias); }
+	public SelectQuery<T> selectAvgAs(Entity<?> c, String attribute, String alias) 	{ return selectFunctionAs(c, attribute, Estivate.Functions.avg, alias); }
+	public SelectQuery<T> selectAvgAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.avg, alias); }
+
 	// Select Group Concat
 	public SelectQuery<T> selectGroupConcatAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, alias); }
 	public SelectQuery<T> selectGroupConcatAs(Entity<?> c, String attribute, String alias){ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, alias); }
@@ -279,39 +284,44 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		
 		for (Field field : fields) {
 			field.setAccessible(true);
-			// TODO : add select field
-
+			
 			if(field.getDeclaredAnnotation(ResultMapping.Attribute.class) != null) {
 				ResultMapping.Attribute attribute = field.getDeclaredAnnotation(ResultMapping.Attribute.class);
 				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
 			}
-			// else if(field.getDeclaredAnnotation(ResultMapping.CountAttribute.class) != null) {
-			// 	ResultMapping.CountAttribute attribute = field.getDeclaredAnnotation(ResultMapping.CountAttribute.class);
-			// 	selectCount(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
-			// }
-			// else if(field.getDeclaredAnnotation(ResultMapping.SumAttribute.class) != null) {
-			// 	ResultMapping.SumAttribute attribute = field.getDeclaredAnnotation(ResultMapping.SumAttribute.class);
-			// 	selectSum(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
-			// }
-			// else if(field.getDeclaredAnnotation(ResultMapping.MinAttribute.class) != null) {
-			// 	ResultMapping.MinAttribute attribute = field.getDeclaredAnnotation(ResultMapping.MinAttribute.class);
-			// 	selectMin(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
-			// }
-			// else if(field.getDeclaredAnnotation(ResultMapping.MaxAttribute.class) != null) {
-			// 	ResultMapping.MaxAttribute attribute = field.getDeclaredAnnotation(ResultMapping.MaxAttribute.class);
-			// 	selectMax(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
-			// }
-			// else if(field.getDeclaredAnnotation(ResultMapping.AvgAttribute.class) != null) {
-			// 	ResultMapping.AvgAttribute attribute = field.getDeclaredAnnotation(ResultMapping.AvgAttribute.class);
-			// 	selectAvg(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
-			// }
-			
+			else if(field.getDeclaredAnnotation(ResultMapping.Count.class) != null) {
+				ResultMapping.Count attribute = field.getDeclaredAnnotation(ResultMapping.Count.class);
+				selectCountAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(ResultMapping.Sum.class) != null) {
+				ResultMapping.Sum attribute = field.getDeclaredAnnotation(ResultMapping.Sum.class);
+				selectSumAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(ResultMapping.Min.class) != null) {
+				ResultMapping.Min attribute = field.getDeclaredAnnotation(ResultMapping.Min.class);
+				selectMinAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(ResultMapping.Max.class) != null) {
+				ResultMapping.Max attribute = field.getDeclaredAnnotation(ResultMapping.Max.class);
+				selectMaxAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(ResultMapping.Avg.class) != null) {
+				ResultMapping.Avg attribute = field.getDeclaredAnnotation(ResultMapping.Avg.class);
+				selectAvgAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+
+			else if(field.getDeclaredAnnotation(ResultMapping.Function.class) != null) {
+				ResultMapping.Function attribute = field.getDeclaredAnnotation(ResultMapping.Function.class);
+				selectFunctionAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
+			}
+			else{
+				log.warn("Field "+field.getName()+" has no mapping annotation");
+			}
 			
 		}
 		
-		
-
 		return self();
+	
 	}
 
 

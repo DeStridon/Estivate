@@ -25,24 +25,24 @@ public class Attribute {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Function {
-		String before;
-		String after;
+		String prefix;
+		String suffix;
 
 		public String render(String attribute){
-			return before + attribute + after;
+			return prefix + attribute + suffix;
 		}
 
 		public boolean equals(Function function){
 			if(function == null) return false;
-			boolean result = before.equals(function.before) && after.equals(function.after);
+			boolean result = prefix.equals(function.prefix) && suffix.equals(function.suffix);
 			return result;
 		}
 
         public static Function compose(List<Function> functions) {
-            String before = functions.stream().map(x -> x.before).collect(Collectors.joining());
+            String prefix = functions.stream().map(x -> x.prefix).collect(Collectors.joining());
             Collections.reverse(functions);
-			String after =  functions.stream() .map(x -> x.after).collect(Collectors.joining());
-			return new Function(before, after);
+			String suffix =  functions.stream() .map(x -> x.suffix).collect(Collectors.joining());
+			return new Function(prefix, suffix);
         }
 
 	}
