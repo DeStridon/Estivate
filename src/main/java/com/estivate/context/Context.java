@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -44,12 +43,12 @@ import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.EntityMapper;
 import com.estivate.result.IMapper;
-import com.estivate.result.Result;
+import com.estivate.result.IMapper.AttributeMapper;
 import com.estivate.result.IMapper.BooleanMapper;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.result.IMapper.DoubleMapper;
-import com.estivate.result.EntityMapper;
 import com.estivate.result.IMapper.FloatMapper;
 import com.estivate.result.IMapper.IntegerMapper;
 import com.estivate.result.IMapper.LongMapper;
@@ -58,6 +57,7 @@ import com.estivate.result.IMapper.ResultMapper;
 import com.estivate.result.IMapper.ShortMapper;
 import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
+import com.estivate.result.Result;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.StringPipe;
@@ -222,6 +222,7 @@ public abstract class Context {
 	public Optional<Boolean> 	fetchSingleAsBooleanOptional(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
 	public <U extends Enum<U>> Optional<U> 		fetchSingleAsStringEnumOptional(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsStringEnum(query, enumClass)); }
 	public <U extends Enum<U>> Optional<U> 		fetchSingleAsOrdinalEnumOptional(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsOrdinalEnum(query, enumClass)); }
+	public Optional<Object>		fetchSingleAsAttributeOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { return Optional.ofNullable(fetchSingleAsAttribute(query, entity, attributeName)); }
 
 	
 		
@@ -238,6 +239,24 @@ public abstract class Context {
 	public List<Boolean>	fetchListAsBoolean(SelectQuery<?> query)			{ return fetchListWithMapper(query, new BooleanMapper()); }
 	public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new StringEnumMapper<U>(enumClass)); }
 	public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetchListWithMapper(query, new OrdinalEnumMapper<U>(enumClass)); }
+
+
+	public Object fetchSingleAsAttribute(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		SelectQuery<?> newQuery = query.clone();
+		newQuery.clearSelects();
+		newQuery.select(entity, attributeName);
+		return fetchSingleWithMapper(newQuery, new AttributeMapper(entity, attributeName));
+	}
+
+	public List<?> fetchListAsAttribute(SelectQuery<?> query, Class<?> entity, String attributeName) {
+	
+		SelectQuery<?> newQuery = query.clone();
+		newQuery.clearSelects();
+		newQuery.select(entity, attributeName);
+		
+		return fetchListWithMapper(newQuery, new AttributeMapper(entity, attributeName));
+
+	}
 
 	public Long fetchCount(SelectQuery<?> query) {
 		return fetchSingleAsLong(query.clone()

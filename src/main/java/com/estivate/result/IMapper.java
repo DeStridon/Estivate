@@ -1,12 +1,6 @@
 package com.estivate.result;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,27 +8,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
-import javax.naming.directory.AttributeInUseException;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.estivate.Entity;
 import com.estivate.NameMapper;
-//github.com/DeStridon/Estivate.git
-import com.estivate.util.Chronometer;
-import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -124,6 +105,67 @@ public abstract class IMapper<U> {
 		}
 		
 	}
+
+	@Slf4j
+	@AllArgsConstructor
+	public static class AttributeMapper extends IMapper<Object>{
+
+		final Field field;
+		final Type type;
+
+		public AttributeMapper(Class entity, String attributeName) {
+			field = FieldUtils.findField(entity, attributeName);
+			type = field.getGenericType();
+		}
  
+		@Override
+		@SneakyThrows
+		public Object map(String[] row) {
+			
+			// @Convert
+			if(field.getDeclaredAnnotation(Convert.class) != null) {
+                Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
+                Object converter = convertAnnotation.converter().getConstructor().newInstance();
+                if(!(converter instanceof AttributeConverter)) {
+                    log.error("Cannot convert with converter "+converter.getClass());
+                    return null;
+                }
+                AttributeConverter attributeConverter = (AttributeConverter) converter;
+                Object attributeValue = attributeConverter.convertToEntityAttribute(row[0]);
+                return attributeValue;
+            }
+
+			if(type == String.class) { return row[0]; }
+			if(type == boolean.class || type == Boolean.class) { return Boolean.parseBoolean(row[0]); }
+			if(type == byte.class || type == Byte.class) { return Byte.parseByte(row[0]);}
+			if(type == short.class || type == Short.class) { return Short.parseShort(row[0]);}
+			if(type == int.class || type == Integer.class) { return Integer.parseInt(row[0]);}
+			if(type == long.class || type == Long.class) { return Long.parseLong(row[0]);}
+			if(type == float.class || type == Float.class) { return Float.parseFloat(row[0]);}
+			if(type == double.class || type == Double.class) { return Double.parseDouble(row[0]);}
+			if(type == BigDecimal.class) { return new BigDecimal(row[0]);}
+			if(type == Date.class) { LocalDateTime dateTime = DateMapper.mapDate(row[0]); return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()); }
+			if(type == LocalDateTime.class) { return LocalDateTime.parse(row[0], DateMapper.formatter);}
+			if(type == LocalDate.class) { return LocalDate.parse(row[0], DateMapper.formatter);}
+			if(type == Character.class) { return row[0].charAt(0); }
+			
+			// @Enumerated
+            if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
+    
+                Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
+                if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
+                    return Enum.valueOf((Class)type, row[0]);
+                }
+                else {
+                    int ordinal = Integer.parseInt(row[0]);
+                    return field.getType().getEnumConstants()[ordinal];
+                }
+            }
+
+			log.error("This type is not mapped yet : "+type);
+			return null;
+		}
+	
+	}
 
 }

@@ -23,7 +23,7 @@ public class Aggregator implements EstivateNode {
 		this.groupType = groupType;
 	}
 	
-	public Aggregator(GroupType groupType, List<EstivateNode> criterions) {
+	public Aggregator(GroupType groupType, Collection<EstivateNode> criterions) {
 		this.groupType = groupType;
 		this.criterions = new ArrayList<>(criterions.stream().filter(x -> x != null).collect(Collectors.toList()));
 	}

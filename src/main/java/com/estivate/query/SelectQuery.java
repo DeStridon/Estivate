@@ -32,10 +32,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SelectQuery<T> nativeCriterion  	(Entity<?> entity, String attribute, String criterion) { super.nativeCriterion(entity, attribute, criterion); return this; }
 
 
-	public SelectQuery<T> add(EstivateNode node) { super.add(node); return this; }
-	public SelectQuery<T> addIf(boolean condition, EstivateNode node) { super.addIf(condition, node); return this; }
-	public SelectQuery<T> and(EstivateNode... nodes) { criterions.add(Estivate.and(nodes)); return this; }
-	public SelectQuery<T> or(EstivateNode... nodes) 	{ criterions.add(Estivate.or(nodes));  return this; }
+	
 	
 	
 	@Getter
@@ -228,6 +225,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public Double 	fetchSingleAsDouble(Context context) 			{ return context.fetchSingleAsDouble(this); }
 	public Date 	fetchSingleAsDate(Context context) 				{ return context.fetchSingleAsDate(this); }
 	public Boolean 	fetchSingleAsBoolean(Context context) 			{ return context.fetchSingleAsBoolean(this); }
+	public Object 	fetchSingleAsAttribute(Context context, Class<?> entity, String attributeName) { return context.fetchSingleAsAttribute(this, entity, attributeName); }
 	
 	public Optional<T> 			fetchSingleOptional(Context context) 			{ return context.fetchSingleOptional(this); }
 	public Optional<Result> 	fetchSingleAsResultOptional(Context context) 	{ return context.fetchSingleAsResultOptional(this); }
@@ -240,18 +238,20 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public Optional<Double>		fetchSingleAsDoubleOptional(Context context) 	{ return context.fetchSingleAsDoubleOptional(this); }
 	public Optional<Date>		fetchSingleAsDateOptional(Context context) 		{ return context.fetchSingleAsDateOptional(this); }
 	public Optional<Boolean>	fetchSingleAsBooleanOptional(Context context) 	{ return context.fetchSingleAsBooleanOptional(this); }
+	public Optional<Object>		fetchSingleAsAttributeOptional(Context context, Class<?> entity, String attributeName) { return context.fetchSingleAsAttributeOptional(this, entity, attributeName); }
 
-	public List<T> fetchList(Context context){ return context.fetchListAs(this, (Class<T>) entity.entity); }
-	public <U> List<U> fetchListAs(Context context, Class<U> clazz) { return context.fetchListAs(this, clazz); }
-	public List<Result> fetchListAsResults(Context context) { return context.fetchListAsResults(this); }
-	public List<String> fetchListAsString(Context context) { return context.fetchListAsString(this); }
-	public List<Short> fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
-	public List<Integer> fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
-	public List<Long> fetchListAsLong(Context context) { return context.fetchListAsLong(this); }
-	public List<Float> fetchListAsFloat(Context context) { return context.fetchListAsFloat(this); }
-	public List<Double> fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
-	public List<Date> fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
-	public List<Boolean> fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
+	public List<T> 			fetchList(Context context){ return context.fetchListAs(this, (Class<T>) entity.entity); }
+	public <U> List<U> 		fetchListAs(Context context, Class<U> clazz) { return context.fetchListAs(this, clazz); }
+	public List<Result> 	fetchListAsResults(Context context) { return context.fetchListAsResults(this); }
+	public List<String> 	fetchListAsString(Context context) { return context.fetchListAsString(this); }
+	public List<Short> 		fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
+	public List<Integer> 	fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
+	public List<Long> 		fetchListAsLong(Context context) { return context.fetchListAsLong(this); }
+	public List<Float> 		fetchListAsFloat(Context context) { return context.fetchListAsFloat(this); }
+	public List<Double> 	fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
+	public List<Date> 		fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
+	public List<Boolean> 	fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
+	public List<?> 			fetchListAsAttribute(Context context, Class<?> entity, String attributeName) { return context.fetchListAsAttribute(this, entity, attributeName); }
 	
 	public Long fetchCount(Context context) { return context.fetchCount(this); }
 

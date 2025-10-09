@@ -132,7 +132,12 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	
 	
 	
-
+	public Q add(EstivateNode node) { super.add(node); return self(); }
+	public Q addIf(boolean condition, EstivateNode node) { super.addIf(condition, node); return self(); }
+	public Q and(EstivateNode... nodes) { criterions.add(Estivate.and(nodes)); return self(); }
+	public Q and(Collection<EstivateNode> nodes) { criterions.add(Estivate.and(nodes)); return self(); }
+	public Q or(EstivateNode... nodes) 	{ criterions.add(Estivate.or(nodes));  return self(); }
+	public Q or(Collection<EstivateNode> nodes) { criterions.add(Estivate.or(nodes)); return self(); }
 	
 	public Q eq   			(Attribute attribute, Object value)	{ super.eq(attribute, value);  return self(); }
 	public Q eqIfNotNull   	(Attribute attribute, Object value) { super.eqIfNotNull(attribute, value);  return self(); }
