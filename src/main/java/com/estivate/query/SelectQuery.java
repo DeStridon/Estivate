@@ -214,6 +214,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	}
 
 
+	// ==================== FETCH METHODS ====================
 	public T 		fetchSingle(Context context) 					{ return context.fetchSingle(this); }
 	public Result 	fetchSingleAsResult(Context context)			{ return context.fetchSingleAsResult(this); }
 	public <U> U 	fetchSingleAs(Context context, Class<U> clazz) 	{ return context.fetchSingleAs(this, clazz); }
@@ -225,7 +226,6 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public Double 	fetchSingleAsDouble(Context context) 			{ return context.fetchSingleAsDouble(this); }
 	public Date 	fetchSingleAsDate(Context context) 				{ return context.fetchSingleAsDate(this); }
 	public Boolean 	fetchSingleAsBoolean(Context context) 			{ return context.fetchSingleAsBoolean(this); }
-	public Object 	fetchSingleAsAttribute(Context context, Class<?> entity, String attributeName) { return context.fetchSingleAsAttribute(this, entity, attributeName); }
 	
 	public Optional<T> 			fetchSingleOptional(Context context) 			{ return context.fetchSingleOptional(this); }
 	public Optional<Result> 	fetchSingleAsResultOptional(Context context) 	{ return context.fetchSingleAsResultOptional(this); }
@@ -238,8 +238,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public Optional<Double>		fetchSingleAsDoubleOptional(Context context) 	{ return context.fetchSingleAsDoubleOptional(this); }
 	public Optional<Date>		fetchSingleAsDateOptional(Context context) 		{ return context.fetchSingleAsDateOptional(this); }
 	public Optional<Boolean>	fetchSingleAsBooleanOptional(Context context) 	{ return context.fetchSingleAsBooleanOptional(this); }
-	public Optional<Object>		fetchSingleAsAttributeOptional(Context context, Class<?> entity, String attributeName) { return context.fetchSingleAsAttributeOptional(this, entity, attributeName); }
-
+	
 	public List<T> 			fetchList(Context context){ return context.fetchListAs(this, (Class<T>) entity.entity); }
 	public <U> List<U> 		fetchListAs(Context context, Class<U> clazz) { return context.fetchListAs(this, clazz); }
 	public List<Result> 	fetchListAsResults(Context context) { return context.fetchListAsResults(this); }
@@ -251,11 +250,25 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public List<Double> 	fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
 	public List<Date> 		fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
 	public List<Boolean> 	fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
-	public List<?> 			fetchListAsAttribute(Context context, Class<?> entity, String attributeName) { return context.fetchListAsAttribute(this, entity, attributeName); }
 	
-	public Long fetchCount(Context context) { return context.fetchCount(this); }
+	// ==================== PROJECT METHODS ====================
+	public <U> U project(Context context, Class<U> clazz) { return context.project(this, clazz); }
+	public <U> Optional<U> projectOptional(Context context, Class<U> clazz) { return context.projectOptional(this, clazz); }
+	public <U> List<U> projectList(Context context, Class<U> clazz) { return context.projectList(this, clazz); }
+	
+	public Object projectAttribute(Context context, Class<?> entity, String attributeName) { return context.projectAttribute(this, entity, attributeName); }
+	public Optional<Object> projectAttributeOptional(Context context, Class<?> entity, String attributeName) { return context.projectAttributeOptional(this, entity, attributeName); }
+	public List<?> projectAttributeList(Context context, Class<?> entity, String attributeName) { return context.projectAttributeList(this, entity, attributeName); }
+	public Set<?> projectAttributeSet(Context context, Class<?> entity, String attributeName) { return context.projectAttributeSet(this, entity, attributeName); }
+
+	public Long projectCount(Context context) { return context.projectCount(this); }
+	public Optional<Long> projectCountOptional(Context context) { return context.projectCountOptional(this); }
+
+	
 
 
+	// ==================== AGGREGATION METHODS ====================
+	
 	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<Result,U> uType, java.util.function.Function<Result,V> vType){
 		return context.aggregateToMap(this, uType, vType);
 	}
@@ -265,7 +278,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	}
 
 
-
+	// ==================== MISC METHODS ====================
 	public SubQueryEntity<T> asSubQueryEntity(String alias){
 		return Estivate.subQueryEntity(this, alias);
 	}
