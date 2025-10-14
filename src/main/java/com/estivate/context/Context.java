@@ -263,7 +263,7 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a single value
 	 */
-	public <U> U project(SelectQuery<?> query, Class<U> clazz) 	{ 
+	public <U> U projectTo(SelectQuery<?> query, Class<U> clazz) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().importSelectFromResultMapping(clazz);
 		return fetchSingleWithMapper(newQuery, new EntityMapper<U>(clazz)); 
 	}
@@ -271,14 +271,14 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a single optional value
 	 */
-	public <U> Optional<U> projectOptional(SelectQuery<?> query, Class<U> clazz) 	{ 
-		return Optional.ofNullable(project(query, clazz)); 
+	public <U> Optional<U> projectToOptional(SelectQuery<?> query, Class<U> clazz) 	{ 
+		return Optional.ofNullable(projectTo(query, clazz)); 
 	}
 
 	/*
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a list of the values
 	 */
-	public <U> List<U> projectList(SelectQuery<?> query, Class<U> clazz) 	{ 
+	public <U> List<U> projectToList(SelectQuery<?> query, Class<U> clazz) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().importSelectFromResultMapping(clazz);
 		return fetchListWithMapper(newQuery, new EntityMapper<U>(clazz)); 
 	}
@@ -286,7 +286,7 @@ public abstract class Context {
 	/*
 	 * Clones the query, selects only the attribute, and returns a single value
 	 */
-	public Object projectAttribute(SelectQuery<?> query, Class<?> entity, String attributeName) {
+	public Object projectToAttribute(SelectQuery<?> query, Class<?> entity, String attributeName) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(entity, attributeName);
 		return fetchSingleWithMapper(newQuery, new AttributeMapper(entity, attributeName));
 	}
@@ -294,14 +294,14 @@ public abstract class Context {
 	/*
 	 * Clones the query, selects only the attribute, and returns a single optional value
 	 */
-	public Optional<Object>	projectAttributeOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { 
-		return Optional.ofNullable(projectAttribute(query, entity, attributeName)); 
+	public Optional<Object>	projectToAttributeOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { 
+		return Optional.ofNullable(projectToAttribute(query, entity, attributeName)); 
 	}
 
 	/* 
 	 * Clones the query, selects only the attribute, and returns a list of the values
 	 */
-	public List<?> projectAttributeList(SelectQuery<?> query, Class<?> entity, String attributeName) {
+	public List<?> projectToAttributeList(SelectQuery<?> query, Class<?> entity, String attributeName) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(entity, attributeName);
 		return fetchListWithMapper(newQuery, new AttributeMapper(entity, attributeName));
 	}
@@ -309,7 +309,7 @@ public abstract class Context {
 	/*
 	 * Clones the query, selects only the attribute with distinct option, and returns a set of the values
 	 */
-	public Set<?> projectAttributeSet(SelectQuery<?> query, Class<?> entity, String attributeName) {
+	public Set<?> projectToAttributeSet(SelectQuery<?> query, Class<?> entity, String attributeName) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(entity, attributeName).distinct();
 		return fetchListWithMapper(newQuery, new AttributeMapper(entity, attributeName)).stream().collect(Collectors.toSet());
 	}
@@ -317,7 +317,7 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single value
 	 */
-	public Long projectCount(SelectQuery<?> query) {
+	public Long projectToCount(SelectQuery<?> query) {
 		return fetchSingleAsLong(query.clone()
 			.clearSelects()
 			.clearGroupBys()
@@ -328,11 +328,27 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single optionalvalue
 	 */
-	public Optional<Long> projectCountOptional(SelectQuery<?> query) {
-		return Optional.ofNullable(projectCount(query));
+	public Optional<Long> projectToCountOptional(SelectQuery<?> query) {
+		return Optional.ofNullable(projectToCount(query));
 	}
 
-	
+	/*
+	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single value
+	 */
+	public Long projectToCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		return fetchSingleAsLong(query.clone()
+			.clearSelects()
+			.clearGroupBys()
+			.clearOrders()
+			.selectCountDistinctAs(entity, attributeName, "count"));
+	}
+
+	/*
+	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single optionalvalue
+	 */
+	public Optional<Long> projectToCountDistinctOptional(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		return Optional.ofNullable(projectToCountDistinct(query, entity, attributeName));
+	}
 	
 
 	// ==================== AGGREGATION METHODS ====================

@@ -97,7 +97,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -109,7 +109,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.email);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.email);
         
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -121,7 +121,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.projectAttribute(context, ProductEntity.class, ProductEntity.Fields.description);
+        Object result = query.projectToAttribute(context, ProductEntity.class, ProductEntity.Fields.description);
         
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -137,7 +137,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, AbstractEntity.Fields.id);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, AbstractEntity.Fields.id);
         
         assertNotNull(result);
         assertTrue(result instanceof Long);
@@ -149,7 +149,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.projectAttribute(context, OrderEntity.class, OrderEntity.Fields.customerId);
+        Object result = query.projectToAttribute(context, OrderEntity.class, OrderEntity.Fields.customerId);
         
         assertNotNull(result);
         assertTrue(result instanceof Long);
@@ -165,7 +165,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.projectAttribute(context, ProductEntity.class, ProductEntity.Fields.stock);
+        Object result = query.projectToAttribute(context, ProductEntity.class, ProductEntity.Fields.stock);
         
         assertNotNull(result);
         assertTrue(result instanceof Integer);
@@ -177,7 +177,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderLineEntity> query = Estivate.selectQuery(OrderLineEntity.class)
             .eq(OrderLineEntity.class, OrderLineEntity.Fields.id, orderLine.getId());
         
-        Object result = query.projectAttribute(context, OrderLineEntity.class, OrderLineEntity.Fields.amount);
+        Object result = query.projectToAttribute(context, OrderLineEntity.class, OrderLineEntity.Fields.amount);
         
         assertNotNull(result);
         assertTrue(result instanceof Integer);
@@ -193,7 +193,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.projectAttribute(context, ProductEntity.class, ProductEntity.Fields.price);
+        Object result = query.projectToAttribute(context, ProductEntity.class, ProductEntity.Fields.price);
         
         assertNotNull(result);
         assertTrue(result instanceof Float);
@@ -205,7 +205,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.projectAttribute(context, OrderEntity.class, OrderEntity.Fields.totalAmount);
+        Object result = query.projectToAttribute(context, OrderEntity.class, OrderEntity.Fields.totalAmount);
         
         assertNotNull(result);
         assertTrue(result instanceof Float);
@@ -217,7 +217,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderLineEntity> query = Estivate.selectQuery(OrderLineEntity.class)
             .eq(OrderLineEntity.class, OrderLineEntity.Fields.id, orderLine.getId());
         
-        Object result = query.projectAttribute(context, OrderLineEntity.class, OrderLineEntity.Fields.unitPrice);
+        Object result = query.projectToAttribute(context, OrderLineEntity.class, OrderLineEntity.Fields.unitPrice);
         
         assertNotNull(result);
         assertTrue(result instanceof Float);
@@ -233,7 +233,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         
         assertNotNull(result);
         assertTrue(result instanceof Boolean);
@@ -248,7 +248,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         
         assertNotNull(result);
         assertTrue(result instanceof Boolean);
@@ -264,7 +264,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.created);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.created);
         
         assertNotNull(result);
         assertTrue(result instanceof Date);
@@ -276,7 +276,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.projectAttribute(context, OrderEntity.class, OrderEntity.Fields.updated);
+        Object result = query.projectToAttribute(context, OrderEntity.class, OrderEntity.Fields.updated);
         
         assertNotNull(result);
         assertTrue(result instanceof Date);
@@ -292,7 +292,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.country);
+        Object result = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.country);
         
         assertNotNull(result);
         assertTrue(result instanceof CustomerEntity.Country);
@@ -304,7 +304,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.projectAttribute(context, OrderEntity.class, OrderEntity.Fields.status);
+        Object result = query.projectToAttribute(context, OrderEntity.class, OrderEntity.Fields.status);
         
         assertNotNull(result);
         assertTrue(result instanceof OrderEntity.OrderStatus);
@@ -316,7 +316,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.projectAttribute(context, ProductEntity.class, ProductEntity.Fields.category);
+        Object result = query.projectToAttribute(context, ProductEntity.class, ProductEntity.Fields.category);
         
         assertNotNull(result);
         assertTrue(result instanceof ProductEntity.ProductCategory);
@@ -332,7 +332,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.projectAttribute(context, ProductEntity.class, ProductEntity.Fields.tags);
+        Object result = query.projectToAttribute(context, ProductEntity.class, ProductEntity.Fields.tags);
         
         assertNotNull(result);
         assertTrue(result instanceof List);
@@ -349,7 +349,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.projectAttribute(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
+        Object result = query.projectToAttribute(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
         
         assertNotNull(result);
         assertTrue(result instanceof List);
@@ -386,7 +386,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()));
         
-        List<?> result = query.projectAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        List<?> result = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -410,7 +410,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.name);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -435,7 +435,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId()));
         
-        List<?> result = query.projectAttributeList(context, CustomerEntity.class, AbstractEntity.Fields.id);
+        List<?> result = query.projectToAttributeList(context, CustomerEntity.class, AbstractEntity.Fields.id);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -470,7 +470,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId(), product3.getId()));
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.stock);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.stock);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -498,7 +498,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.price);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.price);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -539,7 +539,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()));
         
-        List<?> result = query.projectAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        List<?> result = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -569,7 +569,7 @@ public class SelectFetchAsTest {
             .in(OrderEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(order.getId(), order2.getId()));
         
-        List<?> result = query.projectAttributeList(context, OrderEntity.class, OrderEntity.Fields.created);
+        List<?> result = query.projectToAttributeList(context, OrderEntity.class, OrderEntity.Fields.created);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -600,7 +600,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()));
         
-        List<?> result = query.projectAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.country);
+        List<?> result = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.country);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -632,7 +632,7 @@ public class SelectFetchAsTest {
             .in(OrderEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(order.getId(), order2.getId(), order3.getId()));
         
-        List<?> result = query.projectAttributeList(context, OrderEntity.class, OrderEntity.Fields.status);
+        List<?> result = query.projectToAttributeList(context, OrderEntity.class, OrderEntity.Fields.status);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -664,7 +664,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId(), product3.getId()));
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.category);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.category);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -693,7 +693,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.tags);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.tags);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -726,7 +726,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -767,7 +767,7 @@ public class SelectFetchAsTest {
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()))
             .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
         
-        List<?> result = query.projectAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        List<?> result = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -797,7 +797,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .gt(ProductEntity.class, ProductEntity.Fields.price, 50f);
         
-        List<?> result = query.projectAttributeList(context, ProductEntity.class, ProductEntity.Fields.name);
+        List<?> result = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -812,7 +812,7 @@ public class SelectFetchAsTest {
             .joinInner(OrderEntity.class, CustomerEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object customerName = query.projectAttribute(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Object customerName = query.projectToAttribute(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(customerName);
         assertEquals("John Doe", customerName);

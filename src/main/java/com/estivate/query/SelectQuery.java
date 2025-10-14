@@ -252,18 +252,21 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public List<Boolean> 	fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
 	
 	// ==================== PROJECT METHODS ====================
-	public <U> U project(Context context, Class<U> clazz) { return context.project(this, clazz); }
-	public <U> Optional<U> projectOptional(Context context, Class<U> clazz) { return context.projectOptional(this, clazz); }
-	public <U> List<U> projectList(Context context, Class<U> clazz) { return context.projectList(this, clazz); }
+	public <U> U projectTo(Context context, Class<U> clazz) { return context.projectTo(this, clazz); }
+	public <U> Optional<U> projectToOptional(Context context, Class<U> clazz) { return context.projectToOptional(this, clazz); }
+	public <U> List<U> projectToList(Context context, Class<U> clazz) { return context.projectToList(this, clazz); }
 	
-	public Object projectAttribute(Context context, Class<?> entity, String attributeName) { return context.projectAttribute(this, entity, attributeName); }
-	public Optional<Object> projectAttributeOptional(Context context, Class<?> entity, String attributeName) { return context.projectAttributeOptional(this, entity, attributeName); }
-	public List<?> projectAttributeList(Context context, Class<?> entity, String attributeName) { return context.projectAttributeList(this, entity, attributeName); }
-	public Set<?> projectAttributeSet(Context context, Class<?> entity, String attributeName) { return context.projectAttributeSet(this, entity, attributeName); }
+	public Object projectToAttribute(Context context, Class<?> entity, String attributeName) { return context.projectToAttribute(this, entity, attributeName); }
+	public Optional<Object> projectToAttributeOptional(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeOptional(this, entity, attributeName); }
+	public List<?> projectToAttributeList(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeList(this, entity, attributeName); }
+	public Set<?> projectToAttributeSet(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
 
-	public Long projectCount(Context context) { return context.projectCount(this); }
-	public Optional<Long> projectCountOptional(Context context) { return context.projectCountOptional(this); }
+	public Long projectToCount(Context context) { return context.projectToCount(this); }
+	public Optional<Long> projectToCountOptional(Context context) { return context.projectToCountOptional(this); }
 
+	public Long projectToCountDistinct(Context context, Class<?> entity, String attributeName) { return context.projectToCountDistinct(this, entity, attributeName); }
+	public Optional<Long> projectToCountDistinctOptional(Context context, Class<?> entity, String attributeName) { return context.projectToCountDistinctOptional(this, entity, attributeName); }
+	
 	
 
 
