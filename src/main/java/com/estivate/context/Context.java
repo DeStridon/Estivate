@@ -41,8 +41,10 @@ import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
+import com.estivate.query.DeleteQuery;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
+import com.estivate.query.UpdateQuery;
 import com.estivate.result.EntityMapper;
 import com.estivate.result.IMapper;
 import com.estivate.result.IMapper.AttributeMapper;
@@ -72,8 +74,11 @@ public abstract class Context {
 	public final DataSource datasource;
 	public boolean tracePerformances = false;
 	@Getter public NameMapper nameMapper = new DefaultNameMapper();
-
-	public Consumer<Query<?,?>> fetchQueryPreProcessor = null;
+	
+	public Consumer<SelectQuery<?>> selectInterceptor = null;
+	public Consumer<UpdateQuery<?>> updateInterceptor = null;
+	public Consumer<DeleteQuery<?>> deleteInterceptor = null;
+	public Consumer<Object> 		insertInterceptor = null;
 	
 		
 	public Context(DataSource datasource) {
@@ -122,12 +127,29 @@ public abstract class Context {
 	 * Pre-processes a query before execution
 	 */
 	private Query<?,?> preExecute(Query<?,?> query) {
-		if(fetchQueryPreProcessor == null) {
-			return query;  
-		}
 		Query<?,?> clonedQuery = query.clone();
-		fetchQueryPreProcessor.accept(clonedQuery);
+		
+		// Route to specific preprocessors based on query type
+		if(query instanceof SelectQuery && selectInterceptor != null) {
+			selectInterceptor.accept((SelectQuery<?>) clonedQuery);
+		}
+		else if(query instanceof UpdateQuery && updateInterceptor != null) {
+			updateInterceptor.accept((UpdateQuery<?>) clonedQuery);
+		}
+		else if(query instanceof DeleteQuery && deleteInterceptor != null) {
+			deleteInterceptor.accept((DeleteQuery<?>) clonedQuery);
+		}
+		
 		return clonedQuery;
+	}
+	
+	/**
+	 * Pre-processes an object before insert
+	 */
+	private <U> void preInsert(U object) {
+		if(insertInterceptor != null) {
+			insertInterceptor.accept(object);
+		}
 	}
 
 
@@ -382,6 +404,9 @@ public abstract class Context {
 //		try(Statement statement = createStatement()){
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){		
+			
+			preInsert(object);
+			
 			FieldUtils.invokeLifecycleMethods(object, PrePersist.class);
 
 			List<String> fieldValueList = new ArrayList<>();

@@ -60,7 +60,10 @@ public class DatabaseGenerator {
 			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
 			System.out.println();
 			
-			context.fetchQueryPreProcessor = query -> {};
+			context.selectInterceptor = query -> {};
+			context.updateInterceptor = query -> {};
+			context.deleteInterceptor = query -> {};
+			context.insertInterceptor = object -> {};
 			
 		}
 		

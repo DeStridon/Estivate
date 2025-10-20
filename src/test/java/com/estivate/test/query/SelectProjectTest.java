@@ -1,7 +1,11 @@
 package com.estivate.test.query;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -100,7 +104,7 @@ public class SelectProjectTest {
         testCustomer1.setCountry(CustomerEntity.Country.USA);
         testCustomer1.setEmailVerified(true);
         testCustomer1.setCreated(new Date());
-        testCustomer1 = context.insert(testCustomer1);
+
 
         testCustomer2 = new CustomerEntity();
         testCustomer2.setName("Bob Johnson");
@@ -109,7 +113,7 @@ public class SelectProjectTest {
         testCustomer2.setCountry(CustomerEntity.Country.USA);
         testCustomer2.setEmailVerified(false);
         testCustomer2.setCreated(new Date());
-        testCustomer2 = context.insert(testCustomer2);
+
 
         testCustomer3 = new CustomerEntity();
         testCustomer3.setName("Charlie Brown");
@@ -118,7 +122,7 @@ public class SelectProjectTest {
         testCustomer3.setCountry(CustomerEntity.Country.UK);
         testCustomer3.setEmailVerified(true);
         testCustomer3.setCreated(new Date());
-        testCustomer3 = context.insert(testCustomer3);
+
 
         // Create test products
         testProduct1 = new ProductEntity();
@@ -127,7 +131,7 @@ public class SelectProjectTest {
         testProduct1.setCategory(ProductEntity.ProductCategory.Electronics);
         testProduct1.setPrice(29.99f);
         testProduct1.setStock(100);
-        testProduct1 = context.insert(testProduct1);
+
 
         testProduct2 = new ProductEntity();
         testProduct2.setName("Gadget B");
@@ -135,7 +139,9 @@ public class SelectProjectTest {
         testProduct2.setCategory(ProductEntity.ProductCategory.Electronics);
         testProduct2.setPrice(49.99f);
         testProduct2.setStock(50);
-        testProduct2 = context.insert(testProduct2);
+
+        context.insert(Arrays.asList(testCustomer1, testCustomer2, testCustomer3, testProduct1, testProduct2));
+
     }
 
     // ==================== project() TESTS ====================
