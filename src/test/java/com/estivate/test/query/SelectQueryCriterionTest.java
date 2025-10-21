@@ -1980,7 +1980,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeIn(customer, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1989,7 +1989,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeIn(nameAttribute, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1997,7 +1997,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2006,7 +2006,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeIn(customer, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2015,7 +2015,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeIn(nameAttribute, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2223,7 +2223,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeStartsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2231,7 +2231,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeEndsWithIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test

@@ -448,30 +448,30 @@ public class Statement implements AutoCloseable{
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
 			appendAttributeAsParameter(in);
-			appendQuery("in (");
+			appendQuery("IN (");
 			appendQuery(in.getValues().stream().map(x -> writeParameter(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
 			appendAttributeAsParameter(in);
-			appendQuery("not in (");
+			appendQuery("NOT IN (");
 			appendQuery(in.getValues().stream().map(x -> writeParameter(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
 			appendAttributeAsParameter(between);
-			appendQuery("between");
+			appendQuery("BETWEEN");
 			appendParameterAsValue(between.entity.entity, between.attribute, between.min);
-			appendQuery("and");
+			appendQuery("AND");
 			appendParameterAsValue(between.entity.entity, between.attribute, between.max);
 			
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
 			appendAttributeAsParameter(nullcheck);
-			appendQuery(nullcheck.isNull ? " is null":" is not null");
+			appendQuery(nullcheck.isNull ? "IS NULL":"IS NOT NULL");
 		}
 		else if(node instanceof Criterion.MatchAgainst) {
 			
@@ -493,7 +493,7 @@ public class Statement implements AutoCloseable{
 		else if(node instanceof Criterion.InSubQuery) {
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
 			appendAttributeAsParameter(subQuery);
-			appendQuery(subQuery.include ? "in " : "not in ");
+			appendQuery(subQuery.include ? "IN" : "NOT IN");
 			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
 			appendQuery("("+subStatement.query()+")");
 			parameters.addAll(subStatement.parameters);

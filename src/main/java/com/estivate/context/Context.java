@@ -619,29 +619,40 @@ public abstract class Context {
 			return;
 		}
 	
+		// TODO : replace by UpdateQuery
 		
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
-				
-				// 1. Create query
-				statement.appendQuery("UPDATE ")
-						.appendQuery(nameMapper.toTableName(entity.getClass()))
-						.appendQuery(" SET ");
-						
-				// 2. List updated fields
-				statement.appendQuery(updatedFields.stream().map(x-> nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
-				
-				for(Field field : updatedFields) {
-					statement.appendObjectAsValue(entity.getClass(), field.getName(), field.get(entity));
-				}
-				
-				
-				statement.appendQuery(" WHERE "+nameMapper.mapDatabaseField(idField.getName())+" = ?;");
-				statement.appendObjectAsValue(entity.getClass(), idField.getName(), idField.getLong(entity));
-
-				boolean check = statement.executeForValidation();
-
+		UpdateQuery<U> query = Estivate.updateQuery((Class<U>) entity.getClass());
+		
+		for(Field field : updatedFields) {
+			query.set(field.getName(), field.get(entity));
 		}
+		
+		query.eq(idField.getName(), idField.get(entity));
+		
+		execute(query);
+				
+//		try(Connection connection = datasource.getConnection();
+//			Statement statement = new Statement(this, connection); ){
+//				
+//				// 1. Create query
+//				statement.appendQuery("UPDATE ")
+//						.appendQuery(nameMapper.toTableName(entity.getClass()))
+//						.appendQuery(" SET ");
+//						
+//				// 2. List updated fields
+//				statement.appendQuery(updatedFields.stream().map(x-> nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
+//				
+//				for(Field field : updatedFields) {
+//					statement.appendObjectAsValue(entity.getClass(), field.getName(), field.get(entity));
+//				}
+//				
+//				
+//				statement.appendQuery(" WHERE "+nameMapper.mapDatabaseField(idField.getName())+" = ?;");
+//				statement.appendObjectAsValue(entity.getClass(), idField.getName(), idField.getLong(entity));
+//
+//				boolean check = statement.executeForValidation();
+//
+//		}
 
 		FieldUtils.invokeLifecycleMethods(entity, PostUpdate.class);
 		
@@ -657,6 +668,30 @@ public abstract class Context {
 			update(entity);
 		}
 		
+	}
+
+	
+	@SneakyThrows
+	public <U> void delete(U entity) {
+		
+		if(entity == null) {
+			return;
+		}
+
+		DeleteQuery<U> query = Estivate.deleteQuery((Class<U>) entity.getClass());
+		
+		Field idField = FieldUtils.getIdField(entity.getClass());
+		
+		query.eq(idField.getName(), idField.get(entity));
+		execute(query);
+		
+	}
+	
+	@SneakyThrows
+	public <U> void delete(List<U> entities) {
+		for(U entity : entities) {
+			delete(entity);
+		}
 	}
 
 	

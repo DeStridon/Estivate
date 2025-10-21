@@ -1,5 +1,6 @@
 package com.estivate.query;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import com.estivate.Entity;
@@ -23,6 +24,7 @@ public class DeleteQuery<T> extends Query<DeleteQuery<T>, T> {
 	public DeleteQuery<T> clone() {
 		DeleteQuery<T> queryClone = new DeleteQuery<T>(entity);
 		
+		queryClone.comments = new ArrayList<>(this.comments);
 		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		queryClone.joins = this.joins.stream().map(x -> x.clone()).collect(Collectors.toSet());
 		queryClone.limit = this.limit;

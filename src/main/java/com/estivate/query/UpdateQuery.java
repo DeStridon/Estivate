@@ -1,5 +1,6 @@
 package com.estivate.query;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
@@ -33,8 +34,11 @@ public class UpdateQuery<T> extends Query<UpdateQuery<T>, T> {
 	@SuppressWarnings("unchecked")
 	public UpdateQuery<T> clone() {
 		UpdateQuery<T> queryClone = new UpdateQuery<T>(entity);
+
+		queryClone.comments = new ArrayList<>(this.comments);
 		
-		queryClone.updates = new LinkedHashMap<>(this.updates);
+        queryClone.updates = new LinkedHashMap<>(this.updates);
+		
 		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());
 		queryClone.joins = this.joins.stream().map(x -> x.clone()).collect(Collectors.toSet());
 		queryClone.limit = this.limit;

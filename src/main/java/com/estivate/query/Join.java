@@ -29,7 +29,7 @@ public class Join {
 	public JoinType joinType = JoinType.INNER;
 	
 	public IndexHint indexHint = null;
-	public List<String> indexNames;
+	public List<String> indexNames = new ArrayList<>();
 
 
 	public Join(Entity<?> leftEntity, Entity<?> rightEntity, String leftAttribute, String rightAttribute, JoinType joinType){
@@ -131,6 +131,9 @@ public class Join {
 		join.leftEntity = this.leftEntity;
 		join.rightEntity = this.rightEntity;
 		join.joiningCriterion = this.joiningCriterion.clone();
+		join.joinType = this.joinType;
+		join.indexHint = this.indexHint;
+		join.indexNames = new ArrayList<>(this.indexNames);
 		return join;
 	}
 

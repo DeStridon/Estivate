@@ -36,8 +36,8 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 			Lte("<="),
 			Gt(">"),
 			Gte(">="),
-			Like("like"),
-			NotLike("not like");
+			Like("LIKE"),
+			NotLike("NOT LIKE");
 			
 			public String symbol;
 			
