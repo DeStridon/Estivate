@@ -51,7 +51,7 @@ public class EntityMapper<U> extends IMapper<U> {
 	// TODO : field is empty for row mapping
 	List<Field> columnFields = new ArrayList<>();
 
-	public void setColumnNames(String[] columnNames) {
+	public void setResultColumnNames(String[] columnNames) {
 
 		// Map columns to fields
 		Entity<U> entity = new Entity<>(entityClass);

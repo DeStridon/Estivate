@@ -56,7 +56,7 @@ public class Result {
 		if(u == null) {
 			EntityMapper<U> mapper = new EntityMapper<>(clazz.entity);
 			mapper.setNameMapper(nameMapper);
-			mapper.setColumnNames(columnNames);
+			mapper.setResultColumnNames(columnNames);
 			u = mapper.map(columnValues);
 			cache.put(key, u);
 		}

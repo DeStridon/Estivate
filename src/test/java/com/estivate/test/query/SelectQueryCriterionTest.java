@@ -186,7 +186,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" in (?, ?, ?, ?)"));
+		Assert.assertTrue(queryString.contains(" IN (?, ?, ?, ?)"));
 		
 	}
 	
@@ -197,21 +197,21 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class).isNull(CustomerEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
 		query1.fetchList(context);
-		Assert.assertTrue(queryString1.contains(" is null"));
+		Assert.assertTrue(queryString1.contains(" IS NULL"));
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class).isNull(customer, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
 		query2.fetchList(context);
-		Assert.assertTrue(queryString2.contains(" is null"));
+		Assert.assertTrue(queryString2.contains(" IS NULL"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class).isNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
 		query3.fetchList(context);
-		Assert.assertTrue(queryString3.contains(" is null"));
+		Assert.assertTrue(queryString3.contains(" IS NULL"));
 	}
 	
 	@Test
@@ -221,21 +221,21 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class).isNotNull(CustomerEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
 		query1.fetchList(context);
-		Assert.assertTrue(queryString1.contains(" is not null"));
+		Assert.assertTrue(queryString1.contains(" IS NOT NULL"));
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class).isNotNull(customer, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
 		query2.fetchList(context);
-		Assert.assertTrue(queryString2.contains(" is not null"));
+		Assert.assertTrue(queryString2.contains(" IS NOT NULL"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class).isNotNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
 		query3.fetchList(context);
-		Assert.assertTrue(queryString3.contains(" is not null"));
+		Assert.assertTrue(queryString3.contains(" IS NOT NULL"));
 	}
 	
 	@Test
@@ -246,7 +246,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		query.fetchList(context);
 
-		Assert.assertTrue(queryString.contains(" like ?"));
+		Assert.assertTrue(queryString.contains(" LIKE ?"));
 		
 	}
 	
@@ -259,7 +259,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		query.fetchList(context);
 
-		Assert.assertTrue(queryString.contains(" not like ?"));
+		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		
 	}
 	
@@ -306,7 +306,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains("not in (?, ?)"));
+		Assert.assertTrue(queryString1.contains("NOT IN (?, ?)"));
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
@@ -322,7 +322,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains("not in (?, ?)"));
+		Assert.assertTrue(queryString2.contains("NOT IN (?, ?)"));
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
@@ -338,7 +338,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains("not in (?, ?)"));
+		Assert.assertTrue(queryString3.contains("NOT IN (?, ?)"));
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
@@ -360,7 +360,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains("not in (?)"));
+		Assert.assertTrue(queryString1.contains("NOT IN (?)"));
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Class-based: Should find customer2", foundCustomer2_1);
@@ -374,7 +374,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains("not in (?)"));
+		Assert.assertTrue(queryString2.contains("NOT IN (?)"));
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Entity-based: Should find customer2", foundCustomer2_2);
@@ -388,7 +388,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains("not in (?)"));
+		Assert.assertTrue(queryString3.contains("NOT IN (?)"));
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Attribute-based: Should find customer2", foundCustomer2_3);
@@ -416,7 +416,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains("not in (?)"));
+		Assert.assertTrue(queryString1.contains("NOT IN (?)"));
 		
 		boolean foundCustomer2 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -449,7 +449,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains(" like ?"));
+		Assert.assertTrue(queryString1.contains(" LIKE ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Class-based: Should find customer1 with 'search' in name", foundCustomer1_1);
@@ -463,7 +463,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains(" like ?"));
+		Assert.assertTrue(queryString2.contains(" LIKE ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Entity-based: Should find customer1 with 'search' in name", foundCustomer1_2);
@@ -477,7 +477,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 			
-		Assert.assertTrue(queryString3.contains(" like ?"));
+		Assert.assertTrue(queryString3.contains(" LIKE ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Attribute-based: Should find customer1 with 'search' in name", foundCustomer1_3);
@@ -497,7 +497,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" not like ?"));
+		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		
 		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -659,7 +659,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains(" is null"));
+		Assert.assertTrue(queryString2.contains(" IS NULL"));
 		boolean foundTask1 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Should find task1 with null external name", foundTask1);
 	}
@@ -912,7 +912,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains(" between ? and ?"));
+		Assert.assertTrue(queryString1.contains(" BETWEEN ? AND ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer3_1 = results1.stream().anyMatch(t -> t.getId() == customer3.getId());
@@ -931,7 +931,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains(" between ? and ?"));
+		Assert.assertTrue(queryString2.contains(" BETWEEN ? AND ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer3_2 = results2.stream().anyMatch(t -> t.getId() == customer3.getId());
@@ -950,7 +950,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains(" between ? and ?"));
+		Assert.assertTrue(queryString3.contains(" BETWEEN ? AND ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
 		boolean foundCustomer3_3 = results3.stream().anyMatch(t -> t.getId() == customer3.getId());
@@ -974,7 +974,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains(" in (?)"));
+		Assert.assertTrue(queryString1.contains(" IN (?)"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Class-based: Should find customer1", foundCustomer1_1);
 		
@@ -986,7 +986,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains(" in (?)"));
+		Assert.assertTrue(queryString2.contains(" IN (?)"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Entity-based: Should find customer1", foundCustomer1_2);
 		
@@ -998,7 +998,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains(" in (?)"));
+		Assert.assertTrue(queryString3.contains(" IN (?)"));
 		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Attribute-based: Should find task1", foundTask1_3);
 		
@@ -1024,8 +1024,8 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" in (?)"));
-		Assert.assertTrue(queryString.contains(" is null"));
+		Assert.assertTrue(queryString.contains(" IN (?)"));
+		Assert.assertTrue(queryString.contains(" IS NULL"));
 		
 		// Should find both tasks - task2 because external name is in list, task1 because external name is null
 		assertEquals(2, results.size());
@@ -1045,7 +1045,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains(" like ?"));
+		Assert.assertTrue(queryString1.contains(" LIKE ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Class-based: Should find customer1 with name starting with 'prefix'", foundCustomer1_1);
@@ -1060,7 +1060,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains(" like ?"));
+		Assert.assertTrue(queryString2.contains(" LIKE ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Entity-based: Should find customer1 with name starting with 'prefix'", foundCustomer1_2);
@@ -1076,7 +1076,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains(" like ?"));
+		Assert.assertTrue(queryString3.contains(" LIKE ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Attribute-based: Should find customer1 with name starting with 'prefix'", foundCustomer1_3);
@@ -1097,7 +1097,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains(" like ?"));
+		Assert.assertTrue(queryString1.contains(" LIKE ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Class-based: Should find task1 with name ending with 'suffix'", foundCustomer1_1);
@@ -1112,7 +1112,7 @@ public class SelectQueryCriterionTest {
 		String queryString2 = context.queryAsString(query2);
 		List<CustomerEntity> results2 = context.fetchList(query2);
 		
-		Assert.assertTrue(queryString2.contains(" like ?"));
+		Assert.assertTrue(queryString2.contains(" LIKE ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Entity-based: Should find task1 with name ending with 'suffix'", foundCustomer1_2);
@@ -1128,7 +1128,7 @@ public class SelectQueryCriterionTest {
 		String queryString3 = context.queryAsString(query3);
 		List<CustomerEntity> results3 = context.fetchList(query3);
 		
-		Assert.assertTrue(queryString3.contains(" like ?"));
+		Assert.assertTrue(queryString3.contains(" LIKE ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
 		Assert.assertTrue("Attribute-based: Should find task1 with name ending with 'suffix'", foundCustomer1_3);
@@ -1149,7 +1149,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" like ?"));
+		Assert.assertTrue(queryString.contains(" LIKE ?"));
 		
 		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -1174,7 +1174,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" not like ?"));
+		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		
 		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -1198,7 +1198,7 @@ public class SelectQueryCriterionTest {
 		String queryString1 = context.queryAsString(query1);
 		List<CustomerEntity> results1 = context.fetchList(query1);
 		
-		Assert.assertTrue(queryString1.contains(" in (?)"));
+		Assert.assertTrue(queryString1.contains(" IN (?)"));
 		boolean foundCustomer1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
 		Assert.assertTrue("Should find task1", foundCustomer1);
 		
@@ -1284,7 +1284,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" in (SELECT"));
+		Assert.assertTrue(queryString.contains(" IN (SELECT"));
 		
 		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -1314,7 +1314,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		List<CustomerEntity> results = context.fetchList(query);
 		
-		Assert.assertTrue(queryString.contains(" not in (SELECT"));
+		Assert.assertTrue(queryString.contains(" NOT IN (SELECT"));
 		
 		boolean foundCustomer1 = results.stream().anyMatch(t -> t.getId() == customer1.getId());
 		boolean foundCustomer2 = results.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -1555,7 +1555,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.between(CustomerEntity.class, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -1564,7 +1564,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.between(customer, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -1573,7 +1573,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.between(homeIdAttribute, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -1581,7 +1581,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -1590,7 +1590,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -1599,7 +1599,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -1607,7 +1607,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1616,7 +1616,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notIn(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1625,7 +1625,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notIn(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1633,7 +1633,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.isNull(CustomerEntity.class, CustomerEntity.Fields.name);
 		
-		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D  is null"));
+		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D IS NULL"));
 	}
 	
 	@Test
@@ -1642,7 +1642,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.isNull(customer, CustomerEntity.Fields.name);
 		
-		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D  is null"));
+		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D IS NULL"));
 	}
 	
 	@Test
@@ -1651,7 +1651,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.isNull(nameAttribute);
 		
-		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D  is null"));
+		Assert.assertTrue("Should generate IS NULL operator", context.queryAsString(query).contains("NAME_D IS NULL"));
 	}
 	
 	@Test
@@ -1659,7 +1659,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.isNotNull(CustomerEntity.class, CustomerEntity.Fields.name);
 		
-		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D  is not null"));
+		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D IS NOT NULL"));
 	}
 	
 	@Test
@@ -1668,7 +1668,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.isNotNull(customer, CustomerEntity.Fields.name);
 		
-		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D  is not null"));
+		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D IS NOT NULL"));
 	}
 	
 	@Test
@@ -1677,7 +1677,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.isNotNull(nameAttribute);
 		
-		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D  is not null"));
+		Assert.assertTrue("Should generate IS NOT NULL operator", context.queryAsString(query).contains("NAME_D IS NOT NULL"));
 	}
 	
 	@Test
@@ -1685,7 +1685,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.like(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1694,7 +1694,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.like(customer, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1703,7 +1703,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.like(nameAttribute, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1711,7 +1711,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLike(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -1720,7 +1720,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLike(customer, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -1729,7 +1729,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLike(nameAttribute, "test%");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -1737,7 +1737,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContains(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1746,7 +1746,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContains(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1755,7 +1755,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContains(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -1815,7 +1815,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1824,7 +1824,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmpty(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1833,7 +1833,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmpty(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1841,7 +1841,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyNullable(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1850,7 +1850,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyNullable(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1859,7 +1859,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyNullable(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1867,7 +1867,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1876,7 +1876,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1885,7 +1885,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1893,7 +1893,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1902,7 +1902,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1911,7 +1911,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.inIfNotEmptyOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D in (?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?)"));
 	}
 	
 	@Test
@@ -1919,7 +1919,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1928,7 +1928,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1937,7 +1937,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1945,7 +1945,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInIfNotEmptyOrNull(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1954,7 +1954,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInIfNotEmptyOrNull(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1963,7 +1963,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notInIfNotEmptyOrNull(homeIdAttribute, Arrays.asList(1001, 1002));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D not in (?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?)"));
 	}
 	
 	@Test
@@ -1971,7 +1971,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2023,7 +2023,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2032,7 +2032,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2041,7 +2041,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2049,7 +2049,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeStartsWith(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2058,7 +2058,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeStartsWith(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2067,7 +2067,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeStartsWith(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2075,7 +2075,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWith(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2084,7 +2084,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWith(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2093,7 +2093,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWith(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2101,7 +2101,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeEndsWith(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2110,7 +2110,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeEndsWith(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2119,7 +2119,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeEndsWith(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2127,7 +2127,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeContains(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2136,7 +2136,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeContains(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2145,7 +2145,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeContains(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2153,7 +2153,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2162,7 +2162,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2171,7 +2171,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2179,7 +2179,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2188,7 +2188,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2197,7 +2197,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsIn(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2205,7 +2205,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeStartsWithIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2214,7 +2214,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeStartsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2240,7 +2240,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeEndsWithIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2249,7 +2249,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeEndsWithIn(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2257,7 +2257,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeContainsIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2266,7 +2266,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeContainsIn(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2275,7 +2275,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.notLikeContainsIn(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D not like ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
 	}
 	
 	@Test
@@ -2439,7 +2439,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.betweenIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -2448,7 +2448,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.betweenIfNotNull(customer, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -2457,7 +2457,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.betweenIfNotNull(homeIdAttribute, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D between ? and ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -2465,7 +2465,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeIfNotNull(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2474,7 +2474,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeIfNotNull(customer, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2483,7 +2483,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeIfNotNull(nameAttribute, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2491,7 +2491,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithIfNotNull(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2500,7 +2500,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithIfNotNull(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2509,7 +2509,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithIfNotNull(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2517,7 +2517,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithIfNotNull(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2526,7 +2526,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithIfNotNull(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2535,7 +2535,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithIfNotNull(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2543,7 +2543,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsIfNotNull(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2552,7 +2552,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsIfNotNull(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2561,7 +2561,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsIfNotNull(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2569,7 +2569,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeInIfNotEmpty(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2578,7 +2578,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2587,7 +2587,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeInIfNotEmpty(nameAttribute, Arrays.asList("test%", "demo%"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2595,7 +2595,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithInIfNotEmpty(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2604,7 +2604,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2613,7 +2613,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeStartsWithInIfNotEmpty(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2621,7 +2621,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithInIfNotEmpty(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2630,7 +2630,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2639,7 +2639,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeEndsWithInIfNotEmpty(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2647,7 +2647,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsInIfNotEmpty(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2656,7 +2656,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsInIfNotEmpty(customer, CustomerEntity.Fields.name, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 	@Test
@@ -2665,7 +2665,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.likeContainsInIfNotEmpty(nameAttribute, Arrays.asList("test", "demo"));
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D like ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
 	}
 	
 }
