@@ -416,7 +416,7 @@ public class SelectProjectTest {
 
         assertNotNull(countries, "Countries should not be null");
         assertEquals(1, countries.size(), "Should return 1 unique country despite duplicates");
-        assertTrue(countries.contains("USA"), "Should contain USA");
+        assertTrue(countries.contains(CustomerEntity.Country.USA), "Should contain USA");
     }
 
     @Test

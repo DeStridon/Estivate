@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class IMapper<U> {
 
 	NameMapper nameMapper;
-	String[] columnNames;
+	String[] resultColumnNames;
 	
 	
 	abstract public U map(String[] row);
@@ -101,7 +101,7 @@ public abstract class IMapper<U> {
 
 		@Override
 		public Result map(String[] row) {
-			return new Result(row, columnNames, nameMapper);
+			return new Result(row, resultColumnNames, nameMapper);
 		}
 		
 	}

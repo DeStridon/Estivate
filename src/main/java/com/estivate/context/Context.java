@@ -175,7 +175,7 @@ public abstract class Context {
 				return null;
 			}
 			mapper.setNameMapper(nameMapper);
-			mapper.setColumnNames(createColumnsArray(resultSet.getMetaData()));
+			mapper.setResultColumnNames(createColumnsArray(resultSet.getMetaData()));
 
 			return mapper.map(extractRowValues(resultSet));
 		}
@@ -189,7 +189,7 @@ public abstract class Context {
 			ResultSet resultSet = statement.executeForResultSet()) {
 			
 			mapper.setNameMapper(nameMapper);
-			mapper.setColumnNames(createColumnsArray(resultSet.getMetaData()));
+			mapper.setResultColumnNames(createColumnsArray(resultSet.getMetaData()));
 	        
 	        List<String[]> rows = new ArrayList<>();
 	        

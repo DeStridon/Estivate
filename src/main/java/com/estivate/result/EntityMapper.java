@@ -34,31 +34,32 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EntityMapper<U> extends IMapper<U> {
-	final Class<U> targetClass;
-	final Constructor<U> constructor;
 
-	final Set<Field> fields;
-	final Set<Method> postLoadMethods;
+	// Entity side
+	final Class<U> entityClass;
+	final Set<Field> entityFields;
+	final Constructor<U> entityConstructor;
+	final Set<Method> entityPostLoadMethods;
+	
+	
+	// Result side
 
 	final Chronometer chronometer;
 
 	Map<Integer, String> fieldNames = new HashMap<>();
 
-	// final DateTimeFormatter dateTimeFormater2 =
-	// DateTimeFormatter.ofPattern("yyyy-MM-dd
-	// HH:mm:ss").withZone(ZoneId.systemDefault());
-
+	// TODO : field is empty for row mapping
 	List<Field> columnFields = new ArrayList<>();
 
 	public void setColumnNames(String[] columnNames) {
 
 		// Map columns to fields
-		Entity<U> entity = new Entity<>(targetClass);
+		Entity<U> entity = new Entity<>(entityClass);
 		columnFields = new ArrayList<>();
 
 		for (int i = 0; i < columnNames.length; i++) {
 			String columnName = columnNames[i];
-			Field field = fields.stream().filter(x -> columnName.equals(getFieldName(entity, x))).findFirst()
+			Field field = entityFields.stream().filter(x -> columnName.equals(getFieldName(entity, x))).findFirst()
 					.orElse(null);
 			if (field != null) {
 				while (columnFields.size() <= i) {
@@ -74,16 +75,16 @@ public class EntityMapper<U> extends IMapper<U> {
 	public EntityMapper(Class<U> targetClass, boolean tracePerformances) {
 		chronometer = new Chronometer("Mapper " + targetClass.getSimpleName(), tracePerformances).timeThreshold(100);
 
-		this.targetClass = targetClass;
+		this.entityClass = targetClass;
 
 		// Get constructor
-		constructor = targetClass.getConstructor();
+		entityConstructor = targetClass.getConstructor();
 
 		// Get Fields
-		fields = FieldUtils.getEntityFields(targetClass);
+		entityFields = FieldUtils.getEntityFields(targetClass);
 
 		// Get PostLoadMethods
-		postLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
+		entityPostLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
 
 		chronometer.step("mapper constructor");
 	}
@@ -94,8 +95,8 @@ public class EntityMapper<U> extends IMapper<U> {
 
 	@SneakyThrows
 	public U map(String[] row) {
-		U obj = constructor.newInstance();
-		Entity<U> entity = new Entity<>(targetClass);
+		U obj = entityConstructor.newInstance();
+		Entity<U> entity = new Entity<>(entityClass);
 		chronometer.step("constructor & entity");
 
 		for (int i = 0; i < row.length; i++) {
@@ -109,7 +110,7 @@ public class EntityMapper<U> extends IMapper<U> {
 				chronometer.step("generate field " + field.getName());
 			}
 		}
-		for (Method method : postLoadMethods) {
+		for (Method method : entityPostLoadMethods) {
 			method.invoke(obj);
 			chronometer.step("invoke method " + method.getName());
 		}
@@ -119,11 +120,11 @@ public class EntityMapper<U> extends IMapper<U> {
 	@SneakyThrows
 	public U map(Map<String, String> arguments) {
 
-		U obj = constructor.newInstance();
+		U obj = entityConstructor.newInstance();
 
-		Entity<U> entity = new Entity<>(targetClass);
+		Entity<U> entity = new Entity<>(entityClass);
 
-		Class<?> currentClass = targetClass;
+		Class<?> currentClass = entityClass;
 		while (currentClass != Object.class) {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
