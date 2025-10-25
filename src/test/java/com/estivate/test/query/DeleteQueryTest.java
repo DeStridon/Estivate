@@ -34,7 +34,7 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain FROM", queryString.contains("FROM"));
         Assert.assertTrue("Query should contain INNER JOIN", queryString.contains("INNER JOIN"));
         Assert.assertTrue("Query should contain WHERE", queryString.contains("WHERE"));
-        Assert.assertTrue("Query should contain customer name condition", queryString.contains("NAME_D = ?"));
+        Assert.assertTrue("Query should contain customer name condition", queryString.contains("NAME = ?"));
     }
 
     @Test
@@ -75,7 +75,7 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain FROM", queryString.contains("FROM"));
         Assert.assertTrue("Query should contain INNER JOIN", queryString.contains("INNER JOIN"));
         Assert.assertTrue("Query should contain WHERE", queryString.contains("WHERE"));
-        Assert.assertTrue("Query should contain country condition", queryString.contains("COUNTRY_D = ?"));
+        Assert.assertTrue("Query should contain country condition", queryString.contains("COUNTRY = ?"));
         
         // Count INNER JOIN occurrences - should be 2
         long joinCount = queryString.split("INNER JOIN").length - 1;
@@ -101,9 +101,9 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain FROM", queryString.contains("FROM"));
         Assert.assertTrue("Query should contain INNER JOIN", queryString.contains("INNER JOIN"));
         Assert.assertTrue("Query should contain WHERE", queryString.contains("WHERE"));
-        Assert.assertTrue("Query should contain status condition", queryString.contains("STATUS_D = ?"));
-        Assert.assertTrue("Query should contain country condition", queryString.contains("COUNTRY_D = ?"));
-        Assert.assertTrue("Query should contain amount condition", queryString.contains("TOTALAMOUNT_D > ?"));
+        Assert.assertTrue("Query should contain status condition", queryString.contains("STATUS = ?"));
+        Assert.assertTrue("Query should contain country condition", queryString.contains("COUNTRY = ?"));
+        Assert.assertTrue("Query should contain amount condition", queryString.contains("TOTALAMOUNT > ?"));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain FROM", queryString.contains("FROM"));
         Assert.assertTrue("Query should contain RIGHT JOIN", queryString.contains("RIGHT JOIN"));
         Assert.assertTrue("Query should contain WHERE", queryString.contains("WHERE"));
-        Assert.assertTrue("Query should contain email verified condition", queryString.contains("EMAILVERIFIED_D = ?"));
+        Assert.assertTrue("Query should contain email verified condition", queryString.contains("EMAILVERIFIED = ?"));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain INNER JOIN", queryString.contains("INNER JOIN"));
         Assert.assertTrue("Query should contain WHERE", queryString.contains("WHERE"));
         Assert.assertTrue("Query should contain subquery", queryString.contains("SELECT"));
-        Assert.assertTrue("Query should contain amount condition", queryString.contains("TOTALAMOUNT_D > ?"));
+        Assert.assertTrue("Query should contain amount condition", queryString.contains("TOTALAMOUNT > ?"));
     }
 
 
@@ -242,9 +242,9 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain INNER JOIN", queryString.contains("INNER JOIN"));
         Assert.assertTrue("Query should contain LEFT JOIN", queryString.contains("LEFT JOIN"));
         Assert.assertTrue("Query should contain WHERE", queryString.contains("WHERE"));
-        Assert.assertTrue("Query should contain country condition", queryString.contains("COUNTRY_D = ?"));
-        Assert.assertTrue("Query should contain status condition", queryString.contains("STATUS_D = ?"));
-        Assert.assertTrue("Query should contain price condition", queryString.contains("PRICE_D > ?"));
+        Assert.assertTrue("Query should contain country condition", queryString.contains("COUNTRY = ?"));
+        Assert.assertTrue("Query should contain status condition", queryString.contains("STATUS = ?"));
+        Assert.assertTrue("Query should contain price condition", queryString.contains("PRICE > ?"));
         
         // Count JOIN occurrences - should be 3 (2 INNER + 1 LEFT)
         long innerJoinCount = queryString.split("INNER JOIN").length - 1;

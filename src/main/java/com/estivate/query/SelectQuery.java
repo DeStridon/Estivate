@@ -91,10 +91,10 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	}
 	
 	public SelectQuery<T> selectFunctionAs(Entity<?> c, String attribute, Attribute.Function function, String alias) {
-		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
-		if(select != null) {
-			selects.remove(select);
-		}
+//		Select select = selects.stream().filter(x -> x.entity.equals(c) && x.attribute.equals(attribute)).findAny().orElse(null);
+//		if(select != null) {
+//			selects.remove(select);
+//		}
 		
 		selects.add(Select.builder().entity(c).attribute(attribute).alias(alias).function(function).build());
 		return this;

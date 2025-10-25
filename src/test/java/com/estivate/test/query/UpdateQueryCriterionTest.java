@@ -30,7 +30,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID = ?"));
 	}
 	
 	@Test
@@ -40,7 +40,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.eq(customer, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID = ?"));
 	}
 	
 	@Test
@@ -50,7 +50,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.eq(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID_D = ?"));
+		Assert.assertTrue("Should generate = operator", context.queryAsString(query).contains("ID = ?"));
 	}
 	
 	// === NOT EQ Tests ===
@@ -60,7 +60,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notEq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID != ?"));
 	}
 	
 	@Test
@@ -70,7 +70,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notEq(customer, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID != ?"));
 	}
 	
 	@Test
@@ -80,7 +80,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notEq(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID_D != ?"));
+		Assert.assertTrue("Should generate != operator", context.queryAsString(query).contains("ID != ?"));
 	}
 	
 	// === LT Tests ===
@@ -90,7 +90,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.lt(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID < ?"));
 	}
 	
 	@Test
@@ -100,7 +100,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.lt(customer, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID < ?"));
 	}
 	
 	@Test
@@ -110,7 +110,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.lt(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID_D < ?"));
+		Assert.assertTrue("Should generate < operator", context.queryAsString(query).contains("ID < ?"));
 	}
 	
 	// === LTE Tests ===
@@ -120,7 +120,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.lte(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID <= ?"));
 	}
 	
 	@Test
@@ -130,7 +130,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.lte(customer, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID <= ?"));
 	}
 	
 	@Test
@@ -140,7 +140,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.lte(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID_D <= ?"));
+		Assert.assertTrue("Should generate <= operator", context.queryAsString(query).contains("ID <= ?"));
 	}
 	
 	// === GT Tests ===
@@ -150,7 +150,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.gt(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID > ?"));
 	}
 	
 	@Test
@@ -160,7 +160,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.gt(customer, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID > ?"));
 	}
 	
 	@Test
@@ -170,7 +170,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.gt(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID_D > ?"));
+		Assert.assertTrue("Should generate > operator", context.queryAsString(query).contains("ID > ?"));
 	}
 	
 	// === GTE Tests ===
@@ -180,7 +180,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.gte(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID >= ?"));
 	}
 	
 	@Test
@@ -190,7 +190,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.gte(customer, AbstractEntity.Fields.id, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID >= ?"));
 	}
 	
 	@Test
@@ -200,7 +200,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.gte(homeIdAttribute, 1001);
 		
-		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID_D >= ?"));
+		Assert.assertTrue("Should generate >= operator", context.queryAsString(query).contains("ID >= ?"));
 	}
 	
 	// === BETWEEN Tests ===
@@ -210,7 +210,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.between(CustomerEntity.class, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -220,7 +220,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.between(customer, AbstractEntity.Fields.id, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID BETWEEN ? AND ?"));
 	}
 	
 	@Test
@@ -230,7 +230,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.between(homeIdAttribute, 1001, 1010);
 		
-		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID_D BETWEEN ? AND ?"));
+		Assert.assertTrue("Should generate BETWEEN operator", context.queryAsString(query).contains("ID BETWEEN ? AND ?"));
 	}
 	
 	// === IN Tests ===
@@ -240,7 +240,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -250,7 +250,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.in(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -260,7 +260,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.in(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID_D IN (?, ?, ?)"));
+		Assert.assertTrue("Should generate IN operator", context.queryAsString(query).contains("ID IN (?, ?, ?)"));
 	}
 	
 	// === NOT IN Tests ===
@@ -270,7 +270,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID NOT IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -280,7 +280,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notIn(customer, AbstractEntity.Fields.id, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID NOT IN (?, ?, ?)"));
 	}
 	
 	@Test
@@ -290,7 +290,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notIn(homeIdAttribute, Arrays.asList(1001, 1002, 1003));
 		
-		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID_D NOT IN (?, ?, ?)"));
+		Assert.assertTrue("Should generate NOT IN operator", context.queryAsString(query).contains("ID NOT IN (?, ?, ?)"));
 	}
 	
 	// === IS NULL Tests ===
@@ -301,7 +301,7 @@ public class UpdateQueryCriterionTest {
 			.isNull(CustomerEntity.class, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D IS NULL"));
+		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME IS NULL"));
 	}
 	
 	@Test
@@ -312,7 +312,7 @@ public class UpdateQueryCriterionTest {
 			.isNull(customer, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D IS NULL"));
+		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME IS NULL"));
 	}
 	
 	@Test
@@ -323,7 +323,7 @@ public class UpdateQueryCriterionTest {
 			.isNull(nameAttribute);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME_D IS NULL"));
+		Assert.assertTrue("Should generate IS NULL operator", actualSQL.contains("NAME IS NULL"));
 	}
 	
 	// === IS NOT NULL Tests ===
@@ -334,7 +334,7 @@ public class UpdateQueryCriterionTest {
 			.isNotNull(CustomerEntity.class, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D IS NOT NULL"));
+		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME IS NOT NULL"));
 	}
 	
 	@Test
@@ -345,7 +345,7 @@ public class UpdateQueryCriterionTest {
 			.isNotNull(customer, CustomerEntity.Fields.name);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D IS NOT NULL"));
+		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME IS NOT NULL"));
 	}
 	
 	@Test
@@ -356,7 +356,7 @@ public class UpdateQueryCriterionTest {
 			.isNotNull(nameAttribute);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME_D IS NOT NULL"));
+		Assert.assertTrue("Should generate IS NOT NULL operator", actualSQL.contains("NAME IS NOT NULL"));
 	}
 	
 	// === LIKE Tests ===
@@ -366,7 +366,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.like(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME LIKE ?"));
 	}
 	
 	@Test
@@ -376,7 +376,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.like(customer, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME LIKE ?"));
 	}
 	
 	@Test
@@ -386,7 +386,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.like(nameAttribute, "test%");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME LIKE ?"));
 	}
 	
 	// === NOT LIKE Tests ===
@@ -396,7 +396,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notLike(CustomerEntity.class, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME NOT LIKE ?"));
 	}
 	
 	@Test
@@ -406,7 +406,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notLike(customer, CustomerEntity.Fields.name, "test%");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME NOT LIKE ?"));
 	}
 	
 	@Test
@@ -416,7 +416,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.notLike(nameAttribute, "test%");
 		
-		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME_D NOT LIKE ?"));
+		Assert.assertTrue("Should generate NOT LIKE operator", context.queryAsString(query).contains("NAME NOT LIKE ?"));
 	}
 	
 	// === LIKE CONTAINS Tests ===
@@ -426,7 +426,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.likeContains(CustomerEntity.class, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME LIKE ?"));
 	}
 	
 	@Test
@@ -436,7 +436,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.likeContains(customer, CustomerEntity.Fields.name, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME LIKE ?"));
 	}
 	
 	@Test
@@ -446,7 +446,7 @@ public class UpdateQueryCriterionTest {
 			.set(CustomerEntity.Fields.name, "updated")
 			.likeContains(nameAttribute, "test");
 		
-		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME_D LIKE ?"));
+		Assert.assertTrue("Should generate LIKE operator", context.queryAsString(query).contains("NAME LIKE ?"));
 	}
 	
 	// === EXISTS Tests ===
@@ -483,8 +483,8 @@ public class UpdateQueryCriterionTest {
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate SET clause", actualSQL.contains("SET") && actualSQL.contains("NAME_D  = ?"));
-		Assert.assertTrue("Should generate WHERE clause", actualSQL.contains("ID_D = ?"));
+		Assert.assertTrue("Should generate SET clause", actualSQL.contains("SET") && actualSQL.contains("NAME = ?"));
+		Assert.assertTrue("Should generate WHERE clause", actualSQL.contains("ID = ?"));
 	}
 	
 	@Test
@@ -494,8 +494,8 @@ public class UpdateQueryCriterionTest {
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate SET clause", actualSQL.contains("SET") && actualSQL.contains("NAME_D  = ?"));
-		Assert.assertTrue("Should generate WHERE clause", actualSQL.contains("ID_D = ?"));
+		Assert.assertTrue("Should generate SET clause", actualSQL.contains("SET") && actualSQL.contains("NAME = ?"));
+		Assert.assertTrue("Should generate WHERE clause", actualSQL.contains("ID = ?"));
 	}
 	
 	@Test
@@ -506,9 +506,9 @@ public class UpdateQueryCriterionTest {
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, 1001);
 		
 		String actualSQL = context.queryAsString(query);
-		Assert.assertTrue("Should generate SET clause for name", actualSQL.contains("NAME_D  = ?"));
-		Assert.assertTrue("Should generate SET clause for externalName", actualSQL.contains("NAME_D  = ?"));
-		Assert.assertTrue("Should generate WHERE clause", actualSQL.contains("ID_D = ?"));
+		Assert.assertTrue("Should generate SET clause for name", actualSQL.contains("NAME = ?"));
+		Assert.assertTrue("Should generate SET clause for externalName", actualSQL.contains("NAME = ?"));
+		Assert.assertTrue("Should generate WHERE clause", actualSQL.contains("ID = ?"));
 	}
 	
 }

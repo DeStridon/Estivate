@@ -46,8 +46,6 @@ public class EntityMapper<U> extends IMapper<U> {
 
 	final Chronometer chronometer;
 
-	Map<Integer, String> fieldNames = new HashMap<>();
-
 	// TODO : field is empty for row mapping
 	List<Field> columnFields = new ArrayList<>();
 
@@ -59,7 +57,7 @@ public class EntityMapper<U> extends IMapper<U> {
 
 		for (int i = 0; i < columnNames.length; i++) {
 			String columnName = columnNames[i];
-			Field field = entityFields.stream().filter(x -> columnName.equals(getFieldName(entity, x))).findFirst()
+			Field field = entityFields.stream().filter(x -> columnName.equals(fieldToColumnName(entity, x))).findFirst()
 					.orElse(null);
 			if (field != null) {
 				while (columnFields.size() <= i) {
@@ -129,20 +127,9 @@ public class EntityMapper<U> extends IMapper<U> {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
 			for (Field field : fields) {
-
-				// Try to get column name using generic mapping annotation method
-				String columnName = getColumnName(field);
-
-				if (columnName != null) {
-					// Field has a mapping annotation, use the resolved column name
-					String value = arguments.get(columnName);
-					setGeneratedField(entity, field, obj, value);
-				} else {
-					// Field doesn't have a mapping annotation, use direct field name
-					String value = arguments.get(getFieldName(entity, field));
-					setGeneratedField(entity, field, obj, value);
-				}
-
+				String columnName = fieldToColumnName(entity, field);
+				String value = arguments.get(columnName);
+				setGeneratedField(entity, field, obj, value);
 			}
 
 			currentClass = currentClass.getSuperclass();
@@ -159,29 +146,8 @@ public class EntityMapper<U> extends IMapper<U> {
 	}
 
 	// can this method be used for several entities ?
-	public String getFieldName(Entity<?> entity, Field field) {
-		int hash = Objects.hash(entity, field);
-		String fieldName = fieldNames.get(hash);
-		if (fieldName == null) {
-			fieldName = nameMapper.toEntityNameAttribute(entity, field.getName());
-			fieldNames.put(hash, fieldName);
-		}
-		return fieldName;
-
-	}
-
-	/**
-	 * Utility method to get the column name that should be used to extract value
-	 * from field mapping annotations. This method supports all annotations with
-	 * entity, attribute, and alias signature.
-	 * 
-	 * @param field The field with the mapping annotation
-	 * @return The column name to use for value extraction, or null if no mapping
-	 *         annotation found
-	 */
-	private String getColumnName(Field field) {
-
-		// Check each annotation type and get column name accordingly
+	public String fieldToColumnName(Entity<?> entity, Field field) {
+		
 		ResultMapping.Attribute attributeAnnotation = field.getDeclaredAnnotation(ResultMapping.Attribute.class);
 		if (attributeAnnotation != null) {
 			return getColumnNameFromAnnotation(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias());
@@ -216,9 +182,12 @@ public class EntityMapper<U> extends IMapper<U> {
 		if (functionAnnotation != null) {
 			return getColumnNameFromAnnotation(functionAnnotation.entity(), functionAnnotation.attribute(), functionAnnotation.alias());
 		}
-
-		return null;
+		
+		return nameMapper.toEntityNameAttribute(entity, field.getName());
+		
 	}
+
+
 
 	/**
 	 * Common logic to get column name from annotations with entity, attribute, and
@@ -227,7 +196,7 @@ public class EntityMapper<U> extends IMapper<U> {
 	private String getColumnNameFromAnnotation(Class<?> entityClass, String attribute, String alias) {
 		// If alias is not null and not empty, use it directly
 		if (alias != null && !alias.isEmpty()) {
-			return alias;
+			return nameMapper.mapEntityField(alias);
 		}
 
 		// If alias is null or empty, find the corresponding field in the entity and use
@@ -240,7 +209,7 @@ public class EntityMapper<U> extends IMapper<U> {
 			return null;
 		}
 
-		return getFieldName(new Entity<>(entityClass), mappingField);
+		return fieldToColumnName(new Entity<>(entityClass), mappingField);
 	}
 
 	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value) throws EstivateException {

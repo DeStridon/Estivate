@@ -281,7 +281,7 @@ public class Statement implements AutoCloseable{
 				}
 
 				statement.appendAttributeAsParameter(entry.getKey());
-				statement.appendQuery(" = ");
+				statement.appendQuery("=");
 	  			statement.appendQuery(statement.writeParameter(entry.getKey().entity.entity, entry.getKey().attribute, entry.getValue()));
 			}  
 			
@@ -396,21 +396,15 @@ public class Statement implements AutoCloseable{
 	public String selectString(Select select) {
 
 		if(select.function != null && select.function.equals(Estivate.Functions.count) && (select.entity == null || select.entity.entity == null)) {
-			return "COUNT(*)"+(select.alias != null ? " as `"+select.alias+"`" : "");
+			return "COUNT(*)"+(select.alias != null ? " as `"+context.nameMapper.mapEntityField(select.alias)+"`" : "");
 		}
-//		else if (select.function != null && select.function.equals(Estivate.Functions.distinct)) {
-//			return select.function.render(context.nameMapper.mapDatabase(select.entity, select.attribute))+" as `"+(select.alias != null ? select.alias : context.nameMapper.mapEntity(select.entity, select.attribute))+"`";
-//		}
 		else if (select.function != null) {
-			return select.function.render(context.nameMapper.toTableNameAttribute(select.entity, select.attribute))+(select.alias != null ? " as `"+select.alias+"`" : "");
+			return select.function.render(context.nameMapper.toTableNameAttribute(select.entity, select.attribute))+(select.alias != null ? " as `"+context.nameMapper.mapEntityField(select.alias)+"`" : "");
 		}
 
-		return context.nameMapper.toTableNameAttribute(select.entity, select.attribute)+" as `"+(select.alias != null ? select.alias : context.nameMapper.toEntityNameAttribute(select.entity, select.attribute))+"`";
+		return context.nameMapper.toTableNameAttribute(select.entity, select.attribute)+" as `"+(select.alias != null ? context.nameMapper.mapEntityField(select.alias) : context.nameMapper.toEntityNameAttribute(select.entity, select.attribute))+"`";
 	
 	}
-
-
-	
 
 	
 	public void appendNodeToStatement(EstivateNode node, boolean rootNode) {

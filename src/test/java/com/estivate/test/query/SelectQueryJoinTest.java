@@ -108,8 +108,8 @@ public class SelectQueryJoinTest {
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);
 		
-		assertTrue(queryString.contains("INNER JOIN ORDERENTITY_D firstOrder"));
-		assertTrue(queryString.contains("firstOrder.ID_D < secondOrder.ID_D"));
+		assertTrue(queryString.contains("INNER JOIN ORDERENTITY firstOrder"));
+		assertTrue(queryString.contains("firstOrder.ID < secondOrder.ID"));
 
 	}
 
@@ -132,11 +132,12 @@ public class SelectQueryJoinTest {
 		String queryString = context.queryAsString(query);
 		System.out.println(queryString);
 		
-		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY_D OrderLineA ON OrderA.ID_D = OrderLineA.ORDERID_D"));
-		Assert.assertTrue(queryString.contains("INNER JOIN PRODUCTENTITY_D ON OrderLineA.PRODUCTID_D = PRODUCTENTITY_D.ID_D"));
-		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY_D OrderLineB ON PRODUCTENTITY_D.ID_D = OrderLineB.PRODUCTID_D"));
-		Assert.assertTrue(queryString.contains("LEFT JOIN ORDERENTITY_D OrderB ON OrderLineB.ORDERID_D = OrderB.ID_D"));
+		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY OrderLineA ON OrderA.ID = OrderLineA.ORDERID"));
+		Assert.assertTrue(queryString.contains("INNER JOIN PRODUCTENTITY ON OrderLineA.PRODUCTID = PRODUCTENTITY.ID"));
+		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY OrderLineB ON PRODUCTENTITY.ID = OrderLineB.PRODUCTID"));
+		Assert.assertTrue(queryString.contains("LEFT JOIN ORDERENTITY OrderB ON OrderLineB.ORDERID = OrderB.ID"));
 		
+
 
 	}
 

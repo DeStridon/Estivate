@@ -68,16 +68,18 @@ public class SelectQuerySubTest {
 			.selectMaxAs(AbstractEntity.Fields.id, "maxId");
 
 		SelectQuery<OrderEntity> mainQuery = Estivate.selectQuery(OrderEntity.class)
-			.joinInner(OrderEntity.class, Estivate.subQueryEntity(subQuery, "sub"), AbstractEntity.Fields.id, AbstractEntity.Fields.id);
+			.joinInner(OrderEntity.class, Estivate.subQueryEntity(subQuery, "sub"), AbstractEntity.Fields.id, "maxId");
 			
-		context.queryAsString(mainQuery);
+		String query = context.queryAsString(mainQuery);
+		
+		System.out.println(query);
 	
 	}
 	
 	@Test
 	void joinSubQueryTest2() {
 		 SelectQuery<ProductEntity> subQuery = Estivate.selectQuery(ProductEntity.class)
-		            .selectMaxAs(ProductEntity.class, AbstractEntity.Fields.id, "MAXID_D")
+		            .selectMaxAs(ProductEntity.class, AbstractEntity.Fields.id, "MAXID")
 		            .groupBy(ProductEntity.class, ProductEntity.Fields.category);
 
         // Main query to get step ID, status, and count grouped by step and status
@@ -100,10 +102,10 @@ public class SelectQuerySubTest {
 	}
 	
 	/*
-	 * SELECT PRODUCTENTITY_D.ID_D as `PRODUCTENTITY_E.ID_E`, PRODUCTENTITY_D.CATEGORY_D as `PRODUCTENTITY_E.CATEGORY_E`
- FROM PRODUCTENTITY_D INNER JOIN (SELECT max(PRODUCTENTITY_D.ID_D) as `maxId`
+	 * SELECT PRODUCTENTITY_D.ID as `PRODUCTENTITY_E.ID_E`, PRODUCTENTITY_D.CATEGORY_D as `PRODUCTENTITY_E.CATEGORY_E`
+ FROM PRODUCTENTITY_D INNER JOIN (SELECT max(PRODUCTENTITY_D.ID) as `maxId`
  FROM PRODUCTENTITY_D GROUP BY PRODUCTENTITY_D.CATEGORY_D
- ) AS latest ON PRODUCTENTITY_D.ID_D = latest.MAXID_D 
+ ) AS latest ON PRODUCTENTITY_D.ID = latest.MAXID 
 
 	 */
 }

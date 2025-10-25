@@ -17,10 +17,12 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.Result;
 import com.estivate.result.ResultMapping;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.CustomerEntity.Country;
 import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.query.projection.CustomerBasicProjection;
 
@@ -178,11 +180,14 @@ public class SelectProjectTest {
     @Test
     public void testProject_WithAggregateFunction() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
+        
+        Result result = query.fetchSingleAsResult(context);
+        String resultCount = result.columnAsString("customerCount");
 
-        CustomerCountProjection result = query.projectTo(context, CustomerCountProjection.class);
+        CustomerCountProjection count = query.projectTo(context, CustomerCountProjection.class);
 
-        assertNotNull(result, "Result should not be null");
-        assertEquals(3L, result.getCustomerCount(), "Should count all 3 customers");
+        assertNotNull(count, "Result should not be null");
+        assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
     }
 
     @Test
@@ -402,8 +407,8 @@ public class SelectProjectTest {
 
         assertNotNull(countries, "Countries should not be null");
         assertEquals(2, countries.size(), "Should return 2 unique countries");
-        assertTrue(countries.contains("USA"), "Should contain USA");
-        assertTrue(countries.contains("UK"), "Should contain UK");
+        assertTrue(countries.contains(Country.USA), "Should contain USA");
+        assertTrue(countries.contains(Country.UK), "Should contain UK");
     }
 
     @Test

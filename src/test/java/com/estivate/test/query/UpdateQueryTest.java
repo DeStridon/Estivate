@@ -23,7 +23,7 @@ public class UpdateQueryTest {
         .eq(AbstractEntity.Fields.id, 1);
 
         String query = context.queryAsString(updateQuery);
-        Assert.assertEquals("UPDATE CUSTOMERENTITY_D SET CUSTOMERENTITY_D.NAME_D  = ? , CUSTOMERENTITY_D.EMAIL_D  = ? WHERE CUSTOMERENTITY_D.ID_D = ?", query);
+        Assert.assertEquals("UPDATE CUSTOMERENTITY SET CUSTOMERENTITY.NAME = ? , CUSTOMERENTITY.EMAIL = ? WHERE CUSTOMERENTITY.ID = ?", query);
         
     }
 
@@ -75,7 +75,7 @@ public class UpdateQueryTest {
             .eq(OrderEntity.Fields.totalAmount, 100.0f);
 
         String query = context.queryAsString(updateQuery);
-        Assert.assertTrue(query.contains("UPDATE ORDERENTITY_D INNER JOIN CUSTOMERENTITY_D"));
+        Assert.assertTrue(query.contains("UPDATE ORDERENTITY INNER JOIN CUSTOMERENTITY"));
         
     }
 

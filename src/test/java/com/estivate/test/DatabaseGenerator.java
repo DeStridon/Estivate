@@ -87,11 +87,15 @@ public class DatabaseGenerator {
 	}
 	
 	public static class TestNameMapper extends NameMapper{
-		public String mapEntityClass(Class<?> c) { return c.getSimpleName().toUpperCase()+"_E";}
-		public String mapEntityField(String field) { return field.toUpperCase()+"_E";  }
-		public String mapDatabaseClass(Class<?> c) { return c.getSimpleName().toUpperCase()+"_D"; }
-		public String mapDatabaseField(String field) { return field.toUpperCase()+"_D"; }
+		public String mapEntityClass(Class<?> c) { return toSnakeCase(c.getSimpleName()).toUpperCase();}
+		public String mapEntityField(String field) { return toSnakeCase(field).toUpperCase();  }
+		public String mapDatabaseClass(Class<?> c) { return c.getSimpleName().toUpperCase(); }
+		public String mapDatabaseField(String field) { return field.toUpperCase(); }
 	}
+	
+	public static String toSnakeCase(String name) {
+		return name.replaceAll("([a-z]+)([A-Z]+)", "$1\\_$2").toLowerCase();
+    }
 	
 	public static int randomInt(int from, int to) {
 		return (int) Math.floor(Math.random()*(to-from)) + from;
