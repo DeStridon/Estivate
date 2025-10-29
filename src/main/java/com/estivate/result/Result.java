@@ -11,10 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -102,6 +99,7 @@ public class Result {
 		return index;
 	}
 	
+	@SneakyThrows
 	public <T> T attribute(Class<?> c, String attribute) { 
 		try {
 			Field field = c.getDeclaredField(attribute);
@@ -144,26 +142,41 @@ public class Result {
 				return (T) attributeAsLocalDate(c, attribute);
 			}
 			// @Convert (might be enum, this condition should be tested before classic enum)
-			else if(field.getDeclaredAnnotation(Convert.class) != null) {
-				try {
-					Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
-					Object converter = convertAnnotation.converter().getConstructor().newInstance();
-					if(!(converter instanceof AttributeConverter)) {
-						log.error("Cannot convert with converter "+converter.getClass());
-						return null;
-					}
-					AttributeConverter attributeConverter = (AttributeConverter) converter;
-					return (T) attributeConverter.convertToEntityAttribute(attributeAsString(c, attribute));
-				} catch (Exception e) {
-					e.printStackTrace();
+			else if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
+				javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(!(converter instanceof javax.persistence.AttributeConverter)) {
+					log.error("Cannot convert with converter "+converter.getClass());
+					return null;
 				}
-				
+				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
+				return (T) attributeConverter.convertToEntityAttribute(attributeAsString(c, attribute));
+			}
+
+			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(!(converter instanceof jakarta.persistence.AttributeConverter)) {
+					log.error("Cannot convert with converter "+converter.getClass());
+					return null;
+				}
+				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
+				return (T) attributeConverter.convertToEntityAttribute(attributeAsString(c, attribute));
 			}
 			// @Enumerated
-			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
+			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
 	
-				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
-				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
+				javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
+					return (T) columnAsStringEnum(nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
+				}
+				else {
+					return (T) columnAsOrdinalEnum(nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
+				}
+			}
+			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
+				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
 					return (T) columnAsStringEnum(nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
 				}
 				else {
@@ -220,10 +233,19 @@ public class Result {
 			Field field = entity.getDeclaredField(attribute);
 			Type type = field.getGenericType();
 			
-			if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
+			if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
 	
-				Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
-				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
+				javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
+					return Enum.valueOf((Class)type, attributeAsString(entity, attribute));
+				}
+				else {
+					return (Enum) field.getType().getEnumConstants()[attributeAsInteger(entity, attribute)];
+				}
+			}
+			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
+				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
 					return Enum.valueOf((Class)type, attributeAsString(entity, attribute));
 				}
 				else {

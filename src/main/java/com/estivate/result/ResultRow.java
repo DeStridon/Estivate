@@ -1,6 +1,12 @@
 package com.estivate.result;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.estivate.NameMapper;
+import com.estivate.query.Select;
 import com.estivate.query.SelectQuery;
 
 public class ResultRow<U> {
@@ -21,6 +27,7 @@ public class ResultRow<U> {
     public U get(){
         return null;
     }
+
 
 
 

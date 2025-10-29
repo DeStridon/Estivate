@@ -16,10 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -516,11 +513,20 @@ public class Statement implements AutoCloseable{
 			Type fieldType = field.getType();
 			
 			// Convert annotation takes priority
-			if(field.getDeclaredAnnotation(Convert.class) != null) {
-				Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
+			if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
+				javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
 				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(converter instanceof AttributeConverter) {
-					AttributeConverter attributeConverter = (AttributeConverter) converter;
+				if(converter instanceof javax.persistence.AttributeConverter) {
+					javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
+					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
+					return convertedValue;
+				}
+			}
+			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(converter instanceof jakarta.persistence.AttributeConverter) {
+					jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
 					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
 					return convertedValue;
 				}
@@ -531,7 +537,10 @@ public class Statement implements AutoCloseable{
 					return null;
 				}
 				
-				if(field.getDeclaredAnnotation(Enumerated.class) != null && field.getDeclaredAnnotation(Enumerated.class).value() != null && field.getDeclaredAnnotation(Enumerated.class).value() == EnumType.STRING) {
+				if(field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null && field.getDeclaredAnnotation(javax.persistence.Enumerated.class).value() != null && field.getDeclaredAnnotation(javax.persistence.Enumerated.class).value() == javax.persistence.EnumType.STRING) {
+					return value.toString();
+				}
+				else if(field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class).value() != null && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class).value() == jakarta.persistence.EnumType.STRING) {
 					return value.toString();
 				}
 				

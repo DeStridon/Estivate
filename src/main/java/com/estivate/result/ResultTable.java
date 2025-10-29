@@ -1,6 +1,7 @@
 package com.estivate.result;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.estivate.query.SelectQuery;
@@ -13,8 +14,6 @@ public class ResultTable <U> {
 
 
     public List<U> get(){ return rows.stream().map(x -> x.get()).collect(Collectors.toList()); }
-
-
 
 
 }

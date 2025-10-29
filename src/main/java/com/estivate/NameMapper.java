@@ -22,8 +22,12 @@ public abstract class NameMapper {
 	
 	public String toTableName(Class<?> c) {
 		javax.persistence.Table javaxPersistenceTableAnnotation = c.getDeclaredAnnotation(javax.persistence.Table.class);
+		jakarta.persistence.Table jakartaPersistenceTableAnnotation = c.getDeclaredAnnotation(jakarta.persistence.Table.class);
 		if(javaxPersistenceTableAnnotation != null && StringUtils.isNotBlank(javaxPersistenceTableAnnotation.name())) {
 			return javaxPersistenceTableAnnotation.name();
+		}
+		else if(jakartaPersistenceTableAnnotation != null && StringUtils.isNotBlank(jakartaPersistenceTableAnnotation.name())) {
+			return jakartaPersistenceTableAnnotation.name();
 		}
 		return mapDatabaseClass(c);
 	}

@@ -1,6 +1,6 @@
 package com.estivate.test.query.projection;
 
-import com.estivate.result.ResultMapping;
+import com.estivate.query.Projection;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 
@@ -8,13 +8,13 @@ import com.estivate.test.entities.CustomerEntity;
  * Simple projection class with basic attributes
  */
 public class CustomerBasicProjection {
-    @ResultMapping.Attribute(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
+    @Projection.Attribute(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
     Long id;
     
-    @ResultMapping.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.name)
+    @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.name)
     String name;
     
-    @ResultMapping.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.email)
+    @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.email)
     String email;
     
     public CustomerBasicProjection() {}

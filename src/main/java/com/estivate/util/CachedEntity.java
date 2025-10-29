@@ -6,8 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.PostLoad;
-import javax.persistence.Transient;
+
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -17,11 +16,13 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public abstract class CachedEntity {
 	
-	@Transient
+	@javax.persistence.Transient
+	@jakarta.persistence.Transient
 	final Map<String, Integer> __cache = new HashMap<>();
 	
 	@SneakyThrows
-	@PostLoad
+	@javax.persistence.PostLoad
+	@jakarta.persistence.PostLoad
 	public void saveState() {
 
 		for(Field field : FieldUtils.getEntityFields(this.getClass())) {

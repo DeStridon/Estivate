@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.Id;
-import javax.persistence.PostLoad;
-import javax.persistence.Transient;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +40,7 @@ public class FieldUtils {
 				if(field.isSynthetic()) {
 					continue;
 				}
-				if(field.isAnnotationPresent(Transient.class)) {
+				if(field.isAnnotationPresent(javax.persistence.Transient.class) || field.isAnnotationPresent(jakarta.persistence.Transient.class)) {
 					continue;
 				}
 				if(field.getType() == org.slf4j.Logger.class) {
@@ -85,7 +83,10 @@ public class FieldUtils {
 		methods.addAll(getEntityMethods(objectClass.getSuperclass()));
 
 		return methods;
+
 	}
+
+	
 	
 	public static Set<Method> findMethodWithAnnotation(Class<? extends Object> objectClass, Class<? extends Annotation> annotation) {
 		return getEntityMethods(objectClass).stream().filter(x -> x.isAnnotationPresent(annotation)).collect(Collectors.toSet());
@@ -95,7 +96,7 @@ public class FieldUtils {
 		
 		Set<Method> methods = classPostLoadMethods.get(objectClass);
 		if(methods == null) {
-			methods = getEntityMethods(objectClass).stream().filter(x -> x.isAnnotationPresent(PostLoad.class)).collect(Collectors.toSet());
+			methods = getEntityMethods(objectClass).stream().filter(x -> x.isAnnotationPresent(javax.persistence.PostLoad.class) || x.isAnnotationPresent(jakarta.persistence.PostLoad.class)).collect(Collectors.toSet());
 			classPostLoadMethods.put(objectClass, methods);
 		}
 		
@@ -111,7 +112,7 @@ public class FieldUtils {
 			return null;
 		}
 		for(Field field : FieldUtils.getEntityFields(entityClass)) {
-			if(field.isAnnotationPresent(Id.class)) {
+			if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
 				return field;
 			}
 		}
@@ -131,6 +132,6 @@ public class FieldUtils {
 			log.error("Error invoking lifecycle method with annotation " + annotationClass.getSimpleName(), e);
 		}
 	}
-	
+
 	
 }

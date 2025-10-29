@@ -10,10 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+
 
 import com.estivate.NameMapper;
 import com.estivate.util.FieldUtils;
@@ -123,17 +120,28 @@ public abstract class IMapper<U> {
 		public Object map(String[] row) {
 			
 			// @Convert
-			if(field.getDeclaredAnnotation(Convert.class) != null) {
-                Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
-                Object converter = convertAnnotation.converter().getConstructor().newInstance();
-                if(!(converter instanceof AttributeConverter)) {
-                    log.error("Cannot convert with converter "+converter.getClass());
-                    return null;
-                }
-                AttributeConverter attributeConverter = (AttributeConverter) converter;
-                Object attributeValue = attributeConverter.convertToEntityAttribute(row[0]);
-                return attributeValue;
-            }
+			if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
+				javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(!(converter instanceof javax.persistence.AttributeConverter)) {
+					log.error("Cannot convert with converter "+converter.getClass());
+					return null;
+				}
+				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
+				Object attributeValue = attributeConverter.convertToEntityAttribute(row[0]);
+				return attributeValue;
+			}
+			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(!(converter instanceof jakarta.persistence.AttributeConverter)) {
+					log.error("Cannot convert with converter "+converter.getClass());
+					return null;
+				}
+				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
+				Object attributeValue = attributeConverter.convertToEntityAttribute(row[0]);
+				return attributeValue;
+			}
 
 			if(type == String.class) { return row[0]; }
 			if(type == boolean.class || type == Boolean.class) { return Boolean.parseBoolean(row[0]); }
@@ -150,10 +158,10 @@ public abstract class IMapper<U> {
 			if(type == Character.class) { return row[0].charAt(0); }
 			
 			// @Enumerated
-            if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
+            if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
     
-                Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
-                if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
+                javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+                if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
                     return Enum.valueOf((Class)type, row[0]);
                 }
                 else {
@@ -161,7 +169,17 @@ public abstract class IMapper<U> {
                     return field.getType().getEnumConstants()[ordinal];
                 }
             }
-
+			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
+				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
+					return Enum.valueOf((Class)type, row[0]);
+				}
+				else {
+					int ordinal = Integer.parseInt(row[0]);
+					return field.getType().getEnumConstants()[ordinal];
+				}
+			}
+			
 			log.error("This type is not mapped yet : "+type);
 			return null;
 		}

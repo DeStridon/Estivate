@@ -10,21 +10,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.naming.directory.AttributeInUseException;
-import javax.persistence.AttributeConverter;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Entity;
+import com.estivate.query.Projection;
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
@@ -148,37 +143,37 @@ public class EntityMapper<U> extends IMapper<U> {
 	// can this method be used for several entities ?
 	public String fieldToColumnName(Entity<?> entity, Field field) {
 		
-		ResultMapping.Attribute attributeAnnotation = field.getDeclaredAnnotation(ResultMapping.Attribute.class);
+		Projection.Attribute attributeAnnotation = field.getDeclaredAnnotation(Projection.Attribute.class);
 		if (attributeAnnotation != null) {
 			return getColumnNameFromAnnotation(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias());
 		}
 
-		ResultMapping.Count countAnnotation = field.getDeclaredAnnotation(ResultMapping.Count.class);
+		Projection.Count countAnnotation = field.getDeclaredAnnotation(Projection.Count.class);
 		if (countAnnotation != null) {
 			return getColumnNameFromAnnotation(countAnnotation.entity(), countAnnotation.attribute(), countAnnotation.alias());
 		}
 
-		ResultMapping.Sum sumAnnotation = field.getDeclaredAnnotation(ResultMapping.Sum.class);
+		Projection.Sum sumAnnotation = field.getDeclaredAnnotation(Projection.Sum.class);
 		if (sumAnnotation != null) {
 			return getColumnNameFromAnnotation(sumAnnotation.entity(), sumAnnotation.attribute(), sumAnnotation.alias());
 		}
 
-		ResultMapping.Min minAnnotation = field.getDeclaredAnnotation(ResultMapping.Min.class);
+		Projection.Min minAnnotation = field.getDeclaredAnnotation(Projection.Min.class);
 		if (minAnnotation != null) {
 			return getColumnNameFromAnnotation(minAnnotation.entity(), minAnnotation.attribute(), minAnnotation.alias());
 		}
 
-		ResultMapping.Max maxAnnotation = field.getDeclaredAnnotation(ResultMapping.Max.class);
+		Projection.Max maxAnnotation = field.getDeclaredAnnotation(Projection.Max.class);
 		if (maxAnnotation != null) {
 			return getColumnNameFromAnnotation(maxAnnotation.entity(), maxAnnotation.attribute(), maxAnnotation.alias());
 		}
 
-		ResultMapping.Avg avgAnnotation = field.getDeclaredAnnotation(ResultMapping.Avg.class);
+		Projection.Avg avgAnnotation = field.getDeclaredAnnotation(Projection.Avg.class);
 		if (avgAnnotation != null) {
 			return getColumnNameFromAnnotation(avgAnnotation.entity(), avgAnnotation.attribute(), avgAnnotation.alias());
 		}
 
-		ResultMapping.Function functionAnnotation = field.getDeclaredAnnotation(ResultMapping.Function.class);
+		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);
 		if (functionAnnotation != null) {
 			return getColumnNameFromAnnotation(functionAnnotation.entity(), functionAnnotation.attribute(), functionAnnotation.alias());
 		}
@@ -252,22 +247,33 @@ public class EntityMapper<U> extends IMapper<U> {
                 field.set(obj, DateMapper.mapDate(value).toLocalDate());
             }
             // @Convert (might be enum, this condition should be tested before classic enum)
-            else if(field.getDeclaredAnnotation(Convert.class) != null) {
-                Convert convertAnnotation = field.getDeclaredAnnotation(Convert.class);
+            else if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
+                javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
                 Object converter = convertAnnotation.converter().getConstructor().newInstance();
-                if(!(converter instanceof AttributeConverter)) {
+                if(!(converter instanceof javax.persistence.AttributeConverter)) {
                     log.error("Cannot convert with converter "+converter.getClass());
                     return;
                 }
-                AttributeConverter attributeConverter = (AttributeConverter) converter;
+                javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
                 Object attributeValue = attributeConverter.convertToEntityAttribute(value);
                 field.set(obj, attributeValue);
             }
+			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
+				Object converter = convertAnnotation.converter().getConstructor().newInstance();
+				if(!(converter instanceof jakarta.persistence.AttributeConverter)) {
+					log.error("Cannot convert with converter "+converter.getClass());
+					return;
+				}
+				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
+				Object attributeValue = attributeConverter.convertToEntityAttribute(value);
+				field.set(obj, attributeValue);
+			}
             // @Enumerated
-            else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(Enumerated.class) != null) {
+            else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
     
-                Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(Enumerated.class);
-                if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == EnumType.STRING) {
+                javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+                if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
                     field.set(obj, Enum.valueOf((Class)type, value));
                 }
                 else {
@@ -275,6 +281,16 @@ public class EntityMapper<U> extends IMapper<U> {
                     field.set(obj, field.getType().getEnumConstants()[ordinal]);
                 }
             }
+			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
+				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
+					field.set(obj, Enum.valueOf((Class)type, value));
+				}
+				else {
+					int ordinal = Integer.parseInt(value);
+					field.set(obj, field.getType().getEnumConstants()[ordinal]);
+				}
+			}
             else {
                 log.error("This type is not mapped yet : "+type);
                 throw new AttributeInUseException("This type is not mapped yet : "+type);

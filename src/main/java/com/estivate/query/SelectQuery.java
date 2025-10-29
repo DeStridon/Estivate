@@ -11,12 +11,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.result.Result;
-import com.estivate.result.ResultMapping;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -112,23 +113,73 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SelectQuery<T> selectFunction(Entity<?> c, String attribute, Attribute.Function function) { return selectFunctionAs(c, attribute, function, null); }
 	public SelectQuery<T> selectAttribute(Attribute attribute) { return selectFunctionAs(attribute.entity, attribute.attribute, attribute.function, null); }
 	
-	public SelectQuery<T> selectAll(Class<?> entity, String...fields) { return selectAll(new Entity<>(entity), fields); }	
-	public SelectQuery<T> selectAll(Entity<?> c, String... fields) {
+	public SelectQuery<T> selectAll(Class<?> entity, String...fieldNames) { 
 		
-		Class<?> currentClazz = c.entity;
-		while(currentClazz != Object.class) {
-			
-			String[] classFields = fields.length == 0 ? FieldUtils.getEntityFields(currentClazz).stream().map( x -> x.getName() ).toArray(String[]::new) : fields;
-			
-			for(String field : classFields){
-				if(selects.stream().noneMatch(x -> x.entity.equals(c) && x.attribute.equals(field))) {
-					select(c, field);
-				}
+		Set<Field> fields = FieldUtils.getEntityFields(entity);
+
+		for(Field field : fields){
+
+			if(fieldNames.length != 0 && ArrayUtils.indexOf(fieldNames, field.getName()) == -1){
+				continue;
 			}
-			currentClazz = currentClazz.getSuperclass();
+
+			field.setAccessible(true);
+			
+			if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
+				Projection.Attribute attribute = field.getDeclaredAnnotation(Projection.Attribute.class);
+				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Count.class) != null) {
+				Projection.Count attribute = field.getDeclaredAnnotation(Projection.Count.class);
+				selectCountAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Sum.class) != null) {
+				Projection.Sum attribute = field.getDeclaredAnnotation(Projection.Sum.class);
+				selectSumAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Min.class) != null) {
+				Projection.Min attribute = field.getDeclaredAnnotation(Projection.Min.class);
+				selectMinAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Max.class) != null) {
+				Projection.Max attribute = field.getDeclaredAnnotation(Projection.Max.class);
+				selectMaxAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Avg.class) != null) {
+				Projection.Avg attribute = field.getDeclaredAnnotation(Projection.Avg.class);
+				selectAvgAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Function.class) != null) {
+				Projection.Function attribute = field.getDeclaredAnnotation(Projection.Function.class);
+				selectFunctionAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
+			}
+			else{
+				select(entity, field.getName()); 
+			}
+		
 		}
+
 		return this;
+		
+	}	
+	public SelectQuery<T> selectAll(Entity<?> c, String... fieldNames) {
+		
+		Set<Field> fields = FieldUtils.getEntityFields(c.entity);
+		
+		for(Field field : fields){
+			if(fieldNames.length != 0 && ArrayUtils.indexOf(fieldNames, field.getName()) == -1){
+				continue;
+			}
+			
+			select(c, field.getName());
+			
+		}
+		
+		return this;
+		
 	}
+
+
 
 	// Select count
 	public SelectQuery<T> selectCountAs(String alias) { return selectFunctionAs(new Entity<>(null), null, Estivate.Functions.count, alias); }
@@ -201,7 +252,17 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	}
 
 	public SelectQuery<T> groupBy(Entity<?> entity, String field) { groupBys.add(new Group(entity, field)); return this; }
-	public SelectQuery<T> groupBy(Class<?> c, String field) { return groupBy(new Entity<>(c), field); }
+	public SelectQuery<T> groupBy(Class<?> c, String field) {
+		Field groupByfield = FieldUtils.findField(c, field);
+		if(groupByfield == null) {
+			throw new IllegalArgumentException("Field " + field + " not found in entity " + c);
+		}
+		Projection.Attribute attribute = groupByfield.getDeclaredAnnotation(Projection.Attribute.class);
+		if(attribute != null) {		
+			return groupBy(new Entity<>(attribute.entity()), attribute.attribute());
+		}		
+		return groupBy(new Entity<>(c), field); 
+	}
 	public SelectQuery<T> groupBy(String attribute) { return groupBy(this.entity, attribute); }
 	public SelectQuery<T> groupByAlias(String alias) { groupBys.add(new Group(null, alias)); return this; }
 	public SelectQuery<T> clearGroupBys(){ groupBys.clear(); return this; }
@@ -286,59 +347,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		return Estivate.subQueryEntity(this, alias);
 	}
 	
-	/*
-	 * Imports an object with fields annotated with ReturnBuilder annotation to build select
-	 */
-	public SelectQuery<T> importSelectFromResultMapping(Class<?> objectClass){
-		
-		if (objectClass == null) {
-			return self();
-		}
-		
-		
-		Field[] fields = objectClass.getDeclaredFields();
-		
-		for (Field field : fields) {
-			field.setAccessible(true);
-			
-			if(field.getDeclaredAnnotation(ResultMapping.Attribute.class) != null) {
-				ResultMapping.Attribute attribute = field.getDeclaredAnnotation(ResultMapping.Attribute.class);
-				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
-			}
-			else if(field.getDeclaredAnnotation(ResultMapping.Count.class) != null) {
-				ResultMapping.Count attribute = field.getDeclaredAnnotation(ResultMapping.Count.class);
-				selectCountAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
-			}
-			else if(field.getDeclaredAnnotation(ResultMapping.Sum.class) != null) {
-				ResultMapping.Sum attribute = field.getDeclaredAnnotation(ResultMapping.Sum.class);
-				selectSumAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
-			}
-			else if(field.getDeclaredAnnotation(ResultMapping.Min.class) != null) {
-				ResultMapping.Min attribute = field.getDeclaredAnnotation(ResultMapping.Min.class);
-				selectMinAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
-			}
-			else if(field.getDeclaredAnnotation(ResultMapping.Max.class) != null) {
-				ResultMapping.Max attribute = field.getDeclaredAnnotation(ResultMapping.Max.class);
-				selectMaxAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
-			}
-			else if(field.getDeclaredAnnotation(ResultMapping.Avg.class) != null) {
-				ResultMapping.Avg attribute = field.getDeclaredAnnotation(ResultMapping.Avg.class);
-				selectAvgAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
-			}
-
-			else if(field.getDeclaredAnnotation(ResultMapping.Function.class) != null) {
-				ResultMapping.Function attribute = field.getDeclaredAnnotation(ResultMapping.Function.class);
-				selectFunctionAs(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
-			}
-			else{
-				log.warn("Field "+field.getName()+" has no mapping annotation");
-			}
-			
-		}
-		
-		return self();
 	
-	}
 
 
 	

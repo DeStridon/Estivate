@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.query.Projection;
 import com.estivate.query.QueryMapping;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
@@ -16,7 +17,6 @@ import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.ProductEntity.ProductCategory;
 import com.estivate.test.entities.UserProductRatingEntity;
-import com.estivate.result.ResultMapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,16 +48,16 @@ public class ProductSearchShowcase {
     
     public static class ProductSearchOutput{
     	
-    	@ResultMapping.Attribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.name)
+    	@Projection.Attribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.name)
     	String name;
     	
-    	@ResultMapping.Attribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.price)
+    	@Projection.Attribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.price)
     	Float price;
     	
-    	@ResultMapping.Count(entity = OrderLineEntity.class, attribute = AbstractEntity.Fields.id, alias = "inCartCount")
+    	@Projection.Count(entity = OrderLineEntity.class, attribute = AbstractEntity.Fields.id, alias = "inCartCount")
     	Integer inCartCount;
     	
-		@ResultMapping.Avg(entity = UserProductRatingEntity.class, attribute = UserProductRatingEntity.Fields.rating, alias = "rating")
+		@Projection.Avg(entity = UserProductRatingEntity.class, attribute = UserProductRatingEntity.Fields.rating, alias = "rating")
 		Float rating;
     	
     }
@@ -79,7 +79,7 @@ public class ProductSearchShowcase {
         	.joinInner(ProductEntity.class, UserProductRatingEntity.class)
 			.groupBy(ProductEntity.class, AbstractEntity.Fields.id)
             .importCriterionFromQueryMapping(searchInput)
-        	.importSelectFromResultMapping(ProductSearchOutput.class);
+        	.selectAll(ProductSearchOutput.class);
         
         // Executing the query
         List<ProductSearchOutput> results = query.fetchListAs(context, ProductSearchOutput.class);

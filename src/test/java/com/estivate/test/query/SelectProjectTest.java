@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.Result;
-import com.estivate.result.ResultMapping;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
@@ -52,7 +52,7 @@ public class SelectProjectTest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CustomerCountProjection {
-        @ResultMapping.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "customerCount")
+        @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "customerCount")
         private Long customerCount;
     }
 
@@ -63,16 +63,16 @@ public class SelectProjectTest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ProductStatsProjection {
-        @ResultMapping.Min(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "minPrice")
+        @Projection.Min(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "minPrice")
         private Float minPrice;
         
-        @ResultMapping.Max(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "maxPrice")
+        @Projection.Max(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "maxPrice")
         private Float maxPrice;
         
-        @ResultMapping.Avg(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "avgPrice")
+        @Projection.Avg(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "avgPrice")
         private Double avgPrice;
         
-        @ResultMapping.Sum(entity = ProductEntity.class, attribute = ProductEntity.Fields.stock, alias = "totalStock")
+        @Projection.Sum(entity = ProductEntity.class, attribute = ProductEntity.Fields.stock, alias = "totalStock")
         private Long totalStock;
     }
 
@@ -83,10 +83,10 @@ public class SelectProjectTest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CustomerCountByCountryProjection {
-        @ResultMapping.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.country)
+        @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.country)
         private String country;
         
-        @ResultMapping.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "count")
+        @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "count")
         private Long count;
     }
 
@@ -162,7 +162,7 @@ public class SelectProjectTest {
         
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId())
-            .importSelectFromResultMapping(CustomerBasicProjection.class);
+            .selectAll(CustomerBasicProjection.class);
 
         // Debug: Print the query before and after
         System.out.println("After importSelectFromResultMapping - Selects: " + query.getSelects());
