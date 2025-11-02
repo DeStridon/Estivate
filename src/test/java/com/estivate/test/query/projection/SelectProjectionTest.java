@@ -20,6 +20,7 @@ import com.estivate.query.SelectQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.CustomerEntity.Country;
 import com.estivate.test.entities.ProductEntity;
 
 import jakarta.persistence.Transient;
@@ -84,7 +85,7 @@ public class SelectProjectionTest {
     @AllArgsConstructor
     public static class CustomerCountByCountryProjection {
         @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.country)
-        private String country;
+        private Country country;
         
         @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "count")
         private Long count;
@@ -225,14 +226,14 @@ public class SelectProjectionTest {
         
         // Find USA group
         Optional<CustomerCountByCountryProjection> usaGroup = results.stream()
-            .filter(r -> "USA".equals(r.getCountry()))
+            .filter(r -> Country.USA.equals(r.getCountry()))
             .findFirst();
         assertTrue(usaGroup.isPresent(), "USA group should exist");
         assertEquals(2L, usaGroup.get().getCount(), "USA should have 2 customers");
         
         // Find UK group
         Optional<CustomerCountByCountryProjection> ukGroup = results.stream()
-            .filter(r -> "UK".equals(r.getCountry()))
+            .filter(r -> Country.UK.equals(r.getCountry()))
             .findFirst();
         assertTrue(ukGroup.isPresent(), "UK group should exist");
         assertEquals(1L, ukGroup.get().getCount(), "UK should have 1 customer");

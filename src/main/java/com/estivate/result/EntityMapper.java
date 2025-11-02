@@ -213,88 +213,13 @@ public class EntityMapper<U> extends IMapper<U> {
             if(value == null) {
                 return;
             }
-            
-            Type type = field.getGenericType();
-            
-            if(type == String.class) { field.set(obj, value); }
-            else if(type == short.class) { field.setShort(obj, Short.parseShort(value)); }
-            else if(type == Short.class) { field.set(obj, Short.parseShort(value)); }
-            else if(type == int.class) { field.setInt(obj, Integer.parseInt(value)); }
-            else if(type == Integer.class) { field.set(obj, Integer.parseInt(value)); }
-            else if(type == long.class) { field.setLong(obj, Long.parseLong(value)); }
-            else if(type == Long.class) { field.set(obj, Long.parseLong(value)); }
-            
-            else if(type == float.class) { field.setFloat(obj, Float.parseFloat(value)); }
-            else if(type == Float.class) { field.set(obj, Float.parseFloat(value));}
-            else if(type == double.class) { field.setDouble(obj, Double.parseDouble(value)); }
-            else if(type == Double.class) { field.set(obj, Double.parseDouble(value)); }
-            else if(type == BigDecimal.class) { field.set(obj, new BigDecimal(value)); }
-            
-            else if(type == boolean.class) { field.setBoolean(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value)); }
-            else if(type == Boolean.class) { field.set(obj, StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value)); }
-            else if(type == Byte.class) { field.set(obj, Byte.parseByte(value)); }
-            else if(type == Character.class && value.length() > 0) { field.set(obj, value.charAt(0)); }
-            
-            
-            else if(type == Date.class) {
-                LocalDateTime dateTime = DateMapper.mapDate(value);
-                field.set(obj, Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()));
-            }
-            else if(type == LocalDateTime.class) {
-                field.set(obj, DateMapper.mapDate(value));
-            }
-            else if(type == LocalDate.class) {
-                field.set(obj, DateMapper.mapDate(value).toLocalDate());
-            }
-            // @Convert (might be enum, this condition should be tested before classic enum)
-            else if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
-                javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
-                Object converter = convertAnnotation.converter().getConstructor().newInstance();
-                if(!(converter instanceof javax.persistence.AttributeConverter)) {
-                    log.error("Cannot convert with converter "+converter.getClass());
-                    return;
-                }
-                javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
-                Object attributeValue = attributeConverter.convertToEntityAttribute(value);
-                field.set(obj, attributeValue);
-            }
-			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(!(converter instanceof jakarta.persistence.AttributeConverter)) {
-					log.error("Cannot convert with converter "+converter.getClass());
-					return;
-				}
-				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
-				Object attributeValue = attributeConverter.convertToEntityAttribute(value);
-				field.set(obj, attributeValue);
+
+			Object convertedValue = convertValue(field, value);
+			if(convertedValue != null) {
+				field.set(obj, convertedValue);
+				return;
 			}
-            // @Enumerated
-            else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
-    
-                javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
-                if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
-                    field.set(obj, Enum.valueOf((Class)type, value));
-                }
-                else {
-                    int ordinal = Integer.parseInt(value);
-                    field.set(obj, field.getType().getEnumConstants()[ordinal]);
-                }
-            }
-			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
-				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
-				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
-					field.set(obj, Enum.valueOf((Class)type, value));
-				}
-				else {
-					int ordinal = Integer.parseInt(value);
-					field.set(obj, field.getType().getEnumConstants()[ordinal]);
-				}
-			}
-            else {
-                log.error("This type is not mapped yet : "+type);
-                throw new AttributeInUseException("This type is not mapped yet : "+type);
-            }
+            
         }
         catch(Throwable e) {
             log.error("Impossible to map Entity="+entity.toString()+ ", Field="+field.getName()+", Value="+value+", Object="+obj.toString(), e);
@@ -306,4 +231,85 @@ public class EntityMapper<U> extends IMapper<U> {
 		return chronometer.getLog();
 	}
 
+	@SneakyThrows
+	private static Object convertValue(Field field, String value) {
+		
+		if(field == null || value == null) {
+			return null;
+		}
+		Type type = field.getGenericType();
+
+		// @Projection.Attribute
+		if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
+			Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
+			Field mappingField = FieldUtils.findField(annotation.entity(), annotation.attribute());
+			return convertValue(mappingField, value);
+		}
+
+		// @Convert
+		if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
+			javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
+			Object converter = convertAnnotation.converter().getConstructor().newInstance();
+			if(converter instanceof javax.persistence.AttributeConverter) {
+				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
+				return attributeConverter.convertToEntityAttribute(value);
+			}
+		}
+		if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+			jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
+			Object converter = convertAnnotation.converter().getConstructor().newInstance();
+			if(converter instanceof jakarta.persistence.AttributeConverter) {
+				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
+				return attributeConverter.convertToEntityAttribute(value);
+			}
+		}
+
+		// @Enumerated
+		if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
+
+			javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+			if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
+				return Enum.valueOf((Class)type, value);
+			}
+			else {
+				int ordinal = Integer.parseInt(value);
+				return field.getType().getEnumConstants()[ordinal];
+			}
+		}
+		if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
+			jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+			if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
+				return Enum.valueOf((Class)type, value);
+			}
+			else {
+				int ordinal = Integer.parseInt(value);
+				return field.getType().getEnumConstants()[ordinal];
+			}
+		}
+
+		// Classic types
+		if(type == String.class) { return value; }
+		if(type == short.class 	|| type == Short.class) 	{ return Short.parseShort(value); }
+		if(type == int.class 	|| type == Integer.class) 	{ return Integer.parseInt(value); }
+		if(type == long.class 	|| type == Long.class) 		{ return Long.parseLong(value); }
+		if(type == float.class 	|| type == Float.class) 	{ return Float.parseFloat(value); }
+		if(type == double.class || type == Double.class) 	{ return Double.parseDouble(value); }
+		if(type == BigDecimal.class) { return new BigDecimal(value); }
+		if(type == boolean.class || type == Boolean.class) { return StringUtils.equals("true", value.toLowerCase()) || StringUtils.equals("1", value); }
+		if(type == Byte.class) { return Byte.parseByte(value); }
+		if(type == Character.class && value.length() > 0) { return value.charAt(0); }
+		
+		// Date
+		if(type == Date.class) {
+			LocalDateTime dateTime = DateMapper.mapDate(value);
+            return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant());
+        }
+        else if(type == LocalDateTime.class) { return DateMapper.mapDate(value); }
+        else if(type == LocalDate.class) { return DateMapper.mapDate(value).toLocalDate(); }
+
+		log.error("This type is not mapped yet : "+type);
+		return null;
+
+	}
+		
 }
