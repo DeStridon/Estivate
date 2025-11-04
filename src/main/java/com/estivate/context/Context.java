@@ -444,7 +444,16 @@ public abstract class Context {
 				if (rs.next()) {
 					Field field = FieldUtils.getIdField(object.getClass());
 					field.setAccessible(true);
-					field.setLong(object, rs.getLong(1));
+					long generatedId = rs.getLong(1);
+					
+					// Handle both primitive long and wrapper Long types
+					if (field.getType() == long.class) {
+						field.setLong(object, generatedId);
+					} else if (field.getType() == Long.class) {
+						field.set(object, generatedId);
+					} else {
+						throw new IllegalStateException("ID field must be of type long or Long, but found: " + field.getType());
+					}
 				}
 				
 				FieldUtils.invokeLifecycleMethods(object, javax.persistence.PostPersist.class);
