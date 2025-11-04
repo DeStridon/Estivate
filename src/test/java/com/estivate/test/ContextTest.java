@@ -24,9 +24,12 @@ public class ContextTest {
 		
 		context.truncateTable(CustomerEntity.class);
 		
-		CustomerEntity customer1 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
-		CustomerEntity customer2 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
-		CustomerEntity customer3 = context.updateOrInsert(DatabaseGenerator.createRandomCustomer());
+		CustomerEntity customer1 = DatabaseGenerator.createRandomCustomer();
+		context.updateOrInsert(customer1);
+		CustomerEntity customer2 = DatabaseGenerator.createRandomCustomer();
+		context.updateOrInsert(customer2);
+		CustomerEntity customer3 = DatabaseGenerator.createRandomCustomer();
+		context.updateOrInsert(customer3);
 
 		customer1.setName("Updated Name 1");
 		customer2.setName("Updated Name 2");

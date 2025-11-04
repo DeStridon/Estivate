@@ -33,17 +33,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void insertTest() {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("customer 1").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("customer 1").build();
+		context.updateOrInsert(customer1);
 		
 		assertEquals(new Date().getTime(), customer1.getCreated().getTime(), 100);
 		assertNull(customer1.getUpdated());
 		assertNotNull(customer1.getId());
-	
-		customer1.setName("customer 1");
-		
-		context.updateOrInsert(customer1);
-		
-		assertNotNull(customer1.getUpdated());
 		
 	}
 	
@@ -51,17 +46,23 @@ public class SelectQueryCriterionTest {
 	@Test 
 	public void automatedJoinTest() {
 		
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("customer 2").build());
+		CustomerEntity customer2 = CustomerEntity.builder().name("customer 2").build();
+		context.updateOrInsert(customer2);
 
-		OrderEntity order21 = context.updateOrInsert(OrderEntity.builder().customerId(customer2.getId()).build());
-		OrderEntity order22 = context.updateOrInsert(OrderEntity.builder().customerId(customer2.getId()).build());
-		OrderEntity order23 = context.updateOrInsert(OrderEntity.builder().customerId(customer2.getId()).build());
+		OrderEntity order21 = OrderEntity.builder().customerId(customer2.getId()).build();
+		OrderEntity order22 = OrderEntity.builder().customerId(customer2.getId()).build();
+		OrderEntity order23 = OrderEntity.builder().customerId(customer2.getId()).build();
+		context.updateOrInsert(order21);
+		context.updateOrInsert(order22);
+		context.updateOrInsert(order23);
 		
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("customer 3").build());
+		CustomerEntity customer3 = CustomerEntity.builder().name("customer 3").build();
+		context.updateOrInsert(customer3);
 
-		OrderEntity order31 = context.updateOrInsert(OrderEntity.builder().customerId(customer3.getId()).build());
-		OrderEntity order32 = context.updateOrInsert(OrderEntity.builder().customerId(customer3.getId()).build());
-		
+		OrderEntity order31 = OrderEntity.builder().customerId(customer3.getId()).build();
+		OrderEntity order32 = OrderEntity.builder().customerId(customer3.getId()).build();
+		context.updateOrInsert(order31);
+		context.updateOrInsert(order32);
 		SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
 				.joinInner(OrderEntity.class, CustomerEntity.class)
 				.distinct()
@@ -139,8 +140,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inTest() {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("task 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()));
@@ -155,8 +158,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void in2Test() {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("task 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class);
 
@@ -295,9 +300,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notIn customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notIn customer 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("notIn customer 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notIn customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("notIn customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("notIn customer 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -350,8 +358,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInIfNotEmptyTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notInIfNotEmpty task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notInIfNotEmpty task 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notInIfNotEmpty task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("notInIfNotEmpty task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -406,8 +416,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInOrTrueIfEmptyTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notInOrTrueIfEmpty customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notInOrTrueIfEmpty customer 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notInOrTrueIfEmpty customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("notInOrTrueIfEmpty customer 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -439,8 +451,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeContainsTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("likeContains search test").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different content").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("likeContains search test").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different content").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -487,8 +501,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeContainsTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notLikeContains exclude test").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different content").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notLikeContains exclude test").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different content").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
@@ -535,8 +551,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notEqTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notEq test task").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different task").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notEq test task").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different task").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -586,8 +604,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqIfNotNullTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("eqIfNotNull test task").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different task").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("eqIfNotNull test task").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different task").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature with non-null value
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -636,8 +656,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void eqNullableTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different task").email("external").build());
+		CustomerEntity customer1 = CustomerEntity.builder().build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different task").email("external").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test with non-null value
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -667,9 +689,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void ltTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("lt test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("lt test customer 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("lt test customer 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("lt test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("lt test customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("lt test customer 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -725,9 +750,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void lteTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("lte test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("lte test customer 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("lte test customer 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("lte test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("lte test customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("lte test customer 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -783,9 +811,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gtTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("gt test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("gt test customer 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("gt test customer 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("gt test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("gt test customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("gt test customer 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -841,9 +872,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void gteTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("gte test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("gte test customer 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("gte test customer 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("gte test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("gte test customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("gte test customer 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -899,10 +933,14 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void betweenTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 3").build());
-		CustomerEntity customer4 = context.updateOrInsert(CustomerEntity.builder().name("between test customer 4").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("between test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("between test customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("between test customer 3").build();
+		CustomerEntity customer4 = CustomerEntity.builder().name("between test customer 4").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
+		context.updateOrInsert(customer4);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -964,8 +1002,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inIfNotEmptyTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inIfNotEmpty test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("inIfNotEmpty test customer 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("inIfNotEmpty test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("inIfNotEmpty test customer 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -1014,8 +1054,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inOrNullTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inOrNull test customer 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name(null).build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("inOrNull test customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name(null).build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
@@ -1034,8 +1076,11 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeStartsWithTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("prefix_test_task").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different_task").build());
+
+		CustomerEntity customer1 = CustomerEntity.builder().name("prefix_test_task").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different_task").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -1086,8 +1131,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeEndsWithTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("test_task_suffix").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("different_task").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("test_task_suffix").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("different_task").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -1138,9 +1185,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void likeInTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("pattern1_test").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("pattern2_test").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("different_test").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("pattern1_test").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("pattern2_test").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("different_test").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
@@ -1163,9 +1213,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notLikeInTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("pattern1_test").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("pattern2_test").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("different_test").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("pattern1_test").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("pattern2_test").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("different_test").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()))
@@ -1188,8 +1241,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inOrFalseIfEmptyTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inOrFalseIfEmpty test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("inOrFalseIfEmpty test task 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("inOrFalseIfEmpty test task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("inOrFalseIfEmpty test task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test with non-empty list
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -1217,8 +1272,10 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void nativeCriterionTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("native test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("native test task 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("native test task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("native test task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class)
@@ -1268,9 +1325,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void inSubQueryTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("inSubQuery test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("inSubQuery test task 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("inSubQuery test task 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("inSubQuery test task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("inSubQuery test task 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("inSubQuery test task 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Create subquery that selects homeIds > 24001
 		SelectQuery<CustomerEntity> subQuery = Estivate.selectQuery(CustomerEntity.class)
@@ -1298,9 +1358,12 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notInSubQueryTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notInSubQuery test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notInSubQuery test task 2").build());
-		CustomerEntity customer3 = context.updateOrInsert(CustomerEntity.builder().name("notInSubQuery test task 3").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notInSubQuery test task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("notInSubQuery test task 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("notInSubQuery test task 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
 		
 		// Create subquery that selects homeIds > 25001
 		SelectQuery<CustomerEntity> subQuery = Estivate.selectQuery(CustomerEntity.class)
@@ -1328,10 +1391,13 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void existsTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("exists test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("exists test task 2").build());
-		
-		OrderEntity child1 = context.updateOrInsert(OrderEntity.builder().customerId(customer1.getId()).build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("exists test task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("exists test task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+
+		OrderEntity child1 = OrderEntity.builder().customerId(customer1.getId()).build();
+		context.updateOrInsert(child1);
 		
 		// Create subquery that checks for children
 		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)
@@ -1357,10 +1423,13 @@ public class SelectQueryCriterionTest {
 	@Test
 	public void notExistsTest() throws SQLException {
 		
-		CustomerEntity customer1 = context.updateOrInsert(CustomerEntity.builder().name("notExists test task 1").build());
-		CustomerEntity customer2 = context.updateOrInsert(CustomerEntity.builder().name("notExists test task 2").build());
+		CustomerEntity customer1 = CustomerEntity.builder().name("notExists test task 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("notExists test task 2").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
 		
-		OrderEntity child1 = context.updateOrInsert(OrderEntity.builder().customerId(customer1.getId()).build());
+		OrderEntity child1 = OrderEntity.builder().customerId(customer1.getId()).build();
+		context.updateOrInsert(child1);
 		
 		// Create subquery that checks for children
 		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)

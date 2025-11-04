@@ -1,5 +1,7 @@
 package com.estivate.test.query;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -44,26 +46,26 @@ public class InsertInterceptorTest {
         customers.add(customer3);
 
         // Insert the collection
-        java.util.List<CustomerEntity> insertedCustomers = context.insert(customers);
+        context.insert(customers);
 
         // Verify all customers were inserted with interceptor applied
-        Assert.assertNotNull("Inserted customers should not be null", insertedCustomers);
-        Assert.assertEquals("Should have 3 customers", 3, insertedCustomers.size());
+        Assert.assertNotNull("Inserted customers should not be null", customers);
+        Assert.assertEquals("Should have 3 customers", 3, customers.size());
         
         // Check that the interceptor was applied to each customer
-        Assert.assertEquals("First customer name should have prefix", "BATCH_Customer1", insertedCustomers.get(0).getName());
-        Assert.assertEquals("Second customer should have default name with prefix", "BATCH_Default Name", insertedCustomers.get(1).getName());
-        Assert.assertEquals("Third customer name should have prefix", "BATCH_Customer3", insertedCustomers.get(2).getName());
+        Assert.assertEquals("First customer name should have prefix", "BATCH_Customer1", customers.get(0).getName());
+        Assert.assertEquals("Second customer should have default name with prefix", "BATCH_Default Name", customers.get(1).getName());
+        Assert.assertEquals("Third customer name should have prefix", "BATCH_Customer3", customers.get(2).getName());
         
         // Verify all have valid IDs (were actually inserted)
-        Assert.assertTrue("First customer should have ID", insertedCustomers.get(0).getId() > 0);
-        Assert.assertTrue("Second customer should have ID", insertedCustomers.get(1).getId() > 0);
-        Assert.assertTrue("Third customer should have ID", insertedCustomers.get(2).getId() > 0);
+        Assert.assertTrue("First customer should have ID", customers.get(0).getId() > 0);
+        Assert.assertTrue("Second customer should have ID", customers.get(1).getId() > 0);
+        Assert.assertTrue("Third customer should have ID", customers.get(2).getId() > 0);
         
         System.out.println("Batch insert successful:");
-        System.out.println("  Customer 1: " + insertedCustomers.get(0).getName() + " (ID: " + insertedCustomers.get(0).getId() + ")");
-        System.out.println("  Customer 2: " + insertedCustomers.get(1).getName() + " (ID: " + insertedCustomers.get(1).getId() + ")");
-        System.out.println("  Customer 3: " + insertedCustomers.get(2).getName() + " (ID: " + insertedCustomers.get(2).getId() + ")");
+        System.out.println("  Customer 1: " + customers.get(0).getName() + " (ID: " + customers.get(0).getId() + ")");
+        System.out.println("  Customer 2: " + customers.get(1).getName() + " (ID: " + customers.get(1).getId() + ")");
+        System.out.println("  Customer 3: " + customers.get(2).getName() + " (ID: " + customers.get(2).getId() + ")");
         
         // Clean up
         context.insertInterceptor = null;
@@ -82,10 +84,10 @@ public class InsertInterceptorTest {
 
         // Insert empty list
         java.util.List<CustomerEntity> emptyList = new java.util.ArrayList<>();
-        java.util.List<CustomerEntity> result = context.insert(emptyList);
+        context.insert(emptyList);
 
-        Assert.assertNotNull("Result should not be null", result);
-        Assert.assertEquals("Result should be empty", 0, result.size());
+        Assert.assertNotNull("Result should not be null", emptyList);
+        Assert.assertEquals("Result should be empty", 0, emptyList.size());
         Assert.assertEquals("Interceptor should not have been called", 0, interceptorCallCount[0]);
         
         // Clean up
@@ -102,9 +104,10 @@ public class InsertInterceptorTest {
         };
 
         // Insert null list
-        java.util.List<CustomerEntity> result = context.insert(null);
+        List<CustomerEntity> nullList = null;
+        context.insert(nullList);
 
-        Assert.assertNull("Result should be null", result);
+        Assert.assertNull("Result should be null", nullList);
         
         // Clean up
         context.insertInterceptor = null;

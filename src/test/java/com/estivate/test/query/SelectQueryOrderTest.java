@@ -44,16 +44,17 @@ public class SelectQueryOrderTest {
 		context.truncateTable(CustomerEntity.class);
 
 		List<CustomerEntity> list = Arrays.asList(
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer()),
-			context.updateOrInsert(DatabaseGenerator.createRandomCustomer())
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer(),
+			DatabaseGenerator.createRandomCustomer()
 		);
 		
+		context.updateOrInsert(list);
 		
 		SelectQuery<CustomerEntity> projectIdAscOrderedTaskQuery = Estivate.selectQuery(CustomerEntity.class).orderAsc(CustomerEntity.class, AbstractEntity.Fields.id).limit(2);
 		List<CustomerEntity> projectIdAscOrderedTasks = context.fetchListAs(projectIdAscOrderedTaskQuery, CustomerEntity.class);

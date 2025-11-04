@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 
@@ -20,7 +19,8 @@ public class CachedEntityTest {
 	@Test
 	public void cachedEntityTest() {
 		
-		CustomerEntity customer = context.updateOrInsert(CustomerEntity.builder().name("initial name").email("initial email").build());
+		CustomerEntity customer = CustomerEntity.builder().name("initial name").email("initial email").build();
+		context.updateOrInsert(customer);
 		
 		CustomerEntity customerA = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
 		CustomerEntity customerB = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);

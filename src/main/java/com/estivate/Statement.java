@@ -7,16 +7,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -182,9 +180,33 @@ public class Statement implements AutoCloseable{
 					Boolean b = (Boolean) object;
 					statement.setBoolean(i+1, b);
 				}
-				else if(object instanceof Date) {
-					Date d = (Date) object;
+				else if(object instanceof java.util.Date) {
+					java.util.Date d = (java.util.Date) object;
 					statement.setTimestamp(i+1, new Timestamp(d.getTime()));
+				}
+				else if(object instanceof java.sql.Date) {
+					java.sql.Date d = (java.sql.Date) object;
+					statement.setTimestamp(i+1, new Timestamp(d.getTime()));
+				}
+				else if(object instanceof java.sql.Time) {
+					java.sql.Time t = (java.sql.Time) object;
+					statement.setTimestamp(i+1, new Timestamp(t.getTime()));
+				}
+				else if(object instanceof java.sql.Timestamp) {
+					java.sql.Timestamp ts = (java.sql.Timestamp) object;
+					statement.setTimestamp(i+1, ts);
+				}
+				else if(object instanceof LocalDateTime) {
+					LocalDateTime ldt = (LocalDateTime) object;
+					statement.setTimestamp(i+1, Timestamp.valueOf(ldt));
+				}
+				else if(object instanceof java.time.LocalDate) {
+					java.time.LocalDate ld = (java.time.LocalDate) object;
+					statement.setTimestamp(i+1, Timestamp.valueOf(ld.atStartOfDay()));
+				}
+				else if(object instanceof java.time.LocalTime) {
+					java.time.LocalTime lt = (java.time.LocalTime) object;
+					statement.setTimestamp(i+1, Timestamp.valueOf(lt.atDate(java.time.LocalDate.now())));
 				}
 				else if(object == null) {
 					statement.setObject(i+1, null);

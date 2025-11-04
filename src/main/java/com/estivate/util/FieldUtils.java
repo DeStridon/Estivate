@@ -126,6 +126,7 @@ public class FieldUtils {
 	public static void invokeLifecycleMethods(Object entity, Class<? extends Annotation> annotationClass) {
 		try {
 			for(Method method : FieldUtils.findMethodWithAnnotation(entity.getClass(), annotationClass)) {
+				method.setAccessible(true);
 				method.invoke(entity);
 			}
 		} catch (Exception e) {

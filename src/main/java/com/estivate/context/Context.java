@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -390,10 +391,10 @@ public abstract class Context {
 	// ==================== PERSISTENCE METHODS ====================
 		
 	@SneakyThrows
-	public <U> U insert(U object) {
-//		try(Statement statement = createStatement()){
+	public <U> void insert(U object) {
+
 		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){		
+			Statement statement = new Statement(this, connection); ){	
 			
 			preInsert(object);
 			
@@ -445,27 +446,25 @@ public abstract class Context {
 					field.setAccessible(true);
 					field.setLong(object, rs.getLong(1));
 				}
-				else {
-					return null;
-				}
 				
 				FieldUtils.invokeLifecycleMethods(object, javax.persistence.PostPersist.class);
 				FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PostPersist.class);
-				return object;
+				
 			}
 		}
 	}
 
+
 	@SneakyThrows
-	public <U> List<U> insert(List<U> entities) {
-		
+	public <U> void insert(Collection<U> entities) {
 		if(entities != null) {
 			for(U entity : entities) {
 				insert(entity);
 			}
 		}
-		return entities;
 	}
+
+	
 
 	// Tries to find entity with same id, and if not found, tries to find entity with same unicity constraints
 	// Returns true if entity was merged to existing entity
@@ -532,7 +531,7 @@ public abstract class Context {
 	
 		
 	@SneakyThrows
-	public <U> U updateOrInsert(U object) {
+	public <U> void updateOrInsert(U object) {
 		Field idField = FieldUtils.getIdField(object.getClass());
 		if(idField != null) {
 			idField.setAccessible(true);
@@ -552,17 +551,15 @@ public abstract class Context {
 			insert(object);
 		}
 			
-		return object;
 	}
 
 	@SneakyThrows
-	public <U> List<U> updateOrInsert(List<U> entities) {
+	public <U> void updateOrInsert(Collection<U> entities) {
 		if(entities != null) {
 			for(U entity : entities) {
 				updateOrInsert(entity);
 			}
 		}
-		return entities;
 	}
 
 	@SneakyThrows
@@ -653,7 +650,7 @@ public abstract class Context {
 	}
 
 	@SneakyThrows
-	public <U> void update(List<U> entities) {
+	public <U> void update(Collection<U> entities) {
 		if(entities == null) {
 			return;
 		}
@@ -682,7 +679,7 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
-	public <U> void delete(List<U> entities) {
+	public <U> void delete(Collection<U> entities) {
 		for(U entity : entities) {
 			delete(entity);
 		}

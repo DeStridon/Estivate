@@ -115,11 +115,11 @@ public class SelectInterceptorTest {
         // Use a unique email based on timestamp to avoid constraint violations
         customer.setEmail("test_preprocessor_" + System.currentTimeMillis() + "@example.com");
 
-        CustomerEntity insertedCustomer = context.insert(customer);
+        context.insert(customer);
 
-        Assert.assertNotNull("Inserted customer should not be null", insertedCustomer);
-        Assert.assertEquals("Name should be set by preprocessor", "Default Customer Name", insertedCustomer.getName());
-        Assert.assertTrue("Email should contain test_preprocessor", insertedCustomer.getEmail().contains("test_preprocessor"));
+        Assert.assertNotNull("Inserted customer should not be null", customer);
+        Assert.assertEquals("Name should be set by preprocessor", "Default Customer Name", customer.getName());
+        Assert.assertTrue("Email should contain test_preprocessor", customer.getEmail().contains("test_preprocessor"));
         
         // Clean up
         context.insertInterceptor = null;

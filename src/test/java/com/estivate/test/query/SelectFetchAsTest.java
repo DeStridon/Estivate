@@ -49,7 +49,7 @@ public class SelectFetchAsTest {
             .created(new Date())
             .updated(new Date())
             .build();
-        customer = context.updateOrInsert(customer);
+        context.updateOrInsert(customer);
         
         // Create test product with enum and converted attributes
         product = ProductEntity.builder()
@@ -65,7 +65,7 @@ public class SelectFetchAsTest {
                 CustomerEntity.Country.SPAIN
             ))
             .build();
-        product = context.updateOrInsert(product);
+        context.updateOrInsert(product);
         
         // Create test order with ORDINAL enum
         order = OrderEntity.builder()
@@ -75,7 +75,7 @@ public class SelectFetchAsTest {
             .updated(new Date())
             .totalAmount(199.98f)
             .build();
-        order = context.updateOrInsert(order);
+        context.updateOrInsert(order);
         
         // Create test order line
         orderLine = OrderLineEntity.builder()
@@ -85,7 +85,7 @@ public class SelectFetchAsTest {
             .unitPrice(99.99f)
             .totalPrice(199.98f)
             .build();
-        orderLine = context.updateOrInsert(orderLine);
+        context.updateOrInsert(orderLine);
     }
 
     // ========================================================================================

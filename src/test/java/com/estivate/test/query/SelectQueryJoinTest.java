@@ -39,9 +39,12 @@ public class SelectQueryJoinTest {
 	public void selectJoiningTest() {
 		
 		
-		CustomerEntity customer = context.updateOrInsert(CustomerEntity.builder().name("join test customer").build());
-		context.updateOrInsert(OrderEntity.builder().status(OrderEntity.OrderStatus.PENDING).customerId(customer.getId()).build());
-		context.updateOrInsert(OrderEntity.builder().status(OrderEntity.OrderStatus.PENDING).customerId(customer.getId()).build());
+		CustomerEntity customer = CustomerEntity.builder().name("join test customer").build();
+		context.updateOrInsert(customer);
+		OrderEntity order1 = OrderEntity.builder().status(OrderEntity.OrderStatus.PENDING).customerId(customer.getId()).build();
+		context.updateOrInsert(order1);
+		OrderEntity order2 = OrderEntity.builder().status(OrderEntity.OrderStatus.PENDING).customerId(customer.getId()).build();
+		context.updateOrInsert(order2);
 		
 		SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
 				.comment("Query Join Test")
@@ -56,7 +59,8 @@ public class SelectQueryJoinTest {
 	@Test
 	public void selectJoiningTest2() throws SQLException {
 		
-		CustomerEntity parent = context.updateOrInsert(CustomerEntity.builder().name("join test name 1").build());
+		CustomerEntity parent = CustomerEntity.builder().name("join test name 1").build();
+		context.updateOrInsert(parent);
 		
 		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());
 		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());
@@ -77,7 +81,8 @@ public class SelectQueryJoinTest {
 	@Test
 	public void whereJoiningTest() throws SQLException {
 		
-		CustomerEntity parent = context.updateOrInsert(CustomerEntity.builder().name("join test name 2").build());
+		CustomerEntity parent = CustomerEntity.builder().name("join test name 2").build();
+		context.updateOrInsert(parent);
 		
 		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());
 		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());

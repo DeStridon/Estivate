@@ -44,15 +44,15 @@ public class UpdateQueryTest {
             .build();
 
         // 2. Save it
-        CustomerEntity savedCustomer = context.insert(customer);
-        Assert.assertTrue("Customer should have an ID", savedCustomer.getId() > 0);
+        context.insert(customer);
+        Assert.assertTrue("Customer should have an ID", customer.getId() > 0);
 
         // 3. Load the entity again from id
         SelectQuery<CustomerEntity> selectQuery = new SelectQuery<>(CustomerEntity.class)
-            .eq(AbstractEntity.Fields.id, savedCustomer.getId());
+            .eq(AbstractEntity.Fields.id, customer.getId());
         CustomerEntity loadedCustomer = context.fetchSingle(selectQuery);
         Assert.assertNotNull("Customer should be loaded", loadedCustomer);
-        Assert.assertEquals("Names should match", savedCustomer.getName(), loadedCustomer.getName());
+        Assert.assertEquals("Names should match", customer.getName(), loadedCustomer.getName());
 
         // 4. Update without changing any fields - this should work without issues
         context.update(loadedCustomer);

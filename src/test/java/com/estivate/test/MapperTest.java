@@ -18,7 +18,8 @@ public class MapperTest {
 	@Test
 	public void testPerf() {
 		
-		CustomerEntity newParent = context.updateOrInsert(CustomerEntity.builder().name("parent 1 name").build());	
+		CustomerEntity newParent = CustomerEntity.builder().name("parent 1 name").build();
+		context.updateOrInsert(newParent);
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.eq(CustomerEntity.class, AbstractEntity.Fields.id, newParent.getId());
@@ -29,7 +30,6 @@ public class MapperTest {
 		
 		System.out.println(parents.get(0).getCreated());
 		
-				
 	}
 
 }
