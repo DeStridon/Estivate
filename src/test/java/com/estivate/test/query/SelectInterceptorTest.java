@@ -22,7 +22,7 @@ public class SelectInterceptorTest {
     	
         context.selectInterceptor = (query) -> {
             if(query.getOrders().isEmpty()) {
-                query.orderAsc(AbstractEntity.Fields.id);
+                query.orderByAsc(AbstractEntity.Fields.id);
             }
         };
 
@@ -41,7 +41,7 @@ public class SelectInterceptorTest {
     public void testSelectQueryPreProcessor() {
         context.selectInterceptor = (query) -> {
             if(query.getOrders().isEmpty()) {
-                query.orderAsc(AbstractEntity.Fields.id);
+                query.orderByAsc(AbstractEntity.Fields.id);
             }
         };
 
@@ -129,7 +129,7 @@ public class SelectInterceptorTest {
     public void testMultiplePreProcessorsWorking() {
         // Set up multiple preprocessors
         context.selectInterceptor = (query) -> {
-            query.orderAsc(AbstractEntity.Fields.id);
+            query.orderByAsc(AbstractEntity.Fields.id);
         };
         
         context.updateInterceptor = (query) -> {
@@ -161,7 +161,7 @@ public class SelectInterceptorTest {
         };
         
         context.selectInterceptor = (query) -> {
-            query.orderAsc(AbstractEntity.Fields.id);
+            query.orderByAsc(AbstractEntity.Fields.id);
         };
 
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
@@ -178,7 +178,7 @@ public class SelectInterceptorTest {
     @Test
     public void testSelectQueryPreProcessorDoesNotAffectOthers() {
         context.selectInterceptor = (query) -> {
-            query.orderAsc(AbstractEntity.Fields.id);
+            query.orderByAsc(AbstractEntity.Fields.id);
         };
 
         // Test that UpdateQuery is not affected by SelectQuery preprocessor

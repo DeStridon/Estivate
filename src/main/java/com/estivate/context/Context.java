@@ -334,7 +334,7 @@ public abstract class Context {
 		return fetchSingleAsLong(query.clone()
 			.clearSelects()
 			.clearGroupBys()
-			.clearOrders()
+			.clearOrderBys()
 			.selectCountAs("count"));
 	}
 
@@ -352,7 +352,7 @@ public abstract class Context {
 		return fetchSingleAsLong(query.clone()
 			.clearSelects()
 			.clearGroupBys()
-			.clearOrders()
+			.clearOrderBys()
 			.selectCountDistinctAs(entity, attributeName, "count"));
 	}
 

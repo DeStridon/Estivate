@@ -765,7 +765,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()))
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
         
         List<?> result = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
         

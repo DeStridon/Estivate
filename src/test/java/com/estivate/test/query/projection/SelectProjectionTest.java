@@ -268,7 +268,7 @@ public class SelectProjectionTest {
     @Test
     public void testProjectList_AllRecords() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
         List<CustomerBasicProjection> results = query.projectToList(context, CustomerBasicProjection.class);
 
@@ -283,7 +283,7 @@ public class SelectProjectionTest {
     public void testProjectList_WithFilter() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA)
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
         List<CustomerBasicProjection> results = query.projectToList(context, CustomerBasicProjection.class);
 
@@ -296,7 +296,7 @@ public class SelectProjectionTest {
     @Test
     public void testProjectList_WithLimit() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name)
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name)
             .limit(2);
 
         List<CustomerBasicProjection> results = query.projectToList(context, CustomerBasicProjection.class);
@@ -323,7 +323,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.emailVerified, true)
             .likeContains(CustomerEntity.class, CustomerEntity.Fields.name, "Smith")
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
         List<CustomerBasicProjection> results = query.projectToList(context, CustomerBasicProjection.class);
 

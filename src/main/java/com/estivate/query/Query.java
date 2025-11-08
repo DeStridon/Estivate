@@ -838,44 +838,44 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 		public Direction direction;
 		public enum Direction{
 			Asc,
-			Desc
+			Desc;
 		}
 	}
 	
 	
-	public Q order(Order order) { orders.add(order); return self(); }
-	public Q order(Entity<?> entity, String attribute, Order.Direction direction, Function function) {
+	public Q orderBy(Order order) { orders.add(order); return self(); }
+	public Q orderBy(Entity<?> entity, String attribute, Order.Direction direction, Function function) {
 		orders.add(Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build()); 
 		return self(); 
 	}
-	public Q order(Class<?> entity, String attribute, Order.Direction direction, Function function) { return order(new Entity<>(entity), attribute, direction, function); }
-	public Q order(String attribute, Order.Direction direction, Function function) 					{ return order(this.entity, attribute, direction, function); }
-	public Q order(Entity<?> entity, String attribute, Order.Direction direction) 					{ return order(entity, attribute, direction, null); }
-	public Q order(Class<?> entity, String attribute, Order.Direction direction) 					{ return order(new Entity<>(entity), attribute, direction, null); }
-	public Q order(String attribute, Order.Direction direction) 									{ return order(this.entity, attribute, direction, null); }
-	public Q order(Attribute attribute, Order.Direction direction) 									{ return order(attribute.entity, attribute.attribute, direction, attribute.function); }
-	public Q orderAlias(String alias, Order.Direction direction) 									{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
+	public Q orderBy(Class<?> entity, String attribute, Order.Direction direction, Function function) 	{ return orderBy(new Entity<>(entity), attribute, direction, function); }
+	public Q orderBy(String attribute, Order.Direction direction, Function function) 					{ return orderBy(this.entity, attribute, direction, function); }
+	public Q orderBy(Entity<?> entity, String attribute, Order.Direction direction) 					{ return orderBy(entity, attribute, direction, null); }
+	public Q orderBy(Class<?> entity, String attribute, Order.Direction direction) 						{ return orderBy(new Entity<>(entity), attribute, direction, null); }
+	public Q orderBy(String attribute, Order.Direction direction) 										{ return orderBy(this.entity, attribute, direction, null); }
+	public Q orderBy(Attribute attribute, Order.Direction direction) 									{ return orderBy(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public Q orderByAlias(String alias, Order.Direction direction) 										{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
 
-	public Q orderAsc(Entity<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Asc); }
-	public Q orderAsc(Entity<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
-	public Q orderAsc(Class<?> c, String attribute) 						{ return order(c, attribute, Order.Direction.Asc); }
-	public Q orderAsc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Asc, function); }
-	public Q orderAsc(String attribute) 									{ return order(this.entity, attribute, Order.Direction.Asc); }
-	public Q orderAsc(String attribute, Function function) 				{ return order(this.entity, attribute, Order.Direction.Asc, function); }
-	public Q orderAsc(Attribute attribute) 								{ return order(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
-	public Q orderAscAlias(String alias)									{ return orderAlias(alias, Order.Direction.Asc); }
+	public Q orderByAsc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Asc); }
+	public Q orderByAsc(Entity<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Asc, function); }
+	public Q orderByAsc(Class<?> entity, String attribute) 						{ return orderBy(entity, attribute, Order.Direction.Asc); }
+	public Q orderByAsc(Class<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Asc, function); }
+	public Q orderByAsc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Asc); }
+	public Q orderByAsc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, Order.Direction.Asc, function); }
+	public Q orderByAsc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
+	public Q orderByAscAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Asc); }
 	
-	public Q orderDesc(Entity<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Desc); }
-	public Q orderDesc(Entity<?> c, String attribute, Function function)	{ return order(c, attribute, Order.Direction.Desc, function); }
-	public Q orderDesc(Class<?> c, String attribute) 					{ return order(c, attribute, Order.Direction.Desc); }
-	public Q orderDesc(Class<?> c, String attribute, Function function) 	{ return order(c, attribute, Order.Direction.Desc, function); }
-	public Q orderDesc(String attribute) 								{ return order(this.entity, attribute, Order.Direction.Desc); }
-	public Q orderDesc(String attribute, Function function) 				{ return order(this.entity, attribute, Order.Direction.Desc, function); }
-	public Q orderDesc(Attribute attribute) 								{ return order(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
-	public Q orderDescAlias(String alias)								{ return orderAlias(alias, Order.Direction.Desc); }
+	public Q orderByDesc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Desc); }
+	public Q orderByDesc(Entity<?> entity, String attribute, Function function)	{ return orderBy(entity, attribute, Order.Direction.Desc, function); }
+	public Q orderByDesc(Class<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Desc); }
+	public Q orderByDesc(Class<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Desc, function); }
+	public Q orderByDesc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Desc); }
+	public Q orderByDesc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, Order.Direction.Desc, function); }
+	public Q orderByDesc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
+	public Q orderByDescAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Desc); }
 	
 	
-	public Q clearOrders(){
+	public Q clearOrderBys(){
 		orders.clear();
 		return self();
 	}

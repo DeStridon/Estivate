@@ -215,12 +215,12 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	public SelectQuery<T> selectAvgAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.avg, alias); }
 
 	// Select Group Concat
-	public SelectQuery<T> selectGroupConcatAs(Class<?> c, String attribute, String alias) { return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, alias); }
-	public SelectQuery<T> selectGroupConcatAs(Entity<?> c, String attribute, String alias){ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, alias); }
-	public SelectQuery<T> selectGroupConcatAs(String attribute, String alias) 			{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, alias); }
+	public SelectQuery<T> selectGroupConcatAs(Class<?> c, String attribute, String alias) 	{ return selectFunctionAs(new Entity<>(c), attribute, Estivate.Functions.groupConcat, alias); }
+	public SelectQuery<T> selectGroupConcatAs(Entity<?> c, String attribute, String alias)	{ return selectFunctionAs(c, attribute, Estivate.Functions.groupConcat, alias); }
+	public SelectQuery<T> selectGroupConcatAs(String attribute, String alias) 				{ return selectFunctionAs(this.entity, attribute, Estivate.Functions.groupConcat, alias); }
 
 	public SelectQuery<T> clearSelects(){ selects.clear(); return this; }
-	public SelectQuery<T> clearOrders(){ super.clearOrders(); return this; }
+	public SelectQuery<T> clearOrderBys(){ super.clearOrderBys(); return this; }
 	
 	
 	// Having

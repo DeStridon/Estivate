@@ -155,7 +155,7 @@ public class SelectProjectToAttributeTest {
     @Test
     public void testProjectAttributeList_AllNames() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
         List<?> names = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
@@ -170,7 +170,7 @@ public class SelectProjectToAttributeTest {
     public void testProjectAttributeList_WithFilter() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA)
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
         List<?> names = query.projectToAttributeList(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
@@ -279,7 +279,7 @@ public class SelectProjectToAttributeTest {
         // projectCount should clear group by and order by, so the count should be for all records
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .groupBy(CustomerEntity.class, CustomerEntity.Fields.country)
-            .orderAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
         Long count = query.projectToCount(context);
 
@@ -328,7 +328,7 @@ public class SelectProjectToAttributeTest {
     @Test
     public void testProjectAttributeList_NumericValues() {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
-            .orderAsc(ProductEntity.class, ProductEntity.Fields.price);
+            .orderByAsc(ProductEntity.class, ProductEntity.Fields.price);
 
         List<?> prices = query.projectToAttributeList(context, ProductEntity.class, ProductEntity.Fields.price);
 
