@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class Entity<U> {
+	
 	public final Class<U> entity;
 	public final String alias;
 	
