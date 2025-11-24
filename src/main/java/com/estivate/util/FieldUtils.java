@@ -1,6 +1,8 @@
 package com.estivate.util;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -9,9 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
+import com.estivate.Estivate;
+import com.estivate.query.Attribute;
 
 import lombok.extern.slf4j.Slf4j;
+
 
 @Slf4j
 public class FieldUtils {
@@ -133,6 +137,60 @@ public class FieldUtils {
 			log.error("Error invoking lifecycle method with annotation " + annotationClass.getSimpleName(), e);
 		}
 	}
+	
+	
+	
+
+	
+	public static <E, P> Attribute attributeFromLambda(Getter<E, P> getter) {
+		try {
+            SerializedLambda sl = serializeLambda(getter);
+
+            // target class: parse from instantiatedMethodType
+			String methodType = sl.getInstantiatedMethodType(); // e.g. "(Lcom/example/Person;)Ljava/lang/Long;"
+			String classInternalName = methodType.substring(2, methodType.indexOf(';'));
+			Class<?> targetClass = Class.forName(classInternalName.replace('/', '.'));
+            
+
+			String implMethod = sl.getImplMethodName();
+
+            String propertyName = methodToProperty(implMethod);
+            return new Attribute(Estivate.entity(targetClass), propertyName, null);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract property name from lambda", e);
+        }
+	}
+
+
+	
+	
+	// Correct functional interface: matches Person::getName
+    @FunctionalInterface
+    public interface Getter<T, R> extends Serializable {
+        R get(T bean);
+    }
+
+    
+
+    private static SerializedLambda serializeLambda(Serializable lambda) throws Exception {
+        Method m = lambda.getClass().getDeclaredMethod("writeReplace");
+        m.setAccessible(true);
+        return (SerializedLambda) m.invoke(lambda);
+    }
+
+    private static String methodToProperty(String name) {
+        if (name.startsWith("get") && name.length() > 3) {
+            String base = name.substring(3);
+            return Character.toLowerCase(base.charAt(0)) + base.substring(1);
+        }
+        if (name.startsWith("is") && name.length() > 2) {
+            String base = name.substring(2);
+            return Character.toLowerCase(base.charAt(0)) + base.substring(1);
+        }
+        throw new IllegalArgumentException("Not a getter method: " + name);
+    }
+	
 
 	
 }

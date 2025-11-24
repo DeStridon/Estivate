@@ -34,6 +34,8 @@ import com.estivate.query.Keyword.KeywordValue;
 import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
+import com.estivate.util.FieldUtils;
+import com.estivate.util.FieldUtils.Getter;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -193,6 +195,7 @@ public class Estivate {
 	
 	public static Criterion notIn   				(Attribute attribute, Collection<?> values){ return new NotIn(attribute, values); }
 	public static Criterion notInIfNotEmpty			(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(attribute, values);} return null; }
+	public static Aggregator notInIfNotEmptyNullable(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return Estivate.or(notInIfNotEmpty(attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(attribute)); } return null; }
 	public static EstivateNode notInOrTrueIfEmpty	(Attribute attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(attribute, values);} return keywordTrue(); }
 	public static Aggregator notInOrNull			(Attribute attribute, Collection<?> values){ return or(notIn(attribute, values), isNull(attribute)); }
 	public static Aggregator notInIfNotEmptyOrNull	(Attribute attribute, Collection<?> values){ return or(notInIfNotEmpty(attribute, values), isNull(attribute)); }
@@ -404,8 +407,8 @@ public class Estivate {
 	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return new NativeCriterion(entity, attribute, null, criterion); }
 	
 	// subQuery
-	public static Criterion inSubQuery(Entity<?> entity, String attribute, SelectQuery subQuery)	  	{ return new InSubQuery(entity, attribute, null, subQuery, true); }
-	public static Criterion notInSubQuery(Entity<?> entity, String attribute, SelectQuery subQuery)	{ return new InSubQuery(entity, attribute, null, subQuery, false); }
+	public static Criterion inSubQuery(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	  	{ return new InSubQuery(entity, attribute, null, subQuery, true); }
+	public static Criterion notInSubQuery(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	{ return new InSubQuery(entity, attribute, null, subQuery, false); }
 	
 	
 	
@@ -420,6 +423,7 @@ public class Estivate {
 
 	public static Criterion notEq 			(Class<?> entity, String attribute, Object value) { return notEq(new Entity<>(entity), attribute, value); }
 	public static Criterion notEqIfNotNull	(Class<?> entity, String attribute, Object value) { return notEqIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion notEqNullable	(Class<?> entity, String attribute, Object value) { return notEqNullable(new Entity<>(entity), attribute, value); }
 	public static Aggregator notEqOrNull	(Class<?> entity, String attribute, Object value) { return notEqOrNull(new Entity<>(entity), attribute, value); }
 
 	
@@ -442,6 +446,10 @@ public class Estivate {
 	public static Criterion inIfNotEmpty		(Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmpty(new Entity<>(entity), attribute, values); }
 	public static EstivateNode inIfNotEmptyNullable  (Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmptyNullable(new Entity<>(entity), attribute, values); }
 	public static EstivateNode inOrFalseIfEmpty	(Class<?> entity, String attribute, Collection<?> values) { return inOrFalseIfEmpty(new Entity<>(entity), attribute, values); }
+	public static Aggregator inOrNull				(Class<?> entity, String attribute, Collection<?> values){ return or(in(entity, attribute, values), isNull(entity, attribute)); }
+	public static Aggregator inIfNotEmptyOrNull		(Class<?> entity, String attribute, Collection<?> values){ return or(inIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
+
+	
 
 	public static Criterion notIn   (Class<?> entity, String attribute, Collection<?> values) { return notIn(new Entity<>(entity), attribute, values); }
 	public static Criterion notInIfNotEmpty		(Class<?> entity, String attribute, Collection<?> values){ return notInIfNotEmpty(new Entity<>(entity), attribute, values); }
@@ -450,16 +458,23 @@ public class Estivate {
 	
 	public static Criterion like			(Class<?> entity, String attribute, String value)	{ return like(new Entity<>(entity), attribute, value); }
 	public static Criterion notLike			(Class<?> entity, String attribute, String value)	{ return notLike(new Entity<>(entity), attribute, value); }
+	public static Criterion likeIfNotNull	(Class<?> entity, String attribute, String value)	{ return likeIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeIfNotNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion likeStartsWith	(Class<?> entity, String attribute, String value)	{ return likeStartsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeStartsWith(Class<?> entity, String attribute, String value)	{ return notLikeStartsWith(new Entity<>(entity), attribute, value); }
+	public static Criterion likeStartsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return likeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion likeEndsWith	(Class<?> entity, String attribute, String value)	{ return likeEndsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeEndsWith	(Class<?> entity, String attribute, String value)	{ return notLikeEndsWith(new Entity<>(entity), attribute, value); }
+	public static Criterion likeEndsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return likeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeEndsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion likeContains	(Class<?> entity, String attribute, String value)	{ return likeContains(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeContains	(Class<?> entity, String attribute, String value)	{ return notLikeContains(new Entity<>(entity), attribute, value); }
-
+	public static Criterion likeContainsIfNotNull(Class<?> entity, String attribute, String value)	{ return likeContainsIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeContainsIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeContainsIfNotNull(new Entity<>(entity), attribute, value); }
 
 	
 	public static Criterion ltIfNotNull   	(Class<?> entity, String attribute, Object value) { return ltIfNotNull(new Entity<>(entity), attribute, value); }
@@ -512,14 +527,124 @@ public class Estivate {
 	public static Criterion nativeCriterion (Class<?> entity, String attribute, String criterion)	{ return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 
 	
-	public static Criterion inSubQuery(Class<?> entity, String attribute, SelectQuery subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
-	public static Criterion notInSubQuery(Class<?> entity, String attribute, SelectQuery subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
+	public static Criterion inSubQuery(Class<?> entity, String attribute, SelectQuery<?> subQuery)	  	{ return inSubQuery(new Entity<>(entity), attribute, subQuery); }
+	public static Criterion notInSubQuery(Class<?> entity, String attribute, SelectQuery<?> subQuery)	{ return notInSubQuery(new Entity<>(entity), attribute, subQuery); }
 	
 	
+	
+	/* Wrappers for Lambda */
+	
+	public static <E, P> Criterion eq    			(Getter<E, P> function, P value) { return eq(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion eqIfNotNull		(Getter<E, P> function, P value) { return eqIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion eqNullable		(Getter<E, P> function, P value) { return eqNullable(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Aggregator eqOrNull		(Getter<E, P> function, P value) { return eqOrNull(FieldUtils.attributeFromLambda(function), value); }
+
+	public static <E, P> Criterion notEq 			(Getter<E, P> function, P value) { return notEq(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion notEqIfNotNull	(Getter<E, P> function, P value) { return notEqIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion notEqNullable	(Getter<E, P> function, P value) { return notEqNullable(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Aggregator notEqOrNull	(Getter<E, P> function, P value) { return notEqOrNull(FieldUtils.attributeFromLambda(function), value); }
+
+	
+	public static <E, P> Criterion lt    	(Getter<E, P> function, P value)        { return lt(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Aggregator ltOrNull(Getter<E, P> function, P value) { return ltOrNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion ltIfNotNull   	(Getter<E, P> function, P value) { return ltIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	
+	public static <E, P> Criterion lte   	(Getter<E, P> function, P value)        { return lte(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Aggregator lteOrNull(Getter<E, P> function, P value) { return lteOrNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion lteIfNotNull  	(Getter<E, P> function, P value) { return lteIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	
+	public static <E, P> Criterion gt    	(Getter<E, P> function, P value)        { return gt(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Aggregator gtOrNull(Getter<E, P> function, P value) { return gtOrNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion gtIfNotNull   	(Getter<E, P> function, P value) { return gtIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	public static <E, P> Criterion gte   	(Getter<E, P> function, P value)        { return gte(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Aggregator gteOrNull(Getter<E, P> function, P value) { return gteOrNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion gteIfNotNull  	(Getter<E, P> function, P value) { return gteIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	
+	public static <E, P> Criterion between	(Getter<E, P> function, P left, P right) { return between(FieldUtils.attributeFromLambda(function), left, right); }
+	public static <E, P> Aggregator betweenOrNull(Getter<E, P> function, P left, P right) { return betweenOrNull(FieldUtils.attributeFromLambda(function), left, right); }
+	public static <E, P> Criterion betweenIfNotNull(Getter<E, P> function, P min, P max) { return betweenIfNotNull(FieldUtils.attributeFromLambda(function), min, max); }
+
+	
+	public static <E, P> Criterion in    				(Getter<E, P> function, Collection<P> values) { return in(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Criterion inIfNotEmpty		(Getter<E, P> function, Collection<P> values) { return inIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> EstivateNode inIfNotEmptyNullable  (Getter<E, P> function, Collection<P> values) { return inIfNotEmptyNullable(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> EstivateNode inOrFalseIfEmpty	(Getter<E, P> function, Collection<P> values) { return inOrFalseIfEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Aggregator inOrNull				(Getter<E, P> function, Collection<P> values){ return inOrNull(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Aggregator inIfNotEmptyOrNull		(Getter<E, P> function, Collection<P> values){ return inIfNotEmptyOrNull(FieldUtils.attributeFromLambda(function), values); }
+
+	public static <E, P> Criterion notIn   (Getter<E, P> function, Collection<P> values) { return notIn(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Criterion notInIfNotEmpty		(Getter<E, P> function, Collection<P> values){ return notInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Aggregator notInIfNotEmptyNullable(Getter<E, P> function, Collection<P> values){ return notInIfNotEmptyNullable(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> EstivateNode notInOrTrueIfEmpty	(Getter<E, P> function, Collection<P> values){ return notInOrTrueIfEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Aggregator notInOrNull			(Getter<E, P> function, Collection<P> values){ return notInOrNull(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Aggregator notInIfNotEmptyOrNull	(Getter<E, P> function, Collection<P> values){ return notInIfNotEmptyOrNull(FieldUtils.attributeFromLambda(function), values); }
+	
+	
+	public static <E> Criterion like			(Getter<E, String> function, String value)	{ return like(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLike			(Getter<E, String> function, String value)	{ return notLike(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion likeIfNotNull		(Getter<E, String> function, String value)	{ return likeIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeIfNotNull	(Getter<E, String> function, String value)	{ return notLikeIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+
+	public static <E> Criterion likeStartsWith	(Getter<E, String> function, String value)	{ return likeStartsWith(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeStartsWith(Getter<E, String> function, String value)	{ return notLikeStartsWith(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion likeStartsWithIfNotNull(Getter<E, String> function, String value)	{ return likeStartsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeStartsWithIfNotNull(Getter<E, String> function, String value)	{ return notLikeStartsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+
+	public static <E> Criterion likeEndsWith	(Getter<E, String> function, String value)	{ return likeEndsWith(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeEndsWith	(Getter<E, String> function, String value)	{ return notLikeEndsWith(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion likeEndsWithIfNotNull(Getter<E, String> function, String value)	{ return likeEndsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeEndsWithIfNotNull(Getter<E, String> function, String value)	{ return notLikeEndsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	public static <E> Criterion likeContains	(Getter<E, String> function, String value)	{ return likeContains(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeContains	(Getter<E, String> function, String value)	{ return notLikeContains(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion likeContainsIfNotNull(Getter<E, String> function, String value)	{ return likeContainsIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notLikeContainsIfNotNull(Getter<E, String> function, String value)	{ return notLikeContainsIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+
 	
 	
 
 
+	public static <E> Aggregator likeStartsWithIn(Getter<E, String> function, Collection<String> value)	{ return likeStartsWithIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeStartsWithInIfNotEmpty(Getter<E, String> function, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(FieldUtils.attributeFromLambda(function), values);}
+	public static <E> Aggregator notLikeStartsWithIn(Getter<E, String> function, Collection<String> value)	{ return notLikeStartsWithIn(FieldUtils.attributeFromLambda(function), value); }
+	
+	public static <E> Aggregator likeEndsWithIn	(Getter<E, String> function, Collection<String> value)	{ return likeEndsWithIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeEndsWithInIfNotEmpty(Getter<E, String> function, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E> Aggregator notLikeEndsWithIn(Getter<E, String> function, Collection<String> value)	{ return notLikeEndsWithIn(FieldUtils.attributeFromLambda(function), value); }
+	
+	public static <E> Aggregator likeContainsIn	(Getter<E, String> function, Collection<String> value)	{ return likeContainsIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeContainsInIfNotEmpty(Getter<E, String> function, Collection<String> values) 	{ return likeContainsInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E> Aggregator notLikeContainsIn(Getter<E, String> function, Collection<String> value)	{ return notLikeContainsIn(FieldUtils.attributeFromLambda(function), value); }
+
+	 
+	public static <E> Aggregator likeIn				(Getter<E, String> function, Collection<String> value)	{ return likeIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeInIfNotEmpty	(Getter<E, String> function, Collection<String> value)  	{ return likeInIfNotEmpty(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator notLikeIn			(Getter<E, String> function, Collection<String> value)	{ return notLikeIn(FieldUtils.attributeFromLambda(function), value); }
+	
+
+	public static <E, P> Criterion isNull		(Getter<E, P> function) 						{ return isNull(FieldUtils.attributeFromLambda(function));}
+	public static <E, P> Criterion isNotNull	(Getter<E, P> function) 						{ return isNotNull(FieldUtils.attributeFromLambda(function));}
+	
+
+	public static <E> Criterion matchAgainst(Getter<E, String> function, String value) 			{ return matchAgainst(FieldUtils.attributeFromLambda(function), value); }	
+	public static <E> Criterion matchAgainstIfNotNull(Getter<E, String> function, String value) { return matchAgainstIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notMatchAgainst(Getter<E, String> function, String value) 			{ return notMatchAgainst(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion notMatchAgainstIfNotNull(Getter<E, String> function, String value) { return notMatchAgainstIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	public static <E> Aggregator matchAgainstIn(Getter<E, String> function, Collection<String> values)			{ return matchAgainstIn(FieldUtils.attributeFromLambda(function), values); }
+	public static <E> Aggregator matchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E> Aggregator notMatchAgainstIn(Getter<E, String> function, Collection<String> values)			{ return notMatchAgainstIn(FieldUtils.attributeFromLambda(function), values); }
+	public static <E> Aggregator notMatchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	
+	public static <E> Criterion nativeCriterion (Getter<E, String> function, String criterion)	{ return nativeCriterion(FieldUtils.attributeFromLambda(function), criterion); }
+	
+	public static <E, P> Criterion inSubQuery(Getter<E, P> function, SelectQuery<?> subQuery)	  	{ return inSubQuery(FieldUtils.attributeFromLambda(function), subQuery); }
+	public static <E, P> Criterion notInSubQuery(Getter<E, P> function, SelectQuery<?> subQuery)	{ return notInSubQuery(FieldUtils.attributeFromLambda(function), subQuery); }
+	
 	
 	 
 	 public static class Functions{

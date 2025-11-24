@@ -7,10 +7,11 @@ import java.util.stream.Collectors;
 
 import com.estivate.Entity;
 import com.estivate.Estivate;
+import com.estivate.util.FieldUtils.Getter;
 
-import lombok.Getter;
 
-@Getter
+
+@lombok.Getter
 public class Aggregator implements EstivateNode {
 	
 	final GroupType groupType;
@@ -364,8 +365,117 @@ public class Aggregator implements EstivateNode {
 	
 
 	public Aggregator nativeCriterion(Class<?> entity, String attribute, String criterion) { return nativeCriterion(new Entity<>(entity), attribute, criterion); }
+
+
+	/* Wrappers for Lambda */
+
+	public <E, P> Aggregator eq    		(Getter<E, P> function, P value) { add(Estivate.eq(function, value)); return this; }
+	public <E, P> Aggregator eqIfNotNull   (Getter<E, P> function, P value) { add(Estivate.eqIfNotNull(function, value)); return this; }
+	public <E, P> Aggregator eqNullable    (Getter<E, P> function, P value) { add(Estivate.eqNullable(function, value)); return this; }
+	public <E, P> Aggregator eqOrNull		(Getter<E, P> function, P value) { add(Estivate.eqOrNull(function, value)); return this; }
+	
+	public <E, P> Aggregator notEq 		(Getter<E, P> function, P value) { add(Estivate.notEq(function, value)); return this; }
+	public <E, P> Aggregator notEqIfNotNull(Getter<E, P> function, P value) { add(Estivate.notEqIfNotNull(function, value)); return this; }
+	public <E, P> Aggregator notEqNullable (Getter<E, P> function, P value) { add(Estivate.notEqNullable(function, value)); return this; }
+	public <E, P> Aggregator notEqOrNull	(Getter<E, P> function, P value) { add(Estivate.notEqOrNull(function, value)); return this; }
+	
+	public <E, P> Aggregator lt    	(Getter<E, P> function, P value)     		{ add(Estivate.lt(function, value)); return this; }
+	public <E, P> Aggregator ltIfNotNull   	(Getter<E, P> function, P value) 	{ add(Estivate.ltIfNotNull(function, value)); return this; }
+	public <E, P> Aggregator ltOrNull(Getter<E, P> function, P value) 			{ add(Estivate.ltOrNull(function, value)); return this; }
+	public <E, P> Aggregator lte   	(Getter<E, P> function, P value)     		{ add(Estivate.lte(function, value)); return this; }
+	public <E, P> Aggregator lteIfNotNull  	(Getter<E, P> function, P value) 	{ add(Estivate.lteIfNotNull(function, value)); return this; }
+	public <E, P> Aggregator lteOrNull(Getter<E, P> function, P value) 			{ add(Estivate.lteOrNull(function, value)); return this; }
+	
+	public <E, P> Aggregator gt    	(Getter<E, P> function, P value)     		{ add(Estivate.gt(function, value)); return this; }
+	public <E, P> Aggregator gtIfNotNull   	(Getter<E, P> function, P value) 	{ add(Estivate.gtIfNotNull(function, value)); return this; }
+	public <E, P> Aggregator gtOrNull(Getter<E, P> function, P value) 			{ add(Estivate.gtOrNull(function, value)); return this; }
+	
+	public <E, P> Aggregator gte   	(Getter<E, P> function, P value)     		{ add(Estivate.gte(function, value)); return this; }
+	public <E, P> Aggregator gteIfNotNull  	(Getter<E, P> function, P value) 	{ add(Estivate.gteIfNotNull(function, value)); return this; }
+	public <E, P> Aggregator gteOrNull(Getter<E, P> function, P value) 			{ add(Estivate.gteOrNull(function, value)); return this; }
+
+	public <E, P> Aggregator between 	(Getter<E, P> function, P min, P max)		{ add(Estivate.between(function, min, max)); return this; }
+	public <E, P> Aggregator betweenIfNotNull	(Getter<E, P> function, P min, P max){ add(Estivate.betweenIfNotNull(function, min, max)); return this; }
+	public <E, P> Aggregator betweenOrNull	(Getter<E, P> function, P min, P max) 	{ add(Estivate.betweenOrNull(function, min, max)); return this; }
 	
 	
+	public <E, P> Aggregator in    	(Getter<E, P> function, Collection<P> values) 		 	{ add(Estivate.in(function, values)); return this; }
+	public <E, P> Aggregator inIfNotEmptyNullable(Getter<E, P> function, Collection<P> values)	{ add(Estivate.inIfNotEmptyNullable(function, values)); return this; }
+	public <E, P> Aggregator inOrNull(Getter<E, P> function, Collection<P> values)			 	{ add(Estivate.inOrNull(function, values)); return this; }
+	public <E, P> Aggregator inIfNotEmptyOrNull(Getter<E, P> function, Collection<P> values)	 	{ add(Estivate.inIfNotEmptyOrNull(function, values)); return this; }
+	public <E, P> Aggregator notIn    	(Getter<E, P> function, Collection<P> values) 		 	{ add(Estivate.notIn(function, values)); return this; }
+	public <E, P> Aggregator notInOrNull (Getter<E, P> function, Collection<P> values) 		 	{ add(Estivate.notInOrNull(function, values)); return this; }
+	public <E, P> Aggregator notInIfNotEmptyOrNull (Getter<E, P> function, Collection<P> values) { add(Estivate.notInIfNotEmptyOrNull(function, values)); return this; }
+
+	public <E> Aggregator like				(Getter<E, String> function, String value)     { add(Estivate.like(function, value)); return this; }
+	public <E> Aggregator likeStartsWith	(Getter<E, String> function, String value)     { add(Estivate.likeStartsWith(function, value)); return this; }
+	public <E> Aggregator likeEndsWith		(Getter<E, String> function, String value)     { add(Estivate.likeEndsWith(function, value)); return this; }
+	public <E> Aggregator likeContains		(Getter<E, String> function, String value)     { add(Estivate.likeContains(function, value)); return this; }
+	public <E> Aggregator notLike			(Getter<E, String> function, String value)     { add(Estivate.notLike(function, value)); return this; }
+	public <E> Aggregator notLikeStartsWith	(Getter<E, String> function, String value)     { add(Estivate.notLikeStartsWith(function, value)); return this; }
+	public <E> Aggregator notLikeEndsWith	(Getter<E, String> function, String value)     { add(Estivate.notLikeEndsWith(function, value)); return this; }
+	public <E> Aggregator notLikeContains	(Getter<E, String> function, String value)     { add(Estivate.notLikeContains(function, value)); return this; }
+
+	public <E> Aggregator likeIn			(Getter<E, String> function, Collection<String> value) { add(Estivate.likeIn(function, value)); return this; }
+	public <E> Aggregator likeStartsWithIn	(Getter<E, String> function, Collection<String> value) { add(Estivate.likeStartsWithIn(function, value)); return this; }
+	public <E> Aggregator likeEndsWithIn	(Getter<E, String> function, Collection<String> value) { add(Estivate.likeEndsWithIn(function, value)); return this; }
+	public <E> Aggregator likeContainsIn	(Getter<E, String> function, Collection<String> value) { add(Estivate.likeContainsIn(function, value)); return this; }
+	public <E> Aggregator notLikeIn			(Getter<E, String> function, Collection<String> value) { add(Estivate.notLikeIn(function, value)); return this; }
+	public <E> Aggregator notLikeStartsWithIn(Getter<E, String> function, Collection<String> value){ add(Estivate.notLikeStartsWithIn(function, value)); return this; }
+	public <E> Aggregator notLikeEndsWithIn	(Getter<E, String> function, Collection<String> value) { add(Estivate.notLikeEndsWithIn(function, value)); return this; }
+	public <E> Aggregator notLikeContainsIn	(Getter<E, String> function, Collection<String> value) { add(Estivate.notLikeContainsIn(function, value)); return this; }
+	
+
+	public <E, P> Aggregator inIfNotEmpty   	(Getter<E, P> function, Collection<P> values) { add(Estivate.inIfNotEmpty(function, values)); return this; }
+	public <E, P> Aggregator notInIfNotEmpty	(Getter<E, P> function, Collection<P> values) { add(Estivate.notInIfNotEmpty(function, values)); return this; }
+	public <E, P> Aggregator inOrFalseIfEmpty	(Getter<E, P> function, Collection<P> values) { add(Estivate.inOrFalseIfEmpty(function, values)); return this; }
+	public <E, P> Aggregator notInOrTrueIfEmpty(Getter<E, P> function, Collection<P> values) { add(Estivate.notInOrTrueIfEmpty(function, values)); return this; }
+	
+	
+	public <E> Aggregator likeIfNotNull 			(Getter<E, String> function, String value) { add(Estivate.likeIfNotNull(function, value)); return this; }
+	public <E> Aggregator likeStartsWithIfNotNull 	(Getter<E, String> function, String value) { add(Estivate.likeStartsWithIfNotNull(function, value)); return this; }
+	public <E> Aggregator likeEndsWithIfNotNull 	(Getter<E, String> function, String value) { add(Estivate.likeEndsWithIfNotNull(function, value)); return this; }
+	public <E> Aggregator likeContainsIfNotNull 	(Getter<E, String> function, String value) { add(Estivate.likeContainsIfNotNull(function, value)); return this; }
+
+	
+	public <E> Aggregator likeInIfNotEmpty 			(Getter<E, String> function, Collection<String> values) { add(Estivate.likeInIfNotEmpty(function, values)); return this; }
+	public <E> Aggregator likeStartsWithInIfNotEmpty(Getter<E, String> function, Collection<String> values) { add(Estivate.likeStartsWithInIfNotEmpty(function, values)); return this; }
+	public <E> Aggregator likeEndsWithInIfNotEmpty	(Getter<E, String> function, Collection<String> values) { add(Estivate.likeEndsWithInIfNotEmpty(function, values)); return this; }
+	public <E> Aggregator likeContainsInIfNotEmpty	(Getter<E, String> function, Collection<String> values) { add(Estivate.likeContainsInIfNotEmpty(function, values)); return this; }
+
+	
+	
+	public <E> Aggregator notLikeIfNotNull 			(Getter<E, String> function, String value) { add(Estivate.notLikeIfNotNull(function, value)); return this; }
+	public <E> Aggregator notLikeStartsWithIfNotNull(Getter<E, String> function, String value) { add(Estivate.notLikeStartsWithIfNotNull(function, value)); return this; }
+	public <E> Aggregator notLikeEndsWithIfNotNull 	(Getter<E, String> function, String value) { add(Estivate.notLikeEndsWithIfNotNull(function, value)); return this; }
+	public <E> Aggregator notLikeContainsIfNotNull 	(Getter<E, String> function, String value) { add(Estivate.notLikeContainsIfNotNull(function, value)); return this; }
+
+	public <E, P> Aggregator isNull(Getter<E, P> function) 	{ add(Estivate.isNull(function)); 	return this; }
+	public <E, P> Aggregator isNotNull(Getter<E, P> function) { add(Estivate.isNotNull(function)); return this; }
+
+	public <E> Aggregator matchAgainst(Getter<E, String> function, String value) { add(Estivate.matchAgainst(function, value)); return this; }
+	public <E> Aggregator matchAgainstIfNotNull(Getter<E, String> function, String value) { add(Estivate.matchAgainstIfNotNull(function, value)); return this; }
+	public <E> Aggregator notMatchAgainst(Getter<E, String> function, String value) { add(Estivate.notMatchAgainst(function, value)); return this; }
+	public <E> Aggregator notMatchAgainstIfNotNull(Getter<E, String> function, String value) { add(Estivate.notMatchAgainstIfNotNull(function, value)); return this; }
+	
+	public <E> Aggregator matchAgainstIn(Getter<E, String> function, Collection<String> values) { add(Estivate.matchAgainstIn(function, values)); return this; }
+	public <E> Aggregator matchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(function, values)); return this; }
+	public <E> Aggregator notMatchAgainstIn(Getter<E, String> function, Collection<String> values) { add(Estivate.notMatchAgainstIn(function, values)); return this; }
+	public <E> Aggregator notMatchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(function, values)); return this; }
+	
+
+	public <E> Aggregator nativeCriterion(Getter<E, String> function, String criterion) { add(Estivate.nativeCriterion(function, criterion)); return this; }
+
+
+	public <E, P> Aggregator inSubQuery		(Getter<E, P> function, SelectQuery<?> subQuery)	{ add(Estivate.inSubQuery(function, subQuery)); return this; }
+	public <E, P> Aggregator notInSubQuery		(Getter<E, P> function, SelectQuery<?> subQuery)	{ add(Estivate.notInSubQuery(function, subQuery)); return this; }
+			
+	
+	public <E, P> Aggregator exists	(Getter<E, P> function, SelectQuery<?> subQuery)						{ add(Estivate.existsSubQuery(subQuery)); return this; }
+	public <E, P> Aggregator notExists	(Getter<E, P> function, SelectQuery<?> subQuery)						{ add(Estivate.notExistsSubQuery(subQuery)); return this; }
+	
+	
+	/* Misc Methods */
 	public Aggregator add(EstivateNode joinNode) { if(joinNode != null) { criterions.add(joinNode); } return this; }
 
 	public Aggregator addIf(boolean condition, EstivateNode joinNode) { if(condition) { add(joinNode); } return this; }

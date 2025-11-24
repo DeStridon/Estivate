@@ -92,6 +92,12 @@
 			<version>1.17.2</version>
 		</dependency>
 		
+		<dependency>
+		    <groupId>net.bytebuddy</groupId>
+		    <artifactId>byte-buddy-agent</artifactId>
+		    <version>1.17.2</version> <!-- or latest -->
+		</dependency>
+		
 		
 		<dependency>
 		    <groupId>org.apache.tomcat</groupId>

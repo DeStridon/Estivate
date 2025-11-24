@@ -13,15 +13,16 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.query.Attribute.Function;
 import com.estivate.query.Join.JoinType;
+import com.estivate.util.FieldUtils.Getter;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
+
+
 import lombok.experimental.SuperBuilder;
 
 public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	
-	@Getter
+	@lombok.Getter
 	final Entity<T> entity;
 	
 	public Query(Class<T> baseClass) {
@@ -35,22 +36,22 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	}
 	
 	
-	@Getter
+	@lombok.Getter
 	List<String> comments = new ArrayList<>();
 
 	// comes with "join" method, enables developer to join manually classes (for bridge classes without any criterion on it)
-	@Getter
+	@lombok.Getter
 	Set<Join> joins = new LinkedHashSet<>();
 
 	
-	@Getter
+	@lombok.Getter
 	List<Order> orders = new ArrayList<>();
 
 	
-	@Getter
+	@lombok.Getter
 	Integer offset;
 
-	@Getter
+	@lombok.Getter
 	Integer limit;
 	
 	
@@ -557,6 +558,113 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 
+
+	/* Wrappers for Lambda */
+	public <E, P> Q eq   (Getter<E, P> function, P value) { super.eq(function, value);  return self(); }
+	public <E, P> Q eqIfNotNull   	(Getter<E, P> function, P value) { super.eqIfNotNull(function, value);  return self(); }
+	public <E, P> Q eqNullable		(Getter<E, P> function, P value) { super.eqNullable(function, value); return self(); }
+	public <E, P> Q eqOrNull		(Getter<E, P> function, P value) { super.eqOrNull(function, value); return self(); }
+	public <E, P> Q notEq			(Getter<E, P> function, P value) { super.notEq(function, value);  return self(); }
+	public <E, P> Q notEqIfNotNull	(Getter<E, P> function, P value) { super.notEqIfNotNull(function, value);  return self(); }
+	public <E, P> Q notEqNullable	(Getter<E, P> function, P value)	{ super.notEqNullable(function, value); return self(); }
+	public <E, P> Q notEqOrNull	(Getter<E, P> function, P value) { super.notEqOrNull(function, value); return self(); }
+
+	public <E, P> Q lt   			(Getter<E, P> function, P value) { super.lt(function, value);  return self(); }
+	public <E, P> Q ltIfNotNull	(Getter<E, P> function, P value) { super.ltIfNotNull(function, value);  return self(); }
+	public <E, P> Q ltOrNull		(Getter<E, P> function, P value) { super.ltOrNull(function, value); return self(); }
+
+	public <E, P> Q lte  			(Getter<E, P> function, P value) { super.lte(function, value);  return self(); }
+	public <E, P> Q lteIfNotNull  	(Getter<E, P> function, P value) { super.lteIfNotNull(function, value);  return self(); }
+	public <E, P> Q lteOrNull		(Getter<E, P> function, P value) { super.lteOrNull(function, value); return self(); }
+	
+	public <E, P> Q gt   	(Getter<E, P> function, P value)        		{ super.gt(function, value);  return self(); }
+	public <E, P> Q gtIfNotNull   		(Getter<E, P> function, P value)   { super.gtIfNotNull(function, value);  return self(); }
+	public <E, P> Q gtOrNull		(Getter<E, P> function, P value) { super.gtOrNull(function, value); return self(); }
+	public <E, P> Q gte  	(Getter<E, P> function, P value)        		{ super.gte(function, value);  return self(); }
+	public <E, P> Q gteIfNotNull  		(Getter<E, P> function, P value)   { super.gteIfNotNull(function, value);  return self(); }
+	public <E, P> Q gteOrNull		(Getter<E, P> function, P value) { super.gteOrNull(function, value); return self(); }
+	
+	public <E, P> Q between(Getter<E, P> function, P min, P max) 	{ super.between(function, min, max); return self(); }
+	public <E, P> Q betweenIfNotNull	(Getter<E, P> function, P min, P max) { super.betweenIfNotNull(function, min, max); return self(); }
+
+	public <E, P> Q in   					(Getter<E, P> function, Collection<P> values) { super.in(function, values); return self(); }
+	public <E, P> Q inIfNotEmpty  			(Getter<E, P> function, Collection<P> values) { super.inIfNotEmpty(function, values); return self(); }
+	public <E, P> Q inIfNotEmptyNullable  	(Getter<E, P> function, Collection<P> values) { super.inIfNotEmptyNullable(function, values); return self(); }
+	public <E, P> Q inOrNull 				(Getter<E, P> function, Collection<P> values) { super.inOrNull(function, values); return self(); }
+	public <E, P> Q inIfNotEmptyOrNull 	(Getter<E, P> function, Collection<P> values) { super.inIfNotEmptyOrNull(function, values); return self(); }
+	public <E, P> Q notIn  				(Getter<E, P> function, Collection<P> values) { super.notIn(function, values); return self(); }
+	public <E, P> Q notInOrNull			(Getter<E, P> function, Collection<P> values) { super.notInOrNull(function, values); return self(); }
+	public <E, P> Q notInIfNotEmptyOrNull	(Getter<E, P> function, Collection<P> values) { super.notInIfNotEmptyOrNull(function, values); return self(); }
+
+
+	public <E> Q like 		(Getter<E, String> function, String value)				{ super.like(function, value);  return self(); }
+	public <E> Q likeIn 		(Getter<E, String> function, Collection<String> value)	{ super.likeIn(function, value);  return self(); }
+	public <E> Q notLike		(Getter<E, String> function, String value)				{ super.notLike(function, value);  return self(); }
+	public <E> Q notLikeIn	(Getter<E, String> function, Collection<String> value)	{ super.notLikeIn(function, value);  return self(); }
+	
+	
+	public <E> Q likeStartsWith 	(Getter<E, String> function, String value)	{ super.likeStartsWith(function, value);  return self(); }
+	public <E> Q likeStartsWithIn 	(Getter<E, String> function, Collection<String> value)	{ super.likeStartsWithIn(function, value);  return self(); }
+	public <E> Q notLikeStartsWith 	(Getter<E, String> function, String value)	{ super.notLikeStartsWith(function, value);  return self(); }
+	
+	public <E> Q likeEndsWith 		(Getter<E, String> function, String value)	{ super.likeEndsWith(function, value);  return self(); }
+	public <E> Q notLikeEndsWith 	(Getter<E, String> function, String value)	{ super.notLikeEndsWith(function, value);  return self(); }
+	
+	public <E> Q likeContains 		(Getter<E, String> function, String value)	{ super.likeContains(function, value);  return self(); }
+	public <E> Q notLikeContains 	(Getter<E, String> function, String value)	{ super.notLikeContains(function, value);  return self(); }
+
+	public <E> Q likeEndsWithIn 	(Getter<E, String> function, Collection<String> value)	{ super.likeEndsWithIn(function, value);  return self(); }
+	public <E> Q likeContainsIn 	(Getter<E, String> function, Collection<String> value)	{ super.likeContainsIn(function, value);  return self(); }
+	public <E> Q notLikeStartsWithIn(Getter<E, String> function, Collection<String> value)	{ super.notLikeStartsWithIn(function, value);  return self(); }
+	public <E> Q notLikeEndsWithIn 	(Getter<E, String> function, Collection<String> value)	{ super.notLikeEndsWithIn(function, value);  return self(); }
+	public <E> Q notLikeContainsIn 	(Getter<E, String> function, Collection<String> value)	{ super.notLikeContainsIn(function, value);  return self(); }
+
+	public <E> Q nativeCriterion 	(Getter<E, String> function, String criterion) { super.nativeCriterion(function, criterion); return self(); }
+	
+	public <E, P> Q inSubQuery			(Getter<E, P> function, SelectQuery<?> subQuery){ super.inSubQuery(function, subQuery); return self(); }
+	public <E, P> Q notInSubQuery		(Getter<E, P> function, SelectQuery<?> subQuery){ super.notInSubQuery(function, subQuery); return self(); }
+	public <E, P> Q exists		(Getter<E, P> function, SelectQuery<?> subQuery){ super.exists(subQuery); return self(); }
+	public <E, P> Q notExists	(Getter<E, P> function, SelectQuery<?> subQuery){ super.notExists(subQuery); return self(); }
+	
+	
+	public <E, P> Q notInIfNotEmpty   	(Getter<E, P> function, Collection<P> values) { super.notInIfNotEmpty(function, values); return self(); }
+	public <E, P> Q inOrFalseIfEmpty	(Getter<E, P> function, Collection<P> values) { super.inOrFalseIfEmpty(function, values); return self(); }
+	public <E, P> Q notInOrTrueIfEmpty	(Getter<E, P> function, Collection<P> values) { super.notInOrTrueIfEmpty(function, values); return self(); }
+	
+	
+	public <E> Q likeIfNotNull 				(Getter<E, String> function, String value)        	{ super.likeIfNotNull (function, value);  return self(); }
+	public <E> Q likeStartsWithIfNotNull 	(Getter<E, String> function, String value)        	{ super.likeStartsWithIfNotNull (function, value);  return self(); }
+	public <E> Q likeEndsWithIfNotNull 		(Getter<E, String> function, String value)        	{ super.likeEndsWithIfNotNull (function, value);  return self(); }
+	public <E> Q likeContainsIfNotNull 		(Getter<E, String> function, String value)        	{ super.likeContainsIfNotNull (function, value);  return self(); }
+
+	public <E> Q likeInIfNotEmpty 			(Getter<E, String> function, Collection<String> values) { super.likeInIfNotEmpty(function, values); return self(); }
+	public <E> Q likeStartsWithInIfNotEmpty (Getter<E, String> function, Collection<String> values) { super.likeStartsWithInIfNotEmpty(function, values); return self(); }
+	public <E> Q likeEndsWithInIfNotEmpty	(Getter<E, String> function, Collection<String> values) { super.likeEndsWithInIfNotEmpty(function, values); return self(); }
+	public <E> Q likeContainsInIfNotEmpty	(Getter<E, String> function, Collection<String> values) { super.likeContainsInIfNotEmpty(function, values); return self(); }
+	
+	public <E> Q notLikeIfNotNull 			(Getter<E, String> function, String value)        	{ super.notLikeIfNotNull (function, value);  return self(); }
+	public <E> Q notLikeStartsWithIfNotNull (Getter<E, String> function, String value)        	{ super.notLikeStartsWithIfNotNull (function, value);  return self(); }
+	public <E> Q notLikeEndsWithIfNotNull 	(Getter<E, String> function, String value)        	{ super.notLikeEndsWithIfNotNull (function, value);  return self(); }
+	public <E> Q notLikeContainsIfNotNull 	(Getter<E, String> function, String value)        	{ super.notLikeContainsIfNotNull (function, value);  return self(); }
+
+	public <E> Q matchAgainst(Getter<E, String> function, String value) { super.matchAgainst(function, value); return self(); }
+	public <E> Q matchAgainstIfNotNull(Getter<E, String> function, String value) { super.matchAgainstIfNotNull(function, value); return self(); }
+	public <E> Q notMatchAgainst(Getter<E, String> function, String value) { super.notMatchAgainst(function, value); return self(); }
+	public <E> Q notMatchAgainstIfNotNull(Getter<E, String> function, String value) { super.notMatchAgainstIfNotNull(function, value); return self(); }
+
+
+	public <E> Q matchAgainstIn(Getter<E, String> function, Collection<String> values) { super.matchAgainstIn(function, values); return self(); }
+	public <E> Q matchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) { super.matchAgainstInIfNotEmpty(function, values); return self(); }
+	public <E> Q notMatchAgainstIn(Getter<E, String> function, Collection<String> values) { super.notMatchAgainstIn(function, values); return self(); }
+	public <E> Q notMatchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(function, values); return self(); }
+	
+	public <E, P> Q isNotNull	(Getter<E, P> function) 				{ super.isNotNull(function); return self();}
+	public <E, P> Q isNull		(Getter<E, P> function) 				{ super.isNull(function); return self();}
+
+	
+	
+
+	// Misc methods
 	
 	public Q importCriterionFromQueryMapping(Object object) {
 		if (object == null) {
@@ -832,8 +940,8 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	/* Order */
 
 	@SuperBuilder
-	@Data
-	@AllArgsConstructor
+	@lombok.Data
+	@lombok.AllArgsConstructor
 	public static class Order extends Attribute{
 		public Direction direction;
 		public enum Direction{
