@@ -28,18 +28,18 @@ public class QueryPruneUnusedJoinsTest {
         
         String beforePrune = context.queryAsString(query);
         System.out.println("Before pruning: " + beforePrune);
-        Assert.assertTrue(beforePrune.contains("INNER JOIN ORDERENTITY_D"));
-        Assert.assertTrue(beforePrune.contains("INNER JOIN ORDERLINEENTITY_D"));
-        Assert.assertTrue(beforePrune.contains("INNER JOIN PRODUCTENTITY_D")); 
+        Assert.assertTrue(beforePrune.contains("INNER JOIN ORDERENTITY"));
+        Assert.assertTrue(beforePrune.contains("INNER JOIN ORDERLINEENTITY"));
+        Assert.assertTrue(beforePrune.contains("INNER JOIN PRODUCTENTITY")); 
 
         
         query.pruneUnusedJoins();
         
         String afterPrune = context.queryAsString(query);
         System.out.println("After pruning: " + afterPrune);
-        Assert.assertTrue(afterPrune.contains("INNER JOIN ORDERENTITY_D"));
-        Assert.assertFalse(afterPrune.contains("INNER JOIN ORDERLINEENTITY_D"));
-        Assert.assertFalse(afterPrune.contains("INNER JOIN PRODUCTENTITY_D")); 
+        Assert.assertTrue(afterPrune.contains("INNER JOIN ORDERENTITY"));
+        Assert.assertFalse(afterPrune.contains("INNER JOIN ORDERLINEENTITY"));
+        Assert.assertFalse(afterPrune.contains("INNER JOIN PRODUCTENTITY")); 
         
     }
 

@@ -11,7 +11,7 @@ import java.util.Set;
 import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
-import com.estivate.query.Attribute.Function;
+import com.estivate.query.AttributeFunction.Function;
 import com.estivate.query.Join.JoinType;
 import com.estivate.util.FieldUtils.Getter;
 
@@ -435,22 +435,14 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q notLikeContainsIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeContainsIfNotNull (entity, attribute, value);  return self(); }
 
 	public Q matchAgainst(Class<?> entity, String attribute, String value) { super.matchAgainst(entity, attribute, value); return self(); }
-	public Q matchAgainst(Class<?> entity, List<String> attributes, String value) { super.matchAgainst(entity, attributes, value); return self(); }
 	public Q matchAgainstIfNotNull(Class<?> entity, String attribute, String value) { super.matchAgainstIfNotNull(entity, attribute, value); return self(); }
-	public Q matchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { super.matchAgainstIfNotNull(entity, attributes, value); return self(); }
 	public Q notMatchAgainst(Class<?> entity, String attribute, String value) { super.notMatchAgainst(entity, attribute, value); return self(); }
-	public Q notMatchAgainst(Class<?> entity, List<String> attributes, String value) { super.notMatchAgainst(entity, attributes, value); return self(); }
 	public Q notMatchAgainstIfNotNull(Class<?> entity, String attribute, String value) { super.notMatchAgainstIfNotNull(entity, attribute, value); return self(); }
-	public Q notMatchAgainstIfNotNull(Class<?> entity, List<String> attributes, String value) { super.notMatchAgainstIfNotNull(entity, attributes, value); return self(); }
 
 	public Q matchAgainstIn(Class<?> entity, String attribute, Collection<String> values) { super.matchAgainstIn(entity, attribute, values); return self(); }
-	public Q matchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values) { super.matchAgainstIn(entity, attributes, values); return self(); }
 	public Q matchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { super.matchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
-	public Q matchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { super.matchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 	public Q notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstIn(entity, attribute, values); return self(); }
-	public Q notMatchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstIn(entity, attributes, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
-	public Q notMatchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 	
 	public Q isNotNull	(Class<?> entity, String attribute) 				{ super.isNotNull(entity, attribute); 		return self();}
 	public Q isNull	(Class<?> entity, String attribute) 				{ super.isNull(entity, attribute); 			return self();}
@@ -541,22 +533,14 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q gteOrNull			(Entity<?> entity, String attribute, Object value) { super.gteOrNull(entity, attribute, value); return self();}
 	
 	public Q matchAgainst(Entity<?> entity, String attribute, String value) { super.matchAgainst(entity, attribute, value); return self(); }	
-	public Q matchAgainst(Entity<?> entity, List<String> attributes, String value) { super.matchAgainst(entity, attributes, value); return self(); }
 	public Q matchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { super.matchAgainstIfNotNull(entity, attribute, value); return self(); }
-	public Q matchAgainstIfNotNull(Entity<?> entity, List<String> attributes, String value) { super.matchAgainstIfNotNull(entity, attributes, value); return self(); }
 	public Q notMatchAgainst(Entity<?> entity, String attribute, String value) { super.notMatchAgainst(entity, attribute, value); return self(); }
-	public Q notMatchAgainst(Entity<?> entity, List<String> attributes, String value) { super.notMatchAgainst(entity, attributes, value); return self(); }
 	public Q notMatchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { super.notMatchAgainstIfNotNull(entity, attribute, value); return self(); }
-	public Q notMatchAgainstIfNotNull(Entity<?> entity, List<String> attributes, String value) { super.notMatchAgainstIfNotNull(entity, attributes, value); return self(); }
 	
 	public Q matchAgainstIn(Entity<?> entity, String attribute, Collection<String> values) { super.matchAgainstIn(entity, attribute, values); return self(); }	
-	public Q matchAgainstIn(Entity<?> entity, List<String> attributes, Collection<String> values) { super.matchAgainstIn(entity, attributes, values); return self(); }
 	public Q matchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { super.matchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
-	public Q matchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { super.matchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 	public Q notMatchAgainstIn(Entity<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstIn(entity, attribute, values); return self(); }
-	public Q notMatchAgainstIn(Entity<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstIn(entity, attributes, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
-	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, List<String> attributes, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attributes, values); return self(); }
 
 
 	/* Wrappers for Lambda */
@@ -942,7 +926,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	@SuperBuilder
 	@lombok.Data
 	@lombok.AllArgsConstructor
-	public static class Order extends Attribute{
+	public static class Order extends AttributeFunction{
 		public Direction direction;
 		public enum Direction{
 			Asc,
@@ -961,7 +945,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q orderBy(Entity<?> entity, String attribute, Order.Direction direction) 					{ return orderBy(entity, attribute, direction, null); }
 	public Q orderBy(Class<?> entity, String attribute, Order.Direction direction) 						{ return orderBy(new Entity<>(entity), attribute, direction, null); }
 	public Q orderBy(String attribute, Order.Direction direction) 										{ return orderBy(this.entity, attribute, direction, null); }
-	public Q orderBy(Attribute attribute, Order.Direction direction) 									{ return orderBy(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public Q orderBy(AttributeFunction attribute, Order.Direction direction) 									{ return orderBy(attribute.entity, attribute.attribute, direction, attribute.function); }
 	public Q orderByAlias(String alias, Order.Direction direction) 										{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
 
 	public Q orderByAsc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Asc); }
@@ -970,7 +954,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q orderByAsc(Class<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Asc, function); }
 	public Q orderByAsc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Asc); }
 	public Q orderByAsc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, Order.Direction.Asc, function); }
-	public Q orderByAsc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
+	public Q orderByAsc(AttributeFunction attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
 	public Q orderByAscAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Asc); }
 	
 	public Q orderByDesc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Desc); }
@@ -979,7 +963,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q orderByDesc(Class<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Desc, function); }
 	public Q orderByDesc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Desc); }
 	public Q orderByDesc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, Order.Direction.Desc, function); }
-	public Q orderByDesc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
+	public Q orderByDesc(AttributeFunction attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
 	public Q orderByDescAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Desc); }
 	
 	
@@ -1070,7 +1054,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
             }
         }
         else if(node instanceof Criterion) {
-            attributes.add((Attribute)(Criterion)node);
+            attributes.add(((Criterion)node).attribute);
         }
 
         return attributes;

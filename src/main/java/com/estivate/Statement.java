@@ -22,6 +22,8 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
+import com.estivate.query.AttributeFunction;
+import com.estivate.query.AttributeFunctionAlias;
 import com.estivate.query.Criterion;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
@@ -29,7 +31,6 @@ import com.estivate.query.Join;
 import com.estivate.query.Keyword;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Order;
-import com.estivate.query.Select;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.SelectQuery.Group;
 import com.estivate.query.UpdateQuery;
@@ -75,9 +76,10 @@ public class Statement implements AutoCloseable{
 	}
 
 	public Statement appendAttributeAsParameter(Attribute attribute){
-
-		if(attribute.function != null) {
-			appendQuery(attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)));
+		
+		if(attribute instanceof AttributeFunction) {
+			AttributeFunction attributeFunction = (AttributeFunction) attribute;
+			appendQuery(attributeFunction.function.render(context.nameMapper.toTableNameAttribute(attributeFunction.entity, attributeFunction.attribute)));
 		}
 		else {
 			appendQuery(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute));
@@ -97,8 +99,13 @@ public class Statement implements AutoCloseable{
 		return this;
 	}
 	
-	private Statement appendParameterAsValue(Class<?> entity, String attribute, Object parameter) {
-		appendQuery(writeParameter(entity, attribute, parameter));		
+	// private Statement appendParameterAsValue(Class<?> entity, String attribute, Object parameter) {
+	// 	appendQuery(writeParameter(entity, attribute, parameter));		
+	// 	return this;
+	// }
+
+	private Statement appendParameterAsValue(Attribute attribute, Object parameter) {
+		appendQuery(writeParameter(attribute.entity.entity, attribute.attribute, parameter));
 		return this;
 	}
 	
@@ -107,13 +114,13 @@ public class Statement implements AutoCloseable{
 		if(parameter instanceof Attribute) {
 			Attribute attribute = (Attribute) parameter;
 			String attributeField = attribute.entity == null ? attribute.attribute : context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
-			if(attribute.function != null) {
-				return attribute.function.render(attributeField);
+			if(attribute instanceof AttributeFunction){
+				AttributeFunction attributeFunction = (AttributeFunction) attribute;
+				if(attributeFunction.function != null) {
+					return attributeFunction.function.render(attributeField);
+				}
 			}
-			else {
-				return attributeField;
-			}
-
+			return attributeField;
 		}
 		else {
 			appendObjectAsValue(entity, field, parameter);
@@ -412,16 +419,18 @@ public class Statement implements AutoCloseable{
 		return context.nameMapper.toTableNameAttribute(group.entity, group.attribute);
 	}
 	
-	public String selectString(Select select) {
+	public String selectString(Attribute attribute) {
 
-		if(select.function != null && select.function.equals(Estivate.Functions.count) && (select.entity == null || select.entity.entity == null)) {
-			return "COUNT(*)"+(select.alias != null ? " as `"+context.nameMapper.mapEntityField(select.alias)+"`" : "");
+		AttributeFunctionAlias attributeFunctionAlias = attribute.toAttributeFunctionAlias();
+
+		if(attributeFunctionAlias.function != null && attributeFunctionAlias.function.equals(Estivate.Functions.count) && (attributeFunctionAlias.entity == null || attributeFunctionAlias.entity.entity == null)) {
+			return "COUNT(*)"+(attributeFunctionAlias.alias != null ? " as `"+context.nameMapper.mapEntityField(attributeFunctionAlias.alias)+"`" : "");
 		}
-		else if (select.function != null) {
-			return select.function.render(context.nameMapper.toTableNameAttribute(select.entity, select.attribute))+(select.alias != null ? " as `"+context.nameMapper.mapEntityField(select.alias)+"`" : "");
+		else if (attributeFunctionAlias.function != null) {
+			return attributeFunctionAlias.function.render(context.nameMapper.toTableNameAttribute(attributeFunctionAlias.entity, attributeFunctionAlias.attribute))+(attributeFunctionAlias.alias != null ? " as `"+context.nameMapper.mapEntityField(attributeFunctionAlias.alias)+"`" : "");
 		}
 
-		return context.nameMapper.toTableNameAttribute(select.entity, select.attribute)+" as `"+(select.alias != null ? context.nameMapper.mapEntityField(select.alias) : context.nameMapper.toEntityNameAttribute(select.entity, select.attribute))+"`";
+		return context.nameMapper.toTableNameAttribute(attributeFunctionAlias.entity, attributeFunctionAlias.attribute)+" as `"+(attributeFunctionAlias.alias != null ? context.nameMapper.mapEntityField(attributeFunctionAlias.alias) : context.nameMapper.toEntityNameAttribute(attributeFunctionAlias.entity, attributeFunctionAlias.attribute))+"`";
 	
 	}
 
@@ -454,36 +463,36 @@ public class Statement implements AutoCloseable{
 		}
 		else if(node instanceof Criterion.Operator) {
 			Criterion.Operator operator = (Criterion.Operator) node;
-			appendAttributeAsParameter(operator);
+			appendAttributeAsParameter(operator.attribute);
 			appendQuery(operator.type.symbol);
-			appendParameterAsValue(operator.entity.entity, operator.attribute, operator.value);
+			appendParameterAsValue(operator.attribute, operator.value);
 		}
 		else if(node instanceof Criterion.In) {
 			Criterion.In in = (Criterion.In) node;
-			appendAttributeAsParameter(in);
+			appendAttributeAsParameter(in.attribute);
 			appendQuery("IN (");
-			appendQuery(in.getValues().stream().map(x -> writeParameter(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(in.getValues().stream().map(x -> writeParameter(in.attribute.entity.entity, in.attribute.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
-			appendAttributeAsParameter(in);
+			appendAttributeAsParameter(in.attribute);
 			appendQuery("NOT IN (");
-			appendQuery(in.getValues().stream().map(x -> writeParameter(in.entity.entity, in.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(in.getValues().stream().map(x -> writeParameter(in.attribute.entity.entity, in.attribute.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
 			Criterion.Between between = (Criterion.Between) node;
-			appendAttributeAsParameter(between);
+			appendAttributeAsParameter(between.attribute);
 			appendQuery("BETWEEN");
-			appendParameterAsValue(between.entity.entity, between.attribute, between.min);
+			appendParameterAsValue(between.attribute, between.min);
 			appendQuery("AND");
-			appendParameterAsValue(between.entity.entity, between.attribute, between.max);
+			appendParameterAsValue(between.attribute, between.max);
 			
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
-			appendAttributeAsParameter(nullcheck);
+			appendAttributeAsParameter(nullcheck.attribute);
 			appendQuery(nullcheck.isNull ? "IS NULL":"IS NOT NULL");
 		}
 		else if(node instanceof Criterion.MatchAgainst) {
@@ -492,20 +501,20 @@ public class Statement implements AutoCloseable{
 			if(!matchAgainst.inclusive){
 				appendQuery("NOT");
 			}
-			appendQuery("MATCH" + matchAgainst.attributes.stream().map(x -> context.nameMapper.toTableNameAttribute(matchAgainst.entity, x)).collect(Collectors.joining(", ", "(", ")")));
+			appendQuery("MATCH" + context.nameMapper.toTableNameAttribute(matchAgainst.attribute.entity, matchAgainst.attribute.attribute));
 			appendQuery("AGAINST(");
-			appendParameterAsValue(matchAgainst.entity.entity, matchAgainst.attributes.iterator().next(), matchAgainst.value);
+			appendParameterAsValue(matchAgainst.attribute, matchAgainst.value);
 			appendQuery(")");
 			
 		}
 		else if(node instanceof Criterion.NativeCriterion) {
 			Criterion.NativeCriterion nativeCriterion = (Criterion.NativeCriterion) node;
-			appendAttributeAsParameter(nativeCriterion);
+			appendAttributeAsParameter(nativeCriterion.attribute);
 			appendQuery(nativeCriterion.criterion);
 		}
 		else if(node instanceof Criterion.InSubQuery) {
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
-			appendAttributeAsParameter(subQuery);
+			appendAttributeAsParameter(subQuery.attribute);
 			appendQuery(subQuery.include ? "IN" : "NOT IN");
 			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
 			appendQuery("("+subStatement.query()+")");

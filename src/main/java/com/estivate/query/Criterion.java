@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-public abstract class Criterion extends Attribute implements EstivateNode{
+public abstract class Criterion implements EstivateNode{
 
 	
 	public abstract Criterion clone();
@@ -23,6 +23,7 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 	@Override
 	public boolean isEmpty() { return false; }
 
+	public Attribute attribute;
 	
 		
 	
@@ -50,19 +51,13 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 
 		public Object value;
 		
-		public Operator(Entity<?> entity, String attribute, Function function, OperatorType type, Object value) {
-			this.entity = entity;
+		public Operator(Attribute attribute, OperatorType type, Object value) {
 			this.attribute = attribute;
-			this.function = function;
 			this.type = type;
 			this.value = value;
 		}
 
-		public Operator(Attribute attribute, OperatorType type, Object value) {
-			this(attribute.entity, attribute.attribute, attribute.function, type, value);
-		}
-
-		public Operator clone() { return new Operator(entity, attribute, function, type, value); }
+		public Operator clone() { return new Operator(attribute, type, value); }
 
 	}
 	
@@ -73,18 +68,12 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 		@Getter
 		List<?> values;
 
-		public In(Entity<?> entity, String attribute, Function function, Collection<?> values) {
-			this.entity = entity;
+		public In(Attribute attribute, Collection<?> values) {
 			this.attribute = attribute;
-			this.function = function;
 			this.values = new ArrayList<>(values) ; 
 		}
 
-		public In(Attribute attribute, Collection<?> values) {
-			this(attribute.entity, attribute.attribute, attribute.function, values);
-		}
-		
-		public In clone() { return new In(entity, attribute, function, values.stream().collect(Collectors.toList())); }
+		public In clone() { return new In(attribute, values.stream().collect(Collectors.toList())); }
 
 	}
 	
@@ -95,17 +84,12 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 		@Getter
 		List<?> values;
 
-		public NotIn(Entity<?> entity, String attribute, Function function, Collection<?> values) {
-			this.entity = entity;
+		public NotIn(Attribute attribute, Collection<?> values) {
 			this.attribute = attribute;
 			this.values = new ArrayList<>(values);
 		}
 
-		public NotIn(Attribute attribute, Collection<?> values) {
-			this(attribute.entity, attribute.attribute, attribute.function, values);
-		}
-
-		public NotIn clone() { return new NotIn(entity, attribute, function, values.stream().collect(Collectors.toList())); }
+		public NotIn clone() { return new NotIn(attribute, values.stream().collect(Collectors.toList())); }
 
 	}
 	
@@ -116,22 +100,13 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 		public Object min;
 		public Object max;
 		
-		public Between(Entity<?> entity, String attribute, Function function, Object min, Object max) {
-			this.entity = entity;
-			this.attribute = attribute;
-			this.function = function;
-			this.min = min;
-			this.max = max;
-		}
-
 		public Between(Attribute attribute, Object min, Object max) {
-			this.entity = attribute.entity;
-			this.attribute = attribute.attribute;
+			this.attribute = attribute;
 			this.min = min;
 			this.max = max;
 		}
 		
-		public Between clone() { return new Between(entity, attribute, function, min, max); }
+		public Between clone() { return new Between(attribute, min, max); }
 	}
 	
 	
@@ -140,18 +115,12 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 		
 		public boolean isNull;
 		
-		public NullCheck(Entity<?> entity, String attribute, Function function, boolean isNull) {
-			this.entity = entity;
+		public NullCheck(Attribute attribute, boolean isNull) {
 			this.attribute = attribute;
-			this.function = function;
 			this.isNull = isNull;
 		}
 
-		public NullCheck(Attribute attribute, boolean isNull) {
-			this(attribute.entity, attribute.attribute, attribute.function, isNull);
-		}
-
-		public NullCheck clone() { return new NullCheck(entity, attribute, function, isNull); }
+		public NullCheck clone() { return new NullCheck(attribute, isNull); }
 
 	}
 	
@@ -160,23 +129,16 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 	@ToString(callSuper = true)
 	public static class MatchAgainst extends Criterion{
 		
-		public Collection<String> attributes;
 		public Object value;
 		public boolean inclusive;
 		
-		public MatchAgainst(Entity<?> entity, Collection<String> attributes, Function function, Object value, boolean inclusive) {
-			this.entity = entity;
-			this.attributes = attributes;
-			this.function = function;
+		public MatchAgainst(Attribute attribute, Object value, boolean inclusive) {
+			this.attribute = attribute;
 			this.value = value;
 			this.inclusive = inclusive;
 		}
 
-		public MatchAgainst(Attribute attribute, Object value, boolean inclusive) {
-			this(attribute.entity, Arrays.asList(attribute.attribute), attribute.function, value, inclusive);
-		}
-		
-		public MatchAgainst clone() { return new MatchAgainst(entity, attributes, function, value, inclusive); } 
+		public MatchAgainst clone() { return new MatchAgainst(attribute, value, inclusive); } 
 		
 	}
 	
@@ -186,18 +148,12 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 		
 		public String criterion;
 
-		public NativeCriterion(Entity<?> entity, String attribute, Function function, String criterion) {
-			this.entity = entity;
+		public NativeCriterion(Attribute attribute, String criterion) {
 			this.attribute = attribute;
-			this.function = function;
 			this.criterion = criterion;
 		}
 
-		public NativeCriterion(Attribute attribute, String criterion) {
-			this(attribute.entity, attribute.attribute, attribute.function, criterion);
-		}
-		
-		public NativeCriterion clone() { return new NativeCriterion(entity, attribute, function, criterion); } 
+		public NativeCriterion clone() { return new NativeCriterion(attribute, criterion); } 
 		
 	}
 
@@ -208,19 +164,14 @@ public abstract class Criterion extends Attribute implements EstivateNode{
 		public SelectQuery<?> subQuery;
 		public boolean include;
 
-		public InSubQuery(Entity<?> entity, String attribute, Function function, SelectQuery<?> subQuery, boolean include){
-			this.entity = entity;
+		public InSubQuery(Attribute attribute, SelectQuery<?> subQuery, boolean include){
 			this.attribute = attribute;
-			this.function = function;
 			this.subQuery = subQuery;
 			this.include = include;
 		}
 
-		public InSubQuery(Attribute attribute, SelectQuery subQuery, boolean include){
-			this(attribute.entity, attribute.attribute, attribute.function, subQuery, include);
-		}
 
-		public InSubQuery clone() {return new InSubQuery(entity, attribute, function, subQuery, include);}
+		public InSubQuery clone() {return new InSubQuery(attribute, subQuery, include);}
 
 	}
 

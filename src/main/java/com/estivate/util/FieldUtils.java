@@ -155,7 +155,7 @@ public class FieldUtils {
 			String implMethod = sl.getImplMethodName();
 
             String propertyName = methodToProperty(implMethod);
-            return new Attribute(Estivate.entity(targetClass), propertyName, null);
+            return new Attribute(Estivate.entity(targetClass), propertyName);
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to extract property name from lambda", e);

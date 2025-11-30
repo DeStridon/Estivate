@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.estivate.Entity;
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class UpdateQuery<T> extends Query<UpdateQuery<T>, T> {
     }
 
     public UpdateQuery<T> set(String attribute, Object value) {
-        return set(new Attribute(entity, attribute, null), value);
+        return set(Estivate.attribute(entity, attribute), value);
     }
 
 	@SuppressWarnings("unchecked")

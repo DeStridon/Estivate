@@ -13,7 +13,9 @@ import com.estivate.manager.ManagerInterceptor.EntityManager;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.Attribute;
-import com.estivate.query.Attribute.Function;
+import com.estivate.query.AttributeFunction;
+import com.estivate.query.AttributeFunction.Function;
+import com.estivate.query.AttributeFunctionAlias;
 import com.estivate.query.Criterion;
 import com.estivate.query.Criterion.Between;
 import com.estivate.query.Criterion.ExistsSubQuery;
@@ -54,11 +56,16 @@ public class Estivate {
 	public static <U> DeleteQuery<U> deleteQuery(Class<U> entity)	{ return new DeleteQuery<>(entity); }
 
 	
-	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field, null); }
-	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field, null); }
-	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function function) { return new Attribute(entity, field, function); }
-	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function) { return attribute(new Entity<>(entity), field, function); }
-	public static Attribute attributeOfAlias(String alias, Attribute.Function function) { return new Attribute(null, alias, function); }
+	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field); }
+	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field); }
+	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.Getter<E, P> getter) { return FieldUtils.attributeFromLambda(getter); }
+	
+	public static AttributeFunction attributeFunction(Entity<?> entity, String field, AttributeFunction.Function function) { return AttributeFunction.builder().entity(entity).attribute(field).function(function).build(); }
+	public static AttributeFunction attributeFunction(Class<?> entity, String field, AttributeFunction.Function function) { return attributeFunction(new Entity<>(entity), field, function); }
+	public static AttributeFunctionAlias attributeFunctionAlias(Entity<?> entity, String field, AttributeFunction.Function function, String alias) { return AttributeFunctionAlias.builder().entity(entity).attribute(field).function(function).alias(alias).build(); }
+	public static AttributeFunctionAlias attributeFunctionAlias(Class<?> entity, String field, AttributeFunction.Function function, String alias) { return attributeFunctionAlias(new Entity<>(entity), field, function, alias); }
+
+	public static AttributeFunction attributeOfAlias(String alias, AttributeFunction.Function function) { return AttributeFunction.builder().attribute(alias).function(function).build(); }
 
 	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
 	public static <U> Entity<U> entity(Class<U> entity, String alias) { return new Entity<>(entity, alias); }
@@ -73,8 +80,8 @@ public class Estivate {
 	
 	public static EstivateNode addIf(boolean condition, EstivateNode node) { return condition ? node : null; }
 	
-	public static Attribute.Function function(String prefix, String suffix) { return new Attribute.Function(prefix, suffix); }
-	public static Attribute.Function function(Function... functions) { return Attribute.Function.compose(Arrays.asList(functions));}
+	public static AttributeFunction.Function function(String prefix, String suffix) { return new AttributeFunction.Function(prefix, suffix); }
+	public static AttributeFunction.Function function(Function... functions) { return AttributeFunction.Function.compose(Arrays.asList(functions));}
 	
 	public static Order order(Entity<?> entity, String attribute, Order.Direction direction, Function function){  return Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build(); }
 
@@ -84,8 +91,8 @@ public class Estivate {
 	public static Order order(Class<?> entity, String attribute, Order.Direction direction){ return order(new Entity<>(entity), attribute, direction, null); }
 	public static Order order(Class<?> entity, String attribute, Order.Direction direction, Function function){ return order(new Entity<>(entity), attribute, direction, function); }
 
-	public static Order order(Attribute attribute) { return order(attribute.entity, attribute.attribute, null, attribute.function); }
-	public static Order order(Attribute attribute, Order.Direction direction) { return order(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public static Order order(AttributeFunction attribute) { return order(attribute.entity, attribute.attribute, null, attribute.function); }
+	public static Order order(AttributeFunction attribute, Order.Direction direction) { return order(attribute.entity, attribute.attribute, direction, attribute.function); }
 	
 
 	/*
@@ -268,7 +275,7 @@ public class Estivate {
 	
 	// subQuery
 	public static Criterion inSubQuery(Attribute attribute, SelectQuery<?> subQuery)	  	{ return new InSubQuery(attribute, subQuery, true); }
-	public static Criterion notInSubQuery(Attribute attribute, SelectQuery<?> subQuery)	{ return new InSubQuery(attribute, subQuery, false); }
+	public static Criterion notInSubQuery(Attribute attribute, SelectQuery<?> subQuery)		{ return new InSubQuery(attribute, subQuery, false); }
 	
 	// exists
 	public static Criterion existsSubQuery(SelectQuery<?> subQuery)		{ return new ExistsSubQuery(subQuery, true); }
@@ -282,69 +289,65 @@ public class Estivate {
 	/* Wrapper for Entity */
 	
 	// Eq methods
-	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return new Operator(entity, attribute, null, OperatorType.Eq, value); }
+	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return eq(Estivate.attribute(entity, attribute), value); }
 	public static Criterion eqIfNotNull		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return null; }
 	public static Criterion eqNullable		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return isNull(entity, attribute); }
 	public static Aggregator eqOrNull		(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).eq(entity, attribute, value).isNull(entity, attribute); }
-	public static Criterion notEq			(Entity<?> entity, String attribute, Object value) { return new Operator(entity, attribute, null, OperatorType.NotEq, value); }
+	public static Criterion notEq			(Entity<?> entity, String attribute, Object value) { return notEq(Estivate.attribute(entity, attribute), value); }
 	public static Criterion notEqIfNotNull	(Entity<?> entity, String attribute, Object value) { if(value != null) {return notEq(entity, attribute, value);} return null; }
 	public static Criterion notEqNullable	(Entity<?> entity, String attribute, Object value) { if(value != null) {return notEq(entity, attribute, value);} return isNotNull(entity, attribute); }
 	public static Aggregator notEqOrNull	(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).notEq(entity, attribute, value).isNull(entity, attribute); }
 	
 	// Lt 
-	public static Criterion lt   	(Entity<?> entity, String attribute, Object value)        		{ return new Operator(entity, attribute, null, OperatorType.Lt, value); }
+	public static Criterion lt   	(Entity<?> entity, String attribute, Object value)        		{ return lt(Estivate.attribute(entity, attribute), value); }
 	public static Criterion ltIfNotNull   	(Entity<?> entity, String attribute, Object value) { if(value != null) {return lt(entity, attribute, value);} return null; }
 	public static Aggregator ltOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).lt(entity, attribute, value).isNull(entity, attribute); }
 	
 	// Lte
-	public static Criterion lte  	(Entity<?> entity, String attribute, Object value)        		{ return new Operator(entity, attribute, null, OperatorType.Lte, value); }
+	public static Criterion lte  	(Entity<?> entity, String attribute, Object value)        		{ return lte(Estivate.attribute(entity, attribute), value); }
 	public static Criterion lteIfNotNull  	(Entity<?> entity, String attribute, Object value) { if(value != null) {return lte(entity, attribute, value);} return null; }
 	public static Aggregator lteOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).lte(entity, attribute, value).isNull(entity, attribute); }
 	
 	
 	// Gt 
-	public static Criterion gt   	(Entity<?> entity, String attribute, Object value)        		{ return new Operator(entity, attribute, null, OperatorType.Gt, value); }
+	public static Criterion gt   	(Entity<?> entity, String attribute, Object value)        		{ return gt(Estivate.attribute(entity, attribute), value); }
 	public static Criterion gtIfNotNull   	(Entity<?> entity, String attribute, Object value) { if(value != null) {return gt(entity, attribute, value);} return null; }
 	public static Aggregator gtOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).gt(entity, attribute, value).isNull(entity, attribute); }
 	
 	// Gte
-	public static Criterion gte  	(Entity<?> entity, String attribute, Object value)        		{ return new Operator(entity, attribute, null, OperatorType.Gte, value); }
+	public static Criterion gte  	(Entity<?> entity, String attribute, Object value)        		{ return gte(Estivate.attribute(entity, attribute), value); }
 	public static Criterion gteIfNotNull  	(Entity<?> entity, String attribute, Object value) { if(value != null) {return gte(entity, attribute, value);} return null; }
 	public static Aggregator gteOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).gte(entity, attribute, value).isNull(entity, attribute); }
 	
 	
 	// Between
-	public static Criterion between (Entity<?> entity, String attribute, Object min, Object max) 	{ return new Between(entity, attribute, null, min, max); }
+	public static Criterion between (Entity<?> entity, String attribute, Object min, Object max) 	{ return between(Estivate.attribute(entity, attribute), min, max); }
 	public static Criterion betweenIfNotNull(Entity<?> entity, String attribute, Object min, Object max) {if(min != null && max != null) { return between(entity, attribute, min, max);} return null; }
 	public static Aggregator betweenOrNull(Entity<?> entity, String attribute, Object min, Object max) { return new Aggregator(GroupType.OR).between(entity, attribute, min, max).isNull(entity, attribute); }
 	
 	// In
-	public static Criterion in   					(Entity<?> entity, String attribute, Collection<?> values){ return new In(entity, attribute, null, values); }
+	public static Criterion in   					(Entity<?> entity, String attribute, Collection<?> values){ return in(Estivate.attribute(entity, attribute), values); }
 	public static Criterion inIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return null; }
 	public static Aggregator inOrNull				(Entity<?> entity, String attribute, Collection<?> values){ return or(in(entity, attribute, values), isNull(entity, attribute)); }
 	public static Aggregator inIfNotEmptyOrNull		(Entity<?> entity, String attribute, Collection<?> values){ return or(inIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
 	public static Aggregator inIfNotEmptyNullable	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return Estivate.or(inIfNotEmpty(entity, attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(entity, attribute)); } return null; }
 	public static EstivateNode inOrFalseIfEmpty		(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return keywordFalse(); }
 	
-	public static Criterion notIn   				(Entity<?> entity, String attribute, Collection<?> values){ return new NotIn(entity, attribute, null, values); }
+	public static Criterion notIn   				(Entity<?> entity, String attribute, Collection<?> values){ return notIn(Estivate.attribute(entity, attribute), values); }
 	public static Criterion notInIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return null; }
 	public static Aggregator notInOrNull			(Entity<?> entity, String attribute, Collection<?> values){ return or(notIn(entity, attribute, values), isNull(entity, attribute)); }
 	public static Aggregator notInIfNotEmptyOrNull	(Entity<?> entity, String attribute, Collection<?> values){ return or(notInIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
 	public static EstivateNode notInOrTrueIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return keywordTrue(); }
 
 	// Like
-	public static Criterion like 			(Entity<?> entity, String attribute, String value) { return new Operator(entity, attribute, null, OperatorType.Like, value); }
-	public static Criterion notLike			(Entity<?> entity, String attribute, String value) { return new Operator(entity, attribute, null, OperatorType.NotLike, value); }
+	public static Criterion like 			(Entity<?> entity, String attribute, String value) { return like(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLike			(Entity<?> entity, String attribute, String value) { return notLike(Estivate.attribute(entity, attribute), value); }
 	public static Criterion likeIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return like(entity, attribute, value);} return null;  }
 	public static Criterion notLikeIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLike(entity, attribute, value);} return null;  }
 	
 	// Match Against
-	public static Criterion matchAgainst			(Entity<?> entity, Collection<String> attributes, String value) { return new MatchAgainst(entity, attributes, null, value, true); }
-	public static Criterion notMatchAgainst 		(Entity<?> entity, Collection<String> attributes, String value) { return new MatchAgainst(entity, attributes, null, value, false); }
-	public static Criterion matchAgainstIfNotNull 	(Entity<?> entity, Collection<String> attributes, String value) { if(value != null) {return matchAgainst(entity, attributes, value);} return null;  }
-	public static Criterion notMatchAgainstIfNotNull(Entity<?> entity, Collection<String> attributes, String value) { if(value != null) {return notMatchAgainst(entity, attributes, value);} return null;  }
-	public static Criterion matchAgainst			(Entity<?> entity, String attribute, String value) { return matchAgainst(entity, Arrays.asList(attribute), value); }
-	public static Criterion notMatchAgainst 		(Entity<?> entity, String attribute, String value) { return notMatchAgainst(entity, Arrays.asList(attribute), value); }
+	public static Criterion matchAgainst			(Entity<?> entity, String attribute, String value) { return matchAgainst(entity, attribute, value); }
+	public static Criterion notMatchAgainst 		(Entity<?> entity, String attribute, String value) { return notMatchAgainst(entity, attribute, value); }
 	public static Criterion matchAgainstIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return matchAgainst(entity, attribute, value);} return null;  }
 	public static Criterion notMatchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notMatchAgainst(entity, attribute, value);} return null;  }
 	
@@ -355,18 +358,14 @@ public class Estivate {
 	public static Aggregator notLikeInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notLike(entity, attribute, x)).collect(Collectors.toList()));} return null; }
 
 	// Match Against In
-	public static Aggregator matchAgainstIn 			(Entity<?> entity, Collection<String> attributes, Collection<String> values)	{ return or(values.stream().map(x -> matchAgainst(entity, attributes, x)).collect(Collectors.toList())); }
-	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, Collection<String> attributes, Collection<String> values) { if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> matchAgainst(entity, attributes, x)).collect(Collectors.toList()));} return null; }
-	public static Aggregator notMatchAgainstIn			(Entity<?> entity, Collection<String> attributes, Collection<String> values)	{ return and(values.stream().map(x -> notMatchAgainst(entity, attributes, x)).collect(Collectors.toList()));  		}
-	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, Collection<String> attributes, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notMatchAgainst(entity, attributes, x)).collect(Collectors.toList()));} return null; }
-	public static Aggregator matchAgainstIn 			(Entity<?> entity, String attribute, Collection<String> values)	{ return matchAgainstIn(entity, Arrays.asList(attribute), values); }
-	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(entity, Arrays.asList(attribute), values); } 
-	public static Aggregator notMatchAgainstIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstIn(entity, Arrays.asList(attribute), values); }
-	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(entity, Arrays.asList(attribute), values); }
+	public static Aggregator matchAgainstIn 			(Entity<?> entity, String attribute, Collection<String> values)	{ return matchAgainstIn(entity, attribute, values); }
+	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(entity, attribute, values); } 
+	public static Aggregator notMatchAgainstIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstIn(entity, attribute, values); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(entity, attribute, values); }
 
 	// Like starts
-	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, null, OperatorType.Like, value+"%");	}
-	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, null, OperatorType.NotLike, value+"%");}
+	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)		{ return likeStartsWith(Estivate.attribute(entity, attribute), value);	}
+	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)		{ return notLikeStartsWith(Estivate.attribute(entity, attribute), value);}
 	public static Criterion likeStartsWithIfNotNull (Entity<?> entity, String attribute, String value) 	{ if(value != null) {return likeStartsWith(entity, attribute, value);} return null; }
 	public static Criterion notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value){ if(value != null) {return notLikeStartsWith(entity, attribute, value);} return null; }
 	
@@ -377,8 +376,8 @@ public class Estivate {
 	
 	
 	// Like ends
-	public static Criterion likeEndsWith(Entity<?> entity, String attribute, String value)			{ return new Operator(entity, attribute, null, OperatorType.Like, "%"+value);		}
-	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, null, OperatorType.NotLike, "%"+value);	}
+	public static Criterion likeEndsWith(Entity<?> entity, String attribute, String value)			{ return likeEndsWith(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ return notLikeEndsWith(Estivate.attribute(entity, attribute), value);	}
 	public static Criterion likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeEndsWith(entity, attribute, value);} return null; }
 	public static Criterion notLikeEndsWithIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeEndsWith(entity, attribute, value);} return null; }
 	
@@ -388,8 +387,8 @@ public class Estivate {
 	public static Aggregator notLikeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
 	
 	// Like contains
-	public static Criterion likeContains(Entity<?> entity, String attribute, String value)			{ return new Operator(entity, attribute, null, OperatorType.Like, "%"+value+"%");	}
-	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)		{ return new Operator(entity, attribute, null, OperatorType.NotLike, "%"+value+"%");	}
+	public static Criterion likeContains(Entity<?> entity, String attribute, String value)			{ return likeContains(Estivate.attribute(entity, attribute), value);	}
+	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)		{ return notLikeContains(Estivate.attribute(entity, attribute), value);	}
 	public static Criterion likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeContains(entity, attribute, value);} return null; }
 	public static Criterion notLikeContainsIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeContains(entity, attribute, value);} return null; }
 
@@ -400,15 +399,15 @@ public class Estivate {
 	public static Aggregator notLikeContainsIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeContains(entity, attribute, x)).collect(Collectors.toList()));	}
 
 	// isNull
-	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return new NullCheck(entity, attribute, null, true);}
-	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return new NullCheck(entity, attribute, null, false);}
+	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return isNull(Estivate.attribute(entity, attribute));}
+	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return isNotNull(Estivate.attribute(entity, attribute));}
 	
 	// natively
-	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return new NativeCriterion(entity, attribute, null, criterion); }
+	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return nativeCriterion(Estivate.attribute(entity, attribute), criterion); }
 	
 	// subQuery
-	public static Criterion inSubQuery(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	  	{ return new InSubQuery(entity, attribute, null, subQuery, true); }
-	public static Criterion notInSubQuery(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	{ return new InSubQuery(entity, attribute, null, subQuery, false); }
+	public static Criterion inSubQuery(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	  	{ return inSubQuery(Estivate.attribute(entity, attribute), subQuery); }
+	public static Criterion notInSubQuery(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	{ return notInSubQuery(Estivate.attribute(entity, attribute), subQuery); }
 	
 	
 	
@@ -506,22 +505,14 @@ public class Estivate {
 	
 
 	public static Criterion matchAgainst(Class<?> entity, String attribute, String value) 			{ return matchAgainst(new Entity<>(entity), attribute, value); }	
-	public static Criterion matchAgainst(Class<?> entity, Collection<String> attributes, String value) 	{ return matchAgainst(new Entity<>(entity), attributes, value); }
 	public static Criterion matchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
-	public static Criterion matchAgainstIfNotNull(Class<?> entity, Collection<String> attributes, String value) { return matchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
 	public static Criterion notMatchAgainst(Class<?> entity, String attribute, String value) 			{ return notMatchAgainst(new Entity<>(entity), attribute, value); }
-	public static Criterion notMatchAgainst(Class<?> entity, Collection<String> attributes, String value) 	{ return notMatchAgainst(new Entity<>(entity), attributes, value); }
 	public static Criterion notMatchAgainstIfNotNull(Class<?> entity, String attribute, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attribute, value); }
-	public static Criterion notMatchAgainstIfNotNull(Class<?> entity, Collection<String> attributes, String value) { return notMatchAgainstIfNotNull(new Entity<>(entity), attributes, value); }
 	
 	public static Aggregator matchAgainstIn(Class<?> entity, String attribute, Collection<String> values)			{ return matchAgainstIn(new Entity<>(entity), attribute, values); }
-	public static Aggregator matchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values)	{ return matchAgainstIn(new Entity<>(entity), attributes, values); }
 	public static Aggregator matchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
-	public static Aggregator matchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { return matchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
 	public static Aggregator notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values)			{ return notMatchAgainstIn(new Entity<>(entity), attribute, values); }
-	public static Aggregator notMatchAgainstIn(Class<?> entity, List<String> attributes, Collection<String> values)				{ return notMatchAgainstIn(new Entity<>(entity), attributes, values); }
 	public static Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
-	public static Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, List<String> attributes, Collection<String> values) { return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attributes, values); }
 
 
 	public static Criterion nativeCriterion (Class<?> entity, String attribute, String criterion)	{ return nativeCriterion(new Entity<>(entity), attribute, criterion); }
@@ -650,58 +641,58 @@ public class Estivate {
 	 public static class Functions{
 		
 		/* Math Functions */
-		public static Attribute.Function abs = new Attribute.Function("abs(", ")");
-		public static Attribute.Function round = new Attribute.Function("round(", ")");
-		public static Attribute.Function ceil = new Attribute.Function("ceil(", ")");
-		public static Attribute.Function floor = new Attribute.Function("floor(", ")");
-		public static Attribute.Function mod(int mod) {return new Attribute.Function("mod(", mod+")"); }
-		public static Attribute.Function pow = new Attribute.Function("pow(", ")"); 
-		public static Attribute.Function sqrt = new Attribute.Function("sqrt(", ")");
-		public static Attribute.Function log = new Attribute.Function("log(", ")");
-		public static Attribute.Function exp = new Attribute.Function("exp(", ")"); 
-		public static Attribute.Function sin = new Attribute.Function("sin(", ")"); 
-		public static Attribute.Function cos = new Attribute.Function("cos(", ")"); 
-		public static Attribute.Function tan = new Attribute.Function("tan(", ")"); 
+		public static AttributeFunction.Function abs = new AttributeFunction.Function("abs(", ")");
+		public static AttributeFunction.Function round = new AttributeFunction.Function("round(", ")");
+		public static AttributeFunction.Function ceil = new AttributeFunction.Function("ceil(", ")");
+		public static AttributeFunction.Function floor = new AttributeFunction.Function("floor(", ")");
+		public static AttributeFunction.Function mod(int mod) {return new AttributeFunction.Function("mod(", mod+")"); }
+		public static AttributeFunction.Function pow = new AttributeFunction.Function("pow(", ")"); 
+		public static AttributeFunction.Function sqrt = new AttributeFunction.Function("sqrt(", ")");
+		public static AttributeFunction.Function log = new AttributeFunction.Function("log(", ")");
+		public static AttributeFunction.Function exp = new AttributeFunction.Function("exp(", ")"); 
+		public static AttributeFunction.Function sin = new AttributeFunction.Function("sin(", ")"); 
+		public static AttributeFunction.Function cos = new AttributeFunction.Function("cos(", ")"); 
+		public static AttributeFunction.Function tan = new AttributeFunction.Function("tan(", ")"); 
 		
 		/* Date Functions */
-		public static Attribute.Function date = new Attribute.Function("date(", ")"); 
-		public static Attribute.Function date_add(int value, String unit){ return new Attribute.Function("date_add(", ", INTERVAL "+value+" "+unit+")"); }		
+		public static AttributeFunction.Function date = new AttributeFunction.Function("date(", ")"); 
+		public static AttributeFunction.Function date_add(int value, String unit){ return new AttributeFunction.Function("date_add(", ", INTERVAL "+value+" "+unit+")"); }		
 		
-		public static Attribute.Function time = new Attribute.Function("time(", ")"); 
-		public static Attribute.Function timestamp = new Attribute.Function("timestamp(", ")");
-		public static Attribute.Function now = new Attribute.Function("now(", ")"); 
-		public static Attribute.Function month = new Attribute.Function("month(", ")");
-		public static Attribute.Function year = new Attribute.Function("year(", ")");
+		public static AttributeFunction.Function time = new AttributeFunction.Function("time(", ")"); 
+		public static AttributeFunction.Function timestamp = new AttributeFunction.Function("timestamp(", ")");
+		public static AttributeFunction.Function now = new AttributeFunction.Function("now(", ")"); 
+		public static AttributeFunction.Function month = new AttributeFunction.Function("month(", ")");
+		public static AttributeFunction.Function year = new AttributeFunction.Function("year(", ")");
 
 		/* String Functions */
-		public static Attribute.Function lower = new Attribute.Function("lower(", ")"); 
-		public static Attribute.Function upper = new Attribute.Function("upper(", ")"); 
-		public static Attribute.Function length = new Attribute.Function("length(", ")"); 
-		public static Attribute.Function trim = new Attribute.Function("trim(", ")");
-		public static Attribute.Function charLength = new Attribute.Function("char_length(", ")");
+		public static AttributeFunction.Function lower = new AttributeFunction.Function("lower(", ")"); 
+		public static AttributeFunction.Function upper = new AttributeFunction.Function("upper(", ")"); 
+		public static AttributeFunction.Function length = new AttributeFunction.Function("length(", ")"); 
+		public static AttributeFunction.Function trim = new AttributeFunction.Function("trim(", ")");
+		public static AttributeFunction.Function charLength = new AttributeFunction.Function("char_length(", ")");
 
 		/* Aggregate Functions : cannot be used in where clause */
-		public static Attribute.Function count = new Attribute.Function("count(", ")");
-		public static Attribute.Function countDistinct = new Attribute.Function("count(distinct ", ")");
-		public static Attribute.Function sum = new Attribute.Function("sum(", ")");
-		public static Attribute.Function sumDistinct = new Attribute.Function("sum(distinct ", ")");
-		public static Attribute.Function avg = new Attribute.Function("avg(", ")");
-		public static Attribute.Function avgDistinct = new Attribute.Function("avg(distinct ", ")");
-		public static Attribute.Function min = new Attribute.Function("min(", ")");
-		public static Attribute.Function max = new Attribute.Function("max(", ")");
-		public static Attribute.Function groupConcat = new Attribute.Function("group_concat(", ")");
-		public static Attribute.Function groupConcatDistinct = new Attribute.Function("group_concat(distinct ", ")");
+		public static AttributeFunction.Function count = new AttributeFunction.Function("count(", ")");
+		public static AttributeFunction.Function countDistinct = new AttributeFunction.Function("count(distinct ", ")");
+		public static AttributeFunction.Function sum = new AttributeFunction.Function("sum(", ")");
+		public static AttributeFunction.Function sumDistinct = new AttributeFunction.Function("sum(distinct ", ")");
+		public static AttributeFunction.Function avg = new AttributeFunction.Function("avg(", ")");
+		public static AttributeFunction.Function avgDistinct = new AttributeFunction.Function("avg(distinct ", ")");
+		public static AttributeFunction.Function min = new AttributeFunction.Function("min(", ")");
+		public static AttributeFunction.Function max = new AttributeFunction.Function("max(", ")");
+		public static AttributeFunction.Function groupConcat = new AttributeFunction.Function("group_concat(", ")");
+		public static AttributeFunction.Function groupConcatDistinct = new AttributeFunction.Function("group_concat(distinct ", ")");
 
 		/* Null Handling Functions */
-		public static Attribute.Function isNull = new Attribute.Function("", " IS NULL");
-		public static Attribute.Function isNotNull = new Attribute.Function("", " IS NOT NULL");
-		public static Attribute.Function ifNull(String alternative) { return new Attribute.Function("ifnull(", ", "+alternative+")"); }
+		public static AttributeFunction.Function isNull = new AttributeFunction.Function("", " IS NULL");
+		public static AttributeFunction.Function isNotNull = new AttributeFunction.Function("", " IS NOT NULL");
+		public static AttributeFunction.Function ifNull(String alternative) { return new AttributeFunction.Function("ifnull(", ", "+alternative+")"); }
 
 		/* JSON Functions */
-		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
-		public static Attribute.Function json_unquote = new Attribute.Function("JSON_UNQUOTE(", ")");
-		public static Attribute.Function json_keys = new Attribute.Function("JSON_KEYS(", ")");
-		public static Attribute.Function json_length = new Attribute.Function("JSON_LENGTH(", ")");
+		public static AttributeFunction.Function json_extract(String path){ return new AttributeFunction.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
+		public static AttributeFunction.Function json_unquote = new AttributeFunction.Function("JSON_UNQUOTE(", ")");
+		public static AttributeFunction.Function json_keys = new AttributeFunction.Function("JSON_KEYS(", ")");
+		public static AttributeFunction.Function json_length = new AttributeFunction.Function("JSON_LENGTH(", ")");
 
 		 
 	}
