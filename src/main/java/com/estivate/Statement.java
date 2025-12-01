@@ -32,7 +32,6 @@ import com.estivate.query.Keyword;
 import com.estivate.query.Query;
 import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
-import com.estivate.query.SelectQuery.Group;
 import com.estivate.query.UpdateQuery;
 import com.estivate.util.FieldUtils;
 
@@ -321,7 +320,7 @@ public class Statement implements AutoCloseable{
 		
 		// 8. Add Group by
 		if(query instanceof SelectQuery && !((SelectQuery<?>) query).getGroupBys().isEmpty()) {
-			List<Group> groups = ((SelectQuery<?>) query).getGroupBys();
+			List<Attribute> groups = ((SelectQuery<?>) query).getGroupBys();
 			statement.appendQuery(groups.stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
 		}
 		
@@ -415,8 +414,9 @@ public class Statement implements AutoCloseable{
 	}
 		
 	
-	public String groupString(Group group) {
-		return context.nameMapper.toTableNameAttribute(group.entity, group.attribute);
+	public String groupString(Attribute attribute) {
+		// TODO : handle attribute function level
+		return context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
 	}
 	
 	public String selectString(Attribute attribute) {

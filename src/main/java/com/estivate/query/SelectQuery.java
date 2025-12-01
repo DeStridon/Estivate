@@ -46,7 +46,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 	
 	
 	@Getter
-	List<Group> groupBys = new ArrayList<>();
+	List<Attribute> groupBys = new ArrayList<>();
 
 	@Getter
 	EstivateNode having;
@@ -86,11 +86,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		return this;
 	}
 	
-	@AllArgsConstructor
-	public static class Group{
-		public Entity<?> entity;
-		public String attribute;
-	}
+
 
 	public SelectQuery<T> select(Attribute attribute) {	selects.add(attribute); return this; }
 	
@@ -251,7 +247,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		return queryClone;
 	}
 
-	public SelectQuery<T> groupBy(Entity<?> entity, String field) { groupBys.add(new Group(entity, field)); return this; }
+	public SelectQuery<T> groupBy(Entity<?> entity, String field) { groupBys.add(Estivate.attribute(entity, field)); return this; }
 	public SelectQuery<T> groupBy(Class<?> c, String field) {
 		Field groupByfield = FieldUtils.findField(c, field);
 		if(groupByfield == null) {
@@ -264,7 +260,7 @@ public class SelectQuery<T> extends Query<SelectQuery<T>, T> {
 		return groupBy(new Entity<>(c), field); 
 	}
 	public SelectQuery<T> groupBy(String attribute) { return groupBy(this.entity, attribute); }
-	public SelectQuery<T> groupByAlias(String alias) { groupBys.add(new Group(null, alias)); return this; }
+	public SelectQuery<T> groupByAlias(String alias) { groupBys.add(Estivate.attributeOfAlias(alias, null)); return this; }
 	public SelectQuery<T> clearGroupBys(){ groupBys.clear(); return this; }
 	
 	public SelectQuery<T> setIndexHint(IndexHint indexHint, String mainIndex, String... moreIndex) {
