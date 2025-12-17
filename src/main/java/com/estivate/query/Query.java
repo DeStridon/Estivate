@@ -3,7 +3,6 @@ package com.estivate.query;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,12 +10,8 @@ import java.util.Set;
 import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
-import com.estivate.query.AttributeFunction.Function;
-import com.estivate.query.Join.JoinType;
+import com.estivate.query.Attribute.Function;
 import com.estivate.util.FieldUtils.Getter;
-
-import lombok.AllArgsConstructor;
-
 
 import lombok.experimental.SuperBuilder;
 
@@ -926,7 +921,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	@SuperBuilder
 	@lombok.Data
 	@lombok.AllArgsConstructor
-	public static class Order extends AttributeFunction{
+	public static class Order extends Attribute{
 		public Direction direction;
 		public enum Direction{
 			Asc,
@@ -945,7 +940,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q orderBy(Entity<?> entity, String attribute, Order.Direction direction) 					{ return orderBy(entity, attribute, direction, null); }
 	public Q orderBy(Class<?> entity, String attribute, Order.Direction direction) 						{ return orderBy(new Entity<>(entity), attribute, direction, null); }
 	public Q orderBy(String attribute, Order.Direction direction) 										{ return orderBy(this.entity, attribute, direction, null); }
-	public Q orderBy(AttributeFunction attribute, Order.Direction direction) 									{ return orderBy(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public Q orderBy(Attribute attribute, Order.Direction direction) 									{ return orderBy(attribute.entity, attribute.attribute, direction, attribute.function); }
 	public Q orderByAlias(String alias, Order.Direction direction) 										{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
 
 	public Q orderByAsc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Asc); }
@@ -954,7 +949,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q orderByAsc(Class<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Asc, function); }
 	public Q orderByAsc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Asc); }
 	public Q orderByAsc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, Order.Direction.Asc, function); }
-	public Q orderByAsc(AttributeFunction attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
+	public Q orderByAsc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Asc, attribute.function); }
 	public Q orderByAscAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Asc); }
 	
 	public Q orderByDesc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Desc); }
@@ -963,7 +958,7 @@ public abstract class Query<Q extends Query<Q, T>, T> extends Aggregator {
 	public Q orderByDesc(Class<?> entity, String attribute, Function function) 	{ return orderBy(entity, attribute, Order.Direction.Desc, function); }
 	public Q orderByDesc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Desc); }
 	public Q orderByDesc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, Order.Direction.Desc, function); }
-	public Q orderByDesc(AttributeFunction attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
+	public Q orderByDesc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, Order.Direction.Desc, attribute.function); }
 	public Q orderByDescAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Desc); }
 	
 	

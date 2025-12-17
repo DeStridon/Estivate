@@ -19,7 +19,7 @@ public class Projection {
 	public @interface Count {
 		public Class<?> entity();
 		public String attribute();
-		public String alias();
+		public String alias() default "";
 	}
 	
 	@Target( ElementType.FIELD )

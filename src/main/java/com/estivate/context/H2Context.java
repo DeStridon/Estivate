@@ -12,7 +12,7 @@ import com.estivate.Statement;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.result.Result;
+import com.estivate.result.ResultRow;
 import com.estivate.index.Annotations.IndexType;
 
 import lombok.SneakyThrows;
@@ -40,11 +40,11 @@ public class H2Context extends Context {
 			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
 			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
 			
-			List<Result> indexResults = fetchListAsResults(indexQueryStatement);
-			List<Result> columnResults = fetchListAsResults(indexColumnQueryStatement);
+			List<ResultRow<Object>> indexResults = fetchListAsResults(indexQueryStatement);
+			List<ResultRow<Object>> columnResults = fetchListAsResults(indexColumnQueryStatement);
 			
-			for(Result indexResult : indexResults) {
-				List<Result> indexColumnResults = columnResults.stream().filter(x -> x.columnAsString("INDEX_NAME").equals(indexResult.columnAsString("INDEX_NAME"))).collect(Collectors.toList());
+			for(ResultRow indexResult : indexResults) {
+				List<ResultRow> indexColumnResults = columnResults.stream().filter(x -> x.columnAsString("INDEX_NAME").equals(indexResult.columnAsString("INDEX_NAME"))).collect(Collectors.toList());
 				
 				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.columnAsString("COLUMN_NAME")), 0)).collect(Collectors.toList());
 

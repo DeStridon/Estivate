@@ -68,7 +68,7 @@ public class ContextTest {
 		CustomerEntity parent2 = CustomerEntity.builder().id(1).name("parent1").build();
 		context.merge(parent2);
 
-		Assert.assertEquals(parent2.getId(), parent1.getId());
+		Assert.assertEquals(parent2.getId(), parent1.getId()); 
 	
 	}
 	
@@ -118,7 +118,7 @@ public class ContextTest {
 		
 		// Modify the entities
 		customer1.setName("customer1-updated");
-		customer2.setName("customer2-updated"); 
+		customer2.setName("customer2-updated");
 		customer3.setName("customer3-updated");
 		
 		// Update all modified customers at once

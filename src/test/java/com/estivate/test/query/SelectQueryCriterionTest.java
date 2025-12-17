@@ -20,7 +20,7 @@ import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.SelectQuery;
-import com.estivate.result.Result;
+import com.estivate.result.ResultRow;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -72,11 +72,11 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue(queryString.contains("DISTINCT"));
 		
-		List<Result> results = query.fetchListAsResults(context);
+		List<ResultRow<OrderEntity>> results = query.fetchListAsResults(context);
 		
 		assertEquals(1, results.size());
 		
-		for(Result result : results) {
+		for(ResultRow<OrderEntity> result : results) {
 			OrderEntity child = result.mapTo(OrderEntity.class);
 			CustomerEntity parent = result.mapTo(CustomerEntity.class);
 		}

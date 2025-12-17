@@ -18,7 +18,7 @@ public class SelectQueryFunctionTest {
 	void lowerTest(){
 
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-            .eq(Estivate.attributeFunction(CustomerEntity.class, CustomerEntity.Fields.name, Estivate.Functions.lower), "john");
+            .eq(Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name, Estivate.Functions.lower), "john");
 
         String queryString = context.queryAsString(query);
 

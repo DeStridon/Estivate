@@ -22,8 +22,6 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
-import com.estivate.query.AttributeFunction;
-import com.estivate.query.AttributeFunctionAlias;
 import com.estivate.query.Criterion;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
@@ -65,6 +63,121 @@ public class Statement implements AutoCloseable{
 		this(context, connection);
 		this.query = new StringBuilder(query);
 	}
+
+
+	public Statement(Context context, Connection connection, Query<?,?> query) {
+
+		this.context = context;
+		this.connection = connection;
+		
+		// 1. Comments
+		for(String comment : query.getComments()) {
+			appendQuery("-- "+comment+"\n");
+		}
+		
+		// 2. Select or update or delete
+		if(query instanceof SelectQuery) {
+			appendQuery("SELECT");
+			
+			if(((SelectQuery<?>) query).isDistinct()) {
+				appendQuery("DISTINCT");
+			}
+			
+			if(((SelectQuery<?>) query).getSelects().isEmpty()) {
+				((SelectQuery<?>) query).selectAll(query.getEntity());
+			}
+			
+			//List<Select> selects = ((SelectQuery<?>) query).getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
+			
+			appendQuery(String.join(", ", ((SelectQuery<?>) query).getSelects().stream().map(this::selectString).collect(Collectors.toList()))+"\n");
+			
+			appendQuery("FROM");
+
+		}
+		else if(query instanceof UpdateQuery) {
+			appendQuery("UPDATE");
+		}
+		else if(query instanceof DeleteQuery) {
+			appendQuery("DELETE");
+			if(!query.getJoins().isEmpty()){
+				appendEntity(query.getEntity());
+			}
+			appendQuery("FROM");
+		}
+		
+		// 3. Append entity
+		appendEntity(query.getEntity());
+		
+		
+		
+		// 4. Add Hint
+		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getIndexHint() != null && ((SelectQuery<?>) query).getIndexNames() != null && !((SelectQuery<?>) query).getIndexNames().isEmpty()) {
+			appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
+		}
+		
+		// 5. Add Join
+		for(Join join : query.getJoins()) {
+        	appendJoin(join);
+        	appendQuery("\n");
+        }
+
+		// 6. If update query, add set
+		if(query instanceof UpdateQuery) {
+			appendQuery("SET");
+			
+			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery) query).getUpdates();
+			boolean first = true;
+			for(Map.Entry<Attribute, Object> entry : attributeMap.entrySet()) {
+
+				// if not first, add comma
+				if(first) {
+					first = false;
+				}
+				else {
+					appendQuery(", ");
+				}
+
+				appendAttributeAsParameter(entry.getKey());
+				appendQuery("=");
+	  			appendQuery(writeParameter(entry.getKey().entity.entity, entry.getKey().attribute, entry.getValue()));
+			}  
+			
+		}
+		
+		// 7. Add Where
+		if(!query.getCriterions().isEmpty()) {
+        	appendQuery("WHERE");
+        	appendNodeToStatement(query, true);
+        }
+		
+		// 8. Add Group by
+		if(query instanceof SelectQuery && !((SelectQuery<?>) query).getGroupBys().isEmpty()) {
+			List<Attribute> groups = ((SelectQuery<?>) query).getGroupBys();
+			appendQuery(groups.stream().map(x -> groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+		}
+		
+		// 9. Add Having
+		// Append having (if any)
+		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getHaving() != null) {
+			appendQuery("HAVING");
+			appendNodeToStatement(((SelectQuery<?>) query).getHaving(), true);
+		}
+		
+		
+		// 10. Append order
+		if(!query.getOrders().isEmpty()) {
+			appendQuery(query.getOrders().stream().map(x -> orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+		}
+		
+		// 11. Append limit & offset
+		if(query.getLimit() != null) {
+			appendQuery("LIMIT "+query.getLimit()+"\n");
+		}
+		if(query.getOffset() != null) {
+			appendQuery("OFFSET "+ query.getOffset() +"\n");
+		}
+		
+	}
 	
 	public Statement appendQuery(String queryContent) {
 		if(query.length() > 0 && !Arrays.asList(" ", "(").contains(query.substring(query.length() - 1)) && !queryContent.equals(")")) {
@@ -76,9 +189,10 @@ public class Statement implements AutoCloseable{
 
 	public Statement appendAttributeAsParameter(Attribute attribute){
 		
-		if(attribute instanceof AttributeFunction) {
-			AttributeFunction attributeFunction = (AttributeFunction) attribute;
-			appendQuery(attributeFunction.function.render(context.nameMapper.toTableNameAttribute(attributeFunction.entity, attributeFunction.attribute)));
+		//TODO : handle alias ?
+
+		if(attribute.function != null) {
+			appendQuery(attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)));
 		}
 		else {
 			appendQuery(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute));
@@ -113,13 +227,19 @@ public class Statement implements AutoCloseable{
 		if(parameter instanceof Attribute) {
 			Attribute attribute = (Attribute) parameter;
 			String attributeField = attribute.entity == null ? attribute.attribute : context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
-			if(attribute instanceof AttributeFunction){
-				AttributeFunction attributeFunction = (AttributeFunction) attribute;
-				if(attributeFunction.function != null) {
-					return attributeFunction.function.render(attributeField);
+			if(attribute instanceof Attribute){
+				Attribute Attribute = (Attribute) attribute;
+				if(Attribute.function != null) {
+					return Attribute.function.render(attributeField);
 				}
 			}
 			return attributeField;
+		}
+		else if(parameter instanceof SelectQuery){
+			SelectQuery<?> selectQuery = (SelectQuery<?>) parameter;
+			Statement subStatement = new Statement(context, connection, selectQuery);
+			parameters.addAll(subStatement.parameters);
+			return "("+subStatement.query()+")";
 		}
 		else {
 			appendObjectAsValue(entity, field, parameter);
@@ -234,120 +354,7 @@ public class Statement implements AutoCloseable{
 	
 	}
 	
-	public static Statement toStatement(Context context, Connection connection, Query<?,?> query) {
 
-		Statement statement = new Statement(context, connection);
-		
-		// 1. Comments
-		for(String comment : query.getComments()) {
-			statement.appendQuery("-- "+comment+"\n");
-		}
-		
-		// 2. Select or update or delete
-		if(query instanceof SelectQuery) {
-			statement.appendQuery("SELECT");
-			
-			if(((SelectQuery<?>) query).isDistinct()) {
-				statement.appendQuery("DISTINCT");
-			}
-			
-			if(((SelectQuery<?>) query).getSelects().isEmpty()) {
-				((SelectQuery<?>) query).selectAll(query.getEntity());
-			}
-			
-			//List<Select> selects = ((SelectQuery<?>) query).getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
-			
-			statement.appendQuery(String.join(", ", ((SelectQuery<?>) query).getSelects().stream().map(statement::selectString).collect(Collectors.toList()))+"\n");
-			
-			statement.appendQuery("FROM");
-
-		}
-		else if(query instanceof UpdateQuery) {
-			statement.appendQuery("UPDATE");
-		}
-		else if(query instanceof DeleteQuery) {
-			statement.appendQuery("DELETE");
-			if(!query.getJoins().isEmpty()){
-				statement.appendEntity(query.getEntity());
-			}
-			statement.appendQuery("FROM");
-		}
-		
-		// 3. Append entity
-		statement.appendEntity(query.getEntity());
-		
-		
-		
-		// 4. Add Hint
-		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getIndexHint() != null && ((SelectQuery<?>) query).getIndexNames() != null && !((SelectQuery<?>) query).getIndexNames().isEmpty()) {
-			statement.appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
-		}
-		
-		// 5. Add Join
-		for(Join join : query.getJoins()) {
-        	statement.appendJoin(join);
-        	statement.appendQuery("\n");
-        }
-
-		// 6. If update query, add set
-		if(query instanceof UpdateQuery) {
-			statement.appendQuery("SET");
-			
-			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery) query).getUpdates();
-			boolean first = true;
-			for(Map.Entry<Attribute, Object> entry : attributeMap.entrySet()) {
-
-				// if not first, add comma
-				if(first) {
-					first = false;
-				}
-				else {
-					statement.appendQuery(", ");
-				}
-
-				statement.appendAttributeAsParameter(entry.getKey());
-				statement.appendQuery("=");
-	  			statement.appendQuery(statement.writeParameter(entry.getKey().entity.entity, entry.getKey().attribute, entry.getValue()));
-			}  
-			
-		}
-		
-		// 7. Add Where
-		if(!query.getCriterions().isEmpty()) {
-        	statement.appendQuery("WHERE");
-        	statement.appendNodeToStatement(query, true);
-        }
-		
-		// 8. Add Group by
-		if(query instanceof SelectQuery && !((SelectQuery<?>) query).getGroupBys().isEmpty()) {
-			List<Attribute> groups = ((SelectQuery<?>) query).getGroupBys();
-			statement.appendQuery(groups.stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-		}
-		
-		// 9. Add Having
-		// Append having (if any)
-		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getHaving() != null) {
-			statement.appendQuery("HAVING");
-			statement.appendNodeToStatement(((SelectQuery<?>) query).getHaving(), true);
-		}
-		
-		
-		// 10. Append order
-		if(!query.getOrders().isEmpty()) {
-			statement.appendQuery(query.getOrders().stream().map(x -> statement.orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-		}
-		
-		// 11. Append limit & offset
-		if(query.getLimit() != null) {
-			statement.appendQuery("LIMIT "+query.getLimit()+"\n");
-		}
-		if(query.getOffset() != null) {
-			statement.appendQuery("OFFSET "+ query.getOffset() +"\n");
-		}
-		
-		return statement;
-		
-	}
 		
 	
 	public void appendJoin(Join join) {
@@ -357,11 +364,12 @@ public class Statement implements AutoCloseable{
 
 		if(join.rightEntity instanceof SubQueryEntity<?>) {
 			appendQuery("(");
-			Statement subStatement = Statement.toStatement(context, connection, ((SubQueryEntity<?>) join.rightEntity).query);
+			Statement subStatement = new Statement(context, connection, ((SubQueryEntity<?>) join.rightEntity).query);
 			appendQuery(subStatement.query());
 			appendQuery(") AS ");
 			appendQuery(join.rightEntity.alias);
 			parameters.addAll(subStatement.parameters);
+			
 		}
 		else{
 			appendQuery(context.nameMapper.toTableName(join.rightEntity.entity));
@@ -380,7 +388,7 @@ public class Statement implements AutoCloseable{
 		if(entity instanceof SubQueryEntity<?>){
 
 			appendQuery("(");
-			Statement subStatement = Statement.toStatement(context, connection, ((SubQueryEntity<?>) entity).query);
+			Statement subStatement = new Statement(context, connection, ((SubQueryEntity<?>) entity).query);
 			appendQuery(subStatement.query());
 			appendQuery(") AS ");
 			parameters.addAll(subStatement.parameters);
@@ -421,16 +429,15 @@ public class Statement implements AutoCloseable{
 	
 	public String selectString(Attribute attribute) {
 
-		AttributeFunctionAlias attributeFunctionAlias = attribute.toAttributeFunctionAlias();
 
-		if(attributeFunctionAlias.function != null && attributeFunctionAlias.function.equals(Estivate.Functions.count) && (attributeFunctionAlias.entity == null || attributeFunctionAlias.entity.entity == null)) {
-			return "COUNT(*)"+(attributeFunctionAlias.alias != null ? " as `"+context.nameMapper.mapEntityField(attributeFunctionAlias.alias)+"`" : "");
+		if(attribute.function != null && attribute.function.equals(Estivate.Functions.count) && (attribute.entity == null || attribute.entity.entity == null)) {
+			return "COUNT(*)"+(attribute.alias != null ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
 		}
-		else if (attributeFunctionAlias.function != null) {
-			return attributeFunctionAlias.function.render(context.nameMapper.toTableNameAttribute(attributeFunctionAlias.entity, attributeFunctionAlias.attribute))+(attributeFunctionAlias.alias != null ? " as `"+context.nameMapper.mapEntityField(attributeFunctionAlias.alias)+"`" : "");
+		else if (attribute.function != null) {
+			return attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute))+(attribute.alias != null ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
 		}
 
-		return context.nameMapper.toTableNameAttribute(attributeFunctionAlias.entity, attributeFunctionAlias.attribute)+" as `"+(attributeFunctionAlias.alias != null ? context.nameMapper.mapEntityField(attributeFunctionAlias.alias) : context.nameMapper.toEntityNameAttribute(attributeFunctionAlias.entity, attributeFunctionAlias.attribute))+"`";
+		return context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)+" as `"+(attribute.alias != null ? context.nameMapper.mapEntityField(attribute.alias) : context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute))+"`";
 	
 	}
 
@@ -488,7 +495,6 @@ public class Statement implements AutoCloseable{
 			appendParameterAsValue(between.attribute, between.min);
 			appendQuery("AND");
 			appendParameterAsValue(between.attribute, between.max);
-			
 		}
 		else if(node instanceof Criterion.NullCheck) {
 			Criterion.NullCheck nullcheck = (Criterion.NullCheck) node;
@@ -516,13 +522,13 @@ public class Statement implements AutoCloseable{
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
 			appendAttributeAsParameter(subQuery.attribute);
 			appendQuery(subQuery.include ? "IN" : "NOT IN");
-			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
+			Statement subStatement = new Statement(context, connection, subQuery.subQuery);
 			appendQuery("("+subStatement.query()+")");
 			parameters.addAll(subStatement.parameters);
 		}
 		else if(node instanceof Criterion.ExistsSubQuery){
 			Criterion.ExistsSubQuery subQuery = (Criterion.ExistsSubQuery) node;
-			Statement subStatement = Statement.toStatement(context, connection, subQuery.subQuery);
+			Statement subStatement = new Statement(context, connection, subQuery.subQuery);
 			appendQuery(subQuery.include ? "EXISTS": "NOT EXISTS");
 			appendQuery("("+subStatement.query()+")");
 			parameters.addAll(subStatement.parameters);

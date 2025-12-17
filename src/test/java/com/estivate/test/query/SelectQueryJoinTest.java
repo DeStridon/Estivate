@@ -17,7 +17,7 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
-import com.estivate.result.Result;
+import com.estivate.result.ResultRow;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -70,7 +70,7 @@ public class SelectQueryJoinTest {
 				.selectAll(OrderEntity.class)
 				.eq(CustomerEntity.class, CustomerEntity.Fields.name, parent.getName());
 		
-		List<Result> results = context.fetchListAsResults(query);
+		List<ResultRow<CustomerEntity>> results = context.fetchListAsResults(query);
 		
 		log.debug(context.queryAsString(query));
 		

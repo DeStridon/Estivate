@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
-import com.estivate.result.Result;
+import com.estivate.result.ResultRow;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -68,7 +68,7 @@ public class ResultTest {
 		SelectQuery<ProductEntity> query = new SelectQuery<>(ProductEntity.class)
 			.eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
 
-		Result result = context.fetchSingleAsResult(query);
+		ResultRow result = context.fetchSingleAsResult(query);
 		
 		ProductCategory category = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
 		assertEquals(ProductCategory.Electronics, category);

@@ -15,7 +15,7 @@
 // @Data
 // @NoArgsConstructor
 // @AllArgsConstructor
-// public class Select extends AttributeFunction implements Comparable {
+// public class Select extends Attribute implements Comparable {
 	
 // 	public String alias;
 // 	//public java.util.function.Function<String, ?> converter;

@@ -14,16 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.naming.directory.AttributeInUseException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Entity;
+import com.estivate.context.Context;
+import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
+import com.estivate.query.SelectQuery;
 import com.estivate.util.Chronometer;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
 
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,40 +34,24 @@ public class EntityMapper<U> extends IMapper<U> {
 
 	// Entity side
 	final Class<U> entityClass;
-	final Set<Field> entityFields;
+
 	final Constructor<U> entityConstructor;
 	final Set<Method> entityPostLoadMethods;
+
+	List<ColumnMapping> columnMappings = new ArrayList<>();
 	
 	
 	// Result side
 
 	final Chronometer chronometer;
 
-	// TODO : field is empty for row mapping
-	List<Field> columnFields = new ArrayList<>();
+	final Context context;
 
-	public void setResultColumnNames(String[] columnNames) {
+	final SelectQuery<?> query;
 
-		// Map columns to fields
-		Entity<U> entity = new Entity<>(entityClass);
-		columnFields = new ArrayList<>();
-
-		for (int i = 0; i < columnNames.length; i++) {
-			String columnName = columnNames[i];
-			Field field = entityFields.stream().filter(x -> columnName.equals(fieldToColumnName(entity, x))).findFirst()
-					.orElse(null);
-			if (field != null) {
-				while (columnFields.size() <= i) {
-					columnFields.add(null);
-				}
-				columnFields.set(i, field);
-			}
-		}
-
-	}
 
 	@SneakyThrows
-	public EntityMapper(Class<U> targetClass, boolean tracePerformances) {
+	public EntityMapper(Context context, SelectQuery<?> query, Class<U> targetClass, boolean tracePerformances) {
 		chronometer = new Chronometer("Mapper " + targetClass.getSimpleName(), tracePerformances).timeThreshold(100);
 
 		this.entityClass = targetClass;
@@ -74,16 +60,19 @@ public class EntityMapper<U> extends IMapper<U> {
 		entityConstructor = targetClass.getConstructor();
 
 		// Get Fields
-		entityFields = FieldUtils.getEntityFields(targetClass);
+		columnMappings = FieldUtils.getColumnMappings(query, new Entity<>(targetClass));
 
 		// Get PostLoadMethods
-		entityPostLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
+		this.entityPostLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
+
+		this.context = context;
+		this.query = query;
 
 		chronometer.step("mapper constructor");
 	}
 
-	public EntityMapper(Class<U> targetClass) {
-		this(targetClass, false);
+	public EntityMapper(Context context, SelectQuery<?> query, Class<U> targetClass) {
+		this(context, query, targetClass, false);
 	}
 
 	@SneakyThrows
@@ -93,10 +82,10 @@ public class EntityMapper<U> extends IMapper<U> {
 		chronometer.step("constructor & entity");
 
 		for (int i = 0; i < row.length; i++) {
-			if (i >= columnFields.size()) {
+			if (i >= columnMappings.size() || columnMappings.get(i) == null) {
 				continue;
 			}
-			Field field = columnFields.get(i);
+			Field field = columnMappings.get(i).getField();
 			chronometer.step("get field");
 			if (field != null) {
 				setGeneratedField(entity, field, obj, row[i]);
@@ -178,7 +167,7 @@ public class EntityMapper<U> extends IMapper<U> {
 			return getColumnNameFromAnnotation(functionAnnotation.entity(), functionAnnotation.attribute(), functionAnnotation.alias());
 		}
 		
-		return nameMapper.toEntityNameAttribute(entity, field.getName());
+		return context.nameMapper.toEntityNameAttribute(entity, field.getName());
 		
 	}
 
@@ -191,7 +180,7 @@ public class EntityMapper<U> extends IMapper<U> {
 	private String getColumnNameFromAnnotation(Class<?> entityClass, String attribute, String alias) {
 		// If alias is not null and not empty, use it directly
 		if (alias != null && !alias.isEmpty()) {
-			return nameMapper.mapEntityField(alias);
+			return context.nameMapper.mapEntityField(alias);
 		}
 
 		// If alias is null or empty, find the corresponding field in the entity and use
@@ -309,6 +298,22 @@ public class EntityMapper<U> extends IMapper<U> {
 
 		log.error("This type is not mapped yet : "+type);
 		return null;
+
+	}
+	
+	@Data
+	public static class ColumnMapping {
+
+		Attribute attribute;
+
+		Field field;
+
+//		String columnName;
+
+		public ColumnMapping(Attribute attribute, Field field){
+			this.attribute = attribute;
+			this.field = field;
+		}
 
 	}
 		

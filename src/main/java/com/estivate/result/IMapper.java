@@ -8,11 +8,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
 import java.util.Date;
-
-
+import java.util.List;
 
 import com.estivate.NameMapper;
+import com.estivate.context.Context;
+import com.estivate.query.Attribute;
+import com.estivate.query.SelectQuery;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -22,16 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Data
 public abstract class IMapper<U> {
-
-	NameMapper nameMapper;
-	String[] resultColumnNames;
-	
 	
 	abstract public U map(String[] row);
-	
-	
-	
-
 
 	public static class StringMapper extends IMapper<String>{ public String map(String[] row) { return row[0]; } }
 	public static class IntegerMapper extends IMapper<Integer>{ public Integer map(String[] row){ if(row[0] == null) return null; return Integer.parseInt(row[0]); } }
@@ -94,14 +89,41 @@ public abstract class IMapper<U> {
 	}
 
 	
-	public static class ResultMapper extends IMapper<Result>{
+	// public static class ResultMapper extends IMapper<ResultRow>{
 
-		@Override
-		public Result map(String[] row) {
-			return new Result(row, resultColumnNames, nameMapper);
-		}
+	// 	String[] columnNames = null;
+
+	// 	final Context context;
+	// 	final SelectQuery<?> query;
+
+	// 	public ResultMapper(Context context, SelectQuery<?> query) {
+	// 		columnNames = new String[query.getSelects().size()];
+
+	// 		this.context = context;
+	// 		this.query = query;
+
+	// 		List<Attribute> attributes = new ArrayList<>(query.getSelects());
+	// 		for(int i = 0; i < attributes.size(); i++) {
+	// 			Attribute attribute = attributes.get(i);
+	// 			if(attribute.alias != null) {
+	// 				columnNames[i] = attribute.alias;
+	// 			}
+	// 			else if(attribute.function != null) {
+
+	// 				columnNames[i] = attribute.function.render( context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute));
+	// 			}
+	// 			else {
+	// 				columnNames[i] = context.nameMapper.toTableNameAttribute(attributes.get(i).entity, attributes.get(i).attribute);
+	// 			}
+	// 		}
+	// 	}
+
+	// 	@Override
+	// 	public ResultRow map(String[] row) {
+	// 		return new ResultRow(row, columnNames, context, query);
+	// 	}
 		
-	}
+	// }
 
 	@Slf4j
 	@AllArgsConstructor
@@ -185,5 +207,7 @@ public abstract class IMapper<U> {
 		}
 	
 	}
+
+
 
 }

@@ -13,9 +13,7 @@ import com.estivate.manager.ManagerInterceptor.EntityManager;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.Attribute;
-import com.estivate.query.AttributeFunction;
-import com.estivate.query.AttributeFunction.Function;
-import com.estivate.query.AttributeFunctionAlias;
+import com.estivate.query.Attribute.Function;
 import com.estivate.query.Criterion;
 import com.estivate.query.Criterion.Between;
 import com.estivate.query.Criterion.ExistsSubQuery;
@@ -55,23 +53,28 @@ public class Estivate {
 	public static <U> DeleteQuery<U> deleteQuery(Entity<U> entity) 	{ return new DeleteQuery<>(entity); }
 	public static <U> DeleteQuery<U> deleteQuery(Class<U> entity)	{ return new DeleteQuery<>(entity); }
 
-	
-	public static Attribute attribute(Entity<?> entity, String field) { return new Attribute(entity, field); }
-	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field); }
-	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.Getter<E, P> getter) { return FieldUtils.attributeFromLambda(getter); }
-	
-	public static AttributeFunction attributeFunction(Entity<?> entity, String field, AttributeFunction.Function function) { return AttributeFunction.builder().entity(entity).attribute(field).function(function).build(); }
-	public static AttributeFunction attributeFunction(Class<?> entity, String field, AttributeFunction.Function function) { return attributeFunction(new Entity<>(entity), field, function); }
-	public static AttributeFunctionAlias attributeFunctionAlias(Entity<?> entity, String field, AttributeFunction.Function function, String alias) { return AttributeFunctionAlias.builder().entity(entity).attribute(field).function(function).alias(alias).build(); }
-	public static AttributeFunctionAlias attributeFunctionAlias(Class<?> entity, String field, AttributeFunction.Function function, String alias) { return attributeFunctionAlias(new Entity<>(entity), field, function, alias); }
 
-	public static AttributeFunction attributeOfAlias(String alias, AttributeFunction.Function function) { return AttributeFunction.builder().attribute(alias).function(function).build(); }
+	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function function, String alias) { return new Attribute(entity, field, function, alias); }
+	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function, String alias) { return new Attribute(new Entity<>(entity), field, function, alias); }
+	public static Attribute attribute(Entity<?> entity, String field, String alias) { return attribute(entity, field, null, alias); }
+	public static Attribute attribute(Class<?> entity, String field, String alias) { return attribute(new Entity<>(entity), field, null, alias); }
+	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function function) { return attribute(entity, field, function, null); }
+	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function) { return attribute(new Entity<>(entity), field, function, null); }
+	public static Attribute attribute(Entity<?> entity, String field) { return attribute(entity, field, null, null); }
+	public static Attribute attribute(Class<?> entity, String field) { return attribute(new Entity<>(entity), field, null, null); }
 
+
+	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.Getter<E, P> getter) { return FieldUtils.attributeFromLambda(getter, null, null); }
+	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.Getter<E, P> getter, Attribute.Function function) { return FieldUtils.attributeFromLambda(getter, function, null); }
+	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.Getter<E, P> getter, Attribute.Function function, String alias) { return FieldUtils.attributeFromLambda(getter, function, alias); }
+	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.Getter<E, P> getter, String alias) { return FieldUtils.attributeFromLambda(getter, null, alias); }
+	
+	public static Attribute attributeOfAlias(String alias, Attribute.Function function) { return attribute(new Entity<>(null), null, function, alias); }
+	
 	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
 	public static <U> Entity<U> entity(Class<U> entity, String alias) { return new Entity<>(entity, alias); }
 
 	public static <U> SubQueryEntity<U> subQueryEntity(SelectQuery<U> query, String alias) { return new SubQueryEntity<>(query, alias); }
-
 
 	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}
 	public static Aggregator or(Collection<EstivateNode> criterions) { return new Aggregator(GroupType.OR, criterions); }
@@ -80,8 +83,8 @@ public class Estivate {
 	
 	public static EstivateNode addIf(boolean condition, EstivateNode node) { return condition ? node : null; }
 	
-	public static AttributeFunction.Function function(String prefix, String suffix) { return new AttributeFunction.Function(prefix, suffix); }
-	public static AttributeFunction.Function function(Function... functions) { return AttributeFunction.Function.compose(Arrays.asList(functions));}
+	public static Attribute.Function function(String prefix, String suffix) { return new Attribute.Function(prefix, suffix); }
+	public static Attribute.Function function(Function... functions) { return Attribute.Function.compose(Arrays.asList(functions));}
 	
 	public static Order order(Entity<?> entity, String attribute, Order.Direction direction, Function function){  return Order.builder().entity(entity).attribute(attribute).direction(direction).function(function).build(); }
 
@@ -91,8 +94,8 @@ public class Estivate {
 	public static Order order(Class<?> entity, String attribute, Order.Direction direction){ return order(new Entity<>(entity), attribute, direction, null); }
 	public static Order order(Class<?> entity, String attribute, Order.Direction direction, Function function){ return order(new Entity<>(entity), attribute, direction, function); }
 
-	public static Order order(AttributeFunction attribute) { return order(attribute.entity, attribute.attribute, null, attribute.function); }
-	public static Order order(AttributeFunction attribute, Order.Direction direction) { return order(attribute.entity, attribute.attribute, direction, attribute.function); }
+	public static Order order(Attribute attribute) { return order(attribute.entity, attribute.attribute, null, attribute.function); }
+	public static Order order(Attribute attribute, Order.Direction direction) { return order(attribute.entity, attribute.attribute, direction, attribute.function); }
 	
 
 	/*
@@ -525,174 +528,174 @@ public class Estivate {
 	
 	/* Wrappers for Lambda */
 	
-	public static <E, P> Criterion eq    			(Getter<E, P> function, P value) { return eq(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion eqIfNotNull		(Getter<E, P> function, P value) { return eqIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion eqNullable		(Getter<E, P> function, P value) { return eqNullable(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Aggregator eqOrNull		(Getter<E, P> function, P value) { return eqOrNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion eq    			(Getter<E, P> getter, P value) { return eq(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion eqIfNotNull		(Getter<E, P> getter, P value) { return eqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion eqNullable		(Getter<E, P> getter, P value) { return eqNullable(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator eqOrNull		(Getter<E, P> getter, P value) { return eqOrNull(Estivate.attribute(getter), value); }
 
-	public static <E, P> Criterion notEq 			(Getter<E, P> function, P value) { return notEq(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion notEqIfNotNull	(Getter<E, P> function, P value) { return notEqIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion notEqNullable	(Getter<E, P> function, P value) { return notEqNullable(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Aggregator notEqOrNull	(Getter<E, P> function, P value) { return notEqOrNull(FieldUtils.attributeFromLambda(function), value); }
-
-	
-	public static <E, P> Criterion lt    	(Getter<E, P> function, P value)        { return lt(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Aggregator ltOrNull(Getter<E, P> function, P value) { return ltOrNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion ltIfNotNull   	(Getter<E, P> function, P value) { return ltIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	
-	
-	public static <E, P> Criterion lte   	(Getter<E, P> function, P value)        { return lte(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Aggregator lteOrNull(Getter<E, P> function, P value) { return lteOrNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion lteIfNotNull  	(Getter<E, P> function, P value) { return lteIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	
-	
-	public static <E, P> Criterion gt    	(Getter<E, P> function, P value)        { return gt(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Aggregator gtOrNull(Getter<E, P> function, P value) { return gtOrNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion gtIfNotNull   	(Getter<E, P> function, P value) { return gtIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	
-	public static <E, P> Criterion gte   	(Getter<E, P> function, P value)        { return gte(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Aggregator gteOrNull(Getter<E, P> function, P value) { return gteOrNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E, P> Criterion gteIfNotNull  	(Getter<E, P> function, P value) { return gteIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	
-	
-	public static <E, P> Criterion between	(Getter<E, P> function, P left, P right) { return between(FieldUtils.attributeFromLambda(function), left, right); }
-	public static <E, P> Aggregator betweenOrNull(Getter<E, P> function, P left, P right) { return betweenOrNull(FieldUtils.attributeFromLambda(function), left, right); }
-	public static <E, P> Criterion betweenIfNotNull(Getter<E, P> function, P min, P max) { return betweenIfNotNull(FieldUtils.attributeFromLambda(function), min, max); }
+	public static <E, P> Criterion notEq 			(Getter<E, P> getter, P value) { return notEq(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion notEqIfNotNull	(Getter<E, P> getter, P value) { return notEqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion notEqNullable	(Getter<E, P> getter, P value) { return notEqNullable(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator notEqOrNull	(Getter<E, P> getter, P value) { return notEqOrNull(Estivate.attribute(getter), value); }
 
 	
-	public static <E, P> Criterion in    				(Getter<E, P> function, Collection<P> values) { return in(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Criterion inIfNotEmpty		(Getter<E, P> function, Collection<P> values) { return inIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> EstivateNode inIfNotEmptyNullable  (Getter<E, P> function, Collection<P> values) { return inIfNotEmptyNullable(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> EstivateNode inOrFalseIfEmpty	(Getter<E, P> function, Collection<P> values) { return inOrFalseIfEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Aggregator inOrNull				(Getter<E, P> function, Collection<P> values){ return inOrNull(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Aggregator inIfNotEmptyOrNull		(Getter<E, P> function, Collection<P> values){ return inIfNotEmptyOrNull(FieldUtils.attributeFromLambda(function), values); }
-
-	public static <E, P> Criterion notIn   (Getter<E, P> function, Collection<P> values) { return notIn(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Criterion notInIfNotEmpty		(Getter<E, P> function, Collection<P> values){ return notInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Aggregator notInIfNotEmptyNullable(Getter<E, P> function, Collection<P> values){ return notInIfNotEmptyNullable(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> EstivateNode notInOrTrueIfEmpty	(Getter<E, P> function, Collection<P> values){ return notInOrTrueIfEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Aggregator notInOrNull			(Getter<E, P> function, Collection<P> values){ return notInOrNull(FieldUtils.attributeFromLambda(function), values); }
-	public static <E, P> Aggregator notInIfNotEmptyOrNull	(Getter<E, P> function, Collection<P> values){ return notInIfNotEmptyOrNull(FieldUtils.attributeFromLambda(function), values); }
+	public static <E, P> Criterion lt    	(Getter<E, P> getter, P value)        { return lt(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator ltOrNull(Getter<E, P> getter, P value) { return ltOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion ltIfNotNull   	(Getter<E, P> getter, P value) { return ltIfNotNull(Estivate.attribute(getter), value); }
 	
 	
-	public static <E> Criterion like			(Getter<E, String> function, String value)	{ return like(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLike			(Getter<E, String> function, String value)	{ return notLike(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion likeIfNotNull		(Getter<E, String> function, String value)	{ return likeIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeIfNotNull	(Getter<E, String> function, String value)	{ return notLikeIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-
-	public static <E> Criterion likeStartsWith	(Getter<E, String> function, String value)	{ return likeStartsWith(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeStartsWith(Getter<E, String> function, String value)	{ return notLikeStartsWith(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion likeStartsWithIfNotNull(Getter<E, String> function, String value)	{ return likeStartsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeStartsWithIfNotNull(Getter<E, String> function, String value)	{ return notLikeStartsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-
-	public static <E> Criterion likeEndsWith	(Getter<E, String> function, String value)	{ return likeEndsWith(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeEndsWith	(Getter<E, String> function, String value)	{ return notLikeEndsWith(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion likeEndsWithIfNotNull(Getter<E, String> function, String value)	{ return likeEndsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeEndsWithIfNotNull(Getter<E, String> function, String value)	{ return notLikeEndsWithIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E, P> Criterion lte   	(Getter<E, P> getter, P value)        { return lte(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator lteOrNull(Getter<E, P> getter, P value) { return lteOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion lteIfNotNull  	(Getter<E, P> getter, P value) { return lteIfNotNull(Estivate.attribute(getter), value); }
 	
-	public static <E> Criterion likeContains	(Getter<E, String> function, String value)	{ return likeContains(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeContains	(Getter<E, String> function, String value)	{ return notLikeContains(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion likeContainsIfNotNull(Getter<E, String> function, String value)	{ return likeContainsIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notLikeContainsIfNotNull(Getter<E, String> function, String value)	{ return notLikeContainsIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	
+	public static <E, P> Criterion gt    	(Getter<E, P> getter, P value)        { return gt(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator gtOrNull(Getter<E, P> getter, P value) { return gtOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion gtIfNotNull   	(Getter<E, P> getter, P value) { return gtIfNotNull(Estivate.attribute(getter), value); }
+	
+	public static <E, P> Criterion gte   	(Getter<E, P> getter, P value)        { return gte(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator gteOrNull(Getter<E, P> getter, P value) { return gteOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion gteIfNotNull  	(Getter<E, P> getter, P value) { return gteIfNotNull(Estivate.attribute(getter), value); }
+	
+	
+	public static <E, P> Criterion between	(Getter<E, P> getter, P left, P right) { return between(Estivate.attribute(getter), left, right); }
+	public static <E, P> Aggregator betweenOrNull(Getter<E, P> getter, P left, P right) { return betweenOrNull(Estivate.attribute(getter), left, right); }
+	public static <E, P> Criterion betweenIfNotNull(Getter<E, P> getter, P min, P max) { return betweenIfNotNull(Estivate.attribute(getter), min, max); }
 
 	
+	public static <E, P> Criterion in    				(Getter<E, P> getter, Collection<P> values) { return in(Estivate.attribute(getter), values); }
+	public static <E, P> Criterion inIfNotEmpty		(Getter<E, P> getter, Collection<P> values) { return inIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> EstivateNode inIfNotEmptyNullable  (Getter<E, P> getter, Collection<P> values) { return inIfNotEmptyNullable(Estivate.attribute(getter), values); }
+	public static <E, P> EstivateNode inOrFalseIfEmpty	(Getter<E, P> getter, Collection<P> values) { return inOrFalseIfEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator inOrNull				(Getter<E, P> getter, Collection<P> values){ return inOrNull(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator inIfNotEmptyOrNull		(Getter<E, P> getter, Collection<P> values){ return inIfNotEmptyOrNull(Estivate.attribute(getter), values); }
+
+	public static <E, P> Criterion notIn   (Getter<E, P> getter, Collection<P> values) { return notIn(Estivate.attribute(getter), values); }
+	public static <E, P> Criterion notInIfNotEmpty		(Getter<E, P> getter, Collection<P> values){ return notInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator notInIfNotEmptyNullable(Getter<E, P> getter, Collection<P> values){ return notInIfNotEmptyNullable(Estivate.attribute(getter), values); }
+	public static <E, P> EstivateNode notInOrTrueIfEmpty	(Getter<E, P> getter, Collection<P> values){ return notInOrTrueIfEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator notInOrNull			(Getter<E, P> getter, Collection<P> values){ return notInOrNull(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator notInIfNotEmptyOrNull	(Getter<E, P> getter, Collection<P> values){ return notInIfNotEmptyOrNull(Estivate.attribute(getter), values); }
+	
+	
+	public static <E> Criterion like			(Getter<E, String> getter, String value)	{ return like(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLike			(Getter<E, String> getter, String value)	{ return notLike(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeIfNotNull		(Getter<E, String> getter, String value)	{ return likeIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeIfNotNull	(Getter<E, String> getter, String value)	{ return notLikeIfNotNull(Estivate.attribute(getter), value); }
+
+	public static <E> Criterion likeStartsWith	(Getter<E, String> getter, String value)	{ return likeStartsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWith(Getter<E, String> getter, String value)	{ return notLikeStartsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeStartsWithIfNotNull(Getter<E, String> getter, String value)	{ return likeStartsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWithIfNotNull(Getter<E, String> getter, String value)	{ return notLikeStartsWithIfNotNull(Estivate.attribute(getter), value); }
+
+	public static <E> Criterion likeEndsWith	(Getter<E, String> getter, String value)	{ return likeEndsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWith	(Getter<E, String> getter, String value)	{ return notLikeEndsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeEndsWithIfNotNull(Getter<E, String> getter, String value)	{ return likeEndsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWithIfNotNull(Getter<E, String> getter, String value)	{ return notLikeEndsWithIfNotNull(Estivate.attribute(getter), value); }
+	
+	public static <E> Criterion likeContains	(Getter<E, String> getter, String value)	{ return likeContains(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContains	(Getter<E, String> getter, String value)	{ return notLikeContains(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeContainsIfNotNull(Getter<E, String> getter, String value)	{ return likeContainsIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContainsIfNotNull(Getter<E, String> getter, String value)	{ return notLikeContainsIfNotNull(Estivate.attribute(getter), value); }
+
+	
 	
 
 
-	public static <E> Aggregator likeStartsWithIn(Getter<E, String> function, Collection<String> value)	{ return likeStartsWithIn(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Aggregator likeStartsWithInIfNotEmpty(Getter<E, String> function, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(FieldUtils.attributeFromLambda(function), values);}
-	public static <E> Aggregator notLikeStartsWithIn(Getter<E, String> function, Collection<String> value)	{ return notLikeStartsWithIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeStartsWithIn(Getter<E, String> getter, Collection<String> value)	{ return likeStartsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeStartsWithInIfNotEmpty(Getter<E, String> getter, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(Estivate.attribute(getter), values);}
+	public static <E> Aggregator notLikeStartsWithIn(Getter<E, String> getter, Collection<String> value)	{ return notLikeStartsWithIn(Estivate.attribute(getter), value); }
 	
-	public static <E> Aggregator likeEndsWithIn	(Getter<E, String> function, Collection<String> value)	{ return likeEndsWithIn(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Aggregator likeEndsWithInIfNotEmpty(Getter<E, String> function, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E> Aggregator notLikeEndsWithIn(Getter<E, String> function, Collection<String> value)	{ return notLikeEndsWithIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeEndsWithIn	(Getter<E, String> getter, Collection<String> value)	{ return likeEndsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeEndsWithInIfNotEmpty(Getter<E, String> getter, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notLikeEndsWithIn(Getter<E, String> getter, Collection<String> value)	{ return notLikeEndsWithIn(Estivate.attribute(getter), value); }
 	
-	public static <E> Aggregator likeContainsIn	(Getter<E, String> function, Collection<String> value)	{ return likeContainsIn(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Aggregator likeContainsInIfNotEmpty(Getter<E, String> function, Collection<String> values) 	{ return likeContainsInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E> Aggregator notLikeContainsIn(Getter<E, String> function, Collection<String> value)	{ return notLikeContainsIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeContainsIn	(Getter<E, String> getter, Collection<String> value)	{ return likeContainsIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeContainsInIfNotEmpty(Getter<E, String> getter, Collection<String> values) 	{ return likeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notLikeContainsIn(Getter<E, String> getter, Collection<String> value)	{ return notLikeContainsIn(Estivate.attribute(getter), value); }
 
 	 
-	public static <E> Aggregator likeIn				(Getter<E, String> function, Collection<String> value)	{ return likeIn(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Aggregator likeInIfNotEmpty	(Getter<E, String> function, Collection<String> value)  	{ return likeInIfNotEmpty(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Aggregator notLikeIn			(Getter<E, String> function, Collection<String> value)	{ return notLikeIn(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Aggregator likeIn				(Getter<E, String> getter, Collection<String> value)	{ return likeIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeInIfNotEmpty	(Getter<E, String> getter, Collection<String> value)  	{ return likeInIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeIn			(Getter<E, String> getter, Collection<String> value)	{ return notLikeIn(Estivate.attribute(getter), value); }
 	
 
-	public static <E, P> Criterion isNull		(Getter<E, P> function) 						{ return isNull(FieldUtils.attributeFromLambda(function));}
-	public static <E, P> Criterion isNotNull	(Getter<E, P> function) 						{ return isNotNull(FieldUtils.attributeFromLambda(function));}
+	public static <E, P> Criterion isNull		(Getter<E, P> getter)	{ return isNull(Estivate.attribute(getter));}
+	public static <E, P> Criterion isNotNull	(Getter<E, P> getter) 	{ return isNotNull(Estivate.attribute(getter));}
 	
 
-	public static <E> Criterion matchAgainst(Getter<E, String> function, String value) 			{ return matchAgainst(FieldUtils.attributeFromLambda(function), value); }	
-	public static <E> Criterion matchAgainstIfNotNull(Getter<E, String> function, String value) { return matchAgainstIfNotNull(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notMatchAgainst(Getter<E, String> function, String value) 			{ return notMatchAgainst(FieldUtils.attributeFromLambda(function), value); }
-	public static <E> Criterion notMatchAgainstIfNotNull(Getter<E, String> function, String value) { return notMatchAgainstIfNotNull(FieldUtils.attributeFromLambda(function), value); }
+	public static <E> Criterion matchAgainst(Getter<E, String> getter, String value) 			{ return matchAgainst(Estivate.attribute(getter), value); }	
+	public static <E> Criterion matchAgainstIfNotNull(Getter<E, String> getter, String value) { return matchAgainstIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notMatchAgainst(Getter<E, String> getter, String value) 			{ return notMatchAgainst(Estivate.attribute(getter), value); }
+	public static <E> Criterion notMatchAgainstIfNotNull(Getter<E, String> getter, String value) { return notMatchAgainstIfNotNull(Estivate.attribute(getter), value); }
 	
-	public static <E> Aggregator matchAgainstIn(Getter<E, String> function, Collection<String> values)			{ return matchAgainstIn(FieldUtils.attributeFromLambda(function), values); }
-	public static <E> Aggregator matchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
-	public static <E> Aggregator notMatchAgainstIn(Getter<E, String> function, Collection<String> values)			{ return notMatchAgainstIn(FieldUtils.attributeFromLambda(function), values); }
-	public static <E> Aggregator notMatchAgainstInIfNotEmpty(Getter<E, String> function, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(FieldUtils.attributeFromLambda(function), values); }
+	public static <E> Aggregator matchAgainstIn(Getter<E, String> getter, Collection<String> values)			{ return matchAgainstIn(Estivate.attribute(getter), values); }
+	public static <E> Aggregator matchAgainstInIfNotEmpty(Getter<E, String> getter, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notMatchAgainstIn(Getter<E, String> getter, Collection<String> values)			{ return notMatchAgainstIn(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notMatchAgainstInIfNotEmpty(Getter<E, String> getter, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
 	
-	public static <E> Criterion nativeCriterion (Getter<E, String> function, String criterion)	{ return nativeCriterion(FieldUtils.attributeFromLambda(function), criterion); }
+	public static <E> Criterion nativeCriterion (Getter<E, String> getter, String criterion)	{ return nativeCriterion(Estivate.attribute(getter), criterion); }
 	
-	public static <E, P> Criterion inSubQuery(Getter<E, P> function, SelectQuery<?> subQuery)	  	{ return inSubQuery(FieldUtils.attributeFromLambda(function), subQuery); }
-	public static <E, P> Criterion notInSubQuery(Getter<E, P> function, SelectQuery<?> subQuery)	{ return notInSubQuery(FieldUtils.attributeFromLambda(function), subQuery); }
+	public static <E, P> Criterion inSubQuery(Getter<E, P> getter, SelectQuery<?> subQuery)	  	{ return inSubQuery(Estivate.attribute(getter), subQuery); }
+	public static <E, P> Criterion notInSubQuery(Getter<E, P> getter, SelectQuery<?> subQuery)	{ return notInSubQuery(Estivate.attribute(getter), subQuery); }
 	
 	
 	 
 	 public static class Functions{
 		
 		/* Math Functions */
-		public static AttributeFunction.Function abs = new AttributeFunction.Function("abs(", ")");
-		public static AttributeFunction.Function round = new AttributeFunction.Function("round(", ")");
-		public static AttributeFunction.Function ceil = new AttributeFunction.Function("ceil(", ")");
-		public static AttributeFunction.Function floor = new AttributeFunction.Function("floor(", ")");
-		public static AttributeFunction.Function mod(int mod) {return new AttributeFunction.Function("mod(", mod+")"); }
-		public static AttributeFunction.Function pow = new AttributeFunction.Function("pow(", ")"); 
-		public static AttributeFunction.Function sqrt = new AttributeFunction.Function("sqrt(", ")");
-		public static AttributeFunction.Function log = new AttributeFunction.Function("log(", ")");
-		public static AttributeFunction.Function exp = new AttributeFunction.Function("exp(", ")"); 
-		public static AttributeFunction.Function sin = new AttributeFunction.Function("sin(", ")"); 
-		public static AttributeFunction.Function cos = new AttributeFunction.Function("cos(", ")"); 
-		public static AttributeFunction.Function tan = new AttributeFunction.Function("tan(", ")"); 
+		public static Attribute.Function abs = new Attribute.Function("abs(", ")");
+		public static Attribute.Function round = new Attribute.Function("round(", ")");
+		public static Attribute.Function ceil = new Attribute.Function("ceil(", ")");
+		public static Attribute.Function floor = new Attribute.Function("floor(", ")");
+		public static Attribute.Function mod(int mod) {return new Attribute.Function("mod(", mod+")"); }
+		public static Attribute.Function pow = new Attribute.Function("pow(", ")"); 
+		public static Attribute.Function sqrt = new Attribute.Function("sqrt(", ")");
+		public static Attribute.Function log = new Attribute.Function("log(", ")");
+		public static Attribute.Function exp = new Attribute.Function("exp(", ")"); 
+		public static Attribute.Function sin = new Attribute.Function("sin(", ")"); 
+		public static Attribute.Function cos = new Attribute.Function("cos(", ")"); 
+		public static Attribute.Function tan = new Attribute.Function("tan(", ")"); 
 		
 		/* Date Functions */
-		public static AttributeFunction.Function date = new AttributeFunction.Function("date(", ")"); 
-		public static AttributeFunction.Function date_add(int value, String unit){ return new AttributeFunction.Function("date_add(", ", INTERVAL "+value+" "+unit+")"); }		
+		public static Attribute.Function date = new Attribute.Function("date(", ")"); 
+		public static Attribute.Function date_add(int value, String unit){ return new Attribute.Function("date_add(", ", INTERVAL "+value+" "+unit+")"); }		
 		
-		public static AttributeFunction.Function time = new AttributeFunction.Function("time(", ")"); 
-		public static AttributeFunction.Function timestamp = new AttributeFunction.Function("timestamp(", ")");
-		public static AttributeFunction.Function now = new AttributeFunction.Function("now(", ")"); 
-		public static AttributeFunction.Function month = new AttributeFunction.Function("month(", ")");
-		public static AttributeFunction.Function year = new AttributeFunction.Function("year(", ")");
+		public static Attribute.Function time = new Attribute.Function("time(", ")"); 
+		public static Attribute.Function timestamp = new Attribute.Function("timestamp(", ")");
+		public static Attribute.Function now = new Attribute.Function("now(", ")"); 
+		public static Attribute.Function month = new Attribute.Function("month(", ")");
+		public static Attribute.Function year = new Attribute.Function("year(", ")");
 
 		/* String Functions */
-		public static AttributeFunction.Function lower = new AttributeFunction.Function("lower(", ")"); 
-		public static AttributeFunction.Function upper = new AttributeFunction.Function("upper(", ")"); 
-		public static AttributeFunction.Function length = new AttributeFunction.Function("length(", ")"); 
-		public static AttributeFunction.Function trim = new AttributeFunction.Function("trim(", ")");
-		public static AttributeFunction.Function charLength = new AttributeFunction.Function("char_length(", ")");
+		public static Attribute.Function lower = new Attribute.Function("lower(", ")"); 
+		public static Attribute.Function upper = new Attribute.Function("upper(", ")"); 
+		public static Attribute.Function length = new Attribute.Function("length(", ")"); 
+		public static Attribute.Function trim = new Attribute.Function("trim(", ")");
+		public static Attribute.Function charLength = new Attribute.Function("char_length(", ")");
 
 		/* Aggregate Functions : cannot be used in where clause */
-		public static AttributeFunction.Function count = new AttributeFunction.Function("count(", ")");
-		public static AttributeFunction.Function countDistinct = new AttributeFunction.Function("count(distinct ", ")");
-		public static AttributeFunction.Function sum = new AttributeFunction.Function("sum(", ")");
-		public static AttributeFunction.Function sumDistinct = new AttributeFunction.Function("sum(distinct ", ")");
-		public static AttributeFunction.Function avg = new AttributeFunction.Function("avg(", ")");
-		public static AttributeFunction.Function avgDistinct = new AttributeFunction.Function("avg(distinct ", ")");
-		public static AttributeFunction.Function min = new AttributeFunction.Function("min(", ")");
-		public static AttributeFunction.Function max = new AttributeFunction.Function("max(", ")");
-		public static AttributeFunction.Function groupConcat = new AttributeFunction.Function("group_concat(", ")");
-		public static AttributeFunction.Function groupConcatDistinct = new AttributeFunction.Function("group_concat(distinct ", ")");
+		public static Attribute.Function count = new Attribute.Function("count(", ")");
+		public static Attribute.Function countDistinct = new Attribute.Function("count(distinct ", ")");
+		public static Attribute.Function sum = new Attribute.Function("sum(", ")");
+		public static Attribute.Function sumDistinct = new Attribute.Function("sum(distinct ", ")");
+		public static Attribute.Function avg = new Attribute.Function("avg(", ")");
+		public static Attribute.Function avgDistinct = new Attribute.Function("avg(distinct ", ")");
+		public static Attribute.Function min = new Attribute.Function("min(", ")");
+		public static Attribute.Function max = new Attribute.Function("max(", ")");
+		public static Attribute.Function groupConcat = new Attribute.Function("group_concat(", ")");
+		public static Attribute.Function groupConcatDistinct = new Attribute.Function("group_concat(distinct ", ")");
 
 		/* Null Handling Functions */
-		public static AttributeFunction.Function isNull = new AttributeFunction.Function("", " IS NULL");
-		public static AttributeFunction.Function isNotNull = new AttributeFunction.Function("", " IS NOT NULL");
-		public static AttributeFunction.Function ifNull(String alternative) { return new AttributeFunction.Function("ifnull(", ", "+alternative+")"); }
+		public static Attribute.Function isNull = new Attribute.Function("", " IS NULL");
+		public static Attribute.Function isNotNull = new Attribute.Function("", " IS NOT NULL");
+		public static Attribute.Function ifNull(String alternative) { return new Attribute.Function("ifnull(", ", "+alternative+")"); }
 
 		/* JSON Functions */
-		public static AttributeFunction.Function json_extract(String path){ return new AttributeFunction.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
-		public static AttributeFunction.Function json_unquote = new AttributeFunction.Function("JSON_UNQUOTE(", ")");
-		public static AttributeFunction.Function json_keys = new AttributeFunction.Function("JSON_KEYS(", ")");
-		public static AttributeFunction.Function json_length = new AttributeFunction.Function("JSON_LENGTH(", ")");
+		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
+		public static Attribute.Function json_unquote = new Attribute.Function("JSON_UNQUOTE(", ")");
+		public static Attribute.Function json_keys = new Attribute.Function("JSON_KEYS(", ")");
+		public static Attribute.Function json_length = new Attribute.Function("JSON_LENGTH(", ")");
 
 		 
 	}

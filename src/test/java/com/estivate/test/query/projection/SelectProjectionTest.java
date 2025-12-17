@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -61,6 +62,7 @@ public class SelectProjectionTest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ProductStatsProjection {
+
         @Projection.Min(entity = ProductEntity.class, attribute = ProductEntity.Fields.price, alias = "minPrice")
         private Float minPrice;
         
@@ -75,6 +77,7 @@ public class SelectProjectionTest {
 
         @Transient
         private String transientAttribute;
+        
     }
 
     /**
@@ -83,11 +86,22 @@ public class SelectProjectionTest {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CustomerCountByCountryProjection {
+    public static class CustomerCountAliasByCountryProjection {
         @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.country)
         private Country country;
         
         @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "count")
+        private Long count;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerCountByCountryProjection {
+        @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.country)
+        private Country country;
+        
+        @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
         private Long count;
     }
 
@@ -214,6 +228,32 @@ public class SelectProjectionTest {
         assertEquals(150L, result.getTotalStock(), "Total stock should match");
     }
 
+    @Test
+    public void testProject_WithAliasAndGroupBy() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .groupBy(CustomerEntity.class, CustomerEntity.Fields.country);
+
+        List<CustomerCountAliasByCountryProjection> results = query.projectToList(context, CustomerCountAliasByCountryProjection.class);
+
+        assertNotNull(results, "Results should not be null");
+        assertEquals(2, results.size(), "Should have 2 country groups");
+        
+        // Find USA group
+        Optional<CustomerCountAliasByCountryProjection> usaGroup = results.stream()
+            .filter(r -> Country.USA.equals(r.getCountry()))
+            .findFirst();
+        assertTrue(usaGroup.isPresent(), "USA group should exist");
+        assertEquals(2L, usaGroup.get().getCount(), "USA should have 2 customers");
+        
+        // Find UK group
+        Optional<CustomerCountAliasByCountryProjection> ukGroup = results.stream()
+            .filter(r -> Country.UK.equals(r.getCountry()))
+            .findFirst();
+        assertTrue(ukGroup.isPresent(), "UK group should exist");
+        assertEquals(1L, ukGroup.get().getCount(), "UK should have 1 customer");
+    }
+
+    
     @Test
     public void testProject_WithGroupBy() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)

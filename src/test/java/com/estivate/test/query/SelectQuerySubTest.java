@@ -11,7 +11,7 @@ import com.estivate.Estivate;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
-import com.estivate.result.Result;
+import com.estivate.result.ResultRow;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -36,7 +36,7 @@ public class SelectQuerySubTest {
 				.inSubQuery(CustomerEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		try(Connection connection = context.datasource.getConnection()){
-			Statement statement = Statement.toStatement(context, connection, query);
+			Statement statement = new Statement(context, connection, query);
 			
 			System.out.println(statement.query());
 		}
@@ -92,9 +92,9 @@ public class SelectQuerySubTest {
         
         context.fetchList(query);
         
-        List<Result> results = context.fetchListAsResults(query);
+        List<ResultRow<ProductEntity>> results = context.fetchListAsResults(query);
         
-        for(Result result : results) {
+        for(ResultRow<ProductEntity> result : results) {
         	ProductCategory productCategory = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
         }
         

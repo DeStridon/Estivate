@@ -16,7 +16,7 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.result.Result;
+import com.estivate.result.ResultRow;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,9 +46,9 @@ public class MySQLContext extends Context {
 
 			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.toTableName(c));
 			
-			List<Result> results = this.fetchListAsResults(statement);
+			List<ResultRow<Object>> results = this.fetchListAsResults(statement);
 			List<IndexRow> indexRows = new ArrayList<>();
-			for(Result result : results) {
+			for(ResultRow<Object> result : results) {
 				
 				IndexRow indexRow = IndexRow.builder()
 					.table(result.columnAsString("Table"))
