@@ -6,14 +6,14 @@ import java.util.stream.Collectors;
 import com.estivate.Entity;
 import com.estivate.context.Context;
 
-public class DeleteQuery<T> extends Query<DeleteQuery<T>, T> {
+public class DeleteQuery<E> extends Query<DeleteQuery<E>, E> {
 
 
-    public DeleteQuery(Class<T> baseClass) {
+    public DeleteQuery(Class<E> baseClass) {
     	super(baseClass);
     }
 
-    public DeleteQuery(Entity<T> entity) {
+    public DeleteQuery(Entity<E> entity) {
     	super(entity);
     }
 
@@ -21,8 +21,8 @@ public class DeleteQuery<T> extends Query<DeleteQuery<T>, T> {
 
 
 	@SuppressWarnings("unchecked")
-	public DeleteQuery<T> clone() {
-		DeleteQuery<T> queryClone = new DeleteQuery<T>(entity);
+	public DeleteQuery<E> clone() {
+		DeleteQuery<E> queryClone = new DeleteQuery<E>(entity);
 		
 		queryClone.comments = new ArrayList<>(this.comments);
 		queryClone.criterions = this.criterions.stream().map(x -> x.clone()).collect(Collectors.toList());

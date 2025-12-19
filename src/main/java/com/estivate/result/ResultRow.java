@@ -42,24 +42,24 @@ public class ResultRow<U> {
 
 	
 	@SneakyThrows
-	public <U> U mapTo(Entity<U> clazz) throws SecurityException, IllegalArgumentException {
+	public <T> T mapTo(Entity<T> clazz) throws SecurityException, IllegalArgumentException {
 		
 		String key = resultTable.context.nameMapper.toEntityName(clazz);
 		
-		U u = (U) cache.get(key);
+		T t = (T) cache.get(key);
 		
-		if(u == null) {
-			EntityMapper<U> mapper = new EntityMapper<>(resultTable.context, resultTable.query, clazz.entity);
-			u = mapper.map(columnValues);
-			cache.put(key, u);
+		if(t == null) {
+			EntityMapper<T> mapper = new EntityMapper<>(resultTable.context, resultTable.query, clazz.entity);
+			t = mapper.map(columnValues);
+			cache.put(key, t);
 		}
 		
-		return u;
+		return t;
 		
 	}
 	
-	public <U> U mapTo(Class<U> clazz) throws SecurityException, IllegalArgumentException {
-		return mapTo(new Entity<U>(clazz));
+	public <T> T mapTo(Class<T> clazz) throws SecurityException, IllegalArgumentException {
+		return mapTo(new Entity<T>(clazz));
 	}
 
 	
@@ -82,8 +82,8 @@ public class ResultRow<U> {
 	public Byte 			columnAsByte(String column) { String value = columnAsString(column); return value == null ? null : Byte.valueOf(value); }
 	public Character 		columnAsChar(String column) { String value = columnAsString(column); return value == null ? null : value.charAt(0); }
 	
-	public <U> U columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) Enum.valueOf((Class)enumClass, columnAsString(column)); }
-	public <U> U columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (U) enumClass.getEnumConstants()[columnAsInteger(column)]; }
+	public <T> T columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (T) Enum.valueOf((Class)enumClass, columnAsString(column)); }
+	public <T> T columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (T) enumClass.getEnumConstants()[columnAsInteger(column)]; }
 	
 
 	private Integer indexOf(String column){

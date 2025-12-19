@@ -149,7 +149,7 @@ public class FieldUtils {
 	
 
 	
-	public static <E, P> Attribute attributeFromLambda(Getter<E, P> getter, Attribute.Function function, String alias) {
+	public static <E, P> Attribute attributeFromLambda(AttributeGetter<E, P> getter, Attribute.Function function, String alias) {
 		try {
             SerializedLambda sl = serializeLambda(getter);
 
@@ -176,7 +176,7 @@ public class FieldUtils {
 	
 	// Correct functional interface: matches Person::getName
     @FunctionalInterface
-    public interface Getter<T, R> extends Serializable {
+    public interface AttributeGetter<T, R> extends Serializable {
         R get(T bean);
     }
 

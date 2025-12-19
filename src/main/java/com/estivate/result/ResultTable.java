@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.estivate.Entity;
+import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.query.Attribute;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.AttributeMapper;
 import com.estivate.result.IMapper.BooleanMapper;
@@ -21,6 +24,7 @@ import com.estivate.result.IMapper.OrdinalEnumMapper;
 import com.estivate.result.IMapper.ShortMapper;
 import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
+import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.Data;
 
@@ -51,7 +55,9 @@ public class ResultTable <U> {
     public <T> T map(IMapper<T> mapper) {  return rows.isEmpty() ? null : mapper.map(rows.get(0).getColumnValues());}
 
     public <T> T mapTo(Class<T> entity) { return map(new EntityMapper<>(context, query, entity)); }
-    public Object mapToAttribute(Class<?> entity, String attributeName) { return map(new AttributeMapper(entity, attributeName)); }
+    public <T> T mapTo(Entity<T> entity) { return map(new EntityMapper<>(context, query, entity.entity)); }
+    public Object mapToAttribute(Class<?> entity, String attribute) { return map(new AttributeMapper(entity, attribute)); }
+    public Object mapToAttribute(Entity<?> entity, String attribute) { return map(new AttributeMapper(entity.entity, attribute)); }
     public String mapToString() { return map(new StringMapper()); }
     public Short mapToShort() { return map(new ShortMapper()); }
     public Integer mapToInteger() { return map(new IntegerMapper()); }
@@ -68,7 +74,6 @@ public class ResultTable <U> {
     public <E extends Enum<E>> E mapToStringEnum(Class<E> enumClass) { return map(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> E mapToOrdinalEnum(Class<E> enumClass) { return map(new OrdinalEnumMapper<>(enumClass)); }
 
-
     public <T> List<T> mapList(IMapper<T> mapper) {
         List<T> results = new ArrayList<>();
         for(ResultRow<U> row : rows) {
@@ -81,6 +86,9 @@ public class ResultTable <U> {
 
     public <T> List<T> mapToList(Class<T> entity) { return mapList(new EntityMapper<>(context, query, entity)); }
     public List<Object> mapToListAttribute(Class<?> entity, String attributeName) { return mapList(new AttributeMapper(entity, attributeName)); }
+    public List<Object> mapToListAttribute(Entity<?> entity, String attributeName) { return mapList(new AttributeMapper(entity.entity, attributeName)); }
+    public List<Object> mapToListAttribute(Attribute attribute) { return mapList(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
+    public <T> List<T> mapToListAttribute(AttributeGetter<T, T> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<T>) mapList(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
     public List<String> mapToListString() { return mapList(new StringMapper()); }
     public List<Short> mapToListShort() { return mapList(new ShortMapper()); }
     public List<Integer> mapToListInteger() { return mapList(new IntegerMapper()); }
@@ -98,6 +106,9 @@ public class ResultTable <U> {
     public <T> Set<T> mapSet(IMapper<T> mapper){ return mapList(mapper).stream().collect(Collectors.toSet());}
     public <T> Set<T> mapToSet(Class<T> entity) { return mapSet(new EntityMapper<>(context, query, entity)); }
     public Set<Object> mapToSetAttribute(Class<?> entity, String attributeName) { return mapSet(new AttributeMapper(entity, attributeName)); }
+    public Set<Object> mapToSetAttribute(Entity<?> entity, String attributeName) { return mapSet(new AttributeMapper(entity.entity, attributeName)); }
+    public Set<Object> mapToSetAttribute(Attribute attribute) { return mapSet(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
+
     public Set<String> mapToSetString() { return mapSet(new StringMapper()); }
     public Set<Short> mapToSetShort() { return mapSet(new ShortMapper()); }
     public Set<Integer> mapToSetInteger() { return mapSet(new IntegerMapper()); }

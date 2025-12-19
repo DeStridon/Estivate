@@ -134,7 +134,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId());
 
-        Optional<Object> name = query.projectToAttributeOptional(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Optional<String> name = (Optional<String>) query.projectToAttributeOptional(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
         assertTrue(name.isPresent(), "Name should be present");
         assertEquals(testCustomer1.getName(), name.get(), "Name should match");
@@ -145,7 +145,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, 99999L);
 
-        Optional<Object> name = query.projectToAttributeOptional(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Optional<String> name = (Optional<String>) query.projectToAttributeOptional(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
         assertFalse(name.isPresent(), "Name should not be present for non-existing data");
     }

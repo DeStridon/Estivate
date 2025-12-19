@@ -10,31 +10,31 @@ import com.estivate.context.Context;
 
 import lombok.Getter;
 
-public class UpdateQuery<T> extends Query<UpdateQuery<T>, T> {
+public class UpdateQuery<E> extends Query<UpdateQuery<E>, E> {
 
     @Getter
     LinkedHashMap<Attribute, Object> updates = new LinkedHashMap<>();
 
-    public UpdateQuery(Class<T> baseClass) {
+    public UpdateQuery(Class<E> baseClass) {
     	super(baseClass);
     }
 
-    public UpdateQuery(Entity<T> entity) {
+    public UpdateQuery(Entity<E> entity) {
         super(entity);
     }
 
-    public UpdateQuery<T> set(Attribute attribute, Object value) {
+    public UpdateQuery<E> set(Attribute attribute, Object value) {
         updates.put(attribute, value);
         return this;
     }
 
-    public UpdateQuery<T> set(String attribute, Object value) {
+    public UpdateQuery<E> set(String attribute, Object value) {
         return set(Estivate.attribute(entity, attribute), value);
     }
 
 	@SuppressWarnings("unchecked")
-	public UpdateQuery<T> clone() {
-		UpdateQuery<T> queryClone = new UpdateQuery<T>(entity);
+	public UpdateQuery<E> clone() {
+		UpdateQuery<E> queryClone = new UpdateQuery<E>(entity);
 
 		queryClone.comments = new ArrayList<>(this.comments);
 		

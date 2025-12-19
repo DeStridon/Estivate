@@ -508,7 +508,7 @@ public class DeleteQueryCriterionTest {
 		
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.inSubQuery(idAttribute, subQuery);
+			.in(idAttribute, subQuery);
 		
 		Assert.assertTrue("Should generate IN subquery", context.queryAsString(query).contains("ID IN ("));
 	}
@@ -532,7 +532,7 @@ public class DeleteQueryCriterionTest {
 		
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		DeleteQuery<CustomerEntity> query = new DeleteQuery<>(CustomerEntity.class)
-			.notInSubQuery(idAttribute, subQuery);
+			.notIn(idAttribute, subQuery);
 		
 		Assert.assertTrue("Should generate NOT IN subquery", context.queryAsString(query).contains("ID NOT IN ("));
 	}
