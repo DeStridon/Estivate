@@ -85,9 +85,9 @@ public class ResultTable <U> {
 
 
     public <T> List<T> mapToList(Class<T> entity) { return mapList(new EntityMapper<>(context, query, entity)); }
-    public List<Object> mapToListAttribute(Class<?> entity, String attributeName) { return mapList(new AttributeMapper(entity, attributeName)); }
-    public List<Object> mapToListAttribute(Entity<?> entity, String attributeName) { return mapList(new AttributeMapper(entity.entity, attributeName)); }
-    public List<Object> mapToListAttribute(Attribute attribute) { return mapList(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
+    public List<?> mapToListAttribute(Class<?> entity, String attributeName) { return mapList(new AttributeMapper(entity, attributeName)); }
+    public List<?> mapToListAttribute(Entity<?> entity, String attributeName) { return mapList(new AttributeMapper(entity.entity, attributeName)); }
+    public List<?> mapToListAttribute(Attribute attribute) { return mapList(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
     public <T> List<T> mapToListAttribute(AttributeGetter<T, T> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<T>) mapList(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
     public List<String> mapToListString() { return mapList(new StringMapper()); }
     public List<Short> mapToListShort() { return mapList(new ShortMapper()); }

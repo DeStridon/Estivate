@@ -340,16 +340,16 @@ public abstract class Context {
 	/* 
 	 * Clones the query, selects only the attribute, and returns a list of the values
 	 */
-	public List<Object> projectToAttributeList(SelectQuery<?> query, Class<?> entity, String attributeName) {
+	public List<?> projectToAttributeList(SelectQuery<?> query, Class<?> entity, String attributeName) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(entity, attributeName);
 		return fetch(newQuery).mapToListAttribute(entity, attributeName);
 	}
-	public List<Object> projectToAttributeList(SelectQuery<?> query, Entity<?> entity, String attributeName) {
+	public List<?> projectToAttributeList(SelectQuery<?> query, Entity<?> entity, String attributeName) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(entity, attributeName);
 		return fetch(newQuery).mapToListAttribute(entity, attributeName);
 	}
 
-	public List<Object> projectToAttributeList(SelectQuery<?> query, Attribute attribute) {
+	public List<?> projectToAttributeList(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
 		return fetch(newQuery).mapToListAttribute(attribute);
 	}
