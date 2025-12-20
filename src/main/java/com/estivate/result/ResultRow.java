@@ -26,16 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 @AllArgsConstructor
-public class ResultRow<U> {
+public class ResultRow<E> {
 
-	final ResultTable<U> resultTable;
+	final ResultTable<E> resultTable;
 	final String[] columnValues;
 	
 
 	private Map<String, Object> cache = new HashMap<>();
 
 	
-	public ResultRow(ResultTable<U> resultTable, String[] columnValues) {
+	public ResultRow(ResultTable<E> resultTable, String[] columnValues) {
 		this.resultTable = resultTable;
 		this.columnValues = columnValues;
 	}
@@ -82,8 +82,8 @@ public class ResultRow<U> {
 	public Byte 			columnAsByte(String column) { String value = columnAsString(column); return value == null ? null : Byte.valueOf(value); }
 	public Character 		columnAsChar(String column) { String value = columnAsString(column); return value == null ? null : value.charAt(0); }
 	
-	public <T> T columnAsStringEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (T) Enum.valueOf((Class)enumClass, columnAsString(column)); }
-	public <T> T columnAsOrdinalEnum(String column, Class<U> enumClass) { String value = columnAsString(column); return value == null ? null : (T) enumClass.getEnumConstants()[columnAsInteger(column)]; }
+	public <T extends Enum<T>> T columnAsStringEnum(String column, Class<T> enumClass) { String value = columnAsString(column); return value == null ? null : (T) Enum.valueOf((Class<T>)enumClass, columnAsString(column)); }
+	public <T extends Enum<T>> T columnAsOrdinalEnum(String column, Class<T> enumClass) { String value = columnAsString(column); return value == null ? null : (T) ((Class<T>)enumClass).getEnumConstants()[columnAsInteger(column)]; }
 	
 
 	private Integer indexOf(String column){
