@@ -250,6 +250,11 @@ public class FieldUtils {
 		if (countAnnotation != null) {
 			return new ColumnMapping(Estivate.attribute(countAnnotation.entity(), countAnnotation.attribute(), Estivate.Functions.count, countAnnotation.alias()), field);
 		}
+		
+		Projection.CountDistinct countDistinctAnnotation = field.getDeclaredAnnotation(Projection.CountDistinct.class);
+		if (countDistinctAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(countDistinctAnnotation.entity(), countDistinctAnnotation.attribute(), Estivate.Functions.countDistinct, countDistinctAnnotation.alias()), field);
+		}
 
 		Projection.Sum sumAnnotation = field.getDeclaredAnnotation(Projection.Sum.class);
 		if (sumAnnotation != null) {

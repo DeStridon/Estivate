@@ -21,7 +21,7 @@ public class ProductStatisticsShowcase {
 
 
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
-            .selectCountAs(ProductEntity.class, AbstractEntity.Fields.id, "orderCount")
+            .selectCount(ProductEntity.class, AbstractEntity.Fields.id, "orderCount")
             .joinInner(ProductEntity.class, OrderLineEntity.class)
             .joinInner(OrderLineEntity.class, OrderEntity.class)
             .eq(OrderEntity.class, OrderEntity.Fields.status, OrderStatus.COMPLETED);
@@ -36,14 +36,12 @@ public class ProductStatisticsShowcase {
         // Simulate multiple orders with 3 different products
 
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
-            .selectSumAs(OrderLineEntity.class, OrderLineEntity.Fields.totalPrice, "orderCount")
+            .selectSum(OrderLineEntity.class, OrderLineEntity.Fields.totalPrice, "orderCount")
             .joinInner(ProductEntity.class, OrderLineEntity.class)
             .joinInner(OrderLineEntity.class, OrderEntity.class)
             .eq(OrderEntity.class, OrderEntity.Fields.status, OrderStatus.COMPLETED);
 
         //add order by sum
-        
-
     }
 
     @Test

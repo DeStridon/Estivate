@@ -401,7 +401,7 @@ public abstract class Context {
 			.clearSelects()
 			.clearGroupBys()
 			.clearOrderBys()
-			.selectCountDistinctAs(entity, attributeName, "count"));
+			.selectCountDistinct(entity, attributeName, "count"));
 	}
 	public Long projectToCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return projectToCountDistinct(query, entity.entity, attributeName); }
 	public Long projectToCountDistinct(SelectQuery<?> query, Attribute attribute) { return projectToCountDistinct(query, attribute.entity, attribute.attribute); }

@@ -50,8 +50,24 @@ public class SelectProjectionTest {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CustomerCountProjection {
+    public static class CustomerCountAliasProjection {
         @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "customerCount")
+        private Long customerCount;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerCountProjection {
+        @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
+        private Long customerCount;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerCountDistinctProjection {
+        @Projection.CountDistinct(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
         private Long customerCount;
     }
 
@@ -206,7 +222,7 @@ public class SelectProjectionTest {
     }
 
     @Test
-    public void testProject_WithAggregateFunction() {
+    public void projectionToCount() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
         CustomerCountProjection count = query.projectTo(context, CustomerCountProjection.class);
@@ -214,6 +230,30 @@ public class SelectProjectionTest {
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
     }
+
+    @Test
+    public void projectionToCountAlias() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
+
+        CustomerCountAliasProjection count = query.projectTo(context, CustomerCountAliasProjection.class);
+
+        assertNotNull(count, "Result should not be null");
+        assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
+    }
+
+    @Test
+    public void projectionToCountDistinct() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
+
+        CustomerCountDistinctProjection count = query.projectTo(context, CustomerCountDistinctProjection.class);
+
+        assertNotNull(count, "Result should not be null");
+        assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
+    }
+
+    
+
+    
 
     @Test
     public void testProject_WithMultipleAggregateFunctions() {

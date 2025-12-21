@@ -21,13 +21,21 @@ public class Projection {
 		public String attribute();
 		public String alias() default "";
 	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface CountDistinct {
+		public Class<?> entity();
+		public String attribute();
+		public String alias() default "";
+	}
 	
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Sum {
 		public Class<?> entity();
 		public String attribute();
-		public String alias();
+		public String alias() default "";
 	}
 	
 	@Target( ElementType.FIELD )
@@ -35,7 +43,7 @@ public class Projection {
 	public @interface Min {
 		public Class<?> entity();
 		public String attribute();
-		public String alias();
+		public String alias() default "";
 	}
 	
 	@Target( ElementType.FIELD )
@@ -43,7 +51,7 @@ public class Projection {
 	public @interface Max {
 		public Class<?> entity();
 		public String attribute();
-		public String alias();
+		public String alias() default "";
 	}
 	
 	@Target( ElementType.FIELD )
@@ -51,7 +59,7 @@ public class Projection {
 	public @interface Avg {
 		public Class<?> entity();
 		public String attribute();
-		public String alias();
+		public String alias() default "";
 	}
 
 	@Target( ElementType.FIELD )

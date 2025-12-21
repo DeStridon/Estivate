@@ -65,7 +65,7 @@ public class SelectQuerySubTest {
 	@Test
 	void joinSubQueryTest() throws SQLException {
 		SelectQuery<OrderEntity> subQuery = Estivate.selectQuery(OrderEntity.class)
-			.selectMaxAs(AbstractEntity.Fields.id, "maxId");
+			.selectMax(AbstractEntity.Fields.id, "maxId");
 
 		SelectQuery<OrderEntity> mainQuery = Estivate.selectQuery(OrderEntity.class)
 			.joinInner(OrderEntity.class, Estivate.subQueryEntity(subQuery, "sub"), AbstractEntity.Fields.id, "maxId");
@@ -79,7 +79,7 @@ public class SelectQuerySubTest {
 	@Test
 	void joinSubQueryTest2() {
 		 SelectQuery<ProductEntity> subQuery = Estivate.selectQuery(ProductEntity.class)
-		            .selectMaxAs(ProductEntity.class, AbstractEntity.Fields.id, "MAXID")
+		            .selectMax(ProductEntity.class, AbstractEntity.Fields.id, "MAXID")
 		            .groupBy(ProductEntity.class, ProductEntity.Fields.category);
 
         // Main query to get step ID, status, and count grouped by step and status

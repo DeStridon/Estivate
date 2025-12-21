@@ -286,8 +286,9 @@ public class Estivate {
 
 	// Like contains in
 	public static Aggregator likeContainsIn(Attribute attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeContains(attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeContainsInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeContains(attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator likeContainsInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeContainsIn(attribute, values); } return null; }
 	public static Aggregator notLikeContainsIn(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeContains(attribute, x)).collect(Collectors.toList()));	}
+	public static Aggregator notLikeContainsInIfNotEmpty(Attribute attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return notLikeContainsIn(attribute, values); } return null; }
 
 	// isNull
 	public static Criterion isNull		(Attribute attribute) 						{ return new NullCheck(attribute, true);}
@@ -402,8 +403,9 @@ public class Estivate {
 	
 	// Like starts in
 	public static Aggregator likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return or(values.stream().map(x -> likeStartsWith(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeStartsWith(entity, attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeStartsWithIn(entity, attribute, values); } return null; }
 	public static Aggregator notLikeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeStartsWith(entity, attribute, x)).collect(Collectors.toList()));}
+	public static Aggregator notLikeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return notLikeStartsWithIn(entity, attribute, values); } return null; }
 	
 	
 	// Like ends
@@ -418,8 +420,9 @@ public class Estivate {
 	
 	// Like ends in
 	public static Aggregator likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator likeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeEndsWithIn(entity, attribute, values); } return null; }
 	public static Aggregator notLikeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
+	public static Aggregator notLikeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return notLikeEndsWithIn(entity, attribute, values); } return null; }
 	
 	// Like contains
 	public static Criterion likeContains(Entity<?> entity, String attribute, String value)			{ return likeContains(Estivate.attribute(entity, attribute), value);	}
@@ -434,9 +437,10 @@ public class Estivate {
 
 	// Like contains in
 	public static Aggregator likeContainsIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeContains(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeContains(entity, attribute, x)).collect(Collectors.toList())); } return null; }
+	public static Aggregator likeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeContainsIn(entity, attribute, values); } return null; }
 	public static Aggregator notLikeContainsIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeContains(entity, attribute, x)).collect(Collectors.toList()));	}
-
+	public static Aggregator notLikeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return notLikeContainsIn(entity, attribute, values); } return null; }
+	
 	// isNull
 	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return isNull(Estivate.attribute(entity, attribute));}
 	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return isNotNull(Estivate.attribute(entity, attribute));}
@@ -532,19 +536,22 @@ public class Estivate {
 	public static Aggregator likeStartsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ return likeStartsWithIn(new Entity<>(entity), attribute, value); }
 	public static Aggregator likeStartsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(new Entity<>(entity), attribute, values);}
 	public static Aggregator notLikeStartsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ return notLikeStartsWithIn(new Entity<>(entity), attribute, value); }
+	public static Aggregator notLikeStartsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return notLikeStartsWithInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	
 	public static Aggregator likeEndsWithIn	(Class<?> entity, String attribute, Collection<String> value)	{ return likeEndsWithIn(new Entity<>(entity), attribute, value); }
 	public static Aggregator likeEndsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	public static Aggregator notLikeEndsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ return notLikeEndsWithIn(new Entity<>(entity), attribute, value); }
+	public static Aggregator notLikeEndsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return notLikeEndsWithInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	
 	public static Aggregator likeContainsIn	(Class<?> entity, String attribute, Collection<String> value)	{ return likeContainsIn(new Entity<>(entity), attribute, value); }
 	public static Aggregator likeContainsInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return likeContainsInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	public static Aggregator notLikeContainsIn(Class<?> entity, String attribute, Collection<String> value)	{ return notLikeContainsIn(new Entity<>(entity), attribute, value); }
-
+	public static Aggregator notLikeContainsInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return notLikeContainsInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	 
 	public static Aggregator likeIn				(Class<?> entity, String attribute, Collection<String> value)	{ return likeIn(new Entity<>(entity), attribute, value); }
 	public static Aggregator likeInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> value)  	{ return likeInIfNotEmpty(new Entity<>(entity), attribute, value); }
 	public static Aggregator notLikeIn			(Class<?> entity, String attribute, Collection<String> value)	{ return notLikeIn(new Entity<>(entity), attribute, value); }
+	public static Aggregator notLikeInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return notLikeInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	
 
 	public static Criterion isNull		(Class<?> entity, String attribute) 						{ return isNull(new Entity<>(entity), attribute);}
@@ -583,7 +590,7 @@ public class Estivate {
 	public static <E, P> Aggregator notEqOrNull	(AttributeGetter<E, P> getter, P value) { return notEqOrNull(Estivate.attribute(getter), value); }
 
 	
-	public static <E, P> Criterion lt    	(AttributeGetter<E, P> getter, P value)        { return lt(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion lt    		(AttributeGetter<E, P> getter, P value)        { return lt(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator ltOrNull(AttributeGetter<E, P> getter, P value) { return ltOrNull(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion ltIfNotNull   	(AttributeGetter<E, P> getter, P value) { return ltIfNotNull(Estivate.attribute(getter), value); }
 	
@@ -665,15 +672,17 @@ public class Estivate {
 	public static <E> Aggregator likeStartsWithIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeStartsWithIn(Estivate.attribute(getter), value); }
 	public static <E> Aggregator likeStartsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(Estivate.attribute(getter), values);}
 	public static <E> Aggregator notLikeStartsWithIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeStartsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeStartsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeStartsWithInIfNotEmpty(Estivate.attribute(getter), values); }
 	
 	public static <E> Aggregator likeEndsWithIn	(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeEndsWithIn(Estivate.attribute(getter), value); }
 	public static <E> Aggregator likeEndsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
 	public static <E> Aggregator notLikeEndsWithIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeEndsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeEndsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
 	
 	public static <E> Aggregator likeContainsIn	(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeContainsIn(Estivate.attribute(getter), value); }
 	public static <E> Aggregator likeContainsInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
 	public static <E> Aggregator notLikeContainsIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeContainsIn(Estivate.attribute(getter), value); }
-
+	public static <E> Aggregator notLikeContainsInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
 	 
 	public static <E> Aggregator likeIn				(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeIn(Estivate.attribute(getter), value); }
 	public static <E> Aggregator likeInIfNotEmpty	(AttributeGetter<E, String> getter, Collection<String> value)  	{ return likeInIfNotEmpty(Estivate.attribute(getter), value); }

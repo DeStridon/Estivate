@@ -414,20 +414,46 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q notInOrTrueIfEmpty	(Class<?> entity, String attribute, Collection<?> values)	{ super.notInOrTrueIfEmpty(entity, attribute, values); return self(); }
 	
 	
-	public Q likeIfNotNull 			(Class<?> entity, String attribute, String value)        	{ super.likeIfNotNull (entity, attribute, value);  return self(); }
+	public Q likeIfNotNull 			(Class<?> entity, String attribute, String value)        		{ super.likeIfNotNull (entity, attribute, value);  return self(); }
 	public Q likeStartsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.likeStartsWithIfNotNull (entity, attribute, value);  return self(); }
-	public Q likeEndsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.likeEndsWithIfNotNull (entity, attribute, value);  return self(); }
-	public Q likeContainsIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.likeContainsIfNotNull (entity, attribute, value);  return self(); }
+	public Q likeEndsWithIfNotNull 	(Class<?> entity, String attribute, String value)        		{ super.likeEndsWithIfNotNull (entity, attribute, value);  return self(); }
+	public Q likeContainsIfNotNull 	(Class<?> entity, String attribute, String value)        		{ super.likeContainsIfNotNull (entity, attribute, value);  return self(); }
+
+	public Q likeIfNotEmpty 			(Class<?> entity, String attribute, String value)        	{ super.likeIfNotEmpty (entity, attribute, value);  return self(); }
+	public Q likeStartsWithIfNotEmpty 	(Class<?> entity, String attribute, String value)        	{ super.likeStartsWithIfNotEmpty (entity, attribute, value);  return self(); }
+	public Q likeEndsWithIfNotEmpty 	(Class<?> entity, String attribute, String value)        	{ super.likeEndsWithIfNotEmpty (entity, attribute, value);  return self(); }
+	public Q likeContainsIfNotEmpty 	(Class<?> entity, String attribute, String value)        	{ super.likeContainsIfNotEmpty (entity, attribute, value);  return self(); }
+
+	public Q likeIfNotBlank 			(Class<?> entity, String attribute, String value)        	{ super.likeIfNotBlank (entity, attribute, value);  return self(); }
+	public Q likeStartsWithIfNotBlank 	(Class<?> entity, String attribute, String value)        	{ super.likeStartsWithIfNotBlank (entity, attribute, value);  return self(); }
+	public Q likeEndsWithIfNotBlank 	(Class<?> entity, String attribute, String value)        	{ super.likeEndsWithIfNotBlank (entity, attribute, value);  return self(); }
+	public Q likeContainsIfNotBlank 	(Class<?> entity, String attribute, String value)        	{ super.likeContainsIfNotBlank (entity, attribute, value);  return self(); }
+
+	public Q notLikeIfNotNull 			(Class<?> entity, String attribute, String value)        	{ super.notLikeIfNotNull (entity, attribute, value);  return self(); }
+	public Q notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value)        	{ super.notLikeStartsWithIfNotNull (entity, attribute, value);  return self(); }
+	public Q notLikeEndsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeEndsWithIfNotNull (entity, attribute, value);  return self(); }
+	public Q notLikeContainsIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeContainsIfNotNull (entity, attribute, value);  return self(); }
+
+	public Q notLikeIfNotEmpty 			(Class<?> entity, String attribute, String value)        	{ super.notLikeIfNotEmpty (entity, attribute, value);  return self(); }
+	public Q notLikeStartsWithIfNotEmpty(Class<?> entity, String attribute, String value)        	{ super.notLikeStartsWithIfNotEmpty (entity, attribute, value);  return self(); }
+	public Q notLikeEndsWithIfNotEmpty 	(Class<?> entity, String attribute, String value)        	{ super.notLikeEndsWithIfNotEmpty (entity, attribute, value);  return self(); }
+	public Q notLikeContainsIfNotEmpty 	(Class<?> entity, String attribute, String value)        	{ super.notLikeContainsIfNotEmpty (entity, attribute, value);  return self(); }
+
+	public Q notLikeIfNotBlank 			(Class<?> entity, String attribute, String value)        	{ super.notLikeIfNotBlank (entity, attribute, value);  return self(); }
+	public Q notLikeStartsWithIfNotBlank(Class<?> entity, String attribute, String value)        	{ super.notLikeStartsWithIfNotBlank (entity, attribute, value);  return self(); }
+	public Q notLikeEndsWithIfNotBlank 	(Class<?> entity, String attribute, String value)        	{ super.notLikeEndsWithIfNotBlank (entity, attribute, value);  return self(); }
+	public Q notLikeContainsIfNotBlank 	(Class<?> entity, String attribute, String value)        	{ super.notLikeContainsIfNotBlank (entity, attribute, value);  return self(); }
 
 	public Q likeInIfNotEmpty 			(Class<?> entity, String attribute, Collection<String> values) { super.likeInIfNotEmpty(entity, attribute, values); return self(); }
 	public Q likeStartsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { super.likeStartsWithInIfNotEmpty(entity, attribute, values); return self(); }
 	public Q likeEndsWithInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { super.likeEndsWithInIfNotEmpty(entity, attribute, values); return self(); }
 	public Q likeContainsInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { super.likeContainsInIfNotEmpty(entity, attribute, values); return self(); }
+
+	public Q notLikeInIfNotEmpty			(Class<?> entity, String attribute, Collection<String> values) { super.notLikeInIfNotEmpty(entity, attribute, values); return self(); }
+	public Q notLikeStartsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { super.notLikeStartsWithInIfNotEmpty(entity, attribute, values); return self(); }
+	public Q notLikeEndsWithInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { super.notLikeEndsWithInIfNotEmpty(entity, attribute, values); return self(); }
+	public Q notLikeContainsInIfNotEmpty	(Class<?> entity, String attribute, Collection<String> values) { super.notLikeContainsInIfNotEmpty(entity, attribute, values); return self(); }
 	
-	public Q notLikeIfNotNull 			(Class<?> entity, String attribute, String value)        	{ super.notLikeIfNotNull (entity, attribute, value);  return self(); }
-	public Q notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value)        	{ super.notLikeStartsWithIfNotNull (entity, attribute, value);  return self(); }
-	public Q notLikeEndsWithIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeEndsWithIfNotNull (entity, attribute, value);  return self(); }
-	public Q notLikeContainsIfNotNull 	(Class<?> entity, String attribute, String value)        	{ super.notLikeContainsIfNotNull (entity, attribute, value);  return self(); }
 
 	public Q matchAgainst(Class<?> entity, String attribute, String value) { super.matchAgainst(entity, attribute, value); return self(); }
 	public Q matchAgainstIfNotNull(Class<?> entity, String attribute, String value) { super.matchAgainstIfNotNull(entity, attribute, value); return self(); }
