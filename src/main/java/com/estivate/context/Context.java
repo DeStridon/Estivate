@@ -353,7 +353,7 @@ public abstract class Context {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
 		return fetch(newQuery).mapToListAttribute(attribute);
 	}
-	public <T> List<T> projectToAttributeList(SelectQuery<?> query, AttributeGetter<T, T> attributeGetter) { return (List<T>) projectToAttributeList(query, Estivate.attribute(attributeGetter)); }
+	public <T, P> List<P> projectToAttributeList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) projectToAttributeList(query, Estivate.attribute(attributeGetter)); }
 
 	/*
 	 * Clones the query, selects only the attribute with distinct option, and returns a set of the values
@@ -373,7 +373,7 @@ public abstract class Context {
 		return fetch(newQuery).mapToSetAttribute(attribute);
 	}
 
-	public <T> Set<T> projectToAttributeSet(SelectQuery<?> query, AttributeGetter<T, T> attributeGetter) { return (Set<T>) projectToAttributeSet(query, Estivate.attribute(attributeGetter)); }
+	public <T, P> Set<P> projectToAttributeSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Set<P>) projectToAttributeSet(query, Estivate.attribute(attributeGetter)); }
 
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single value

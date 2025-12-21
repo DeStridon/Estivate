@@ -211,19 +211,36 @@ public class Aggregator implements EstivateNode {
 	public Aggregator likeStartsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeStartsWithIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeEndsWithIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.likeContainsIfNotNull(entity, attribute, value)); return this; }
-
+	
+	public Aggregator likeIfNotEmpty(Entity<?> entity, String attribute, String value)			{ add(Estivate.likeIfNotEmpty(entity, attribute, value)); return this; }
+	public Aggregator likeStartsWithIfNotEmpty(Entity<?> entity, String attribute, String value)	{ add(Estivate.likeStartsWithIfNotEmpty(entity, attribute, value)); return this; }
+	public Aggregator likeEndsWithIfNotEmpty(Entity<?> entity, String attribute, String value)		{ add(Estivate.likeEndsWithIfNotEmpty(entity, attribute, value)); return this; }
+	public Aggregator likeContainsIfNotEmpty(Entity<?> entity, String attribute, String value)		{ add(Estivate.likeContainsIfNotEmpty(entity, attribute, value)); return this; }
 	
 	public Aggregator likeInIfNotEmpty 			(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.likeInIfNotEmpty(entity, attribute, values)); return this; }
 	public Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.likeStartsWithInIfNotEmpty(entity, attribute, values)); return this; }
 	public Aggregator likeEndsWithInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.likeEndsWithInIfNotEmpty(entity, attribute, values)); return this; }
 	public Aggregator likeContainsInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.likeContainsInIfNotEmpty(entity, attribute, values)); return this; }
 
-	
+	public Aggregator likeIfNotBlank(Entity<?> entity, String attribute, String value)				{ add(Estivate.likeIfNotBlank(entity, attribute, value)); return this; }
+	public Aggregator likeStartsWithIfNotBlank(Entity<?> entity, String attribute, String value)		{ add(Estivate.likeStartsWithIfNotBlank(entity, attribute, value)); return this; }
+	public Aggregator likeEndsWithIfNotBlank(Entity<?> entity, String attribute, String value)		{ add(Estivate.likeEndsWithIfNotBlank(entity, attribute, value)); return this; }
+	public Aggregator likeContainsIfNotBlank(Entity<?> entity, String attribute, String value)		{ add(Estivate.likeContainsIfNotBlank(entity, attribute, value)); return this; }
 	
 	public Aggregator notLikeIfNotNull 			(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeStartsWithIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator notLikeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeEndsWithIfNotNull(entity, attribute, value)); return this; }
 	public Aggregator notLikeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { add(Estivate.notLikeContainsIfNotNull(entity, attribute, value)); return this; }
+
+	public Aggregator notLikeIfNotEmpty(Entity<?> entity, String attribute, String value)			{ add(Estivate.notLikeIfNotEmpty(entity, attribute, value)); return this; }
+	public Aggregator notLikeStartsWithIfNotEmpty(Entity<?> entity, String attribute, String value)	{ add(Estivate.notLikeStartsWithIfNotEmpty(entity, attribute, value)); return this; }
+	public Aggregator notLikeEndsWithIfNotEmpty(Entity<?> entity, String attribute, String value)		{ add(Estivate.notLikeEndsWithIfNotEmpty(entity, attribute, value)); return this; }
+	public Aggregator notLikeContainsIfNotEmpty(Entity<?> entity, String attribute, String value)		{ add(Estivate.notLikeContainsIfNotEmpty(entity, attribute, value)); return this; }
+
+	public Aggregator notLikeIfNotBlank(Entity<?> entity, String attribute, String value)			{ add(Estivate.notLikeIfNotBlank(entity, attribute, value)); return this; }
+	public Aggregator notLikeStartsWithIfNotBlank(Entity<?> entity, String attribute, String value)	{ add(Estivate.notLikeStartsWithIfNotBlank(entity, attribute, value)); return this; }
+	public Aggregator notLikeEndsWithIfNotBlank(Entity<?> entity, String attribute, String value)		{ add(Estivate.notLikeEndsWithIfNotBlank(entity, attribute, value)); return this; }
+	public Aggregator notLikeContainsIfNotBlank(Entity<?> entity, String attribute, String value)		{ add(Estivate.notLikeContainsIfNotBlank(entity, attribute, value)); return this; }
 
 	public Aggregator isNull(Entity<?> entity, String attribute) 	{ add(Estivate.isNull(entity, attribute)); 	return this; }
 	public Aggregator isNotNull(Entity<?> entity, String attribute) { add(Estivate.isNotNull(entity, attribute)); return this; }
@@ -417,6 +434,10 @@ public class Aggregator implements EstivateNode {
 	public <T> Aggregator likeStartsWithIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeStartsWithIfNotNull(function, value)); return this; }
 	public <T> Aggregator likeEndsWithIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeEndsWithIfNotNull(function, value)); return this; }
 	public <T> Aggregator likeContainsIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeContainsIfNotNull(function, value)); return this; }
+	public <T> Aggregator likeIfNotBlank 			(AttributeGetter<T, String> function, String value) { add(Estivate.likeIfNotBlank(function, value)); return this; }
+	public <T> Aggregator likeStartsWithIfNotBlank 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeStartsWithIfNotBlank(function, value)); return this; }
+	public <T> Aggregator likeEndsWithIfNotBlank 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeEndsWithIfNotBlank(function, value)); return this; }
+	public <T> Aggregator likeContainsIfNotBlank 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeContainsIfNotBlank(function, value)); return this; }
 
 	
 	public <T> Aggregator likeInIfNotEmpty 			(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeInIfNotEmpty(function, values)); return this; }

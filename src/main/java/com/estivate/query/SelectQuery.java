@@ -19,6 +19,7 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.result.ResultRow;
+import com.estivate.result.ResultTable;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -298,6 +299,9 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 
 	// ==================== FETCH METHODS ====================
+
+	public ResultTable<E> fetch(Context context) { return context.fetch(this); }
+
 	public E 				fetchSingle(Context context) 					{ return context.fetchSingle(this); }
 	public ResultRow<E> 	fetchSingleAsResult(Context context)			{ return context.fetchSingleAsResult(this); }
 	public <T> T 			fetchSingleAs(Context context, Class<T> clazz) 	{ return context.fetchSingleAs(this, clazz); }
@@ -362,12 +366,12 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public List<?> projectToAttributeList(Context context, Attribute attribute) { return context.projectToAttributeList(this, attribute); }
 	public List<?> projectToAttributeList(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeList(this, entity, attributeName); }
 	public List<?> projectToAttributeList(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeList(this, entity, attributeName); }
-	public <T> List<T> projectToAttributeList(Context context, AttributeGetter<T, T> attributeGetter) { return context.projectToAttributeList(this, attributeGetter); }
+	public <T, P> List<P> projectToAttributeList(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeList(this, attributeGetter); }
 
 	public Set<?> projectToAttributeSet(Context context, Attribute attribute) { return context.projectToAttributeSet(this, attribute); }
 	public Set<?> projectToAttributeSet(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
 	public Set<?> projectToAttributeSet(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
-	public <T> Set<T> projectToAttributeSet(Context context, AttributeGetter<T, T> attributeGetter) { return context.projectToAttributeSet(this, attributeGetter); }
+	public <T, P> Set<P> projectToAttributeSet(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeSet(this, attributeGetter); }
 
 
 	public Long projectToCount(Context context) { return context.projectToCount(this); }

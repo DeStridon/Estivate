@@ -88,7 +88,7 @@ public class ResultTable <U> {
     public List<?> mapToListAttribute(Class<?> entity, String attributeName) { return mapList(new AttributeMapper(entity, attributeName)); }
     public List<?> mapToListAttribute(Entity<?> entity, String attributeName) { return mapList(new AttributeMapper(entity.entity, attributeName)); }
     public List<?> mapToListAttribute(Attribute attribute) { return mapList(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
-    public <T> List<T> mapToListAttribute(AttributeGetter<T, T> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<T>) mapList(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
+    public <T, P> List<P> mapToListAttribute(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
     public List<String> mapToListString() { return mapList(new StringMapper()); }
     public List<Short> mapToListShort() { return mapList(new ShortMapper()); }
     public List<Integer> mapToListInteger() { return mapList(new IntegerMapper()); }
@@ -108,7 +108,7 @@ public class ResultTable <U> {
     public Set<Object> mapToSetAttribute(Class<?> entity, String attributeName) { return mapSet(new AttributeMapper(entity, attributeName)); }
     public Set<Object> mapToSetAttribute(Entity<?> entity, String attributeName) { return mapSet(new AttributeMapper(entity.entity, attributeName)); }
     public Set<Object> mapToSetAttribute(Attribute attribute) { return mapSet(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
-
+    public <T, P> Set<P> mapToSetAttribute(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (Set<P>) mapSet(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
     public Set<String> mapToSetString() { return mapSet(new StringMapper()); }
     public Set<Short> mapToSetShort() { return mapSet(new ShortMapper()); }
     public Set<Integer> mapToSetInteger() { return mapSet(new IntegerMapper()); }

@@ -215,6 +215,10 @@ public class Estivate {
 	public static Criterion notLike			(Attribute attribute, String value) { return new Operator(attribute, OperatorType.NotLike, value); }
 	public static Criterion likeIfNotNull 	(Attribute attribute, String value) { if(value != null) {return like(attribute, value);} return null;  }
 	public static Criterion notLikeIfNotNull(Attribute attribute, String value) { if(value != null) {return notLike(attribute, value);} return null;  }
+	public static Criterion likeIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return like(attribute, value);} return null; }
+	public static Criterion notLikeIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return notLike(attribute, value);} return null; }
+	public static Criterion likeIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return like(attribute, value);} return null; }
+	public static Criterion notLikeIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return notLike(attribute, value);} return null; }
 	
 	// Match Against
 	public static Criterion matchAgainst			(Attribute attribute, String value) { return new MatchAgainst(attribute, value, true); }
@@ -239,11 +243,16 @@ public class Estivate {
 	public static Criterion notLikeStartsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, value+"%");}
 	public static Criterion likeStartsWithIfNotNull (Attribute attribute, String value) 	{ if(value != null) {return likeStartsWith(attribute, value);} return null; }
 	public static Criterion notLikeStartsWithIfNotNull(Attribute attribute, String value){ if(value != null) {return notLikeStartsWith(attribute, value);} return null; }
+	public static Criterion likeStartsWithIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return likeStartsWith(attribute, value);} return null; }
+	public static Criterion notLikeStartsWithIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return notLikeStartsWith(attribute, value);} return null; }
+	public static Criterion likeStartsWithIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return likeStartsWith(attribute, value);} return null; }
+	public static Criterion notLikeStartsWithIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return notLikeStartsWith(attribute, value);} return null; }
 	
 	// Like starts in
 	public static Aggregator likeStartsWithIn(Attribute attribute, Collection<String> values)	{ return or(values.stream().map(x -> likeStartsWith(attribute, x)).collect(Collectors.toList()));	}
 	public static Aggregator likeStartsWithInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeStartsWith(attribute, x)).collect(Collectors.toList())); } return null; }
 	public static Aggregator notLikeStartsWithIn(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeStartsWith(attribute, x)).collect(Collectors.toList()));}
+	public static Aggregator notLikeStartsWithInIfNotEmpty(Attribute attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notLikeStartsWith(attribute, x)).collect(Collectors.toList())); } return null; }
 	
 	
 	// Like ends
@@ -251,17 +260,26 @@ public class Estivate {
 	public static Criterion notLikeEndsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, "%"+value);	}
 	public static Criterion likeEndsWithIfNotNull 	(Attribute attribute, String value) { if(value != null) {return likeEndsWith(attribute, value);} return null; }
 	public static Criterion notLikeEndsWithIfNotNull(Attribute attribute, String value) { if(value != null) {return notLikeEndsWith(attribute, value);} return null; }
-	
+	public static Criterion likeEndsWithIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return likeEndsWith(attribute, value);} return null; }
+	public static Criterion notLikeEndsWithIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return notLikeEndsWith(attribute, value);} return null; }
+	public static Criterion likeEndsWithIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return likeEndsWith(attribute, value);} return null; }
+	public static Criterion notLikeEndsWithIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return notLikeEndsWith(attribute, value);} return null; }
+
 	// Like ends in
 	public static Aggregator likeEndsWithIn(Attribute attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeEndsWith(attribute, x)).collect(Collectors.toList()));	}
 	public static Aggregator likeEndsWithInIfNotEmpty(Attribute attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> likeEndsWith(attribute, x)).collect(Collectors.toList())); } return null; }
 	public static Aggregator notLikeEndsWithIn(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeEndsWith(attribute, x)).collect(Collectors.toList()));	}
+	public static Aggregator notLikeEndsWithInIfNotEmpty(Attribute attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notLikeEndsWith(attribute, x)).collect(Collectors.toList())); } return null; }
 	
 	// Like contains
 	public static Criterion likeContains(Attribute attribute, String value)			{ return new Operator(attribute, OperatorType.Like, "%"+value+"%");	}
 	public static Criterion notLikeContains(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, "%"+value+"%"); }
 	public static Criterion likeContainsIfNotNull 	(Attribute attribute, String value) { if(value != null) {return likeContains(attribute, value);} return null; }
 	public static Criterion notLikeContainsIfNotNull(Attribute attribute, String value) { if(value != null) {return notLikeContains(attribute, value);} return null; }
+	public static Criterion likeContainsIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return likeContains(attribute, value);} return null; }
+	public static Criterion notLikeContainsIfNotEmpty(Attribute attribute, String value) { if(value != null && !value.isEmpty()) {return notLikeContains(attribute, value);} return null; }
+	public static Criterion likeContainsIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return likeContains(attribute, value);} return null; }
+	public static Criterion notLikeContainsIfNotBlank(Attribute attribute, String value) { if(value != null && !value.isBlank()) {return notLikeContains(attribute, value);} return null; }
 
 
 	// Like contains in
@@ -347,6 +365,10 @@ public class Estivate {
 	public static Criterion notLike			(Entity<?> entity, String attribute, String value) { return notLike(Estivate.attribute(entity, attribute), value); }
 	public static Criterion likeIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return like(entity, attribute, value);} return null;  }
 	public static Criterion notLikeIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLike(entity, attribute, value);} return null;  }
+	public static Criterion likeIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !value.isEmpty()) {return like(entity, attribute, value);} return null; }
+	public static Criterion notLikeIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !value.isEmpty()) {return notLike(entity, attribute, value);} return null; }
+	public static Criterion likeIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !value.isBlank()) {return like(entity, attribute, value);} return null; }
+	public static Criterion notLikeIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !value.isBlank()) {return notLike(entity, attribute, value);} return null; }
 	
 	// Match Against
 	public static Criterion matchAgainst			(Entity<?> entity, String attribute, String value) { return matchAgainst(entity, attribute, value); }
@@ -371,6 +393,10 @@ public class Estivate {
 	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)		{ return notLikeStartsWith(Estivate.attribute(entity, attribute), value);}
 	public static Criterion likeStartsWithIfNotNull (Entity<?> entity, String attribute, String value) 	{ if(value != null) {return likeStartsWith(entity, attribute, value);} return null; }
 	public static Criterion notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value){ if(value != null) {return notLikeStartsWith(entity, attribute, value);} return null; }
+	public static Criterion likeStartsWithIfNotEmpty (Entity<?> entity, String attribute, String value) 	{ if(value != null && !value.isEmpty()) {return likeStartsWith(entity, attribute, value);} return null; }
+	public static Criterion notLikeStartsWithIfNotEmpty(Entity<?> entity, String attribute, String value){ if(value != null && !value.isEmpty()) {return notLikeStartsWith(entity, attribute, value);} return null; }
+	public static Criterion likeStartsWithIfNotBlank (Entity<?> entity, String attribute, String value) 	{ if(value != null && !value.isBlank()) {return likeStartsWith(entity, attribute, value);} return null; }
+	public static Criterion notLikeStartsWithIfNotBlank(Entity<?> entity, String attribute, String value){ if(value != null && !value.isBlank()) {return notLikeStartsWith(entity, attribute, value);} return null; }
 	
 	// Like starts in
 	public static Aggregator likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return or(values.stream().map(x -> likeStartsWith(entity, attribute, x)).collect(Collectors.toList()));	}
@@ -383,6 +409,10 @@ public class Estivate {
 	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ return notLikeEndsWith(Estivate.attribute(entity, attribute), value);	}
 	public static Criterion likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeEndsWith(entity, attribute, value);} return null; }
 	public static Criterion notLikeEndsWithIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeEndsWith(entity, attribute, value);} return null; }
+	public static Criterion likeEndsWithIfNotEmpty 	(Entity<?> entity, String attribute, String value) { if(value != null && !value.isEmpty()) {return likeEndsWith(entity, attribute, value);} return null; }
+	public static Criterion notLikeEndsWithIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !value.isEmpty()) {return notLikeEndsWith(entity, attribute, value);} return null; }
+	public static Criterion likeEndsWithIfNotBlank 	(Entity<?> entity, String attribute, String value) { if(value != null && !value.isBlank()) {return likeEndsWith(entity, attribute, value);} return null; }
+	public static Criterion notLikeEndsWithIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !value.isBlank()) {return notLikeEndsWith(entity, attribute, value);} return null; }
 	
 	// Like ends in
 	public static Aggregator likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
@@ -394,6 +424,10 @@ public class Estivate {
 	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)		{ return notLikeContains(Estivate.attribute(entity, attribute), value);	}
 	public static Criterion likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeContains(entity, attribute, value);} return null; }
 	public static Criterion notLikeContainsIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeContains(entity, attribute, value);} return null; }
+	public static Criterion likeContainsIfNotEmpty 	(Entity<?> entity, String attribute, String value) { if(value != null && !value.isEmpty()) {return likeContains(entity, attribute, value);} return null; }
+	public static Criterion notLikeContainsIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !value.isEmpty()) {return notLikeContains(entity, attribute, value);} return null; }
+	public static Criterion likeContainsIfNotBlank 	(Entity<?> entity, String attribute, String value) { if(value != null && !value.isBlank()) {return likeContains(entity, attribute, value);} return null; }
+	public static Criterion notLikeContainsIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !value.isBlank()) {return notLikeContains(entity, attribute, value);} return null; }
 
 
 	// Like contains in
@@ -467,11 +501,19 @@ public class Estivate {
 	public static Criterion notLikeStartsWith(Class<?> entity, String attribute, String value)	{ return notLikeStartsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion likeStartsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return likeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeStartsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion likeStartsWithIfNotEmpty(Class<?> entity, String attribute, String value)	{ return likeStartsWithIfNotEmpty(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeStartsWithIfNotEmpty(Class<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotEmpty(new Entity<>(entity), attribute, value); }
+	public static Criterion likeStartsWithIfNotBlank(Class<?> entity, String attribute, String value)	{ return likeStartsWithIfNotBlank(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeStartsWithIfNotBlank(Class<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotBlank(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion likeEndsWith	(Class<?> entity, String attribute, String value)	{ return likeEndsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeEndsWith	(Class<?> entity, String attribute, String value)	{ return notLikeEndsWith(new Entity<>(entity), attribute, value); }
 	public static Criterion likeEndsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return likeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeEndsWithIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeEndsWithIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion likeEndsWithIfNotEmpty(Class<?> entity, String attribute, String value)	{ return likeEndsWithIfNotEmpty(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeEndsWithIfNotEmpty(Class<?> entity, String attribute, String value)	{ return notLikeEndsWithIfNotEmpty(new Entity<>(entity), attribute, value); }
+	public static Criterion likeEndsWithIfNotBlank(Class<?> entity, String attribute, String value)	{ return likeEndsWithIfNotBlank(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeEndsWithIfNotBlank(Class<?> entity, String attribute, String value)	{ return notLikeEndsWithIfNotBlank(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion likeContains	(Class<?> entity, String attribute, String value)	{ return likeContains(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeContains	(Class<?> entity, String attribute, String value)	{ return notLikeContains(new Entity<>(entity), attribute, value); }
@@ -582,21 +624,37 @@ public class Estivate {
 	public static <E> Criterion notLike			(AttributeGetter<E, String> getter, String value)	{ return notLike(Estivate.attribute(getter), value); }
 	public static <E> Criterion likeIfNotNull		(AttributeGetter<E, String> getter, String value)	{ return likeIfNotNull(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeIfNotNull	(AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotBlank(Estivate.attribute(getter), value); }
 
 	public static <E> Criterion likeStartsWith	(AttributeGetter<E, String> getter, String value)	{ return likeStartsWith(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeStartsWith(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWith(Estivate.attribute(getter), value); }
 	public static <E> Criterion likeStartsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotNull(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeStartsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeStartsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeStartsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotBlank(Estivate.attribute(getter), value); }
 
 	public static <E> Criterion likeEndsWith	(AttributeGetter<E, String> getter, String value)	{ return likeEndsWith(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeEndsWith	(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWith(Estivate.attribute(getter), value); }
 	public static <E> Criterion likeEndsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotNull(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeEndsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeEndsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeEndsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotBlank(Estivate.attribute(getter), value); }
 	
 	public static <E> Criterion likeContains	(AttributeGetter<E, String> getter, String value)	{ return likeContains(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeContains	(AttributeGetter<E, String> getter, String value)	{ return notLikeContains(Estivate.attribute(getter), value); }
 	public static <E> Criterion likeContainsIfNotNull(AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotNull(Estivate.attribute(getter), value); }
 	public static <E> Criterion notLikeContainsIfNotNull(AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeContainsIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContainsIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeContainsIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContainsIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotBlank(Estivate.attribute(getter), value); }
 
 	
 	
