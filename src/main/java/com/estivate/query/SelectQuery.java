@@ -413,6 +413,12 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public List<?> projectToAttributeList(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeList(this, entity, attributeName); }
 	public <T, P> List<P> projectToAttributeList(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeList(this, attributeGetter); }
 
+	public List<?> projectToAttributeDistinctList(Context context, Attribute attribute) { return context.projectToAttributeDistinctList(this, attribute); }
+	public List<?> projectToAttributeDistinctList(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeDistinctList(this, entity, attributeName); }
+	public List<?> projectToAttributeDistinctList(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeDistinctList(this, entity, attributeName); }
+	public <T, P> List<P> projectToAttributeDistinctList(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeDistinctList(this, attributeGetter); }
+
+
 	public Set<?> projectToAttributeSet(Context context, Attribute attribute) { return context.projectToAttributeSet(this, attribute); }
 	public Set<?> projectToAttributeSet(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
 	public Set<?> projectToAttributeSet(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
