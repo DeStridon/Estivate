@@ -347,10 +347,9 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	// ==================== FETCH METHODS ====================
 
-	public ResultTable<E> fetch(Context context) { return context.fetch(this); }
+	public ResultTable fetch(Context context) { return context.fetch(this); }
 
 	public E 				fetchSingle(Context context) 					{ return context.fetchSingle(this); }
-	public ResultRow<E> 	fetchSingleAsResult(Context context)			{ return context.fetchSingleAsResult(this); }
 	public <T> T 			fetchSingleAs(Context context, Class<T> clazz) 	{ return context.fetchSingleAs(this, clazz); }
 	public String 			fetchSingleAsString(Context context) 			{ return context.fetchSingleAsString(this); }
 	public Short 			fetchSingleAsShort(Context context) 			{ return context.fetchSingleAsShort(this); }
@@ -365,8 +364,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public <T extends Enum<T>> T 		fetchSingleAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsOrdinalEnum(this, enumClass); }
 	
 	public Optional<E> 				fetchOptional(Context context) 			{ return context.fetchOptional(this); }
-	public Optional<ResultRow<E>> 	fetchOptionalAsResult(Context context) 	{ return context.fetchOptionalAsResult(this); }
-	public <T>Optional<T> 			fetchOptionalAs(Context context, Class<T> clazz) 			{ return context.fetchOptionalAs(this, clazz); }
+	public <T> Optional<T> 			fetchOptionalAs(Context context, Class<T> clazz) 			{ return context.fetchOptionalAs(this, clazz); }
 	public Optional<String>			fetchOptionalAsString(Context context) 	{ return context.fetchOptionalAsString(this); }
 	public Optional<Short>			fetchOptionalAsShort(Context context) 	{ return context.fetchOptionalAsShort(this); }
 	public Optional<Integer>		fetchOptionalAsInteger(Context context) 	{ return context.fetchOptionalAsInteger(this); }
@@ -381,7 +379,6 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	
 	public List<E> 			fetchList(Context context){ return context.fetchListAs(this, (Class<E>) entity.entity); }
 	public <T> List<T> 		fetchListAs(Context context, Class<T> entity) { return context.fetchListAs(this, entity); }
-	public List<ResultRow<E>> 	fetchListAsResults(Context context) { return context.fetchListAsResults(this); }
 	public List<String> 	fetchListAsString(Context context) { return context.fetchListAsString(this); }
 	public List<Short> 		fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
 	public List<Integer> 	fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
@@ -438,11 +435,11 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	// ==================== AGGREGATION METHODS ====================
 	
-	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<ResultRow<E>,U> uType, java.util.function.Function<ResultRow<E>,V> vType){
+	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<ResultRow,U> uType, java.util.function.Function<ResultRow,V> vType){
 		return context.aggregateToMap(this, uType, vType);
 	}
 
-	public <U, V> Map<U, List<V>> aggregateToMapList(Context context, java.util.function.Function<ResultRow<E>,U> uType, java.util.function.Function<ResultRow<E>,V> vType){
+	public <U, V> Map<U, List<V>> aggregateToMapList(Context context, java.util.function.Function<ResultRow,U> uType, java.util.function.Function<ResultRow,V> vType){
 		return context.aggregateToMapList(this, uType, vType);
 	}
 

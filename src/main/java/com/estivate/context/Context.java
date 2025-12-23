@@ -30,6 +30,7 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
+import com.estivate.Transaction;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
@@ -148,14 +149,14 @@ public abstract class Context {
 	
 	
 	@SneakyThrows
-	public <T> ResultTable<T> fetch(SelectQuery<T> query){
+	public <T> ResultTable fetch(SelectQuery<T> query){
 		SelectQuery<T> finalQuery = (SelectQuery<T>) preExecute(query);
 		
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection, finalQuery);
 			ResultSet resultSet = statement.executeForResultSet()) {
 			
-			ResultTable<T> resultTable = new ResultTable<>(this, createColumnsArray(resultSet.getMetaData()), finalQuery);
+			ResultTable resultTable = new ResultTable(this, createColumnsArray(resultSet.getMetaData()), finalQuery);
 			
 			while(resultSet.next()) {
 	        	String[] values = extractRowValues(resultSet);
@@ -221,7 +222,6 @@ public abstract class Context {
 
 	public <T> T 			fetchSingle(SelectQuery<T> query)					{ return fetch(query).mapTo(query.getEntity().entity); }
 	public <U> U 			fetchSingleAs(SelectQuery<?> query, Class<U> clazz) { return fetch(query).mapTo(clazz); }
-	public <T> ResultRow<T> fetchSingleAsResult(SelectQuery<T> query) 			{ return fetch(query).getRows().get(0); }
 	public String 			fetchSingleAsString(SelectQuery<?> query)			{ return fetch(query).mapToString(); }
 	public Short			fetchSingleAsShort(SelectQuery<?> query)			{ return fetch(query).mapToShort(); }
 	public Integer			fetchSingleAsInteger(SelectQuery<?> query)			{ return fetch(query).mapToInteger(); }
@@ -237,7 +237,6 @@ public abstract class Context {
 
 	public <E> Optional<E> 				fetchOptional(SelectQuery<E> query)					{ return Optional.ofNullable(fetchSingle(query)); }
 	public <U> Optional<U> 				fetchOptionalAs(SelectQuery<?> query, Class<U> clazz) { return Optional.ofNullable(fetchSingleAs(query, clazz)); }
-	public <E> Optional<ResultRow<E>> 	fetchOptionalAsResult(SelectQuery<E> query)			{ return Optional.ofNullable(fetchSingleAsResult(query)); }
 	public Optional<String>				fetchOptionalAsString(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsString(query)); }
 	public Optional<Short> 				fetchOptionalAsShort(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsShort(query)); }
 	public Optional<Integer> 			fetchOptionalAsInteger(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsInteger(query)); }
@@ -254,7 +253,6 @@ public abstract class Context {
 		
 	public <T> List<T> 				fetchList(SelectQuery<T> query)						{ return fetch(query).mapToList(query.getEntity().entity); }
 	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> clazz) 	{ return fetch(query).mapToList(clazz); }
-	public <T> List<ResultRow<T>> 	fetchListAsResults(SelectQuery<T> query) 	{ return fetch(query).getRows(); }
 	public List<String>				fetchListAsString(SelectQuery<?> query)				{ return fetch(query).mapToListString(); }
 	public List<Short>				fetchListAsShort(SelectQuery<?> query)				{ return fetch(query).mapToListShort(); }
 	public List<Integer>			fetchListAsInteger(SelectQuery<?> query)			{ return fetch(query).mapToListInteger(); }
@@ -269,13 +267,13 @@ public abstract class Context {
 
 
 	@Deprecated
-	protected List<ResultRow<Object>> fetchListAsResults(Statement statement) throws SQLException{
+	protected List<ResultRow> fetchListAsResults(Statement statement) throws SQLException{
 		try(ResultSet resultSet = statement.executeForResultSet()) {
 	        ResultSetMetaData metadata = resultSet.getMetaData();
 	        
 	        String[] columnNames = createColumnsArray(metadata);
 
-			ResultTable<Object> resultTable = new ResultTable<>(this, columnNames, null);
+			ResultTable resultTable = new ResultTable(this, columnNames, null);
 			
 	        
 	        while(resultSet.next()) {	        	
@@ -419,22 +417,22 @@ public abstract class Context {
 
 	// ==================== AGGREGATION METHODS ====================
 	
-	public <T, U, V> Map<U, V> aggregateToMap(SelectQuery<T> query, Function<ResultRow<T>,U> uType, Function<ResultRow<T>,V> vType){
-		List<ResultRow<T>> results = fetchListAsResults(query);
+	public <T, U, V> Map<U, V> aggregateToMap(SelectQuery<T> query, Function<ResultRow,U> uType, Function<ResultRow,V> vType){
+		List<ResultRow> results = fetch(query).getRows();
 		Map<U, V> map = new LinkedHashMap<>();
 		
-		for(ResultRow<T> result : results){
+		for(ResultRow result : results){
 			map.put(uType.apply(result), vType.apply(result));
 		}
 
 		return map;
 	}
 
-	public <T, U, V> Map<U, List<V>> aggregateToMapList(SelectQuery<T> query, Function<ResultRow<T>,U> uType, Function<ResultRow<T>,V> vType){
-		List<ResultRow<T>> results = fetchListAsResults(query);
+	public <T, U, V> Map<U, List<V>> aggregateToMapList(SelectQuery<T> query, Function<ResultRow,U> uType, Function<ResultRow,V> vType){
+		List<ResultRow> results = fetch(query).getRows();
 		Map<U, List<V>> map = new LinkedHashMap<>();
 		
-		for(ResultRow<T> result : results){
+		for(ResultRow result : results){
 			map.computeIfAbsent(uType.apply(result), k -> new ArrayList<>()).add(vType.apply(result));
 		}
 

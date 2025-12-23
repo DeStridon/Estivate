@@ -40,8 +40,8 @@ public class H2Context extends Context {
 			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
 			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
 			
-			List<ResultRow<Object>> indexResults = fetchListAsResults(indexQueryStatement);
-			List<ResultRow<Object>> columnResults = fetchListAsResults(indexColumnQueryStatement);
+			List<ResultRow> indexResults = fetchListAsResults(indexQueryStatement);
+			List<ResultRow> columnResults = fetchListAsResults(indexColumnQueryStatement);
 			
 			for(ResultRow indexResult : indexResults) {
 				List<ResultRow> indexColumnResults = columnResults.stream().filter(x -> x.columnAsString("INDEX_NAME").equals(indexResult.columnAsString("INDEX_NAME"))).collect(Collectors.toList());

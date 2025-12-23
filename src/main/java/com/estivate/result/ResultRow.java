@@ -26,16 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 @AllArgsConstructor
-public class ResultRow<E> {
+public class ResultRow {
 
-	final ResultTable<E> resultTable;
+	final ResultTable resultTable;
 	final String[] columnValues;
 	
 
 	private Map<String, Object> cache = new HashMap<>();
 
 	
-	public ResultRow(ResultTable<E> resultTable, String[] columnValues) {
+	public ResultRow(ResultTable resultTable, String[] columnValues) {
 		this.resultTable = resultTable;
 		this.columnValues = columnValues;
 	}

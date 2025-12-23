@@ -46,9 +46,9 @@ public class MySQLContext extends Context {
 
 			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.toTableName(c));
 			
-			List<ResultRow<Object>> results = this.fetchListAsResults(statement);
+			List<ResultRow> results = this.fetchListAsResults(statement);
 			List<IndexRow> indexRows = new ArrayList<>();
-			for(ResultRow<Object> result : results) {
+			for(ResultRow result : results) {
 				
 				IndexRow indexRow = IndexRow.builder()
 					.table(result.columnAsString("Table"))

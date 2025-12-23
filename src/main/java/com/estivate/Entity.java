@@ -42,6 +42,11 @@ public class Entity<U> {
 			this.query = query;
 		}
 
+		public SubQueryEntity(SelectQuery<T> query){
+			super(query.getEntity().entity, null);
+			this.query = query;
+		}
+
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)

@@ -49,6 +49,7 @@ public class Estivate {
 	// Entities Factory
 	public static <U> SelectQuery<U> selectQuery(Entity<U> entity) 	{ return new SelectQuery<>(entity); }
 	public static <U> SelectQuery<U> selectQuery(Class<U> entity) 	{ return new SelectQuery<>(entity); }
+	public static <U> SelectQuery<U> selectQuery(SelectQuery<U> subQuery) { return new SelectQuery<>(new SubQueryEntity<>(subQuery)); }
 	public static <U> SelectQuery<U> selectQuery(SelectQuery<U> subQuery, String alias) { return new SelectQuery<>(new SubQueryEntity<>(subQuery, alias)); }
 	public static <U> UpdateQuery<U> updateQuery(Entity<U> entity) 	{ return new UpdateQuery<>(entity); }
 	public static <U> UpdateQuery<U> updateQuery(Class<U> entity) 	{ return new UpdateQuery<>(entity); }
@@ -76,6 +77,7 @@ public class Estivate {
 	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
 	public static <U> Entity<U> entity(Class<U> entity, String alias) { return new Entity<>(entity, alias); }
 
+	public static <U> SubQueryEntity<U> subQueryEntity(SelectQuery<U> query) { return new SubQueryEntity<>(query); }
 	public static <U> SubQueryEntity<U> subQueryEntity(SelectQuery<U> query, String alias) { return new SubQueryEntity<>(query, alias); }
 
 	public static Aggregator or(EstivateNode... criterions) { return or(new ArrayList<>(Arrays.asList(criterions)));}

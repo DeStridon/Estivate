@@ -30,15 +30,15 @@ import lombok.Data;
 
 
 @Data
-public class ResultTable <U> {
+public class ResultTable {
 
 	final Context context;
     final String[] columnNames;
-    final SelectQuery<U> query;
+    final SelectQuery<?> query;
 
-    final List<ResultRow<U>> rows;
+    final List<ResultRow> rows;
 
-    public ResultTable(Context context, String[] columnNames, SelectQuery<U> query){
+    public ResultTable(Context context, String[] columnNames, SelectQuery<?> query){
     	this.context = context;
     	this.columnNames = columnNames;
     	this.query = query;
@@ -46,8 +46,8 @@ public class ResultTable <U> {
     }
 
 
-    public ResultRow<U> addRow(String[] values) {
-    	ResultRow<U> row = new ResultRow<>(this, values);
+    public ResultRow addRow(String[] values) {
+    	ResultRow row = new ResultRow(this, values);
     	rows.add(row);
     	return row;
     }
@@ -76,7 +76,7 @@ public class ResultTable <U> {
 
     public <T> List<T> mapList(IMapper<T> mapper) {
         List<T> results = new ArrayList<>();
-        for(ResultRow<U> row : rows) {
+        for(ResultRow row : rows) {
             T result = mapper.map(row.getColumnValues());
             results.add(result);
         }
@@ -122,4 +122,10 @@ public class ResultTable <U> {
     public <E extends Enum<E>> Set<E> mapToSetStringEnum(Class<E> enumClass) { return mapSet(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> Set<E> mapToSetOrdinalEnum(Class<E> enumClass) { return mapSet(new OrdinalEnumMapper<>(enumClass)); }
 
+
+    public boolean isEmpty() { return rows.isEmpty(); }
+    public int size() { return rows.size(); }
+    public ResultRow getFirst() { return rows.isEmpty() ? null : rows.get(0); }
+    public ResultRow get(int index) { return rows.get(index); }
+    public ResultRow getLast() { return rows.isEmpty() ? null : rows.get(rows.size() - 1); }
 }
