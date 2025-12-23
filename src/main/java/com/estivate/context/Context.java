@@ -30,7 +30,6 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
-import com.estivate.Transaction;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;

@@ -70,7 +70,7 @@ public class SelectQueryJoinTest {
 				.selectAll(OrderEntity.class)
 				.eq(CustomerEntity.class, CustomerEntity.Fields.name, parent.getName());
 		
-		List<ResultRow<CustomerEntity>> results = context.fetchListAsResults(query);
+		List<ResultRow> results = query.fetch(context).getRows();
 		
 		log.debug(context.queryAsString(query));
 		

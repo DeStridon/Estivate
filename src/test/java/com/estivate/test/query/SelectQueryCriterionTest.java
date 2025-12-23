@@ -72,11 +72,11 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue(queryString.contains("DISTINCT"));
 		
-		List<ResultRow<OrderEntity>> results = query.fetchListAsResults(context);
+		List<ResultRow> results = query.fetch(context).getRows();
 		
 		assertEquals(1, results.size());
 		
-		for(ResultRow<OrderEntity> result : results) {
+		for(ResultRow result : results) {
 			OrderEntity child = result.mapTo(OrderEntity.class);
 			CustomerEntity parent = result.mapTo(CustomerEntity.class);
 		}

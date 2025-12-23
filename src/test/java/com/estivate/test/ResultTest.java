@@ -68,7 +68,7 @@ public class ResultTest {
 		SelectQuery<ProductEntity> query = new SelectQuery<>(ProductEntity.class)
 			.eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
 
-		ResultRow result = context.fetchSingleAsResult(query);
+		ResultRow result = query.fetch(context).getFirst();
 		
 		ProductCategory category = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
 		assertEquals(ProductCategory.Electronics, category);
