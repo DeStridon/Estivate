@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EntityMapper<U> extends IMapper<U> {
 
 	// Entity side
-	final Class<U> entityClass;
+	final Entity<U> entity;
 
 	final Constructor<U> entityConstructor;
 	final Set<Method> entityPostLoadMethods;
@@ -43,58 +43,50 @@ public class EntityMapper<U> extends IMapper<U> {
 	
 	// Result side
 
-	final Chronometer chronometer;
-
+	
 	final Context context;
 
 	final SelectQuery<?> query;
 
 
 	@SneakyThrows
-	public EntityMapper(Context context, SelectQuery<?> query, Class<U> targetClass, boolean tracePerformances) {
-		chronometer = new Chronometer("Mapper " + targetClass.getSimpleName(), tracePerformances).timeThreshold(100);
-
-		this.entityClass = targetClass;
+	public EntityMapper(Context context, SelectQuery<?> query, Entity<U> entity, boolean tracePerformances) {
+	
+		this.entity = entity;
 
 		// Get constructor
-		entityConstructor = targetClass.getConstructor();
+		entityConstructor = entity.entity.getConstructor();
 
 		// Get Fields
-		columnMappings = FieldUtils.getColumnMappings(query, new Entity<>(targetClass));
+		columnMappings = FieldUtils.getColumnMappings(query, entity);
 
 		// Get PostLoadMethods
-		this.entityPostLoadMethods = FieldUtils.getPostLoadMethods(targetClass);
+		this.entityPostLoadMethods = FieldUtils.getPostLoadMethods(entity.entity);
 
 		this.context = context;
 		this.query = query;
 
-		chronometer.step("mapper constructor");
 	}
 
-	public EntityMapper(Context context, SelectQuery<?> query, Class<U> targetClass) {
-		this(context, query, targetClass, false);
+	public EntityMapper(Context context, SelectQuery<?> query, Entity<U> entity) {
+		this(context, query, entity, false);
 	}
 
 	@SneakyThrows
 	public U map(String[] row) {
 		U obj = entityConstructor.newInstance();
-		Entity<U> entity = new Entity<>(entityClass);
-		chronometer.step("constructor & entity");
-
+		
 		for (int i = 0; i < row.length; i++) {
 			if (i >= columnMappings.size() || columnMappings.get(i) == null) {
 				continue;
 			}
 			Field field = columnMappings.get(i).getField();
-			chronometer.step("get field");
 			if (field != null) {
 				setGeneratedField(entity, field, obj, row[i]);
-				chronometer.step("generate field " + field.getName());
 			}
 		}
 		for (Method method : entityPostLoadMethods) {
 			method.invoke(obj);
-			chronometer.step("invoke method " + method.getName());
 		}
 		return obj;
 	}
@@ -104,9 +96,7 @@ public class EntityMapper<U> extends IMapper<U> {
 
 		U obj = entityConstructor.newInstance();
 
-		Entity<U> entity = new Entity<>(entityClass);
-
-		Class<?> currentClass = entityClass;
+		Class<?> currentClass = entity.entity;
 		while (currentClass != Object.class) {
 
 			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
@@ -215,10 +205,6 @@ public class EntityMapper<U> extends IMapper<U> {
             throw new EstivateException("Impossible to map Entity="+entity.toString()+ ", Field="+field.getName()+", Value="+value+", Object="+obj.toString(), e);
         }
     }
-
-	public String getStats() {
-		return chronometer.getLog();
-	}
 
 	@SneakyThrows
 	private static Object convertValue(Field field, String value) {

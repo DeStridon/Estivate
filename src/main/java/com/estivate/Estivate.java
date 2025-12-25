@@ -3,7 +3,6 @@ package com.estivate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +72,10 @@ public class Estivate {
 	public static <E, P> Attribute attribute(com.estivate.util.FieldUtils.AttributeGetter<E, P> getter, String alias) { return FieldUtils.attributeFromLambda(getter, null, alias); }
 	
 	public static Attribute attributeOfAlias(String alias, Attribute.Function function) { return attribute(new Entity<>(null), null, function, alias); }
+
+
+	public static Attribute.AttributeWindow attributeWindow(Attribute.Function function, String alias) { return new Attribute.AttributeWindow(null, null, function, alias); }
+	public static Attribute.AttributeWindow attributeWindow(Attribute.Function function) { return attributeWindow(function, null); }
 	
 	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
 	public static <U> Entity<U> entity(Class<U> entity, String alias) { return new Entity<>(entity, alias); }
@@ -768,6 +771,8 @@ public class Estivate {
 		public static Attribute.Function json_keys = new Attribute.Function("JSON_KEYS(", ")");
 		public static Attribute.Function json_length = new Attribute.Function("JSON_LENGTH(", ")");
 
+		/* Window Functions */
+		public static Attribute.Function rowNumber = new Attribute.Function("row_number()", "", true);
 		 
 	}
 

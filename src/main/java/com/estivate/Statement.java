@@ -429,6 +429,23 @@ public class Statement implements AutoCloseable{
 	
 	public String selectString(Attribute attribute) {
 
+		if(attribute instanceof Attribute.AttributeWindow) {
+			StringBuilder sb = new StringBuilder();
+			Attribute.AttributeWindow attributeWindow = (Attribute.AttributeWindow) attribute;
+			sb.append(attributeWindow.function.render(attributeWindow.attribute)).append(" OVER (");
+
+			if(attributeWindow.partitionBy != null) {
+				sb.append(" PARTITION BY ").append(attributeWindow.partitionBy.attribute);
+			}
+			if(attributeWindow.orderBy != null) {
+				sb.append(" ORDER BY ").append(attributeWindow.orderBy.attribute);
+			}
+			sb.append(")");
+			if(attributeWindow.alias != null) {
+				sb.append(" AS ").append(context.nameMapper.mapEntityField(attributeWindow.alias));
+			}
+			return sb.toString();
+		}
 
 		if(attribute.function != null && attribute.function.equals(Estivate.Functions.count) && (attribute.entity == null || attribute.entity.entity == null)) {
 			return "COUNT(*)"+(attribute.alias != null ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");

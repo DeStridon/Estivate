@@ -251,7 +251,8 @@ public abstract class Context {
 	
 		
 	public <T> List<T> 				fetchList(SelectQuery<T> query)						{ return fetch(query).toList(query.getEntity().entity); }
-	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> clazz) 	{ return fetch(query).toList(clazz); }
+	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Entity<U> entity) 	{ return fetch(query).toList(entity); }
+	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> entity) 	{ return fetch(query).toList(entity); }
 	public List<String>				fetchListAsString(SelectQuery<?> query)				{ return fetch(query).toListString(); }
 	public List<Short>				fetchListAsShort(SelectQuery<?> query)				{ return fetch(query).toListShort(); }
 	public List<Integer>			fetchListAsInteger(SelectQuery<?> query)			{ return fetch(query).toListInteger(); }

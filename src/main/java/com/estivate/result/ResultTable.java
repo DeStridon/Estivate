@@ -2,6 +2,7 @@ package com.estivate.result;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -33,14 +34,14 @@ import lombok.Data;
 public class ResultTable {
 
 	final Context context;
-    final String[] columnNames;
+    final List<String> columnNames;
     final SelectQuery<?> query;
 
     final List<ResultRow> rows;
 
     public ResultTable(Context context, String[] columnNames, SelectQuery<?> query){
     	this.context = context;
-    	this.columnNames = columnNames;
+    	this.columnNames = Arrays.asList(columnNames);
     	this.query = query;
     	this.rows = new ArrayList<>();
     }
@@ -54,8 +55,8 @@ public class ResultTable {
 
     public <T> T map(IMapper<T> mapper) {  return rows.isEmpty() ? null : mapper.map(rows.get(0).getColumnValues());}
 
-    public <T> T mapTo(Class<T> entity) { return map(new EntityMapper<>(context, query, entity)); }
-    public <T> T mapTo(Entity<T> entity) { return map(new EntityMapper<>(context, query, entity.entity)); }
+    public <T> T mapTo(Class<T> entity) { return map(new EntityMapper<>(context, query, new Entity<>(entity))); }
+    public <T> T mapTo(Entity<T> entity) { return map(new EntityMapper<>(context, query, entity)); }
     public Object mapToAttribute(Class<?> entity, String attribute) { return map(new AttributeMapper(entity, attribute)); }
     public Object mapToAttribute(Entity<?> entity, String attribute) { return map(new AttributeMapper(entity.entity, attribute)); }
     public String mapToString() { return map(new StringMapper()); }
@@ -74,17 +75,20 @@ public class ResultTable {
     public <E extends Enum<E>> E mapToStringEnum(Class<E> enumClass) { return map(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> E mapToOrdinalEnum(Class<E> enumClass) { return map(new OrdinalEnumMapper<>(enumClass)); }
 
-    public <T> List<T> mapList(IMapper<T> mapper) {
+    public <T> List<T> mapList(IMapper<T> mapper, Integer index) {
+
         List<T> results = new ArrayList<>();
         for(ResultRow row : rows) {
-            T result = mapper.map(row.getColumnValues());
+            T result = mapper.map(index == null ? row.getColumnValues() : new String[] { row.getColumnValues()[index] });
             results.add(result);
         }
         return results;
     }
 
+    public <T> List<T> mapList(IMapper<T> mapper) { return mapList(mapper, null); }
 
-    public <T> List<T> toList(Class<T> entity) { return mapList(new EntityMapper<>(context, query, entity)); }
+    public <T> List<T> toList(Class<T> entity) { return mapList(new EntityMapper<>(context, query, new Entity<>(entity))); }
+    public <T> List<T> toList(Entity<T> entity) { return mapList(new EntityMapper<>(context, query, entity)); }
 
 
     public List<?> toList(Attribute attribute) { return mapList(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
@@ -94,76 +98,77 @@ public class ResultTable {
     
 
     public List<String> toListString() { return mapList(new StringMapper()); }
-    public List<String> toListString(Attribute attribute) { return mapList(new StringMapper()); }
-    public List<String> toListString(Class<?> entity, String attributeName) { return mapList(new StringMapper()); }
-    public List<String> toListString(Entity<?> entity, String attributeName) { return mapList(new StringMapper()); }
-    public <T, P> List<P> toListString(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new StringMapper()); }
-    public List<String> toListString(String columnName) { return mapList(new StringMapper()); }
+    public List<String> toListString(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : getRows().stream().map(row -> row.getColumnValues()[index]).collect(Collectors.toList()); }
+    public List<String> toListString(Class<?> entity, String attributeName)         { return toListString(Estivate.attribute(entity, attributeName)); }
+    public List<String> toListString(Entity<?> entity, String attributeName)        { return toListString(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<String> toListString(AttributeGetter<T, P> attributeGetter)  { return toListString(Estivate.attribute(attributeGetter)); }
+    public List<String> toListString(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : getRows().stream().map(row -> row.getColumnValues()[index]).collect(Collectors.toList()); }
 
     public List<Short> toListShort() { return mapList(new ShortMapper()); }
-    public List<Short> toListShort(Attribute attribute) { return mapList(new ShortMapper()); }
-    public List<Short> toListShort(Class<?> entity, String attributeName) { return mapList(new ShortMapper()); }
-    public List<Short> toListShort(Entity<?> entity, String attributeName) { return mapList(new ShortMapper()); }
-    public <T, P> List<P> toListShort(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new ShortMapper()); }
-    public List<Short> toListShort(String columnName) { return mapList(new ShortMapper()); }
+    public List<Short> toListShort(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new ShortMapper(), indexOf(attribute)); }
+    public List<Short> toListShort(Class<?> entity, String attributeName)           { return toListShort(Estivate.attribute(entity, attributeName)); }
+    public List<Short> toListShort(Entity<?> entity, String attributeName)          { return toListShort(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Short> toListShort(AttributeGetter<T, P> attributeGetter)    { return toListShort(Estivate.attribute(attributeGetter)); }
+    public List<Short> toListShort(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new ShortMapper(), index); }
 
     public List<Integer> toListInteger() { return mapList(new IntegerMapper()); }
-    public List<Integer> toListInteger(Attribute attribute) { return mapList(new IntegerMapper()); }
-    public List<Integer> toListInteger(Class<?> entity, String attributeName) { return mapList(new IntegerMapper()); }
-    public List<Integer> toListInteger(Entity<?> entity, String attributeName) { return mapList(new IntegerMapper()); }
-    public <T, P> List<P> toListInteger(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new IntegerMapper()); }
-    public List<Integer> toListInteger(String columnName) { return mapList(new IntegerMapper()); }
+    public List<Integer> toListInteger(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new IntegerMapper(), index); }
+    public List<Integer> toListInteger(Class<?> entity, String attributeName)       { return toListInteger(Estivate.attribute(entity, attributeName)); }
+    public List<Integer> toListInteger(Entity<?> entity, String attributeName)      { return toListInteger(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Integer> toListInteger(AttributeGetter<T, P> attributeGetter) { return toListInteger(Estivate.attribute(attributeGetter)); }
+    public List<Integer> toListInteger(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new IntegerMapper(), index); }
 
     public List<Long> toListLong() { return mapList(new LongMapper()); }
-    public List<Long> toListLong(Attribute attribute) { return mapList(new LongMapper()); }
-    public List<Long> toListLong(Class<?> entity, String attributeName) { return mapList(new LongMapper()); }
-    public List<Long> toListLong(Entity<?> entity, String attributeName) { return mapList(new LongMapper()); }
-    public <T, P> List<P> toListLong(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new LongMapper()); }
-    public List<Long> toListLong(String columnName) { return mapList(new LongMapper()); }
+    public List<Long> toListLong(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new LongMapper(), index); }
+    public List<Long> toListLong(Class<?> entity, String attributeName)             { return toListLong(Estivate.attribute(entity, attributeName)); }
+    public List<Long> toListLong(Entity<?> entity, String attributeName)            { return toListLong(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Long> toListLong(AttributeGetter<T, P> attributeGetter)      { return toListLong(Estivate.attribute(attributeGetter)); }
+    public List<Long> toListLong(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new LongMapper(), index); }
     
     public List<Float> toListFloat() { return mapList(new FloatMapper()); }
-    public List<Float> toListFloat(Attribute attribute) { return mapList(new FloatMapper()); }
-    public List<Float> toListFloat(Class<?> entity, String attributeName) { return mapList(new FloatMapper()); }
-    public List<Float> toListFloat(Entity<?> entity, String attributeName) { return mapList(new FloatMapper()); }
-    public <T, P> List<P> toListFloat(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new FloatMapper()); }
-    public List<Float> toListFloat(String columnName) { return mapList(new FloatMapper()); }
+    public List<Float> toListFloat(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new FloatMapper(), index); }
+    public List<Float> toListFloat(Class<?> entity, String attributeName)           { return toListFloat(Estivate.attribute(entity, attributeName)); }
+    public List<Float> toListFloat(Entity<?> entity, String attributeName)          { return toListFloat(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Float> toListFloat(AttributeGetter<T, P> attributeGetter)    { return toListFloat(Estivate.attribute(attributeGetter)); }
+    public List<Float> toListFloat(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new FloatMapper(), index); }
 
     public List<Double> toListDouble() { return mapList(new DoubleMapper()); }
-    public List<Double> toListDouble(Attribute attribute) { return mapList(new DoubleMapper()); }
-    public List<Double> toListDouble(Class<?> entity, String attributeName) { return mapList(new DoubleMapper()); }
-    public List<Double> toListDouble(Entity<?> entity, String attributeName) { return mapList(new DoubleMapper()); }
-    public <T, P> List<P> toListDouble(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new DoubleMapper()); }
-    public List<Double> toListDouble(String columnName) { return mapList(new DoubleMapper()); }
+    public List<Double> toListDouble(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new DoubleMapper(), index); }
+    public List<Double> toListDouble(Class<?> entity, String attributeName)         { return toListDouble(Estivate.attribute(entity, attributeName)); }
+    public List<Double> toListDouble(Entity<?> entity, String attributeName)        { return toListDouble(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Double> toListDouble(AttributeGetter<T, P> attributeGetter)  { return toListDouble(Estivate.attribute(attributeGetter)); }
+    public List<Double> toListDouble(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new DoubleMapper(), index); }
 
     public List<Boolean> toListBoolean() { return mapList(new BooleanMapper()); }
-    public List<Boolean> toListBoolean(Attribute attribute) { return mapList(new BooleanMapper()); }
-    public List<Boolean> toListBoolean(Class<?> entity, String attributeName) { return mapList(new BooleanMapper()); }
-    public List<Boolean> toListBoolean(Entity<?> entity, String attributeName) { return mapList(new BooleanMapper()); }
-    public <T, P> List<P> toListBoolean(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new BooleanMapper()); }
-    public List<Boolean> toListBoolean(String columnName) { return mapList(new BooleanMapper()); }
+    public List<Boolean> toListBoolean(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new BooleanMapper(), index); }
+    public List<Boolean> toListBoolean(Class<?> entity, String attributeName)       { return toListBoolean(Estivate.attribute(entity, attributeName)); }
+    public List<Boolean> toListBoolean(Entity<?> entity, String attributeName)      { return toListBoolean(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Boolean> toListBoolean(AttributeGetter<T, P> attributeGetter){ return toListBoolean(Estivate.attribute(attributeGetter)); }
+    public List<Boolean> toListBoolean(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new BooleanMapper(), index); }
     
     public List<Date> toListDate() { return mapList(new DateMapper()); }
-    public List<Date> toListDate(Attribute attribute) { return mapList(new DateMapper()); }
-    public List<Date> toListDate(Class<?> entity, String attributeName) { return mapList(new DateMapper()); }
-    public List<Date> toListDate(Entity<?> entity, String attributeName) { return mapList(new DateMapper()); }
-    public <T, P> List<P> toListDate(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new DateMapper()); }
-    public List<Date> toListDate(String columnName) { return mapList(new DateMapper()); }
+    public List<Date> toListDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new DateMapper(), index); }
+    public List<Date> toListDate(Class<?> entity, String attributeName)             { return toListDate(Estivate.attribute(entity, attributeName)); }
+    public List<Date> toListDate(Entity<?> entity, String attributeName)            { return toListDate(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Date> toListDate(AttributeGetter<T, P> attributeGetter)      { return toListDate(Estivate.attribute(attributeGetter)); }
+    public List<Date> toListDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new DateMapper(), index); }
     
     public List<LocalDateTime> toListLocalDateTime() { return mapList(new LocalDateTimeMapper()); }
-    public List<LocalDateTime> toListLocalDateTime(Attribute attribute) { return mapList(new LocalDateTimeMapper()); }
-    public List<LocalDateTime> toListLocalDateTime(Class<?> entity, String attributeName) { return mapList(new LocalDateTimeMapper()); }
-    public List<LocalDateTime> toListLocalDateTime(Entity<?> entity, String attributeName) { return mapList(new LocalDateTimeMapper()); }
-    public <T, P> List<P> toListLocalDateTime(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) mapList(new LocalDateTimeMapper()); }
-    public List<LocalDateTime> toListLocalDateTime(String columnName) { return mapList(new LocalDateTimeMapper()); }
+    public List<LocalDateTime> toListLocalDateTime(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : mapList(new LocalDateTimeMapper(), index); }
+    public List<LocalDateTime> toListLocalDateTime(Class<?> entity, String attributeName)       { return toListLocalDateTime(Estivate.attribute(entity, attributeName)); }
+    public List<LocalDateTime> toListLocalDateTime(Entity<?> entity, String attributeName)      { return toListLocalDateTime(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<LocalDateTime> toListLocalDateTime(AttributeGetter<T, P> attributeGetter){ return toListLocalDateTime(Estivate.attribute(attributeGetter)); }
+    public List<LocalDateTime> toListLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : mapList(new LocalDateTimeMapper(), index); }
 
     public <E extends Enum<E>> List<E> toListStringEnum(Class<E> enumClass) { return mapList(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> List<E> toListOrdinalEnum(Class<E> enumClass) { return mapList(new OrdinalEnumMapper<>(enumClass)); }
     
     public <T> Set<T> toSet(IMapper<T> mapper){ return mapList(mapper).stream().collect(Collectors.toSet());}
-    public <T> Set<T> toSet(Class<T> entity) { return toSet(new EntityMapper<>(context, query, entity)); }
+    public <T> Set<T> toSet(Class<T> entity) { return toSet(new EntityMapper<>(context, query, new Entity<>(entity))); }
+    public <T> Set<T> toSet(Entity<T> entity) { return toSet(new EntityMapper<>(context, query, entity)); }
+    public Set<?> toSet(Attribute attribute) { return toSet(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
     public Set<?> toSet(Class<?> entity, String attributeName) { return toSet(new AttributeMapper(entity, attributeName)); }
     public Set<?> toSet(Entity<?> entity, String attributeName) { return toSet(new AttributeMapper(entity.entity, attributeName)); }
-    public Set<?> toSet(Attribute attribute) { return toSet(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
     public <T, P> Set<P> toSet(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (Set<P>) toSet(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
     
     public Set<String> toSetString() { return toSet(new StringMapper()); }
@@ -228,4 +233,10 @@ public class ResultTable {
     public ResultRow getFirst() { return rows.isEmpty() ? null : rows.get(0); }
     public ResultRow get(int index) { return rows.get(index); }
     public ResultRow getLast() { return rows.isEmpty() ? null : rows.get(rows.size() - 1); }
+
+
+    private int indexOf(Attribute attribute) { 
+        return query.getSelects().stream().toList().indexOf(attribute);
+    }
+
 }

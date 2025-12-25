@@ -42,14 +42,14 @@ public class ResultRow {
 
 	
 	@SneakyThrows
-	public <T> T mapTo(Entity<T> clazz) throws SecurityException, IllegalArgumentException {
+	public <T> T mapTo(Entity<T> entity) throws SecurityException, IllegalArgumentException {
 		
-		String key = resultTable.context.nameMapper.toEntityName(clazz);
+		String key = resultTable.context.nameMapper.toEntityName(entity);
 		
 		T t = (T) cache.get(key);
 		
 		if(t == null) {
-			EntityMapper<T> mapper = new EntityMapper<>(resultTable.context, resultTable.query, clazz.entity);
+			EntityMapper<T> mapper = new EntityMapper<>(resultTable.context, resultTable.query, entity);
 			t = mapper.map(columnValues);
 			cache.put(key, t);
 		}
@@ -87,9 +87,9 @@ public class ResultRow {
 	
 
 	private Integer indexOf(String column){
-		int index = ArrayUtils.indexOf(resultTable.columnNames, column);
+		int index = resultTable.columnNames.indexOf(column);
 		if(index == -1){
-			log.error("Column not found: "+column + ", available columns: " + Arrays.toString(resultTable.columnNames));
+			log.error("Column not found: "+column + ", available columns: " + resultTable.columnNames);
 			return null;
 		}
 		return index;
