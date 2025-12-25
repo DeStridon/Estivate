@@ -236,7 +236,7 @@ public class ResultTable {
 
 
     private int indexOf(Attribute attribute) { 
-        return query.getSelects().stream().toList().indexOf(attribute);
+        return new ArrayList<>(query.getSelects()).indexOf(attribute);
     }
 
 }
