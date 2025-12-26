@@ -95,7 +95,7 @@ public class SelectQuerySubTest {
         List<ResultRow> results = query.fetch(context).getRows();
         
         for(ResultRow result : results) {
-        	ProductCategory productCategory = (ProductCategory) result.attributeAsEnum(ProductEntity.class, ProductEntity.Fields.category);
+        	ProductCategory productCategory = (ProductCategory) result.getAsEnum(ProductEntity.class, ProductEntity.Fields.category);
         }
         
         

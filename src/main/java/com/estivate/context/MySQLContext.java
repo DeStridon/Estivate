@@ -51,12 +51,12 @@ public class MySQLContext extends Context {
 			for(ResultRow result : results) {
 				
 				IndexRow indexRow = IndexRow.builder()
-					.table(result.columnAsString("Table"))
-					.keyName(result.columnAsString("Key_name"))
-					.nonUnique(result.columnAsBoolean("Non_unique"))
-					.seqInIndex(result.columnAsInteger("Seq_in_index"))
-					.columnName(result.columnAsString("Column_name"))
-					.columnLength(result.columnAsInteger("Sub_part"))
+					.table(result.getAsString("Table"))
+					.keyName(result.getAsString("Key_name"))
+					.nonUnique(result.getAsBoolean("Non_unique"))
+					.seqInIndex(result.getAsInteger("Seq_in_index"))
+					.columnName(result.getAsString("Column_name"))
+					.columnLength(result.getAsInteger("Sub_part"))
 					.build();
 			
 				indexRows.add(indexRow);

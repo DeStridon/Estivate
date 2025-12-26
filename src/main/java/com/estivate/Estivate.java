@@ -3,6 +3,7 @@ package com.estivate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -747,6 +748,10 @@ public class Estivate {
 		public static Attribute.Function length = new Attribute.Function("length(", ")"); 
 		public static Attribute.Function trim = new Attribute.Function("trim(", ")");
 		public static Attribute.Function charLength = new Attribute.Function("char_length(", ")");
+		public static Attribute.Function field(List<String> fields) { return new Attribute.Function("FIELD(", String.join(", ", fields)+")"); }
+		public static Attribute.Function field(String... fields) { return field(Arrays.asList(fields)); }
+		
+		
 
 		/* Aggregate Functions : cannot be used in where clause */
 		public static Attribute.Function count = new Attribute.Function("count(", ")");
@@ -773,7 +778,7 @@ public class Estivate {
 
 		/* Window Functions */
 		public static Attribute.Function rowNumber = new Attribute.Function("row_number()", "", true);
-		 
+		
 	}
 
 

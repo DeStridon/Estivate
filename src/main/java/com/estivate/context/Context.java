@@ -219,19 +219,19 @@ public abstract class Context {
 	// }
 
 
-	public <T> T 			fetchSingle(SelectQuery<T> query)					{ return fetch(query).mapTo(query.getEntity().entity); }
-	public <U> U 			fetchSingleAs(SelectQuery<?> query, Class<U> clazz) { return fetch(query).mapTo(clazz); }
-	public String 			fetchSingleAsString(SelectQuery<?> query)			{ return fetch(query).mapToString(); }
-	public Short			fetchSingleAsShort(SelectQuery<?> query)			{ return fetch(query).mapToShort(); }
-	public Integer			fetchSingleAsInteger(SelectQuery<?> query)			{ return fetch(query).mapToInteger(); }
-	public Long				fetchSingleAsLong(SelectQuery<?> query)				{ return fetch(query).mapToLong(); }
-	public Float			fetchSingleAsFloat(SelectQuery<?> query)			{ return fetch(query).mapToFloat(); }
-	public Double			fetchSingleAsDouble(SelectQuery<?> query)			{ return fetch(query).mapToDouble(); }
-	public Date				fetchSingleAsDate(SelectQuery<?> query)				{ return fetch(query).mapToDate(); }
-	public LocalDateTime 	fetchSingleAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).mapToLocalDateTime(); }
-	public Boolean			fetchSingleAsBoolean(SelectQuery<?> query)			{ return fetch(query).mapToBoolean(); }
-	public <U extends Enum<U>> U 	fetchSingleAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).mapToStringEnum(enumClass); }
-	public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).mapToOrdinalEnum(enumClass); }
+	public <T> T 			fetchSingle(SelectQuery<T> query)					{ return fetch(query).get(query.getEntity().entity); }
+	public <U> U 			fetchSingleAs(SelectQuery<?> query, Class<U> clazz) { return fetch(query).get(clazz); }
+	public String 			fetchSingleAsString(SelectQuery<?> query)			{ return fetch(query).getAsString(); }
+	public Short			fetchSingleAsShort(SelectQuery<?> query)			{ return fetch(query).getAsShort(); }
+	public Integer			fetchSingleAsInteger(SelectQuery<?> query)			{ return fetch(query).getAsInteger(); }
+	public Long				fetchSingleAsLong(SelectQuery<?> query)				{ return fetch(query).getAsLong(); }
+	public Float			fetchSingleAsFloat(SelectQuery<?> query)			{ return fetch(query).getAsFloat(); }
+	public Double			fetchSingleAsDouble(SelectQuery<?> query)			{ return fetch(query).getAsDouble(); }
+	public Date				fetchSingleAsDate(SelectQuery<?> query)				{ return fetch(query).getAsDate(); }
+	public LocalDateTime 	fetchSingleAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).getAsLocalDateTime(); }
+	public Boolean			fetchSingleAsBoolean(SelectQuery<?> query)			{ return fetch(query).getAsBoolean(); }
+	public <U extends Enum<U>> U 	fetchSingleAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).getAsStringEnum(enumClass); }
+	public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).getAsOrdinalEnum(enumClass); }
 
 
 	public <E> Optional<E> 				fetchOptional(SelectQuery<E> query)					{ return Optional.ofNullable(fetchSingle(query)); }
@@ -250,20 +250,20 @@ public abstract class Context {
 	
 	
 		
-	public <T> List<T> 				fetchList(SelectQuery<T> query)						{ return fetch(query).toList(query.getEntity().entity); }
-	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Entity<U> entity) 	{ return fetch(query).toList(entity); }
-	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> entity) 	{ return fetch(query).toList(entity); }
-	public List<String>				fetchListAsString(SelectQuery<?> query)				{ return fetch(query).toListString(); }
-	public List<Short>				fetchListAsShort(SelectQuery<?> query)				{ return fetch(query).toListShort(); }
-	public List<Integer>			fetchListAsInteger(SelectQuery<?> query)			{ return fetch(query).toListInteger(); }
-	public List<Long>				fetchListAsLong(SelectQuery<?> query)				{ return fetch(query).toListLong(); }
-	public List<Float>				fetchListAsFloat(SelectQuery<?> query)				{ return fetch(query).toListFloat(); }
-	public List<Double>				fetchListAsDouble(SelectQuery<?> query)				{ return fetch(query).toListDouble(); }
-	public List<Date>				fetchListAsDate(SelectQuery<?> query)				{ return fetch(query).toListDate(); }
-	public List<LocalDateTime>		fetchListAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).toListLocalDateTime(); }
-	public List<Boolean>			fetchListAsBoolean(SelectQuery<?> query)			{ return fetch(query).toListBoolean(); }
-	public <T extends Enum<T>> List<T> 		fetchListAsStringEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).toListStringEnum(enumClass); }
-	public <T extends Enum<T>> List<T> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).toListOrdinalEnum(enumClass); }
+	public <T> List<T> 				fetchList(SelectQuery<T> query)						{ return fetch(query).getAsList(query.getEntity().entity); }
+	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Entity<U> entity) 	{ return fetch(query).getAsList(entity); }
+	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> entity) 	{ return fetch(query).getAsList(entity); }
+	public List<String>				fetchListAsString(SelectQuery<?> query)				{ return fetch(query).getAsListString(); }
+	public List<Short>				fetchListAsShort(SelectQuery<?> query)				{ return fetch(query).getAsListShort(); }
+	public List<Integer>			fetchListAsInteger(SelectQuery<?> query)			{ return fetch(query).getAsListInteger(); }
+	public List<Long>				fetchListAsLong(SelectQuery<?> query)				{ return fetch(query).getAsListLong(); }
+	public List<Float>				fetchListAsFloat(SelectQuery<?> query)				{ return fetch(query).getAsListFloat(); }
+	public List<Double>				fetchListAsDouble(SelectQuery<?> query)				{ return fetch(query).getAsListDouble(); }
+	public List<Date>				fetchListAsDate(SelectQuery<?> query)				{ return fetch(query).getAsListDate(); }
+	public List<LocalDateTime>		fetchListAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).getAsListLocalDateTime(); }
+	public List<Boolean>			fetchListAsBoolean(SelectQuery<?> query)			{ return fetch(query).getAsListBoolean(); }
+	public <T extends Enum<T>> List<T> 		fetchListAsStringEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).getAsListStringEnum(enumClass); }
+	public <T extends Enum<T>> List<T> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).getAsListOrdinalEnum(enumClass); }
 
 
 	@Deprecated
@@ -292,7 +292,7 @@ public abstract class Context {
 	 */
 	public <U> U projectTo(SelectQuery<?> query, Class<U> clazz) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(clazz);
-		return fetch(newQuery).mapTo(clazz); 
+		return fetch(newQuery).get(clazz); 
 	}
 
 	/*
@@ -307,12 +307,12 @@ public abstract class Context {
 	 */
 	public <U> List<U> projectToList(SelectQuery<?> query, Class<U> clazz) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(clazz);
-		return fetch(newQuery).toList(clazz); 
+		return fetch(newQuery).getAsList(clazz); 
 	}
 
 	public <U> List<U> projectToList(SelectQuery<?> query, Entity<U> entity) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
-		return fetch(newQuery).toList(entity.entity);
+		return fetch(newQuery).getAsList(entity.entity);
 	}
 	
 	/*
@@ -321,7 +321,7 @@ public abstract class Context {
 
 	public Object projectToAttribute(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
-		return fetch(newQuery).mapToAttribute(attribute.entity, attribute.attribute);
+		return fetch(newQuery).get(attribute.entity, attribute.attribute);
 	}
 	public Object projectToAttribute(SelectQuery<?> query, Class<?> entity, String attributeName) { return projectToAttribute(query, Estivate.attribute(entity, attributeName)); }
 	public Object projectToAttribute(SelectQuery<?> query, Entity<?> entity, String attributeName) { return projectToAttribute(query, Estivate.attribute(entity, attributeName)); }
@@ -340,7 +340,7 @@ public abstract class Context {
 	 */
 	public List<?> projectToAttributeList(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
-		return fetch(newQuery).toList(attribute);
+		return fetch(newQuery).getAsList(attribute);
 	}
 	public List<?> projectToAttributeList(SelectQuery<?> query, Class<?> entity, String attributeName) { return projectToAttributeList(query, Estivate.attribute(entity, attributeName)); }
 	public List<?> projectToAttributeList(SelectQuery<?> query, Entity<?> entity, String attributeName) { return projectToAttributeList(query, Estivate.attribute(entity, attributeName)); }
@@ -349,7 +349,7 @@ public abstract class Context {
 
 	public List<?> projectToAttributeDistinctList(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute).distinct();
-		return fetch(newQuery).toList(attribute);
+		return fetch(newQuery).getAsList(attribute);
 	}
 	public List<?> projectToAttributeDistinctList(SelectQuery<?> query, Class<?> entity, String attributeName) { return projectToAttributeDistinctList(query, Estivate.attribute(entity, attributeName)); }
 	public List<?> projectToAttributeDistinctList(SelectQuery<?> query, Entity<?> entity, String attributeName) { return projectToAttributeDistinctList(query, Estivate.attribute(entity, attributeName)); }
@@ -360,7 +360,7 @@ public abstract class Context {
 	 */
 	public Set<?> projectToAttributeSet(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute).distinct();
-		return fetch(newQuery).toSet(attribute);
+		return fetch(newQuery).getAsSet(attribute);
 	}
 	public Set<?> projectToAttributeSet(SelectQuery<?> query, Class<?> entity, String attributeName) { return projectToAttributeSet(query, Estivate.attribute(entity, attributeName)); }
 	public Set<?> projectToAttributeSet(SelectQuery<?> query, Entity<?> entity, String attributeName) { return projectToAttributeSet(query, Estivate.attribute(entity, attributeName)); }
@@ -374,6 +374,8 @@ public abstract class Context {
 			.clearSelects()
 			.clearGroupBys()
 			.clearOrderBys()
+			.limit(null)
+			.offset(null)
 			.selectCountAs("count"));
 	}
 

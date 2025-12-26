@@ -77,8 +77,8 @@ public class SelectQueryCriterionTest {
 		assertEquals(1, results.size());
 		
 		for(ResultRow result : results) {
-			OrderEntity child = result.mapTo(OrderEntity.class);
-			CustomerEntity parent = result.mapTo(CustomerEntity.class);
+			OrderEntity child = result.get(OrderEntity.class);
+			CustomerEntity parent = result.get(CustomerEntity.class);
 		}
 		
 	}
