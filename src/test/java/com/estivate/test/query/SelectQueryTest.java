@@ -26,7 +26,7 @@ public class SelectQueryTest {
         boolean thrown = false;
 
         try{
-            List<CustomerEntity> customers = context.fetchListAs(query, CustomerEntity.class);
+            List<CustomerEntity> customers = context.fetchAsList(query, CustomerEntity.class);
         }
         catch(Exception e) {
             thrown = true;

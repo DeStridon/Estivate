@@ -53,7 +53,7 @@ public class EntityMapperAliasTest {
 		log.info("Query with alias: {}", context.queryAsString(query));
 
 		// Fetch results - this uses EntityMapper internally
-		List<CustomerEntity> results = context.fetchListAs(query, aliasedEntity);
+		List<CustomerEntity> results = context.fetchAsList(query, aliasedEntity);
 
 		// Verify the mapping worked
 		assertNotNull(results);

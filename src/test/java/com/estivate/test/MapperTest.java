@@ -24,7 +24,7 @@ public class MapperTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.eq(CustomerEntity.class, AbstractEntity.Fields.id, newParent.getId());
 				
-		List<CustomerEntity> parents = context.fetchListAs(query, CustomerEntity.class);
+		List<CustomerEntity> parents = context.fetchAsList(query, CustomerEntity.class);
 		
 		Assert.assertEquals(1, parents.size());
 		

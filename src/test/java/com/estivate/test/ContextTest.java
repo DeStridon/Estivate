@@ -39,7 +39,7 @@ public class ContextTest {
 		
 		
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class).in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId()));
-		List<CustomerEntity> resultQueries = context.fetchListAs(query, CustomerEntity.class);
+		List<CustomerEntity> resultQueries = context.fetchAsList(query, CustomerEntity.class);
 		
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 1")));
 		Assert.assertTrue(resultQueries.stream().anyMatch(x -> x.getName().equals("Updated Name 2")));
@@ -54,7 +54,7 @@ public class ContextTest {
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class, "myTask");
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(customer).in(customer, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
-		List<CustomerEntity> resultQueries = context.fetchList(query);
+		List<CustomerEntity> resultQueries = context.fetchAsList(query);
 		
 	}
 
@@ -97,7 +97,7 @@ public class ContextTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.selectCountAs("count");
 
-		Long count = context.fetchSingleAsLong(query);
+		Long count = context.fetch(query).asLong();
 		Assert.assertNotNull(count);
 		Assert.assertTrue(count > 0);
 	}
@@ -128,7 +128,7 @@ public class ContextTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, customers.stream().map(c -> c.getId()).collect(Collectors.toList()));
 		
-		List<CustomerEntity> updatedCustomers = context.fetchList(query);
+		List<CustomerEntity> updatedCustomers = context.fetchAsList(query);
 		
 		Assert.assertEquals(3, updatedCustomers.size());
 		Assert.assertTrue(updatedCustomers.stream().anyMatch(c -> c.getName().equals("customer1-updated")));

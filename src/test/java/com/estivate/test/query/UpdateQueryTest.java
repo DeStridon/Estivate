@@ -50,7 +50,7 @@ public class UpdateQueryTest {
         // 3. Load the entity again from id
         SelectQuery<CustomerEntity> selectQuery = new SelectQuery<>(CustomerEntity.class)
             .eq(AbstractEntity.Fields.id, customer.getId());
-        CustomerEntity loadedCustomer = context.fetchSingle(selectQuery);
+        CustomerEntity loadedCustomer = context.fetchAs(selectQuery);
         Assert.assertNotNull("Customer should be loaded", loadedCustomer);
         Assert.assertEquals("Names should match", customer.getName(), loadedCustomer.getName());
 
@@ -58,7 +58,7 @@ public class UpdateQueryTest {
         context.update(loadedCustomer);
         
         // Verify the entity is still the same after update
-        CustomerEntity updatedCustomer = context.fetchSingle(selectQuery);
+        CustomerEntity updatedCustomer = context.fetchAs(selectQuery);
         Assert.assertNotNull("Customer should still exist after update", updatedCustomer);
         Assert.assertEquals("ID should remain the same", loadedCustomer.getId(), updatedCustomer.getId());
         Assert.assertEquals("Name should remain unchanged", loadedCustomer.getName(), updatedCustomer.getName());

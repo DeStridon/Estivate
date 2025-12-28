@@ -22,8 +22,8 @@ public class CachedEntityTest {
 		CustomerEntity customer = CustomerEntity.builder().name("initial name").email("initial email").build();
 		context.updateOrInsert(customer);
 		
-		CustomerEntity customerA = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
-		CustomerEntity customerB = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
+		CustomerEntity customerA = context.fetchAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
+		CustomerEntity customerB = context.fetchAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
 		
 		customerA.setName("new name");
 		customerB.setEmail("new email");
@@ -36,7 +36,7 @@ public class CachedEntityTest {
 		context.updateOrInsert(customerB);
 		
 		
-		CustomerEntity customerC = context.fetchSingleAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
+		CustomerEntity customerC = context.fetchAs(Estivate.selectQuery(CustomerEntity.class).eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId()), CustomerEntity.class);
 		
 		assertEquals(customerA.getName(), customerC.getName());
 		assertEquals(customerB.getEmail(), customerC.getEmail());

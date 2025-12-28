@@ -351,95 +351,58 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	public ResultTable fetch(Context context) { return context.fetch(this); }
 
-	@Deprecated public E 				fetchSingle(Context context) 					{ return context.fetchSingle(this); }
-	@Deprecated public <T> T 			fetchSingleAs(Context context, Class<T> clazz) 	{ return context.fetchSingleAs(this, clazz); }
-	@Deprecated public String 			fetchSingleAsString(Context context) 			{ return context.fetchSingleAsString(this); }
-	@Deprecated public Short 			fetchSingleAsShort(Context context) 			{ return context.fetchSingleAsShort(this); }
-	@Deprecated public Integer 			fetchSingleAsInteger(Context context) 			{ return context.fetchSingleAsInteger(this); }
-	@Deprecated public Long 			fetchSingleAsLong(Context context) 				{ return context.fetchSingleAsLong(this); }
-	@Deprecated public Float 			fetchSingleAsFloat(Context context) 			{ return context.fetchSingleAsFloat(this); }
-	@Deprecated public Double 			fetchSingleAsDouble(Context context) 			{ return context.fetchSingleAsDouble(this); }
-	@Deprecated public Date 			fetchSingleAsDate(Context context) 				{ return context.fetchSingleAsDate(this); }
-	@Deprecated public LocalDateTime 	fetchSingleAsLocalDateTime(Context context) 	{ return context.fetchSingleAsLocalDateTime(this); }
-	@Deprecated public Boolean 			fetchSingleAsBoolean(Context context) 			{ return context.fetchSingleAsBoolean(this); }
-	@Deprecated public <T extends Enum<T>> T 		fetchSingleAsStringEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsStringEnum(this, enumClass); }
-	@Deprecated public <T extends Enum<T>> T 		fetchSingleAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsOrdinalEnum(this, enumClass); }
-	
-	@Deprecated public Optional<E> 				fetchOptional(Context context) 			{ return context.fetchOptional(this); }
-	@Deprecated public <T> Optional<T> 			fetchOptionalAs(Context context, Class<T> clazz) 			{ return context.fetchOptionalAs(this, clazz); }
-	@Deprecated public Optional<String>			fetchOptionalAsString(Context context) 	{ return context.fetchOptionalAsString(this); }
-	@Deprecated public Optional<Short>			fetchOptionalAsShort(Context context) 	{ return context.fetchOptionalAsShort(this); }
-	@Deprecated public Optional<Integer>		fetchOptionalAsInteger(Context context) 	{ return context.fetchOptionalAsInteger(this); }
-	@Deprecated public Optional<Long>			fetchOptionalAsLong(Context context) 		{ return context.fetchOptionalAsLong(this); }
-	@Deprecated public Optional<Float>			fetchOptionalAsFloat(Context context) 	{ return context.fetchOptionalAsFloat(this); }
-	@Deprecated public Optional<Double>			fetchOptionalAsDouble(Context context) 	{ return context.fetchOptionalAsDouble(this); }
-	@Deprecated public Optional<Date>			fetchOptionalAsDate(Context context) 		{ return context.fetchOptionalAsDate(this); }
-	@Deprecated public Optional<LocalDateTime>	fetchOptionalAsLocalDateTime(Context context) 	{ return context.fetchOptionalAsLocalDateTime(this); }
-	@Deprecated public Optional<Boolean>		fetchOptionalAsBoolean(Context context) 	{ return context.fetchOptionalAsBoolean(this); }
-	@Deprecated public <T extends Enum<T>> Optional<T> 		fetchOptionalAsStringEnum(Context context, Class<T> enumClass) { return context.fetchOptionalAsStringEnum(this, enumClass); }
-	@Deprecated public <T extends Enum<T>> Optional<T> 		fetchOptionalAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchOptionalAsOrdinalEnum(this, enumClass); }
+	// Base entity shortcuts (uses the query's type parameter E)
+	@SuppressWarnings("unchecked")
+	public E 		fetchAs(Context context) { return context.fetchAs(this, entity); }
+	public <T> T 	fetchAs(Context context, Class<T> clazz) { return context.fetchAs(this, clazz); }
+	public <T> T 	fetchAs(Context context, Entity<T> entity) { return context.fetchAs(this, entity); }
+	public Object 	fetchAs(Context context, Attribute attribute) { return context.fetchAs(this, attribute); }
+	public Object 	fetchAs(Context context, Class<?> entity, String attributeName) { return context.fetchAs(this, entity, attributeName); }
+	public Object 	fetchAs(Context context, Entity<?> entity, String attributeName) { return context.fetchAs(this, entity.entity, attributeName); }
+	public <T, P> P fetchAs(Context context, AttributeGetter<T, P> getter) { return (P) fetchAs(context, Estivate.attribute(getter));}
 	
 	
-	@Deprecated public List<E> 			fetchList(Context context){ return context.fetchListAs(this, (Class<E>) entity.entity); }
-	@Deprecated public <T> List<T> 		fetchListAs(Context context, Class<T> entity) { return context.fetchListAs(this, entity); }
-	@Deprecated public List<String> 	fetchListAsString(Context context) { return context.fetchListAsString(this); }
-	@Deprecated public List<Short> 		fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
-	@Deprecated public List<Integer> 	fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
-	@Deprecated public List<Long> 		fetchListAsLong(Context context) { return context.fetchListAsLong(this); }
-	@Deprecated public List<Float> 		fetchListAsFloat(Context context) { return context.fetchListAsFloat(this); }
-	@Deprecated public List<Double> 	fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
-	@Deprecated public List<Date> 		fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
-	@Deprecated public List<Boolean> 	fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
-	@Deprecated public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(Context context, Class<U> enumClass) { return context.fetchListAsStringEnum(this, enumClass); }
-	@Deprecated public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(Context context, Class<U> enumClass) { return context.fetchListAsOrdinalEnum(this, enumClass); }
-
+	@SuppressWarnings("unchecked")
+	public Optional<E> 		fetchAsOptional(Context context) { return context.fetchAsOptional(this, (Class<E>) entity.entity); }
+	public <T> Optional<T> fetchAsOptional(Context context, Class<T> clazz) { return context.fetchAsOptional(this, clazz); }
+	public <T> Optional<T> fetchAsOptional(Context context, Entity<T> entity) { return context.fetchAsOptional(this, entity); }
+	public Optional<?> 			fetchAsOptional(Context context, Attribute attribute) { return context.fetchAsOptional(this, attribute); }
+	public Optional<?> 			fetchAsOptional(Context context, Entity<?> entity, String attributeName) { return context.fetchAsOptional(this, entity.entity, attributeName); }
+	public Optional<?> 			fetchAsOptional(Context context, Class<?> entity, String attributeName) { return context.fetchAsOptional(this, entity, attributeName); }
+	public <T, P> Optional<P> 	fetchAsOptional (Context context, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) context.fetchAsOptional(this, Estivate.attribute(attributeGetter)); }
 	
-	// ==================== PROJECT METHODS ====================
-	public <T> T projectTo(Context context, Class<T> clazz) { return context.projectTo(this, clazz); }
-	public <T> Optional<T> projectToOptional(Context context, Class<T> clazz) { return context.projectToOptional(this, clazz); }
-	public <T> List<T> projectToList(Context context, Class<T> clazz) { return context.projectToList(this, clazz); }
-	public <T> List<T> projectToList(Context context, Entity<T> entity) { return context.projectToList(this, entity); }
 	
-	public Object projectToAttribute(Context context, Attribute attribute) { return context.projectToAttribute(this, attribute); }
-	public Object projectToAttribute(Context context, Class<?> entity, String attributeName) { return context.projectToAttribute(this, entity, attributeName); }
-	public Object projectToAttribute(Context context, Entity<?> entity, String attributeName) { return context.projectToAttribute(this, entity.entity, attributeName); }
-	public <T, P> P projectToAttribute(Context context, AttributeGetter<T, P> getter) { return (P) projectToAttribute(context, Estivate.attribute(getter));}
+	public List<E> 			fetchAsList(Context context){ return context.fetchAsList(this, entity); }
+	public <T> List<T> 		fetchAsList(Context context, Class<T> entity) { return context.fetchAsList(this, entity); }
+	public <T> List<T> 		fetchAsList(Context context, Entity<T> entity) { return context.fetchAsList(this, entity); }
+	public List<?> fetchAsList(Context context, Attribute attribute) { return context.fetchAsList(this, attribute); }
+	public List<?> fetchAsList(Context context, Class<?> entity, String attributeName) { return context.fetchAsList(this, entity, attributeName); }
+	public List<?> fetchAsList(Context context, Entity<?> entity, String attributeName) { return context.fetchAsList(this, entity, attributeName); }
+	public <T, P> List<P> fetchAsList(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsList(this, attributeGetter); }
 
+	public List<?> fetchAsListDistinct(Context context, Attribute attribute) { return context.fetchAsListDistinct(this, attribute); }
+	public List<?> fetchAsListDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchAsListDistinct(this, entity, attributeName); }
+	public List<?> fetchAsListDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchAsListDistinct(this, entity, attributeName); }
+	public <T, P> List<P> fetchAsListDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsListDistinct(this, attributeGetter); }
 
-	public Optional<?> projectToAttributeOptional(Context context, Attribute attribute) { return context.projectToAttributeOptional(this, attribute); }
-	public Optional<?> projectToAttributeOptional(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeOptional(this, entity.entity, attributeName); }
-	public Optional<?> projectToAttributeOptional(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeOptional(this, entity, attributeName); }
-	public <T, P> P projectToAttributeOptional(Context context, AttributeGetter<T, P> attributeGetter) { return (P) projectToAttributeOptional(context, Estivate.attribute(attributeGetter)); }
+	public Set<?> fetchAsSet(Context context, Attribute attribute) { return context.fetchAsSet(this, attribute); }
+	public Set<?> fetchAsSet(Context context, Class<?> entity, String attributeName) { return context.fetchAsSet(this, entity, attributeName); }
+	public Set<?> fetchAsSet(Context context, Entity<?> entity, String attributeName) { return context.fetchAsSet(this, entity, attributeName); }
+	public <T, P> Set<P> fetchAsSet(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsSet(this, attributeGetter); }
 
-	public List<?> projectToAttributeList(Context context, Attribute attribute) { return context.projectToAttributeList(this, attribute); }
-	public List<?> projectToAttributeList(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeList(this, entity, attributeName); }
-	public List<?> projectToAttributeList(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeList(this, entity, attributeName); }
-	public <T, P> List<P> projectToAttributeList(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeList(this, attributeGetter); }
+	public Long fetchCount(Context context) { return context.fetchAsCount(this); }
+	public Optional<Long> fetchCountOptional(Context context) { return context.fetchAsCountOptional(this); }
 
-	public List<?> projectToAttributeDistinctList(Context context, Attribute attribute) { return context.projectToAttributeDistinctList(this, attribute); }
-	public List<?> projectToAttributeDistinctList(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeDistinctList(this, entity, attributeName); }
-	public List<?> projectToAttributeDistinctList(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeDistinctList(this, entity, attributeName); }
-	public <T, P> List<P> projectToAttributeDistinctList(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeDistinctList(this, attributeGetter); }
-
-
-	public Set<?> projectToAttributeSet(Context context, Attribute attribute) { return context.projectToAttributeSet(this, attribute); }
-	public Set<?> projectToAttributeSet(Context context, Class<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
-	public Set<?> projectToAttributeSet(Context context, Entity<?> entity, String attributeName) { return context.projectToAttributeSet(this, entity, attributeName); }
-	public <T, P> Set<P> projectToAttributeSet(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToAttributeSet(this, attributeGetter); }
-
-
-	public Long projectToCount(Context context) { return context.projectToCount(this); }
-	public Optional<Long> projectToCountOptional(Context context) { return context.projectToCountOptional(this); }
-
-	public Long projectToCountDistinct(Context context, Attribute attribute) { return context.projectToCountDistinct(this, attribute); }
-	public Long projectToCountDistinct(Context context, Class<?> entity, String attributeName) { return context.projectToCountDistinct(this, entity, attributeName); }
-	public Long projectToCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.projectToCountDistinct(this, entity, attributeName); }
-	public <T, P> Long projectToCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToCountDistinct(this, attributeGetter); }
+	public Long fetchCountDistinct(Context context, Attribute attribute) { return context.fetchAsCountDistinct(this, attribute); }
+	public Long fetchCountDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchAsCountDistinct(this, entity, attributeName); }
+	public Long fetchCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchAsCountDistinct(this, entity, attributeName); }
+	public <T, P> Long fetchCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsCountDistinct(this, attributeGetter); }
 	
-	public Optional<Long> projectToCountDistinctOptional(Context context, Attribute attribute) { return context.projectToCountDistinctOptional(this, attribute); }
-	public Optional<Long> projectToCountDistinctOptional(Context context, Class<?> entity, String attributeName) { return context.projectToCountDistinctOptional(this, entity, attributeName); }
-	public Optional<Long> projectToCountDistinctOptional(Context context, Entity<?> entity, String attributeName) { return context.projectToCountDistinctOptional(this, entity, attributeName); }
-	public <T, P> Optional<Long> projectToCountDistinctOptional(Context context, AttributeGetter<T, P> attributeGetter) { return context.projectToCountDistinctOptional(this, attributeGetter); }
+	public Optional<Long> fetchCountDistinctOptional(Context context, Attribute attribute) { return context.fetchAsCountDistinctOptional(this, attribute); }
+	public Optional<Long> fetchCountDistinctOptional(Context context, Class<?> entity, String attributeName) { return context.fetchAsCountDistinctOptional(this, entity, attributeName); }
+	public Optional<Long> fetchCountDistinctOptional(Context context, Entity<?> entity, String attributeName) { return context.fetchAsCountDistinctOptional(this, entity, attributeName); }
+	public <T, P> Optional<Long> fetchCountDistinctOptional(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsCountDistinctOptional(this, attributeGetter); }
+
 	
 
 	// ==================== AGGREGATION METHODS ====================
