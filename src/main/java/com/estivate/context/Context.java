@@ -180,21 +180,21 @@ public abstract class Context {
 
 
 	public <E> Optional<E> fetchOptional(SelectQuery<E> query) { return Optional.ofNullable(fetchSingle(query)); }
-	public <U> Optional<U> fetchAsOptional(SelectQuery<?> query, Class<U> clazz) { return Optional.ofNullable(fetchAsSingle(query, clazz)); }
-	public <E> Optional<E> fetchAsOptional(SelectQuery<?> query, Entity<E> entity) { return Optional.ofNullable(fetchAsSingle(query, entity)); }
+	public <T> Optional<T> fetchAsOptional(SelectQuery<?> query, Class<T> clazz) { return Optional.ofNullable(fetchAsSingle(query, clazz)); }
+	public <T> Optional<T> fetchAsOptional(SelectQuery<?> query, Entity<T> entity) { return Optional.ofNullable(fetchAsSingle(query, entity)); }
 	
-
-	public <U> List<U> fetchAsList(SelectQuery<?> query, Class<U> clazz) 	{ 
+	public <T> List<T> fetchAsList(SelectQuery<?> query, Entity<T> entity) {
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
+		return fetch(newQuery).asList(entity.entity);
+	}
+	public <T> List<T> fetchAsList(SelectQuery<?> query, Class<T> clazz) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(clazz);
 		return fetch(newQuery).asList(clazz); 
 	}
 
-	public <U> List<U> fetchAsList(SelectQuery<?> query, Entity<U> entity) {
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
-		return fetch(newQuery).asList(entity.entity);
-	}
+	
 		
-	public <T> List<T> fetchList(SelectQuery<T> query)					{ return fetchAsList(query, query.getEntity()); }
+	public <E> List<E> fetchList(SelectQuery<E> query) { return fetchAsList(query, query.getEntity()); }
 	
 
 	@Deprecated
