@@ -283,7 +283,7 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single optional value
 	 */
-	public Optional<Long> fetchAsCountOptional(SelectQuery<?> query) {
+	public Optional<Long> fetchAsOptionalCount(SelectQuery<?> query) {
 		return Optional.ofNullable(fetchAsCount(query));
 	}
 
@@ -304,12 +304,12 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count distinct, and returns a single optional value
 	 */
-	public Optional<Long> fetchAsCountDistinctOptional(SelectQuery<?> query, Class<?> entity, String attributeName) {
+	public Optional<Long> fetchAsOptionalCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
 		return Optional.ofNullable(fetchAsCountDistinct(query, entity, attributeName));
 	}
-	public Optional<Long> fetchAsCountDistinctOptional(SelectQuery<?> query, Entity<?> entity, String attributeName) { return Optional.ofNullable(fetchAsCountDistinct(query, entity, attributeName)); }
-	public Optional<Long> fetchAsCountDistinctOptional(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(fetchAsCountDistinct(query, attribute.entity, attribute.attribute)); }
-	public <T, P> Optional<Long> fetchAsCountDistinctOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return Optional.ofNullable(fetchAsCountDistinct(query, Estivate.attribute(attributeGetter))); }
+	public Optional<Long> fetchAsOptionalCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return Optional.ofNullable(fetchAsCountDistinct(query, entity, attributeName)); }
+	public Optional<Long> fetchAsOptionalCountDistinct(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(fetchAsCountDistinct(query, attribute.entity, attribute.attribute)); }
+	public <T, P> Optional<Long> fetchAsOptionalCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return Optional.ofNullable(fetchAsCountDistinct(query, Estivate.attribute(attributeGetter))); }
 
 	
 	// ==================== AGGREGATION METHODS ====================

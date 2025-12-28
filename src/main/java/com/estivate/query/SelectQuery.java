@@ -390,18 +390,18 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public Set<?> fetchAsSet(Context context, Entity<?> entity, String attributeName) { return context.fetchAsSet(this, entity, attributeName); }
 	public <T, P> Set<P> fetchAsSet(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsSet(this, attributeGetter); }
 
-	public Long fetchCount(Context context) { return context.fetchAsCount(this); }
-	public Optional<Long> fetchCountOptional(Context context) { return context.fetchAsCountOptional(this); }
+	public Long fetchAsCount(Context context) { return context.fetchAsCount(this); }
+	public Optional<Long> fetchAsOptionalCount(Context context) { return context.fetchAsOptionalCount(this); }
 
-	public Long fetchCountDistinct(Context context, Attribute attribute) { return context.fetchAsCountDistinct(this, attribute); }
-	public Long fetchCountDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchAsCountDistinct(this, entity, attributeName); }
-	public Long fetchCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchAsCountDistinct(this, entity, attributeName); }
-	public <T, P> Long fetchCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsCountDistinct(this, attributeGetter); }
+	public Long fetchAsCountDistinct(Context context, Attribute attribute) { return context.fetchAsCountDistinct(this, attribute); }
+	public Long fetchAsCountDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchAsCountDistinct(this, entity, attributeName); }
+	public Long fetchAsCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchAsCountDistinct(this, entity, attributeName); }
+	public <T, P> Long fetchAsCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsCountDistinct(this, attributeGetter); }
 	
-	public Optional<Long> fetchCountDistinctOptional(Context context, Attribute attribute) { return context.fetchAsCountDistinctOptional(this, attribute); }
-	public Optional<Long> fetchCountDistinctOptional(Context context, Class<?> entity, String attributeName) { return context.fetchAsCountDistinctOptional(this, entity, attributeName); }
-	public Optional<Long> fetchCountDistinctOptional(Context context, Entity<?> entity, String attributeName) { return context.fetchAsCountDistinctOptional(this, entity, attributeName); }
-	public <T, P> Optional<Long> fetchCountDistinctOptional(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsCountDistinctOptional(this, attributeGetter); }
+	public Optional<Long> fetchAsOptionalCountDistinct(Context context, Attribute attribute) { return context.fetchAsOptionalCountDistinct(this, attribute); }
+	public Optional<Long> fetchAsOptionalCountDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchAsOptionalCountDistinct(this, entity, attributeName); }
+	public Optional<Long> fetchAsOptionalCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchAsOptionalCountDistinct(this, entity, attributeName); }
+	public <T, P> Optional<Long> fetchAsOptionalCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchAsOptionalCountDistinct(this, attributeGetter); }
 
 	
 
