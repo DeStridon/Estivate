@@ -171,17 +171,17 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a single value
 	 */
-	public <T> T fetchAs(SelectQuery<?> query, Class<T> clazz) 	{ 
+	public <T> T fetchAsSingle(SelectQuery<?> query, Class<T> clazz) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(clazz);
-		return fetch(newQuery).as(clazz); 
+		return fetch(newQuery).asSingle(clazz); 
 	}
-	public <T> T fetchAs(SelectQuery<?> query, Entity<T> entity) { return fetchAs(query, entity); }
-	public <E> E fetchAs(SelectQuery<E> query) { return fetchAs(query, query.getEntity().entity); }
+	public <T> T fetchAsSingle(SelectQuery<?> query, Entity<T> entity) { return fetchAsSingle(query, entity); }
+	public <E> E fetchSingle(SelectQuery<E> query) { return fetchAsSingle(query, query.getEntity()); }
 
 
-	public <E> Optional<E> fetchAsOptional(SelectQuery<E> query) { return Optional.ofNullable(fetchAs(query)); }
-	public <U> Optional<U> fetchAsOptional(SelectQuery<?> query, Class<U> clazz) { return Optional.ofNullable(fetchAs(query, clazz)); }
-	public <E> Optional<E> fetchAsOptional(SelectQuery<?> query, Entity<E> entity) { return Optional.ofNullable(fetchAs(query, entity)); }
+	public <E> Optional<E> fetchOptional(SelectQuery<E> query) { return Optional.ofNullable(fetchSingle(query)); }
+	public <U> Optional<U> fetchAsOptional(SelectQuery<?> query, Class<U> clazz) { return Optional.ofNullable(fetchAsSingle(query, clazz)); }
+	public <E> Optional<E> fetchAsOptional(SelectQuery<?> query, Entity<E> entity) { return Optional.ofNullable(fetchAsSingle(query, entity)); }
 	
 
 	public <U> List<U> fetchAsList(SelectQuery<?> query, Class<U> clazz) 	{ 
@@ -220,18 +220,18 @@ public abstract class Context {
 	/*
 	 * Clones the query, selects only the attribute, and returns a single value
 	 */
-	public Object fetchAs(SelectQuery<?> query, Attribute attribute) {
+	public Object fetchAsSingle(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
-		return fetch(newQuery).as(attribute.entity, attribute.attribute);
+		return fetch(newQuery).asSingle(attribute.entity, attribute.attribute);
 	}
-	public Object fetchAs(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAs(query, Estivate.attribute(entity, attributeName)); }
-	public Object fetchAs(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAs(query, Estivate.attribute(entity, attributeName)); }
-	public <T, P> P fetchAs(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (P) fetchAs(query, Estivate.attribute(attributeGetter)); }
+	public Object fetchAsSingle(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName)); }
+	public Object fetchAsSingle(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName)); }
+	public <T, P> P fetchAsSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (P) fetchAsSingle(query, Estivate.attribute(attributeGetter)); }
 
 	/*
 	 * Clones the query, selects only the attribute, and returns a single optional value
 	 */
-	public Optional<?> fetchAsOptional(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(fetchAs(query, attribute.entity, attribute.attribute)); }
+	public Optional<?> fetchAsOptional(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(fetchAsSingle(query, attribute.entity, attribute.attribute)); }
 	public Optional<?> fetchAsOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsOptional(query, Estivate.attribute(entity, attributeName)); }
 	public Optional<?> fetchAsOptional(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsOptional(query, Estivate.attribute(entity, attributeName)); }
 	public <T, P> Optional<P> fetchAsOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) fetchAsOptional(query, Estivate.attribute(attributeGetter)); }
@@ -277,7 +277,7 @@ public abstract class Context {
 			.clearOrderBys()
 			.limit(null)
 			.offset(null)
-			.selectCountAs("count")).asLong();
+			.selectCountAs("count")).asSingleLong();
 	}
 
 	/*
@@ -295,7 +295,7 @@ public abstract class Context {
 			.clearSelects()
 			.clearGroupBys()
 			.clearOrderBys()
-			.selectCountDistinct(entity, attributeName, "count")).asLong();
+			.selectCountDistinct(entity, attributeName, "count")).asSingleLong();
 	}
 	public Long fetchAsCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsCountDistinct(query, entity.entity, attributeName); }
 	public Long fetchAsCountDistinct(SelectQuery<?> query, Attribute attribute) { return fetchAsCountDistinct(query, attribute.entity, attribute.attribute); }
@@ -435,7 +435,7 @@ public abstract class Context {
 			if(idField.getLong(entity) != 0L) {
 				SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
 				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
-				U duplicatedEntity = fetchAs(query, (Class<U>) entity.getClass());
+				U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
 				if(duplicatedEntity != null) {
 					// Copy fields from result into object
 					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
@@ -463,7 +463,7 @@ public abstract class Context {
 				query.eq(entity.getClass(), columnIndex.value(), value);
 			}
 
-			U duplicatedEntity = fetchAs(query, (Class<U>) entity.getClass());
+			U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
 			
 			if(duplicatedEntity != null) {
 				// Copy fields from result into object

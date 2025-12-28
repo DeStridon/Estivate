@@ -353,26 +353,26 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	// Base entity shortcuts (uses the query's type parameter E)
 	@SuppressWarnings("unchecked")
-	public E 		fetchAs(Context context) { return context.fetchAs(this, entity); }
-	public <T> T 	fetchAs(Context context, Class<T> clazz) { return context.fetchAs(this, clazz); }
-	public <T> T 	fetchAs(Context context, Entity<T> entity) { return context.fetchAs(this, entity); }
-	public Object 	fetchAs(Context context, Attribute attribute) { return context.fetchAs(this, attribute); }
-	public Object 	fetchAs(Context context, Class<?> entity, String attributeName) { return context.fetchAs(this, entity, attributeName); }
-	public Object 	fetchAs(Context context, Entity<?> entity, String attributeName) { return context.fetchAs(this, entity.entity, attributeName); }
-	public <T, P> P fetchAs(Context context, AttributeGetter<T, P> getter) { return (P) fetchAs(context, Estivate.attribute(getter));}
+	public E 		fetchSingle(Context context) { return context.fetchSingle(this); }
+	public <T> T 	fetchAsSingle(Context context, Class<T> clazz) { return context.fetchAsSingle(this, clazz); }
+	public <T> T 	fetchAsSingle(Context context, Entity<T> entity) { return context.fetchAsSingle(this, entity); }
+	public Object 	fetchAsSingle(Context context, Attribute attribute) { return context.fetchAsSingle(this, attribute); }
+	public Object 	fetchAsSingle(Context context, Class<?> entity, String attributeName) { return context.fetchAsSingle(this, entity, attributeName); }
+	public Object 	fetchAsSingle(Context context, Entity<?> entity, String attributeName) { return context.fetchAsSingle(this, entity.entity, attributeName); }
+	public <T, P> P fetchAsSingle(Context context, AttributeGetter<T, P> getter) { return (P) fetchAsSingle(context, Estivate.attribute(getter));}
 	
 	
 	@SuppressWarnings("unchecked")
 	public Optional<E> 		fetchAsOptional(Context context) { return context.fetchAsOptional(this, (Class<E>) entity.entity); }
-	public <T> Optional<T> fetchAsOptional(Context context, Class<T> clazz) { return context.fetchAsOptional(this, clazz); }
-	public <T> Optional<T> fetchAsOptional(Context context, Entity<T> entity) { return context.fetchAsOptional(this, entity); }
+	public <T> Optional<T> 		fetchAsOptional(Context context, Class<T> clazz) { return context.fetchAsOptional(this, clazz); }
+	public <T> Optional<T> 		fetchAsOptional(Context context, Entity<T> entity) { return context.fetchAsOptional(this, entity); }
 	public Optional<?> 			fetchAsOptional(Context context, Attribute attribute) { return context.fetchAsOptional(this, attribute); }
 	public Optional<?> 			fetchAsOptional(Context context, Entity<?> entity, String attributeName) { return context.fetchAsOptional(this, entity.entity, attributeName); }
 	public Optional<?> 			fetchAsOptional(Context context, Class<?> entity, String attributeName) { return context.fetchAsOptional(this, entity, attributeName); }
 	public <T, P> Optional<P> 	fetchAsOptional (Context context, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) context.fetchAsOptional(this, Estivate.attribute(attributeGetter)); }
 	
 	
-	public List<E> 			fetchAsList(Context context){ return context.fetchAsList(this, entity); }
+	public List<E> 			fetchList(Context context){ return context.fetchAsList(this, entity); }
 	public <T> List<T> 		fetchAsList(Context context, Class<T> entity) { return context.fetchAsList(this, entity); }
 	public <T> List<T> 		fetchAsList(Context context, Entity<T> entity) { return context.fetchAsList(this, entity); }
 	public List<?> fetchAsList(Context context, Attribute attribute) { return context.fetchAsList(this, attribute); }

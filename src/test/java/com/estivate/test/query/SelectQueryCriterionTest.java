@@ -132,7 +132,7 @@ public class SelectQueryCriterionTest {
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1, 2, 3, 4))
 			.in(CustomerEntity.class, CustomerEntity.Fields.country, Arrays.asList(CustomerEntity.Country.USA, CustomerEntity.Country.UK));
 		
-		query.fetchAsList(context);
+		query.fetchList(context);
 		
 		System.out.println(context.queryAsString(query));
 	
@@ -202,21 +202,21 @@ public class SelectQueryCriterionTest {
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class).isNull(CustomerEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
-		query1.fetchAsList(context);
+		query1.fetchList(context);
 		Assert.assertTrue(queryString1.contains(" IS NULL"));
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class).isNull(customer, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
-		query2.fetchAsList(context);
+		query2.fetchList(context);
 		Assert.assertTrue(queryString2.contains(" IS NULL"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class).isNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
-		query3.fetchAsList(context);
+		query3.fetchList(context);
 		Assert.assertTrue(queryString3.contains(" IS NULL"));
 	}
 	
@@ -226,21 +226,21 @@ public class SelectQueryCriterionTest {
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class).isNotNull(CustomerEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
-		query1.fetchAsList(context);
+		query1.fetchList(context);
 		Assert.assertTrue(queryString1.contains(" IS NOT NULL"));
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class).isNotNull(customer, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
-		query2.fetchAsList(context);
+		query2.fetchList(context);
 		Assert.assertTrue(queryString2.contains(" IS NOT NULL"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class).isNotNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
-		query3.fetchAsList(context);
+		query3.fetchList(context);
 		Assert.assertTrue(queryString3.contains(" IS NOT NULL"));
 	}
 	
@@ -250,7 +250,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class).like(CustomerEntity.class, CustomerEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
-		query.fetchAsList(context);
+		query.fetchList(context);
 
 		Assert.assertTrue(queryString.contains(" LIKE ?"));
 		
@@ -263,7 +263,7 @@ public class SelectQueryCriterionTest {
 				.notLike(CustomerEntity.class, CustomerEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
-		query.fetchAsList(context);
+		query.fetchList(context);
 
 		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		

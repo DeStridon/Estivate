@@ -106,7 +106,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId());
 
-        Object name = query.fetchAs(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Object name = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
         assertNotNull(name, "Name should not be null");
         assertEquals(testCustomer1.getName(), name, "Name should match");
@@ -117,13 +117,13 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId());
 
-        Object id = query.fetchAs(context, CustomerEntity.class, AbstractEntity.Fields.id);
+        Object id = query.fetchAsSingle(context, CustomerEntity.class, AbstractEntity.Fields.id);
         assertNotNull(id, "ID should not be null");
         
-        Object emailVerified = query.fetchAs(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        Object emailVerified = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         assertNotNull(emailVerified, "Email verified should not be null");
         
-        Object country = query.fetchAs(context, CustomerEntity.class, CustomerEntity.Fields.country);
+        Object country = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.country);
         assertNotNull(country, "Country should not be null");
     }
 
@@ -235,7 +235,7 @@ public class SelectProjectToAttributeTest {
     public void testProjectCount_AllRecords() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        Long count = query.fetch(context).asLong();
+        Long count = query.fetch(context).asSingleLong();
 
         assertNotNull(count, "Count should not be null");
         assertEquals(3L, count, "Should count all 3 customers");
@@ -246,7 +246,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA);
 
-        Long count = query.fetch(context).asLong();
+        Long count = query.fetch(context).asSingleLong();
 
         assertNotNull(count, "Count should not be null");
         assertEquals(2L, count, "Should count 2 USA customers");
@@ -257,7 +257,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.JAPAN);
 
-        Long count = query.fetch(context).asLong();
+        Long count = query.fetch(context).asSingleLong();
 
         assertNotNull(count, "Count should not be null");
         assertEquals(0L, count, "Should count 0 customers");
@@ -268,7 +268,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.emailVerified, true);
 
-        Long count = query.fetch(context).asLong();
+        Long count = query.fetch(context).asSingleLong();
 
         assertNotNull(count, "Count should not be null");
         assertEquals(2L, count, "Should count 2 verified customers");
@@ -281,7 +281,7 @@ public class SelectProjectToAttributeTest {
             .groupBy(CustomerEntity.class, CustomerEntity.Fields.country)
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
-        Long count = query.fetch(context).asLong();
+        Long count = query.fetch(context).asSingleLong();
 
         assertNotNull(count, "Count should not be null");
         assertEquals(3L, count, "Should count all 3 customers, ignoring group by");

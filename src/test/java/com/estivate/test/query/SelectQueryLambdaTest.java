@@ -38,7 +38,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.eq(CustomerEntity::getName, "Lambda Test Customer");
 
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 
 		assertNotNull(results);
 		assertTrue(results.size() > 0);
@@ -62,7 +62,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.notEq(CustomerEntity::getName, "Customer 1");
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		// Should not contain customer1
@@ -84,7 +84,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.lt(CustomerEntity::getId, customer2.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getId() < customer2.getId()));
@@ -101,7 +101,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.lte(CustomerEntity::getId, customer.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getId() <= customer.getId()));
@@ -122,7 +122,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.gt(CustomerEntity::getId, customer1.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getId() > customer1.getId()));
@@ -139,7 +139,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.gte(CustomerEntity::getId, customer.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getId() >= customer.getId()));
@@ -164,7 +164,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.between(CustomerEntity::getId, customer1.getId(), customer3.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().allMatch(c -> 
@@ -194,7 +194,7 @@ public class SelectQueryLambdaTest {
 				.in(CustomerEntity::getCountry, 
 					Arrays.asList(CustomerEntity.Country.USA, CustomerEntity.Country.UK));
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().allMatch(c -> 
@@ -225,7 +225,7 @@ public class SelectQueryLambdaTest {
 				.notIn(CustomerEntity::getCountry, 
 					Arrays.asList(CustomerEntity.Country.USA, CustomerEntity.Country.UK));
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().noneMatch(c -> 
@@ -250,7 +250,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.eqIfNotNull(CustomerEntity::getEmail, null);
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		// Should return all customers since null criterion is ignored
@@ -268,7 +268,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.ltIfNotNull(CustomerEntity::getId, customer1.getId() + 10);
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getId() < customer1.getId() + 10));
@@ -285,7 +285,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.gteIfNotNull(CustomerEntity::getId, customer.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getId() >= customer.getId()));
@@ -306,7 +306,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.betweenIfNotNull(CustomerEntity::getId, customer1.getId(), customer2.getId());
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> 
@@ -331,7 +331,7 @@ public class SelectQueryLambdaTest {
 				.inIfNotEmpty(CustomerEntity::getCountry, 
 					Arrays.asList(CustomerEntity.Country.USA));
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> c.getCountry() == CustomerEntity.Country.USA));
@@ -354,7 +354,7 @@ public class SelectQueryLambdaTest {
 				.eq(CustomerEntity::getCountry, CustomerEntity.Country.USA)
 				.eq(CustomerEntity::isEmailVerified, true);
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertEquals(1, results.size());
@@ -384,7 +384,7 @@ public class SelectQueryLambdaTest {
 				.joinInner(OrderEntity.class, CustomerEntity.class)
 				.eq(CustomerEntity::getName, "Lambda Join Customer");
 		
-		List<OrderEntity> results = query.fetchAsList(context);
+		List<OrderEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.size() > 0);
@@ -404,7 +404,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.gte(CustomerEntity::getCreated, testDate);
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().anyMatch(c -> 
@@ -428,7 +428,7 @@ public class SelectQueryLambdaTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 				.eq(CustomerEntity::isEmailVerified, true);
 		
-		List<CustomerEntity> results = query.fetchAsList(context);
+		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		assertTrue(results.stream().allMatch(CustomerEntity::isEmailVerified));

@@ -149,7 +149,7 @@ public class ManagerInterceptor<T> {
         //    return context.fetchCount(query);
         // }
         else if(method.getReturnType().equals(entityClass)){
-            return context.fetchAs(query, entityClass);
+            return context.fetchAsSingle(query, entityClass);
         }
         else{
             throw new Exception("Unsupported return type: " + method.getReturnType());

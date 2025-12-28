@@ -198,7 +198,7 @@ public class SelectProjectionTest {
         System.out.println("testCustomer1: id=" + testCustomer1.getId() + ", name=" + testCustomer1.getName() + ", email=" + testCustomer1.getEmail());
         
         // Verify data exists in database
-        CustomerEntity fromDb = context.fetchAs(
+        CustomerEntity fromDb = context.fetchSingle(
             Estivate.selectQuery(CustomerEntity.class)
                 .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId())
         );
@@ -211,7 +211,7 @@ public class SelectProjectionTest {
         // Debug: Print the query before and after
         System.out.println("After importSelectFromResultMapping - Selects: " + query.getSelects());
         
-        CustomerBasicProjection result = query.fetchAs(context, CustomerBasicProjection.class);
+        CustomerBasicProjection result = query.fetchAsSingle(context, CustomerBasicProjection.class);
 
         System.out.println("Result: " + result);
         
@@ -225,7 +225,7 @@ public class SelectProjectionTest {
     public void projectionToCount() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        CustomerCountProjection count = query.fetchAs(context, CustomerCountProjection.class);
+        CustomerCountProjection count = query.fetchAsSingle(context, CustomerCountProjection.class);
 
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
@@ -235,7 +235,7 @@ public class SelectProjectionTest {
     public void projectionToCountAlias() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        CustomerCountAliasProjection count = query.fetchAs(context, CustomerCountAliasProjection.class);
+        CustomerCountAliasProjection count = query.fetchAsSingle(context, CustomerCountAliasProjection.class);
 
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
@@ -245,7 +245,7 @@ public class SelectProjectionTest {
     public void projectionToCountDistinct() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        CustomerCountDistinctProjection count = query.fetchAs(context, CustomerCountDistinctProjection.class);
+        CustomerCountDistinctProjection count = query.fetchAsSingle(context, CustomerCountDistinctProjection.class);
 
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
@@ -259,7 +259,7 @@ public class SelectProjectionTest {
     public void testProject_WithMultipleAggregateFunctions() {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class);
 
-        ProductStatsProjection result = query.fetchAs(context, ProductStatsProjection.class);
+        ProductStatsProjection result = query.fetchAsSingle(context, ProductStatsProjection.class);
 
         assertNotNull(result, "Result should not be null");
         assertEquals(29.99f, result.getMinPrice(), 0.01f, "Min price should match");

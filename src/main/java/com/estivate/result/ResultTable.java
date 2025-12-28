@@ -57,163 +57,163 @@ public class ResultTable implements Iterable<ResultRow>{
 
     // ==================== SINGLE VALUE MAPPING ====================
 
-    public <T> T asMapped(IMapper<T> mapper, Integer index) { return rows.isEmpty() ? null : mapper.map(index == null ? rows.get(0).getColumnValues() : new String[] { rows.get(0).getColumnValues()[index] }); }
-    public <T> T asMapped(IMapper<T> mapper) { return rows.isEmpty() ? null : mapper.map(rows.get(0).getColumnValues()); }
+    public <T> T asSingleMapped(IMapper<T> mapper, Integer index) { return rows.isEmpty() ? null : mapper.map(index == null ? rows.get(0).getColumnValues() : new String[] { rows.get(0).getColumnValues()[index] }); }
+    public <T> T asSingleMapped(IMapper<T> mapper) { return rows.isEmpty() ? null : mapper.map(rows.get(0).getColumnValues()); }
 
     // Entity mapping
-    public <T> T as(Class<T> entity) { return asMapped(new EntityMapper<>(context, query, new Entity<>(entity))); }
-    public <T> T as(Entity<T> entity) { return asMapped(new EntityMapper<>(context, query, entity)); }
+    public <T> T asSingle(Class<T> entity) { return asSingleMapped(new EntityMapper<>(context, query, new Entity<>(entity))); }
+    public <T> T asSingle(Entity<T> entity) { return asSingleMapped(new EntityMapper<>(context, query, entity)); }
     
     // Attribute mapping
-    public Object as(Attribute attribute) { return asMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
-    public Object as(Class<?> entity, String attribute) { return asMapped(new AttributeMapper(entity, attribute)); }
-    public Object as(Entity<?> entity, String attribute) { return asMapped(new AttributeMapper(entity.entity, attribute)); }
-    public <T, P> P as(AttributeGetter<T, P> attributeGetter) { return (P) as(Estivate.attribute(attributeGetter)); }
+    public Object asSingle(Attribute attribute) { return asSingleMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
+    public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity, attribute)); }
+    public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity.entity, attribute)); }
+    public <T, P> P asSingle(AttributeGetter<T, P> attributeGetter) { return (P) asSingle(Estivate.attribute(attributeGetter)); }
 
 
     // Primitive type mapping
-    public String asString() { return asMapped(new StringMapper()); }
-    public String asString(Attribute attribute) { return asMapped(new StringMapper(), indexOf(attribute)); }
-    public String asString(Class<?> entity, String attributeName) { return asString(Estivate.attribute(entity, attributeName)); }
-    public String asString(Entity<?> entity, String attributeName) { return asString(Estivate.attribute(entity, attributeName)); }
-    public <T, P> String asString(AttributeGetter<T, P> attributeGetter) { return asString(Estivate.attribute(attributeGetter)); }
-    public String asString(String columnName) { return asMapped(new StringMapper(), columnNames.indexOf(columnName)); }
+    public String asSingleString() { return asSingleMapped(new StringMapper()); }
+    public String asSingleString(Attribute attribute) { return asSingleMapped(new StringMapper(), indexOf(attribute)); }
+    public String asSingleString(Class<?> entity, String attributeName) { return asSingleString(Estivate.attribute(entity, attributeName)); }
+    public String asSingleString(Entity<?> entity, String attributeName) { return asSingleString(Estivate.attribute(entity, attributeName)); }
+    public <T, P> String asSingleString(AttributeGetter<T, P> attributeGetter) { return asSingleString(Estivate.attribute(attributeGetter)); }
+    public String asSingleString(String columnName) { return asSingleMapped(new StringMapper(), columnNames.indexOf(columnName)); }
 
-    public Short asShort() { return asMapped(new ShortMapper()); }
-    public Short asShort(Attribute attribute) { return asMapped(new ShortMapper(), indexOf(attribute)); }
-    public Short asShort(Class<?> entity, String attributeName) { return asShort(Estivate.attribute(entity, attributeName)); }
-    public Short asShort(Entity<?> entity, String attributeName) { return asShort(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Short asShort(AttributeGetter<T, P> attributeGetter) { return asShort(Estivate.attribute(attributeGetter)); }
-    public Short asShort(String columnName) { return asMapped(new ShortMapper(), columnNames.indexOf(columnName)); }
+    public Short asSingleShort() { return asSingleMapped(new ShortMapper()); }
+    public Short asSingleShort(Attribute attribute) { return asSingleMapped(new ShortMapper(), indexOf(attribute)); }
+    public Short asSingleShort(Class<?> entity, String attributeName) { return asSingleShort(Estivate.attribute(entity, attributeName)); }
+    public Short asSingleShort(Entity<?> entity, String attributeName) { return asSingleShort(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Short asSingleShort(AttributeGetter<T, P> attributeGetter) { return asSingleShort(Estivate.attribute(attributeGetter)); }
+    public Short asSingleShort(String columnName) { return asSingleMapped(new ShortMapper(), columnNames.indexOf(columnName)); }
 
-    public Integer asInteger() { return asMapped(new IntegerMapper()); }
-    public Integer asInteger(Attribute attribute) { return asMapped(new IntegerMapper(), indexOf(attribute)); }
-    public Integer asInteger(Class<?> entity, String attributeName) { return asInteger(Estivate.attribute(entity, attributeName)); }
-    public Integer asInteger(Entity<?> entity, String attributeName) { return asInteger(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Integer asInteger(AttributeGetter<T, P> attributeGetter) { return asInteger(Estivate.attribute(attributeGetter)); }
-    public Integer asInteger(String columnName) { return asMapped(new IntegerMapper(), columnNames.indexOf(columnName)); }
+    public Integer asSingleInteger() { return asSingleMapped(new IntegerMapper()); }
+    public Integer asSingleInteger(Attribute attribute) { return asSingleMapped(new IntegerMapper(), indexOf(attribute)); }
+    public Integer asSingleInteger(Class<?> entity, String attributeName) { return asSingleInteger(Estivate.attribute(entity, attributeName)); }
+    public Integer asSingleInteger(Entity<?> entity, String attributeName) { return asSingleInteger(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Integer asSingleInteger(AttributeGetter<T, P> attributeGetter) { return asSingleInteger(Estivate.attribute(attributeGetter)); }
+    public Integer asSingleInteger(String columnName) { return asSingleMapped(new IntegerMapper(), columnNames.indexOf(columnName)); }
 
-    public Long asLong() { return asMapped(new LongMapper()); }
-    public Long asLong(Attribute attribute) { return asMapped(new LongMapper(), indexOf(attribute)); }
-    public Long asLong(Class<?> entity, String attributeName) { return asLong(Estivate.attribute(entity, attributeName)); }
-    public Long asLong(Entity<?> entity, String attributeName) { return asLong(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Long asLong(AttributeGetter<T, P> attributeGetter) { return asLong(Estivate.attribute(attributeGetter)); }
-    public Long asLong(String columnName) { return asMapped(new LongMapper(), columnNames.indexOf(columnName)); }
+    public Long asSingleLong() { return asSingleMapped(new LongMapper()); }
+    public Long asSingleLong(Attribute attribute) { return asSingleMapped(new LongMapper(), indexOf(attribute)); }
+    public Long asSingleLong(Class<?> entity, String attributeName) { return asSingleLong(Estivate.attribute(entity, attributeName)); }
+    public Long asSingleLong(Entity<?> entity, String attributeName) { return asSingleLong(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Long asSingleLong(AttributeGetter<T, P> attributeGetter) { return asSingleLong(Estivate.attribute(attributeGetter)); }
+    public Long asSingleLong(String columnName) { return asSingleMapped(new LongMapper(), columnNames.indexOf(columnName)); }
 
-    public Float asFloat() { return asMapped(new FloatMapper()); }
-    public Float asFloat(Attribute attribute) { return asMapped(new FloatMapper(), indexOf(attribute)); }
-    public Float asFloat(Class<?> entity, String attributeName) { return asFloat(Estivate.attribute(entity, attributeName)); }
-    public Float asFloat(Entity<?> entity, String attributeName) { return asFloat(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Float asFloat(AttributeGetter<T, P> attributeGetter) { return asFloat(Estivate.attribute(attributeGetter)); }
-    public Float asFloat(String columnName) { return asMapped(new FloatMapper(), columnNames.indexOf(columnName)); }
+    public Float asSingleFloat() { return asSingleMapped(new FloatMapper()); }
+    public Float asSingleFloat(Attribute attribute) { return asSingleMapped(new FloatMapper(), indexOf(attribute)); }
+    public Float asSingleFloat(Class<?> entity, String attributeName) { return asSingleFloat(Estivate.attribute(entity, attributeName)); }
+    public Float asSingleFloat(Entity<?> entity, String attributeName) { return asSingleFloat(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Float asSingleFloat(AttributeGetter<T, P> attributeGetter) { return asSingleFloat(Estivate.attribute(attributeGetter)); }
+    public Float asSingleFloat(String columnName) { return asSingleMapped(new FloatMapper(), columnNames.indexOf(columnName)); }
 
-    public Double asDouble() { return asMapped(new DoubleMapper()); }
-    public Double asDouble(Attribute attribute) { return asMapped(new DoubleMapper(), indexOf(attribute)); }
-    public Double asDouble(Class<?> entity, String attributeName) { return asDouble(Estivate.attribute(entity, attributeName)); }
-    public Double asDouble(Entity<?> entity, String attributeName) { return asDouble(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Double asDouble(AttributeGetter<T, P> attributeGetter) { return asDouble(Estivate.attribute(attributeGetter)); }
-    public Double asDouble(String columnName) { return asMapped(new DoubleMapper(), columnNames.indexOf(columnName)); }
+    public Double asSingleDouble() { return asSingleMapped(new DoubleMapper()); }
+    public Double asSingleDouble(Attribute attribute) { return asSingleMapped(new DoubleMapper(), indexOf(attribute)); }
+    public Double asSingleDouble(Class<?> entity, String attributeName) { return asSingleDouble(Estivate.attribute(entity, attributeName)); }
+    public Double asSingleDouble(Entity<?> entity, String attributeName) { return asSingleDouble(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Double asSingleDouble(AttributeGetter<T, P> attributeGetter) { return asSingleDouble(Estivate.attribute(attributeGetter)); }
+    public Double asSingleDouble(String columnName) { return asSingleMapped(new DoubleMapper(), columnNames.indexOf(columnName)); }
     
-    public Boolean asBoolean() { return asMapped(new BooleanMapper()); }
-    public Boolean asBoolean(Attribute attribute) { return asMapped(new BooleanMapper(), indexOf(attribute)); }
-    public Boolean asBoolean(Class<?> entity, String attributeName) { return asBoolean(Estivate.attribute(entity, attributeName)); }
-    public Boolean asBoolean(Entity<?> entity, String attributeName) { return asBoolean(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Boolean asBoolean(AttributeGetter<T, P> attributeGetter) { return asBoolean(Estivate.attribute(attributeGetter)); }
-    public Boolean asBoolean(String columnName) { return asMapped(new BooleanMapper(), columnNames.indexOf(columnName)); }
+    public Boolean asSingleBoolean() { return asSingleMapped(new BooleanMapper()); }
+    public Boolean asSingleBoolean(Attribute attribute) { return asSingleMapped(new BooleanMapper(), indexOf(attribute)); }
+    public Boolean asSingleBoolean(Class<?> entity, String attributeName) { return asSingleBoolean(Estivate.attribute(entity, attributeName)); }
+    public Boolean asSingleBoolean(Entity<?> entity, String attributeName) { return asSingleBoolean(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Boolean asSingleBoolean(AttributeGetter<T, P> attributeGetter) { return asSingleBoolean(Estivate.attribute(attributeGetter)); }
+    public Boolean asSingleBoolean(String columnName) { return asSingleMapped(new BooleanMapper(), columnNames.indexOf(columnName)); }
 
-    public Date asDate() { return asMapped(new DateMapper()); }
-    public Date asDate(Attribute attribute) { return asMapped(new DateMapper(), indexOf(attribute)); }
-    public Date asDate(Class<?> entity, String attributeName) { return asDate(Estivate.attribute(entity, attributeName)); }
-    public Date asDate(Entity<?> entity, String attributeName) { return asDate(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Date asDate(AttributeGetter<T, P> attributeGetter) { return asDate(Estivate.attribute(attributeGetter)); }
-    public Date asDate(String columnName) { return asMapped(new DateMapper(), columnNames.indexOf(columnName)); }
+    public Date asSingleDate() { return asSingleMapped(new DateMapper()); }
+    public Date asSingleDate(Attribute attribute) { return asSingleMapped(new DateMapper(), indexOf(attribute)); }
+    public Date asSingleDate(Class<?> entity, String attributeName) { return asSingleDate(Estivate.attribute(entity, attributeName)); }
+    public Date asSingleDate(Entity<?> entity, String attributeName) { return asSingleDate(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Date asSingleDate(AttributeGetter<T, P> attributeGetter) { return asSingleDate(Estivate.attribute(attributeGetter)); }
+    public Date asSingleDate(String columnName) { return asSingleMapped(new DateMapper(), columnNames.indexOf(columnName)); }
 
-    public LocalDateTime asLocalDateTime() { return asMapped(new LocalDateTimeMapper()); }
-    public LocalDateTime asLocalDateTime(Attribute attribute) { return asMapped(new LocalDateTimeMapper(), indexOf(attribute)); }
-    public LocalDateTime asLocalDateTime(Class<?> entity, String attributeName) { return asLocalDateTime(Estivate.attribute(entity, attributeName)); }
-    public LocalDateTime asLocalDateTime(Entity<?> entity, String attributeName) { return asLocalDateTime(Estivate.attribute(entity, attributeName)); }
-    public <T, P> LocalDateTime asLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asLocalDateTime(Estivate.attribute(attributeGetter)); }
-    public LocalDateTime asLocalDateTime(String columnName) { return asMapped(new LocalDateTimeMapper(), columnNames.indexOf(columnName)); }
+    public LocalDateTime asSingleLocalDateTime() { return asSingleMapped(new LocalDateTimeMapper()); }
+    public LocalDateTime asSingleLocalDateTime(Attribute attribute) { return asSingleMapped(new LocalDateTimeMapper(), indexOf(attribute)); }
+    public LocalDateTime asSingleLocalDateTime(Class<?> entity, String attributeName) { return asSingleLocalDateTime(Estivate.attribute(entity, attributeName)); }
+    public LocalDateTime asSingleLocalDateTime(Entity<?> entity, String attributeName) { return asSingleLocalDateTime(Estivate.attribute(entity, attributeName)); }
+    public <T, P> LocalDateTime asSingleLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSingleLocalDateTime(Estivate.attribute(attributeGetter)); }
+    public LocalDateTime asSingleLocalDateTime(String columnName) { return asSingleMapped(new LocalDateTimeMapper(), columnNames.indexOf(columnName)); }
 
     // Enum mapping
-    public <E extends Enum<E>> E asStringEnum(Class<E> enumClass) { return asMapped(new StringEnumMapper<>(enumClass)); }
-    public <E extends Enum<E>> E asOrdinalEnum(Class<E> enumClass) { return asMapped(new OrdinalEnumMapper<>(enumClass)); }
+    public <E extends Enum<E>> E asSingleStringEnum(Class<E> enumClass) { return asSingleMapped(new StringEnumMapper<>(enumClass)); }
+    public <E extends Enum<E>> E asSingleOrdinalEnum(Class<E> enumClass) { return asSingleMapped(new OrdinalEnumMapper<>(enumClass)); }
 
 
     // ==================== OPTIONAL MAPPING ====================
 
-    public <T> Optional<T> asOptional(Class<T> entity) { return Optional.ofNullable(as(entity)); }
-    public <T> Optional<T> asOptional(Entity<T> entity) { return Optional.ofNullable(as(entity)); }
+    public <T> Optional<T> asOptional(Class<T> entity) { return Optional.ofNullable(asSingle(entity)); }
+    public <T> Optional<T> asOptional(Entity<T> entity) { return Optional.ofNullable(asSingle(entity)); }
 
 
-    public <T> Optional<T> asOptionalMapped(IMapper<T> mapper) { return Optional.ofNullable(asMapped(mapper)); }
-    public Optional<?> asOptional(Attribute attribute) { return Optional.ofNullable(as(attribute)); }
+    public <T> Optional<T> asOptionalMapped(IMapper<T> mapper) { return Optional.ofNullable(asSingleMapped(mapper)); }
+    public Optional<?> asOptional(Attribute attribute) { return Optional.ofNullable(asSingle(attribute)); }
     public Optional<?> asOptional(Class<?> entity, String attributeName) { return asOptional(Estivate.attribute(entity, attributeName)); }
     public Optional<?> asOptional(Entity<?> entity, String attributeName) { return asOptional(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<P> asOptional(AttributeGetter<T, P> attributeGetter) { return (Optional<P>) asOptional(Estivate.attribute(attributeGetter)); }
 
-    public Optional<String> asOptionalString() { return Optional.ofNullable(asString()); }
-    public Optional<String> asOptionalString(Attribute attribute) { return Optional.ofNullable(asString(attribute)); }
+    public Optional<String> asOptionalString() { return Optional.ofNullable(asSingleString()); }
+    public Optional<String> asOptionalString(Attribute attribute) { return Optional.ofNullable(asSingleString(attribute)); }
     public Optional<String> asOptionalString(Class<?> entity, String attributeName) { return asOptionalString(Estivate.attribute(entity, attributeName)); }
     public Optional<String> asOptionalString(Entity<?> entity, String attributeName) { return asOptionalString(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<String> asOptionalString(AttributeGetter<T, P> attributeGetter) { return asOptionalString(Estivate.attribute(attributeGetter)); }
-    public Optional<String> asOptionalString(String columnName) { return Optional.ofNullable(asString(columnName)); }
+    public Optional<String> asOptionalString(String columnName) { return Optional.ofNullable(asSingleString(columnName)); }
 
-    public Optional<Short> asOptionalShort() { return Optional.ofNullable(asShort()); }
-    public Optional<Short> asOptionalShort(Attribute attribute) { return Optional.ofNullable(asShort(attribute)); }
+    public Optional<Short> asOptionalShort() { return Optional.ofNullable(asSingleShort()); }
+    public Optional<Short> asOptionalShort(Attribute attribute) { return Optional.ofNullable(asSingleShort(attribute)); }
     public Optional<Short> asOptionalShort(Class<?> entity, String attributeName) { return asOptionalShort(Estivate.attribute(entity, attributeName)); }
     public Optional<Short> asOptionalShort(Entity<?> entity, String attributeName) { return asOptionalShort(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Short> asOptionalShort(AttributeGetter<T, P> attributeGetter) { return asOptionalShort(Estivate.attribute(attributeGetter)); }
-    public Optional<Short> asOptionalShort(String columnName) { return Optional.ofNullable(asShort(columnName)); }
+    public Optional<Short> asOptionalShort(String columnName) { return Optional.ofNullable(asSingleShort(columnName)); }
 
-    public Optional<Integer> asOptionalInteger() { return Optional.ofNullable(asInteger()); }
-    public Optional<Integer> asOptionalInteger(Attribute attribute) { return Optional.ofNullable(asInteger(attribute)); }
+    public Optional<Integer> asOptionalInteger() { return Optional.ofNullable(asSingleInteger()); }
+    public Optional<Integer> asOptionalInteger(Attribute attribute) { return Optional.ofNullable(asSingleInteger(attribute)); }
     public Optional<Integer> asOptionalInteger(Class<?> entity, String attributeName) { return asOptionalInteger(Estivate.attribute(entity, attributeName)); }
     public Optional<Integer> asOptionalInteger(Entity<?> entity, String attributeName) { return asOptionalInteger(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Integer> asOptionalInteger(AttributeGetter<T, P> attributeGetter) { return asOptionalInteger(Estivate.attribute(attributeGetter)); }
-    public Optional<Integer> asOptionalInteger(String columnName) { return Optional.ofNullable(asInteger(columnName)); }
+    public Optional<Integer> asOptionalInteger(String columnName) { return Optional.ofNullable(asSingleInteger(columnName)); }
 
-    public Optional<Long> asOptionalLong() { return Optional.ofNullable(asLong()); }
-    public Optional<Long> asOptionalLong(Attribute attribute) { return Optional.ofNullable(asLong(attribute)); }
+    public Optional<Long> asOptionalLong() { return Optional.ofNullable(asSingleLong()); }
+    public Optional<Long> asOptionalLong(Attribute attribute) { return Optional.ofNullable(asSingleLong(attribute)); }
     public Optional<Long> asOptionalLong(Class<?> entity, String attributeName) { return asOptionalLong(Estivate.attribute(entity, attributeName)); }
     public Optional<Long> asOptionalLong(Entity<?> entity, String attributeName) { return asOptionalLong(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Long> asOptionalLong(AttributeGetter<T, P> attributeGetter) { return asOptionalLong(Estivate.attribute(attributeGetter)); }
-    public Optional<Long> asOptionalLong(String columnName) { return Optional.ofNullable(asLong(columnName)); }
+    public Optional<Long> asOptionalLong(String columnName) { return Optional.ofNullable(asSingleLong(columnName)); }
 
-    public Optional<Float> asOptionalFloat() { return Optional.ofNullable(asFloat()); }
-    public Optional<Float> asOptionalFloat(Attribute attribute) { return Optional.ofNullable(asFloat(attribute)); }
+    public Optional<Float> asOptionalFloat() { return Optional.ofNullable(asSingleFloat()); }
+    public Optional<Float> asOptionalFloat(Attribute attribute) { return Optional.ofNullable(asSingleFloat(attribute)); }
     public Optional<Float> asOptionalFloat(Class<?> entity, String attributeName) { return asOptionalFloat(Estivate.attribute(entity, attributeName)); }
     public Optional<Float> asOptionalFloat(Entity<?> entity, String attributeName) { return asOptionalFloat(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Float> asOptionalFloat(AttributeGetter<T, P> attributeGetter) { return asOptionalFloat(Estivate.attribute(attributeGetter)); }
-    public Optional<Float> asOptionalFloat(String columnName) { return Optional.ofNullable(asFloat(columnName)); }
+    public Optional<Float> asOptionalFloat(String columnName) { return Optional.ofNullable(asSingleFloat(columnName)); }
 
-    public Optional<Double> asOptionalDouble() { return Optional.ofNullable(asDouble()); }
-    public Optional<Double> asOptionalDouble(Attribute attribute) { return Optional.ofNullable(asDouble(attribute)); }
+    public Optional<Double> asOptionalDouble() { return Optional.ofNullable(asSingleDouble()); }
+    public Optional<Double> asOptionalDouble(Attribute attribute) { return Optional.ofNullable(asSingleDouble(attribute)); }
     public Optional<Double> asOptionalDouble(Class<?> entity, String attributeName) { return asOptionalDouble(Estivate.attribute(entity, attributeName)); }
     public Optional<Double> asOptionalDouble(Entity<?> entity, String attributeName) { return asOptionalDouble(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Double> asOptionalDouble(AttributeGetter<T, P> attributeGetter) { return asOptionalDouble(Estivate.attribute(attributeGetter)); }
-    public Optional<Double> asOptionalDouble(String columnName) { return Optional.ofNullable(asDouble(columnName)); }
+    public Optional<Double> asOptionalDouble(String columnName) { return Optional.ofNullable(asSingleDouble(columnName)); }
 
-    public Optional<Boolean> asOptionalBoolean() { return Optional.ofNullable(asBoolean()); }
-    public Optional<Boolean> asOptionalBoolean(Attribute attribute) { return Optional.ofNullable(asBoolean(attribute)); }
+    public Optional<Boolean> asOptionalBoolean() { return Optional.ofNullable(asSingleBoolean()); }
+    public Optional<Boolean> asOptionalBoolean(Attribute attribute) { return Optional.ofNullable(asSingleBoolean(attribute)); }
     public Optional<Boolean> asOptionalBoolean(Class<?> entity, String attributeName) { return asOptionalBoolean(Estivate.attribute(entity, attributeName)); }
     public Optional<Boolean> asOptionalBoolean(Entity<?> entity, String attributeName) { return asOptionalBoolean(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Boolean> asOptionalBoolean(AttributeGetter<T, P> attributeGetter) { return asOptionalBoolean(Estivate.attribute(attributeGetter)); }
-    public Optional<Boolean> asOptionalBoolean(String columnName) { return Optional.ofNullable(asBoolean(columnName)); }
+    public Optional<Boolean> asOptionalBoolean(String columnName) { return Optional.ofNullable(asSingleBoolean(columnName)); }
 
-    public Optional<Date> asOptionalDate() { return Optional.ofNullable(asDate()); }
-    public Optional<Date> asOptionalDate(Attribute attribute) { return Optional.ofNullable(asDate(attribute)); }
+    public Optional<Date> asOptionalDate() { return Optional.ofNullable(asSingleDate()); }
+    public Optional<Date> asOptionalDate(Attribute attribute) { return Optional.ofNullable(asSingleDate(attribute)); }
     public Optional<Date> asOptionalDate(Class<?> entity, String attributeName) { return asOptionalDate(Estivate.attribute(entity, attributeName)); }
     public Optional<Date> asOptionalDate(Entity<?> entity, String attributeName) { return asOptionalDate(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<Date> asOptionalDate(AttributeGetter<T, P> attributeGetter) { return asOptionalDate(Estivate.attribute(attributeGetter)); }
-    public Optional<Date> asOptionalDate(String columnName) { return Optional.ofNullable(asDate(columnName)); }
+    public Optional<Date> asOptionalDate(String columnName) { return Optional.ofNullable(asSingleDate(columnName)); }
 
-    public Optional<LocalDateTime> asOptionalLocalDateTime() { return Optional.ofNullable(asLocalDateTime()); }
-    public Optional<LocalDateTime> asOptionalLocalDateTime(Attribute attribute) { return Optional.ofNullable(asLocalDateTime(attribute)); }
+    public Optional<LocalDateTime> asOptionalLocalDateTime() { return Optional.ofNullable(asSingleLocalDateTime()); }
+    public Optional<LocalDateTime> asOptionalLocalDateTime(Attribute attribute) { return Optional.ofNullable(asSingleLocalDateTime(attribute)); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(Class<?> entity, String attributeName) { return asOptionalLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(Entity<?> entity, String attributeName) { return asOptionalLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<LocalDateTime> asOptionalLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asOptionalLocalDateTime(Estivate.attribute(attributeGetter)); }
-    public Optional<LocalDateTime> asOptionalLocalDateTime(String columnName) { return Optional.ofNullable(asLocalDateTime(columnName)); }
+    public Optional<LocalDateTime> asOptionalLocalDateTime(String columnName) { return Optional.ofNullable(asSingleLocalDateTime(columnName)); }
 
 
     // ==================== LIST MAPPING ====================
