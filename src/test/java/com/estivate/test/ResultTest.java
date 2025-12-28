@@ -48,7 +48,7 @@ public class ResultTest {
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class);
 		query.eq(CustomerEntity.class, CustomerEntity.Fields.name, "parallel test customer");
 		
-		List<CustomerEntity> customers = context.fetchAsList(query);
+		List<CustomerEntity> customers = context.fetchList(query);
 		
 		
 	}
