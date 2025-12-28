@@ -194,7 +194,7 @@ public abstract class Context {
 		return fetch(newQuery).asList(entity.entity);
 	}
 		
-	public <T> List<T> fetchAsList(SelectQuery<T> query)					{ return fetchAsList(query, query.getEntity()); }
+	public <T> List<T> fetchList(SelectQuery<T> query)					{ return fetchAsList(query, query.getEntity()); }
 	
 
 	@Deprecated
