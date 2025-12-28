@@ -115,6 +115,8 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public SelectQuery<E> select(Entity<?> c, String attribute, Attribute.Function function, String alias) { return select(Estivate.attribute(c, attribute, function, alias)); }
 	public <T, P> SelectQuery<E> select(com.estivate.util.FieldUtils.AttributeGetter<T, P> getter, Attribute.Function function, String alias) { return select(Estivate.attribute(getter, function, alias)); }
 	
+	public SelectQuery<E> select(Attribute.AttributeWindow attributeWindow) { select(attributeWindow.entity, attributeWindow.attribute, attributeWindow.function, attributeWindow.alias); return this; }
+
 	public SelectQuery<E> selectAll(Class<?> entity, String...fieldNames) { 
 		
 		Set<Field> fields = FieldUtils.getEntityFields(entity);
@@ -349,46 +351,47 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	public ResultTable fetch(Context context) { return context.fetch(this); }
 
-	public E 				fetchSingle(Context context) 					{ return context.fetchSingle(this); }
-	public <T> T 			fetchSingleAs(Context context, Class<T> clazz) 	{ return context.fetchSingleAs(this, clazz); }
-	public String 			fetchSingleAsString(Context context) 			{ return context.fetchSingleAsString(this); }
-	public Short 			fetchSingleAsShort(Context context) 			{ return context.fetchSingleAsShort(this); }
-	public Integer 			fetchSingleAsInteger(Context context) 			{ return context.fetchSingleAsInteger(this); }
-	public Long 			fetchSingleAsLong(Context context) 				{ return context.fetchSingleAsLong(this); }
-	public Float 			fetchSingleAsFloat(Context context) 			{ return context.fetchSingleAsFloat(this); }
-	public Double 			fetchSingleAsDouble(Context context) 			{ return context.fetchSingleAsDouble(this); }
-	public Date 			fetchSingleAsDate(Context context) 				{ return context.fetchSingleAsDate(this); }
-	public LocalDateTime 	fetchSingleAsLocalDateTime(Context context) 	{ return context.fetchSingleAsLocalDateTime(this); }
-	public Boolean 			fetchSingleAsBoolean(Context context) 			{ return context.fetchSingleAsBoolean(this); }
-	public <T extends Enum<T>> T 		fetchSingleAsStringEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsStringEnum(this, enumClass); }
-	public <T extends Enum<T>> T 		fetchSingleAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsOrdinalEnum(this, enumClass); }
+	@Deprecated public E 				fetchSingle(Context context) 					{ return context.fetchSingle(this); }
+	@Deprecated public <T> T 			fetchSingleAs(Context context, Class<T> clazz) 	{ return context.fetchSingleAs(this, clazz); }
+	@Deprecated public String 			fetchSingleAsString(Context context) 			{ return context.fetchSingleAsString(this); }
+	@Deprecated public Short 			fetchSingleAsShort(Context context) 			{ return context.fetchSingleAsShort(this); }
+	@Deprecated public Integer 			fetchSingleAsInteger(Context context) 			{ return context.fetchSingleAsInteger(this); }
+	@Deprecated public Long 			fetchSingleAsLong(Context context) 				{ return context.fetchSingleAsLong(this); }
+	@Deprecated public Float 			fetchSingleAsFloat(Context context) 			{ return context.fetchSingleAsFloat(this); }
+	@Deprecated public Double 			fetchSingleAsDouble(Context context) 			{ return context.fetchSingleAsDouble(this); }
+	@Deprecated public Date 			fetchSingleAsDate(Context context) 				{ return context.fetchSingleAsDate(this); }
+	@Deprecated public LocalDateTime 	fetchSingleAsLocalDateTime(Context context) 	{ return context.fetchSingleAsLocalDateTime(this); }
+	@Deprecated public Boolean 			fetchSingleAsBoolean(Context context) 			{ return context.fetchSingleAsBoolean(this); }
+	@Deprecated public <T extends Enum<T>> T 		fetchSingleAsStringEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsStringEnum(this, enumClass); }
+	@Deprecated public <T extends Enum<T>> T 		fetchSingleAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchSingleAsOrdinalEnum(this, enumClass); }
 	
-	public Optional<E> 				fetchOptional(Context context) 			{ return context.fetchOptional(this); }
-	public <T> Optional<T> 			fetchOptionalAs(Context context, Class<T> clazz) 			{ return context.fetchOptionalAs(this, clazz); }
-	public Optional<String>			fetchOptionalAsString(Context context) 	{ return context.fetchOptionalAsString(this); }
-	public Optional<Short>			fetchOptionalAsShort(Context context) 	{ return context.fetchOptionalAsShort(this); }
-	public Optional<Integer>		fetchOptionalAsInteger(Context context) 	{ return context.fetchOptionalAsInteger(this); }
-	public Optional<Long>			fetchOptionalAsLong(Context context) 		{ return context.fetchOptionalAsLong(this); }
-	public Optional<Float>			fetchOptionalAsFloat(Context context) 	{ return context.fetchOptionalAsFloat(this); }
-	public Optional<Double>			fetchOptionalAsDouble(Context context) 	{ return context.fetchOptionalAsDouble(this); }
-	public Optional<Date>			fetchOptionalAsDate(Context context) 		{ return context.fetchOptionalAsDate(this); }
-	public Optional<LocalDateTime>	fetchOptionalAsLocalDateTime(Context context) 	{ return context.fetchOptionalAsLocalDateTime(this); }
-	public Optional<Boolean>		fetchOptionalAsBoolean(Context context) 	{ return context.fetchOptionalAsBoolean(this); }
-	public <T extends Enum<T>> Optional<T> 		fetchOptionalAsStringEnum(Context context, Class<T> enumClass) { return context.fetchOptionalAsStringEnum(this, enumClass); }
-	public <T extends Enum<T>> Optional<T> 		fetchOptionalAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchOptionalAsOrdinalEnum(this, enumClass); }
+	@Deprecated public Optional<E> 				fetchOptional(Context context) 			{ return context.fetchOptional(this); }
+	@Deprecated public <T> Optional<T> 			fetchOptionalAs(Context context, Class<T> clazz) 			{ return context.fetchOptionalAs(this, clazz); }
+	@Deprecated public Optional<String>			fetchOptionalAsString(Context context) 	{ return context.fetchOptionalAsString(this); }
+	@Deprecated public Optional<Short>			fetchOptionalAsShort(Context context) 	{ return context.fetchOptionalAsShort(this); }
+	@Deprecated public Optional<Integer>		fetchOptionalAsInteger(Context context) 	{ return context.fetchOptionalAsInteger(this); }
+	@Deprecated public Optional<Long>			fetchOptionalAsLong(Context context) 		{ return context.fetchOptionalAsLong(this); }
+	@Deprecated public Optional<Float>			fetchOptionalAsFloat(Context context) 	{ return context.fetchOptionalAsFloat(this); }
+	@Deprecated public Optional<Double>			fetchOptionalAsDouble(Context context) 	{ return context.fetchOptionalAsDouble(this); }
+	@Deprecated public Optional<Date>			fetchOptionalAsDate(Context context) 		{ return context.fetchOptionalAsDate(this); }
+	@Deprecated public Optional<LocalDateTime>	fetchOptionalAsLocalDateTime(Context context) 	{ return context.fetchOptionalAsLocalDateTime(this); }
+	@Deprecated public Optional<Boolean>		fetchOptionalAsBoolean(Context context) 	{ return context.fetchOptionalAsBoolean(this); }
+	@Deprecated public <T extends Enum<T>> Optional<T> 		fetchOptionalAsStringEnum(Context context, Class<T> enumClass) { return context.fetchOptionalAsStringEnum(this, enumClass); }
+	@Deprecated public <T extends Enum<T>> Optional<T> 		fetchOptionalAsOrdinalEnum(Context context, Class<T> enumClass) { return context.fetchOptionalAsOrdinalEnum(this, enumClass); }
 	
-	public List<E> 			fetchList(Context context){ return context.fetchListAs(this, (Class<E>) entity.entity); }
-	public <T> List<T> 		fetchListAs(Context context, Class<T> entity) { return context.fetchListAs(this, entity); }
-	public List<String> 	fetchListAsString(Context context) { return context.fetchListAsString(this); }
-	public List<Short> 		fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
-	public List<Integer> 	fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
-	public List<Long> 		fetchListAsLong(Context context) { return context.fetchListAsLong(this); }
-	public List<Float> 		fetchListAsFloat(Context context) { return context.fetchListAsFloat(this); }
-	public List<Double> 	fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
-	public List<Date> 		fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
-	public List<Boolean> 	fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
-	public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(Context context, Class<U> enumClass) { return context.fetchListAsStringEnum(this, enumClass); }
-	public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(Context context, Class<U> enumClass) { return context.fetchListAsOrdinalEnum(this, enumClass); }
+	
+	@Deprecated public List<E> 			fetchList(Context context){ return context.fetchListAs(this, (Class<E>) entity.entity); }
+	@Deprecated public <T> List<T> 		fetchListAs(Context context, Class<T> entity) { return context.fetchListAs(this, entity); }
+	@Deprecated public List<String> 	fetchListAsString(Context context) { return context.fetchListAsString(this); }
+	@Deprecated public List<Short> 		fetchListAsShort(Context context) { return context.fetchListAsShort(this); }
+	@Deprecated public List<Integer> 	fetchListAsInteger(Context context) { return context.fetchListAsInteger(this); }
+	@Deprecated public List<Long> 		fetchListAsLong(Context context) { return context.fetchListAsLong(this); }
+	@Deprecated public List<Float> 		fetchListAsFloat(Context context) { return context.fetchListAsFloat(this); }
+	@Deprecated public List<Double> 	fetchListAsDouble(Context context) { return context.fetchListAsDouble(this); }
+	@Deprecated public List<Date> 		fetchListAsDate(Context context) { return context.fetchListAsDate(this); }
+	@Deprecated public List<Boolean> 	fetchListAsBoolean(Context context) { return context.fetchListAsBoolean(this); }
+	@Deprecated public <U extends Enum<U>> List<U> 		fetchListAsStringEnum(Context context, Class<U> enumClass) { return context.fetchListAsStringEnum(this, enumClass); }
+	@Deprecated public <U extends Enum<U>> List<U> 		fetchListAsOrdinalEnum(Context context, Class<U> enumClass) { return context.fetchListAsOrdinalEnum(this, enumClass); }
 
 	
 	// ==================== PROJECT METHODS ====================

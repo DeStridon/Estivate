@@ -166,104 +166,54 @@ public abstract class Context {
 		}
 	}
 	
-	// // ==================== FETCH METHODS ====================
-	// @Deprecated
-	// @SneakyThrows
-	// public <T> T fetchSingleWithMapper(SelectQuery<?> query, IMapper<T> mapper) {
-	// 	try(Connection connection = datasource.getConnection();
-	// 		Statement statement = Statement.toStatement(this, connection, preExecute(query));
-	// 		ResultSet resultSet = statement.executeForResultSet()) {
-			
-	// 		if(!resultSet.next()) {
-	// 			return null;
-	// 		}
-			
-	// 		return mapper.map(extractRowValues(resultSet));
-	// 	}
-	// }
 	
-	// @Deprecated
-	// @SneakyThrows
-	// public <T> List<T> fetchListWithMapper(SelectQuery<?> query, IMapper<T> mapper) {
-			
-	// 	try(Connection connection = datasource.getConnection();
-	// 		Statement statement = Statement.toStatement(this, connection, preExecute(query));
-	// 		ResultSet resultSet = statement.executeForResultSet()) {
-			
-	// 		//mapper.setNameMapper(nameMapper);
-	// 		//mapper.configure(query);
-	        
-	//         List<String[]> rows = new ArrayList<>();
-	        
-	//         while(resultSet.next()) {
-	//         	String[] values = extractRowValues(resultSet);
-	//         	rows.add(values);
-	//         }
-	        
-	// 		List<T> output = new ArrayList<>();
-	// 		if(tracePerformances) {
-	// 			for(String[] row : rows) {
-	// 				output.add(mapper.map(row));
-	// 			}
-	// 		}
-	// 		else {
-	// 			output = rows.stream().parallel().map(mapper::map).collect(Collectors.toList());
-	// 		}
-			
-	// 		if(tracePerformances && mapper instanceof EntityMapper) {
-	// 			log.info(((EntityMapper) mapper).getStats());
-	// 		}
-		
-	// 		return output;
-	// 	}
-	// }
 
 
-	public <T> T 			fetchSingle(SelectQuery<T> query)					{ return fetch(query).get(query.getEntity().entity); }
-	public <U> U 			fetchSingleAs(SelectQuery<?> query, Class<U> clazz) { return fetch(query).get(clazz); }
-	public String 			fetchSingleAsString(SelectQuery<?> query)			{ return fetch(query).getAsString(); }
-	public Short			fetchSingleAsShort(SelectQuery<?> query)			{ return fetch(query).getAsShort(); }
-	public Integer			fetchSingleAsInteger(SelectQuery<?> query)			{ return fetch(query).getAsInteger(); }
-	public Long				fetchSingleAsLong(SelectQuery<?> query)				{ return fetch(query).getAsLong(); }
-	public Float			fetchSingleAsFloat(SelectQuery<?> query)			{ return fetch(query).getAsFloat(); }
-	public Double			fetchSingleAsDouble(SelectQuery<?> query)			{ return fetch(query).getAsDouble(); }
-	public Date				fetchSingleAsDate(SelectQuery<?> query)				{ return fetch(query).getAsDate(); }
-	public LocalDateTime 	fetchSingleAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).getAsLocalDateTime(); }
-	public Boolean			fetchSingleAsBoolean(SelectQuery<?> query)			{ return fetch(query).getAsBoolean(); }
-	public <U extends Enum<U>> U 	fetchSingleAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).getAsStringEnum(enumClass); }
-	public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).getAsOrdinalEnum(enumClass); }
+	@Deprecated public <T> T 			fetchSingle(SelectQuery<T> query)					{ return fetch(query).get(query.getEntity().entity); }
+	@Deprecated public <U> U 			fetchSingleAs(SelectQuery<?> query, Class<U> clazz) { return fetch(query).get(clazz); }
+	@Deprecated public String 			fetchSingleAsString(SelectQuery<?> query)			{ return fetch(query).getAsString(); }
+	@Deprecated public Short			fetchSingleAsShort(SelectQuery<?> query)			{ return fetch(query).getAsShort(); }
+	@Deprecated public Integer			fetchSingleAsInteger(SelectQuery<?> query)			{ return fetch(query).getAsInteger(); }
+	@Deprecated public Long				fetchSingleAsLong(SelectQuery<?> query)				{ return fetch(query).getAsLong(); }
+	@Deprecated public Float			fetchSingleAsFloat(SelectQuery<?> query)			{ return fetch(query).getAsFloat(); }
+	@Deprecated public Double			fetchSingleAsDouble(SelectQuery<?> query)			{ return fetch(query).getAsDouble(); }
+	@Deprecated public Date				fetchSingleAsDate(SelectQuery<?> query)				{ return fetch(query).getAsDate(); }
+	@Deprecated public LocalDateTime 	fetchSingleAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).getAsLocalDateTime(); }
+	@Deprecated public Boolean			fetchSingleAsBoolean(SelectQuery<?> query)			{ return fetch(query).getAsBoolean(); }
+	@Deprecated public <U extends Enum<U>> U 	fetchSingleAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).getAsStringEnum(enumClass); }
+	@Deprecated public <U extends Enum<U>> U 	fetchSingleAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return fetch(query).getAsOrdinalEnum(enumClass); }
 
 
-	public <E> Optional<E> 				fetchOptional(SelectQuery<E> query)					{ return Optional.ofNullable(fetchSingle(query)); }
-	public <U> Optional<U> 				fetchOptionalAs(SelectQuery<?> query, Class<U> clazz) { return Optional.ofNullable(fetchSingleAs(query, clazz)); }
-	public Optional<String>				fetchOptionalAsString(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsString(query)); }
-	public Optional<Short> 				fetchOptionalAsShort(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsShort(query)); }
-	public Optional<Integer> 			fetchOptionalAsInteger(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsInteger(query)); }
-	public Optional<Long> 				fetchOptionalAsLong(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsLong(query)); }
-	public Optional<Float> 				fetchOptionalAsFloat(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsFloat(query)); }
-	public Optional<Double> 			fetchOptionalAsDouble(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsDouble(query)); }
-	public Optional<Date> 				fetchOptionalAsDate(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsDate(query)); }
-	public Optional<LocalDateTime> 		fetchOptionalAsLocalDateTime(SelectQuery<?> query)	{ return Optional.ofNullable(fetchSingleAsLocalDateTime(query)); }
-	public Optional<Boolean> 			fetchOptionalAsBoolean(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
-	public <U extends Enum<U>> Optional<U> 		fetchOptionalAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsStringEnum(query, enumClass)); }
-	public <U extends Enum<U>> Optional<U> 		fetchOptionalAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsOrdinalEnum(query, enumClass)); }
+	@Deprecated public <E> Optional<E> 				fetchOptional(SelectQuery<E> query)					{ return Optional.ofNullable(fetchSingle(query)); }
+	@Deprecated public <U> Optional<U> 				fetchOptionalAs(SelectQuery<?> query, Class<U> clazz) { return Optional.ofNullable(fetchSingleAs(query, clazz)); }
+	@Deprecated public Optional<String>				fetchOptionalAsString(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsString(query)); }
+	@Deprecated public Optional<Short> 				fetchOptionalAsShort(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsShort(query)); }
+	@Deprecated public Optional<Integer> 			fetchOptionalAsInteger(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsInteger(query)); }
+	@Deprecated public Optional<Long> 				fetchOptionalAsLong(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsLong(query)); }
+	@Deprecated public Optional<Float> 				fetchOptionalAsFloat(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsFloat(query)); }
+	@Deprecated public Optional<Double> 			fetchOptionalAsDouble(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsDouble(query)); }
+	@Deprecated public Optional<Date> 				fetchOptionalAsDate(SelectQuery<?> query)				{ return Optional.ofNullable(fetchSingleAsDate(query)); }
+	@Deprecated public Optional<LocalDateTime> 		fetchOptionalAsLocalDateTime(SelectQuery<?> query)	{ return Optional.ofNullable(fetchSingleAsLocalDateTime(query)); }
+	@Deprecated public Optional<Boolean> 			fetchOptionalAsBoolean(SelectQuery<?> query)			{ return Optional.ofNullable(fetchSingleAsBoolean(query)); }
+	@Deprecated public <U extends Enum<U>> Optional<U> 		fetchOptionalAsStringEnum(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsStringEnum(query, enumClass)); }
+	@Deprecated public <U extends Enum<U>> Optional<U> 		fetchOptionalAsOrdinalEnum(SelectQuery<?> query, Class<U> enumClass) { return Optional.ofNullable(fetchSingleAsOrdinalEnum(query, enumClass)); }
 	
 	
 		
-	public <T> List<T> 				fetchList(SelectQuery<T> query)						{ return fetch(query).getAsList(query.getEntity().entity); }
-	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Entity<U> entity) 	{ return fetch(query).getAsList(entity); }
-	public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> entity) 	{ return fetch(query).getAsList(entity); }
-	public List<String>				fetchListAsString(SelectQuery<?> query)				{ return fetch(query).getAsListString(); }
-	public List<Short>				fetchListAsShort(SelectQuery<?> query)				{ return fetch(query).getAsListShort(); }
-	public List<Integer>			fetchListAsInteger(SelectQuery<?> query)			{ return fetch(query).getAsListInteger(); }
-	public List<Long>				fetchListAsLong(SelectQuery<?> query)				{ return fetch(query).getAsListLong(); }
-	public List<Float>				fetchListAsFloat(SelectQuery<?> query)				{ return fetch(query).getAsListFloat(); }
-	public List<Double>				fetchListAsDouble(SelectQuery<?> query)				{ return fetch(query).getAsListDouble(); }
-	public List<Date>				fetchListAsDate(SelectQuery<?> query)				{ return fetch(query).getAsListDate(); }
-	public List<LocalDateTime>		fetchListAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).getAsListLocalDateTime(); }
-	public List<Boolean>			fetchListAsBoolean(SelectQuery<?> query)			{ return fetch(query).getAsListBoolean(); }
-	public <T extends Enum<T>> List<T> 		fetchListAsStringEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).getAsListStringEnum(enumClass); }
-	public <T extends Enum<T>> List<T> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).getAsListOrdinalEnum(enumClass); }
+	@Deprecated public <T> List<T> 				fetchList(SelectQuery<T> query)						{ return fetch(query).getAsList(query.getEntity().entity); }
+	@Deprecated public <U> List<U> 				fetchListAs(SelectQuery<?> query, Entity<U> entity) 	{ return fetch(query).getAsList(entity); }
+	@Deprecated public <U> List<U> 				fetchListAs(SelectQuery<?> query, Class<U> entity) 	{ return fetch(query).getAsList(entity); }
+	@Deprecated public List<String>				fetchListAsString(SelectQuery<?> query)				{ return fetch(query).getAsListString(); }
+	@Deprecated public List<Short>				fetchListAsShort(SelectQuery<?> query)				{ return fetch(query).getAsListShort(); }
+	@Deprecated public List<Integer>			fetchListAsInteger(SelectQuery<?> query)			{ return fetch(query).getAsListInteger(); }
+	@Deprecated public List<Long>				fetchListAsLong(SelectQuery<?> query)				{ return fetch(query).getAsListLong(); }
+	@Deprecated public List<Float>				fetchListAsFloat(SelectQuery<?> query)				{ return fetch(query).getAsListFloat(); }
+	@Deprecated public List<Double>				fetchListAsDouble(SelectQuery<?> query)				{ return fetch(query).getAsListDouble(); }
+	@Deprecated public List<Date>				fetchListAsDate(SelectQuery<?> query)				{ return fetch(query).getAsListDate(); }
+	@Deprecated public List<LocalDateTime>		fetchListAsLocalDateTime(SelectQuery<?> query)	{ return fetch(query).getAsListLocalDateTime(); }
+	@Deprecated public List<Boolean>			fetchListAsBoolean(SelectQuery<?> query)			{ return fetch(query).getAsListBoolean(); }
+	@Deprecated public <T extends Enum<T>> List<T> 		fetchListAsStringEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).getAsListStringEnum(enumClass); }
+	@Deprecated public <T extends Enum<T>> List<T> 		fetchListAsOrdinalEnum(SelectQuery<?> query, Class<T> enumClass) { return fetch(query).getAsListOrdinalEnum(enumClass); }
 
 
 	@Deprecated
