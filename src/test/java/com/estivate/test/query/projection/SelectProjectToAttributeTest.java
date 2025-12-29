@@ -342,7 +342,7 @@ public class SelectProjectToAttributeTest {
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA)
             .eq(CustomerEntity.class, CustomerEntity.Fields.emailVerified, true);
 
-        Long count = query.fetchAsCount(context);
+        Long count = query.fetchCountAll(context);
 
         assertNotNull(count, "Count should not be null");
         assertEquals(1L, count, "Should count 1 verified USA customer");
