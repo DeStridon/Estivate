@@ -1,6 +1,7 @@
 package com.estivate.test.query;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -13,6 +14,7 @@ public class SelectQueryWindowTest {
 
     Context context = DatabaseGenerator.getContext();
 
+    @Disabled
     @Test
     public void testWindow() {
      

@@ -235,7 +235,7 @@ public class SelectProjectToAttributeTest {
     public void testProjectCount_AllRecords() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        Long count = query.fetch(context).asSingleLong();
+        Long count = query.fetchCountAll(context);
 
         assertNotNull(count, "Count should not be null");
         assertEquals(3L, count, "Should count all 3 customers");
@@ -246,10 +246,9 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA);
 
-        Long count = query.fetch(context).asSingleLong();
-
-        assertNotNull(count, "Count should not be null");
-        assertEquals(2L, count, "Should count 2 USA customers");
+        assertEquals(2L, query.fetch(context).size(), "Should count 2 USA customers");
+        assertEquals(2L, query.fetchCountAll(context), "Should count 2 USA customers");
+        
     }
 
     @Test
@@ -257,7 +256,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.JAPAN);
 
-        Long count = query.fetch(context).asSingleLong();
+        Long count = query.fetchCountAll(context);
 
         assertNotNull(count, "Count should not be null");
         assertEquals(0L, count, "Should count 0 customers");
@@ -268,7 +267,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.emailVerified, true);
 
-        Long count = query.fetch(context).asSingleLong();
+        Long count = query.fetchCountAll(context);
 
         assertNotNull(count, "Count should not be null");
         assertEquals(2L, count, "Should count 2 verified customers");
@@ -281,7 +280,7 @@ public class SelectProjectToAttributeTest {
             .groupBy(CustomerEntity.class, CustomerEntity.Fields.country)
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
-        Long count = query.fetch(context).asSingleLong();
+        Long count = query.fetchCountAll(context);
 
         assertNotNull(count, "Count should not be null");
         assertEquals(3L, count, "Should count all 3 customers, ignoring group by");
@@ -293,7 +292,7 @@ public class SelectProjectToAttributeTest {
     public void testProjectCountOptional_WithData() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        Optional<Long> count = query.fetch(context).asOptionalLong();
+        Optional<Long> count = query.fetchOptionalCountAll(context);
 
         assertTrue(count.isPresent(), "Count should be present");
         assertEquals(3L, count.get(), "Should count all 3 customers");
@@ -304,7 +303,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.UK);
 
-        Optional<Long> count = query.fetch(context).asOptionalLong();
+        Optional<Long> count = query.fetchOptionalCountAll(context);
 
         assertTrue(count.isPresent(), "Count should be present");
         assertEquals(1L, count.get(), "Should count 1 UK customer");
@@ -315,7 +314,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.JAPAN);
 
-        Optional<Long> count = query.fetch(context).asOptionalLong();
+        Optional<Long> count = query.fetchOptionalCountAll(context);
 
         // Count should still be present even with 0 results
         assertTrue(count.isPresent(), "Count should be present even for empty results");
