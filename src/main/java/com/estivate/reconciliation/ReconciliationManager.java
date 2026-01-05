@@ -1,4 +1,4 @@
-package com.estivate.mitigation;
+package com.estivate.reconciliation;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -12,7 +12,7 @@ import java.util.Set;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
-import com.estivate.mitigation.FieldDiff.DiffType;
+import com.estivate.reconciliation.ISchemaDiff.SchemaDiff;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * Useful for detecting schema drift and migration issues.
  */
 @Slf4j
-public class MitigationManager {
+public class ReconciliationManager {
 
     final Context context;
     final Class<?> entity;
@@ -36,9 +36,9 @@ public class MitigationManager {
     EntityModel databaseModel;
 
     @Getter
-    List<FieldDiff> differences;
+    List<SchemaDiff> differences;
 
-    public MitigationManager(Context context, Class<?> entity) {
+    public ReconciliationManager(Context context, Class<?> entity) {
         this.context = context;
         this.entity = entity;
 
@@ -68,7 +68,6 @@ public class MitigationManager {
                 .name(field.getName())
                 .type(javaTypeToSqlType(field))
                 .nullable(isNullable(field))
-                .primaryKey(isPrimaryKey(field))
                 .autoIncrement(isAutoIncrement(field))
                 .build();
 
@@ -111,7 +110,6 @@ public class MitigationManager {
                         .name(fieldName)
                         .type(columnType)
                         .nullable("YES".equalsIgnoreCase(nullableStr))
-                        .primaryKey("PRI".equalsIgnoreCase(keyStr))
                         .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
                         .defaultValue(defaultValue)
                         .length(extractLength(columnType))
@@ -126,10 +124,11 @@ public class MitigationManager {
     }
 
     /**
-     * Compares entity model with database model and returns differences
+     * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<FieldDiff> compare() {
-        List<FieldDiff> diffs = new ArrayList<>();
+    private List<SchemaDiff> compare() {
+        List<SchemaDiff> diffs = new ArrayList<>();
+        String tableName = entityModel.getTableName();
 
         // Check for fields in entity but not in database
         for (TableField entityField : entityModel.getFields()) {
@@ -145,89 +144,105 @@ public class MitigationManager {
             }
 
             if (dbField == null) {
-                diffs.add(FieldDiff.missingInDatabase(entityField));
+                // Column missing in database
+                ISchemaDiff.ColumnMissing columnMissing = new ISchemaDiff.ColumnMissing();
+                columnMissing.tableName = tableName;
+                columnMissing.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                diffs.add(columnMissing);
             } else {
                 // Check type mismatch
                 if (!entityField.typeMatches(dbField.getType())) {
-                    diffs.add(FieldDiff.typeMismatch(entityField, dbField));
+                    ISchemaDiff.ColumnTypeMismatch typeMismatch = new ISchemaDiff.ColumnTypeMismatch();
+                    typeMismatch.tableName = tableName;
+                    typeMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                    typeMismatch.entityType = entityField.getType();
+                    typeMismatch.databaseType = dbField.getType();
+                    diffs.add(typeMismatch);
                 }
+                
                 // Check nullable mismatch
                 if (entityField.isNullable() != dbField.isNullable()) {
-                    diffs.add(FieldDiff.nullableMismatch(entityField, dbField));
+                    ISchemaDiff.ColumnNullableMismatch nullableMismatch = new ISchemaDiff.ColumnNullableMismatch();
+                    nullableMismatch.tableName = tableName;
+                    nullableMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                    nullableMismatch.entityNullable = entityField.isNullable();
+                    nullableMismatch.databaseNullable = dbField.isNullable();
+                    diffs.add(nullableMismatch);
+                }
+                
+                // Check length mismatch (if both have lengths)
+                if (entityField.getLength() != null && dbField.getLength() != null) {
+                    if (!entityField.getLength().equals(dbField.getLength())) {
+                        ISchemaDiff.ColumnLengthMismatch lengthMismatch = new ISchemaDiff.ColumnLengthMismatch();
+                        lengthMismatch.tableName = tableName;
+                        lengthMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                        lengthMismatch.entityLength = entityField.getLength();
+                        lengthMismatch.databaseLength = dbField.getLength();
+                        diffs.add(lengthMismatch);
+                    }
+                }
+                
+                // Check default value mismatch
+                String entityDefault = entityField.getDefaultValue();
+                String dbDefault = dbField.getDefaultValue();
+                if (entityDefault != null || dbDefault != null) {
+                    // Compare defaults (handle null vs empty string)
+                    boolean defaultsMatch = (entityDefault == null && (dbDefault == null || dbDefault.isEmpty())) ||
+                                           (dbDefault == null && (entityDefault == null || entityDefault.isEmpty())) ||
+                                           (entityDefault != null && entityDefault.equals(dbDefault));
+                    if (!defaultsMatch) {
+                        ISchemaDiff.ColumnDefaultValueMismatch defaultValueMismatch = new ISchemaDiff.ColumnDefaultValueMismatch();
+                        defaultValueMismatch.tableName = tableName;
+                        defaultValueMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                        defaultValueMismatch.entityDefaultValue = entityDefault;
+                        defaultValueMismatch.databaseDefaultValue = dbDefault;
+                        diffs.add(defaultValueMismatch);
+                    }
                 }
             }
         }
 
         // Check for columns in database but not in entity
+        // We need to check against the actual database column names
+        // Since databaseModel stores entity field names (after conversion), we need to map back
         for (TableField dbField : databaseModel.getFields()) {
             TableField entityField = entityModel.findField(dbField.getName());
             
+            // Also check by mapped database column name
             if (entityField == null) {
-                diffs.add(FieldDiff.missingInEntity(dbField));
+                String dbColumnName = context.nameMapper.mapDatabaseField(dbField.getName());
+                entityField = entityModel.getFields().stream()
+                    .filter(f -> dbColumnName.equalsIgnoreCase(context.nameMapper.mapDatabaseField(f.getName())))
+                    .findFirst()
+                    .orElse(null);
+            }
+            
+            if (entityField == null) {
+                // Column missing in entity
+                // dbField.getName() could be either:
+                // 1. Entity field name (if findEntityName found a match) -> need to map to DB column name
+                // 2. Database column name (if findEntityName returned null) -> use directly
+                // Check if dbField.getName() exists as an entity field to determine which case
+                String columnName;
+                if (entityModel.hasField(dbField.getName())) {
+                    // It's an entity field name, map it to get the database column name
+                    columnName = context.nameMapper.mapDatabaseField(dbField.getName());
+                } else {
+                    // It's already a database column name (no entity field match was found)
+                    columnName = dbField.getName();
+                }
+                
+                ISchemaDiff.ColumnMissing columnMissing = new ISchemaDiff.ColumnMissing();
+                columnMissing.tableName = tableName;
+                columnMissing.columnName = columnName;
+                diffs.add(columnMissing);
             }
         }
 
         return diffs;
     }
 
-    /**
-     * Returns true if there are any differences between entity and database
-     */
-    public boolean hasDifferences() {
-        return !differences.isEmpty();
-    }
-
-    /**
-     * Returns differences of a specific type
-     */
-    public List<FieldDiff> getDifferences(DiffType type) {
-        List<FieldDiff> result = new ArrayList<>();
-        for (FieldDiff diff : differences) {
-            if (diff.getDiffType() == type) {
-                result.add(diff);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Gets fields that are in entity but missing in database
-     */
-    public List<FieldDiff> getMissingInDatabase() {
-        return getDifferences(DiffType.MISSING_IN_DATABASE);
-    }
-
-    /**
-     * Gets columns that are in database but missing in entity
-     */
-    public List<FieldDiff> getMissingInEntity() {
-        return getDifferences(DiffType.MISSING_IN_ENTITY);
-    }
-
-    /**
-     * Gets fields with type mismatches
-     */
-    public List<FieldDiff> getTypeMismatches() {
-        return getDifferences(DiffType.TYPE_MISMATCH);
-    }
-
-    /**
-     * Logs a summary of all differences found
-     */
-    public void logDifferences() {
-        if (!hasDifferences()) {
-            log.info("Entity {} is in sync with database table {}", 
-                entity.getSimpleName(), entityModel.getTableName());
-            return;
-        }
-
-        log.warn("Found {} difference(s) between entity {} and table {}:",
-            differences.size(), entity.getSimpleName(), entityModel.getTableName());
-        
-        for (FieldDiff diff : differences) {
-            log.warn("  - {}", diff.getDescription());
-        }
-    }
+   
 
     // ==================== Helper Methods ====================
 
@@ -288,22 +303,13 @@ public class MitigationManager {
             return jakartaColumn.nullable();
         }
 
-        // Check for @Id (primary keys are typically not nullable)
-        if (isPrimaryKey(field)) {
-            return false;
-        }
+       
 
         // Default to nullable for object types
         return true;
     }
 
-    /**
-     * Checks if a field is a primary key
-     */
-    private boolean isPrimaryKey(Field field) {
-        return field.isAnnotationPresent(javax.persistence.Id.class) || 
-               field.isAnnotationPresent(jakarta.persistence.Id.class);
-    }
+    
 
     /**
      * Checks if a field is auto-increment
@@ -328,14 +334,12 @@ public class MitigationManager {
      * Checks if an enum field is stored as STRING
      */
     private boolean isEnumeratedAsString(Field field) {
-        javax.persistence.Enumerated javaxEnum = 
-            field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+        javax.persistence.Enumerated javaxEnum = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
         if (javaxEnum != null && javaxEnum.value() == javax.persistence.EnumType.STRING) {
             return true;
         }
 
-        jakarta.persistence.Enumerated jakartaEnum = 
-            field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+        jakarta.persistence.Enumerated jakartaEnum = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
         if (jakartaEnum != null && jakartaEnum.value() == jakarta.persistence.EnumType.STRING) {
             return true;
         }

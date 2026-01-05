@@ -1,4 +1,4 @@
-package com.estivate.mitigation;
+package com.estivate.reconciliation;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +19,6 @@ public class TableField {
 
     /** Whether the field is nullable */
     public boolean nullable;
-
-    /** Whether this field is a primary key */
-    public boolean primaryKey;
 
     /** Whether this field is auto-increment */
     public boolean autoIncrement;
