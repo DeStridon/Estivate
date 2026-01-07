@@ -800,6 +800,33 @@ public abstract class Context {
 	
 	
 	public abstract List<TableIndex> listIndexes(Class<?> c);
+
+
+
+	public void dropColumn(Class<?> c, String columnName) throws Exception {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" DROP COLUMN ").appendQuery(columnName);
+			statement.executeForValidation();
+		}
+	}
+
+	public void addColumn(Class<?> c, String columnName, String columnType) throws Exception {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" ADD COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
+			statement.executeForValidation();
+		}
+	}
+
+	public void changeColumn(Class<?> c, String columnName, String columnType) throws Exception {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" CHANGE COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
+			statement.executeForValidation();
+		}
+	}
+	
 	
 	// ==================== MISC ====================
 

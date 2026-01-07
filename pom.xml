@@ -10,8 +10,8 @@
 	<properties>
 	    <java.version>16</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-<!--        <maven.compiler.source>16</maven.compiler.source>-->
-<!--        <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>-->
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
         <junit.jupiter.version>5.9.1</junit.jupiter.version>
         <junit.platform.version>1.9.1</junit.platform.version>
     </properties>
@@ -104,6 +104,22 @@
 		    <version>0.10.2</version>
 		</dependency>
 		
+		<!-- Spring Context (optional - for autowiring managers) -->
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-context</artifactId>
+		    <version>5.3.31</version>
+		    <optional>true</optional>
+		</dependency>
+		
+		<!-- Spring Test (for testing autowiring) -->
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-test</artifactId>
+		    <version>5.3.31</version>
+		    <scope>test</scope>
+		</dependency>
+		
 		
 		<dependency>
 		    <groupId>org.apache.tomcat</groupId>
@@ -144,7 +160,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
+				<version>3.11.0</version>	
 			</plugin>
 		</plugins>
 	</build>
