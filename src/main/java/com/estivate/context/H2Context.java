@@ -65,6 +65,25 @@ public class H2Context extends Context {
 		}
 	}
 	
-	
+	/**
+	 * Helper method to execute H2-compatible ALTER TABLE statements
+	 */
+	@SneakyThrows
+	public void executeH2AlterTable(String sql) {
+		try (Connection connection = datasource.getConnection();
+			 java.sql.Statement stmt = connection.createStatement()) {
+			stmt.execute(sql);
+		}
+	}
+
+	/**
+	 * Helper method to change column type in H2 (uses ALTER COLUMN instead of CHANGE COLUMN)
+	 */
+	@SneakyThrows
+	public void changeColumn(Class<?> c, String fieldName, String columnType) {
+		String columnName = nameMapper.mapDatabaseField(fieldName);
+		String tableName = nameMapper.toTableName(c);
+		executeH2AlterTable("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " " + columnType);
+	}
 
 }

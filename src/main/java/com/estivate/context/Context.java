@@ -803,7 +803,8 @@ public abstract class Context {
 
 
 
-	public void dropColumn(Class<?> c, String columnName) throws Exception {
+	public void dropColumn(Class<?> c, String fieldName) throws Exception {
+		String columnName = nameMapper.mapDatabaseField(fieldName);
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" DROP COLUMN ").appendQuery(columnName);
@@ -811,7 +812,8 @@ public abstract class Context {
 		}
 	}
 
-	public void addColumn(Class<?> c, String columnName, String columnType) throws Exception {
+	public void addColumn(Class<?> c, String fieldName, String columnType) throws Exception {
+		String columnName = nameMapper.mapDatabaseField(fieldName);
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" ADD COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
@@ -819,7 +821,8 @@ public abstract class Context {
 		}
 	}
 
-	public void changeColumn(Class<?> c, String columnName, String columnType) throws Exception {
+	public void changeColumn(Class<?> c, String fieldName, String columnType) throws Exception {
+		String columnName = nameMapper.mapDatabaseField(fieldName);
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" CHANGE COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);

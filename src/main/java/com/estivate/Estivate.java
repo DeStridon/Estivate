@@ -781,24 +781,6 @@ public class Estivate {
 		
 	}
 
-
-	@SuppressWarnings("unchecked")
-	public static <U extends EntityManager<T>, T> U implementManager(Class<U> interfaceClass, Context context) {
-        try {
-            
-            return new ByteBuddy()
-                .subclass(interfaceClass)
-                .method(ElementMatchers.isAbstract())
-                .intercept(MethodDelegation.to(new ManagerInterceptor<T>(interfaceClass, context)))
-                .make()
-                .load(interfaceClass.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
-                .getLoaded()
-                .getDeclaredConstructor()
-                .newInstance();
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to generate proxy", e);
-        }
-    }
+	
 	 
 }

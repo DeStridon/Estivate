@@ -6,9 +6,16 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
@@ -98,7 +105,14 @@ public class ReconciliationManager {
                     String nullableStr = resultSet.getString("Null");
                     String keyStr = resultSet.getString("Key");
                     String defaultValue = resultSet.getString("Default");
-                    String extra = resultSet.getString("Extra");
+                    // H2 doesn't have "Extra" column, so we need to handle it gracefully
+                    String extra = null;
+                    try {
+                        extra = resultSet.getString("Extra");
+                    } catch (Exception e) {
+                        // H2 doesn't support Extra column, check auto_increment from column type or other means
+                        // For H2, we can check if the column type contains AUTO_INCREMENT or check the default
+                    }
 
                     // Convert database column name back to entity field name
                     String fieldName = context.findEntityName(entity, columnName);
@@ -147,14 +161,14 @@ public class ReconciliationManager {
                 // Column missing in database
                 ISchemaDiff.ColumnMissing columnMissing = new ISchemaDiff.ColumnMissing();
                 columnMissing.tableName = tableName;
-                columnMissing.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                columnMissing.attributeName = entityField.getName();
                 diffs.add(columnMissing);
             } else {
                 // Check type mismatch
                 if (!entityField.typeMatches(dbField.getType())) {
                     ISchemaDiff.ColumnTypeMismatch typeMismatch = new ISchemaDiff.ColumnTypeMismatch();
                     typeMismatch.tableName = tableName;
-                    typeMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                    typeMismatch.attributeName = entityField.getName();
                     typeMismatch.entityType = entityField.getType();
                     typeMismatch.databaseType = dbField.getType();
                     diffs.add(typeMismatch);
@@ -164,7 +178,7 @@ public class ReconciliationManager {
                 if (entityField.isNullable() != dbField.isNullable()) {
                     ISchemaDiff.ColumnNullableMismatch nullableMismatch = new ISchemaDiff.ColumnNullableMismatch();
                     nullableMismatch.tableName = tableName;
-                    nullableMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                    nullableMismatch.attributeName = entityField.getName();
                     nullableMismatch.entityNullable = entityField.isNullable();
                     nullableMismatch.databaseNullable = dbField.isNullable();
                     diffs.add(nullableMismatch);
@@ -175,7 +189,7 @@ public class ReconciliationManager {
                     if (!entityField.getLength().equals(dbField.getLength())) {
                         ISchemaDiff.ColumnLengthMismatch lengthMismatch = new ISchemaDiff.ColumnLengthMismatch();
                         lengthMismatch.tableName = tableName;
-                        lengthMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                        lengthMismatch.attributeName = entityField.getName();
                         lengthMismatch.entityLength = entityField.getLength();
                         lengthMismatch.databaseLength = dbField.getLength();
                         diffs.add(lengthMismatch);
@@ -193,7 +207,7 @@ public class ReconciliationManager {
                     if (!defaultsMatch) {
                         ISchemaDiff.ColumnDefaultValueMismatch defaultValueMismatch = new ISchemaDiff.ColumnDefaultValueMismatch();
                         defaultValueMismatch.tableName = tableName;
-                        defaultValueMismatch.columnName = context.nameMapper.mapDatabaseField(entityField.getName());
+                        defaultValueMismatch.attributeName = entityField.getName();
                         defaultValueMismatch.entityDefaultValue = entityDefault;
                         defaultValueMismatch.databaseDefaultValue = dbDefault;
                         diffs.add(defaultValueMismatch);
@@ -220,21 +234,13 @@ public class ReconciliationManager {
             if (entityField == null) {
                 // Column missing in entity
                 // dbField.getName() could be either:
-                // 1. Entity field name (if findEntityName found a match) -> need to map to DB column name
-                // 2. Database column name (if findEntityName returned null) -> use directly
-                // Check if dbField.getName() exists as an entity field to determine which case
-                String columnName;
-                if (entityModel.hasField(dbField.getName())) {
-                    // It's an entity field name, map it to get the database column name
-                    columnName = context.nameMapper.mapDatabaseField(dbField.getName());
-                } else {
-                    // It's already a database column name (no entity field match was found)
-                    columnName = dbField.getName();
-                }
+                // 1. Entity field name (if findEntityName found a match) -> use directly as attribute name
+                // 2. Database column name (if findEntityName returned null) -> use as attribute name (no entity field exists)
+                String attributeName = dbField.getName();
                 
                 ISchemaDiff.ColumnMissing columnMissing = new ISchemaDiff.ColumnMissing();
                 columnMissing.tableName = tableName;
-                columnMissing.columnName = columnName;
+                columnMissing.attributeName = attributeName;
                 diffs.add(columnMissing);
             }
         }
@@ -242,7 +248,198 @@ public class ReconciliationManager {
         return diffs;
     }
 
-   
+    // ==================== Resolver Discovery ====================
+
+
+    public static final Comparator<Object> handlesDiffComparator = (objectA, objectB) -> {
+
+        HandlesDiff a = objectA == null ? null : objectA.getClass().getAnnotation(HandlesDiff.class);
+        HandlesDiff b = objectB == null ? null : objectB.getClass().getAnnotation(HandlesDiff.class);
+
+        return 
+        compare(a == null, b == null)
+            .or(() -> compare(StringUtils.isBlank(a.table()), StringUtils.isBlank(b.table())))
+            .or(() -> compare(StringUtils.isBlank(a.column()), StringUtils.isBlank(b.column())))
+
+            .orElse(0);
+    };
+
+    // 
+    private static Optional<Integer> compare(boolean a, boolean b) {
+        if(a && b){ return Optional.of(0); }
+        // a true : a is more specific
+        if (a && !b) { return Optional.of(1); }
+        // b true : b is more specific
+        if (!a && b) { return Optional.of(-1);}
+        // both false
+        return Optional.empty();
+    }
+
+
+    /**
+     * Finds resolver classes that can handle the given diff.
+     * Resolvers must:
+     * - Implement the appropriate resolver interface (e.g., ColumnMissingResolver)
+     * - Have @HandlesDiff annotation
+     * - Match the table/column criteria from the annotation
+     * 
+     * Results are sorted from most specific to most generic:
+     * 1. Table AND Field (most specific)
+     * 2. Table only
+     * 3. None
+     * 4. Null (no annotation)
+     * 
+     * @param diff The schema diff to find resolvers for
+     * @param candidates Collection of potential resolver classes to search through
+     * @return List of matching resolvers, sorted from most specific to most generic
+     */
+    public <T> List<T> findResolver(SchemaDiff diff, Collection<T> candidates) {
+        // Extract table and column from the diff
+        String diffTable = extractTableName(diff);
+        String diffColumn = extractColumnName(diff);
+        
+        return candidates.stream()
+            .filter(candidate -> hasMatchingHandlesDiff(candidate.getClass(), diffTable, diffColumn))
+            .sorted(ReconciliationManager.handlesDiffComparator)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if a class has @HandlesDiff annotation that matches the given diff
+     */
+    private boolean hasMatchingHandlesDiff(Class<?> candidateClass, String diffTable, String diffColumn) {
+        HandlesDiff annotation = candidateClass.getAnnotation(HandlesDiff.class);
+        if (annotation == null) {
+            return false;
+        }
+        
+        // Check table match
+        String table = annotation.table();
+        if (!table.equals(diffTable)) {
+            return false;
+        }
+        
+        // Check column match
+        String columns = annotation.column();
+        if (!columns.equals(diffColumn)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    
+
+    // ==================== Resolver Application ====================
+
+    /**
+     * Result of applying resolvers to schema differences.
+     */
+    @Getter
+    public static class ApplyResolversResult {
+        private final List<SchemaDiff> resolved = new ArrayList<>();
+        private final List<SchemaDiff> unresolved = new ArrayList<>();
+        
+        public boolean isFullyResolved() {
+            return unresolved.isEmpty();
+        }
+        
+        public int totalDiffs() {
+            return resolved.size() + unresolved.size();
+        }
+    }
+
+    /**
+     * Applies resolvers to all schema differences.
+     * For each diff, finds matching resolvers sorted by specificity (most specific first),
+     * and applies the first resolver that successfully handles the diff.
+     * 
+     * @param candidates Collection of resolver objects to search through
+     * @return ApplyResolversResult containing resolved and unresolved diffs
+     */
+    public ApplyResolversResult applyResolvers(Collection<Object> candidates) {
+        ApplyResolversResult result = new ApplyResolversResult();
+        
+        for (SchemaDiff diff : differences) {
+            List<Object> resolvers = findResolver(diff, candidates);
+            
+            boolean resolved = false;
+            for (Object resolver : resolvers) {
+                if (tryApplyResolver(resolver, diff)) {
+                    result.resolved.add(diff);
+                    resolved = true;
+                    break;
+                }
+            }
+            
+            if (!resolved) {
+                result.unresolved.add(diff);
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * Attempts to apply a resolver to a schema diff.
+     * Checks the diff type and resolver interface compatibility, then invokes the resolver.
+     * 
+     * @param resolver The resolver object to use
+     * @param diff The schema diff to resolve
+     * @return true if the resolver successfully handled the diff, false otherwise
+     */
+    private boolean tryApplyResolver(Object resolver, SchemaDiff diff) {
+        try {
+            if (diff instanceof ISchemaDiff.TableMissing && resolver instanceof ISchemaDiff.TableMissingResolver) {
+                return ((ISchemaDiff.TableMissingResolver) resolver).resolve(context, (ISchemaDiff.TableMissing) diff);
+            }
+            if (diff instanceof ISchemaDiff.ColumnMissing && resolver instanceof ISchemaDiff.ColumnMissingResolver) {
+                return ((ISchemaDiff.ColumnMissingResolver) resolver).resolve(context, (ISchemaDiff.ColumnMissing) diff);
+            }
+            if (diff instanceof ISchemaDiff.ColumnTypeMismatch && resolver instanceof ISchemaDiff.ColumnTypeMismatchResolver) {
+                return ((ISchemaDiff.ColumnTypeMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnTypeMismatch) diff);
+            }
+            if (diff instanceof ISchemaDiff.ColumnLengthMismatch && resolver instanceof ISchemaDiff.ColumnLengthMismatchResolver) {
+                return ((ISchemaDiff.ColumnLengthMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnLengthMismatch) diff);
+            }
+            if (diff instanceof ISchemaDiff.ColumnDefaultValueMismatch && resolver instanceof ISchemaDiff.ColumnDefaultValueMismatchResolver) {
+                return ((ISchemaDiff.ColumnDefaultValueMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnDefaultValueMismatch) diff);
+            }
+            if (diff instanceof ISchemaDiff.ColumnNullableMismatch && resolver instanceof ISchemaDiff.ColumnNullableMismatchResolver) {
+                return ((ISchemaDiff.ColumnNullableMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnNullableMismatch) diff);
+            }
+            if (diff instanceof ISchemaDiff.ColumnEncodingMismatch && resolver instanceof ISchemaDiff.ColumnEncodingMismatchResolver) {
+                return ((ISchemaDiff.ColumnEncodingMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnEncodingMismatch) diff);
+            }
+        } catch (Exception e) {
+            log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Extracts table name from a SchemaDiff using reflection
+     */
+    private String extractTableName(SchemaDiff diff) {
+        try {
+            Field tableField = diff.getClass().getField("tableName");
+            return (String) tableField.get(diff);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Extracts column/attribute name from a SchemaDiff using reflection
+     */
+    private String extractColumnName(SchemaDiff diff) {
+        try {
+            Field attrField = diff.getClass().getField("attributeName");
+            return (String) attrField.get(diff);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
+    }
 
     // ==================== Helper Methods ====================
 

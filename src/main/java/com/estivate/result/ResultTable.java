@@ -30,9 +30,11 @@ import com.estivate.result.IMapper.StringMapper;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 
 @Data
+@SuperBuilder
 public class ResultTable implements Iterable<ResultRow>{
 
 	final Context context;

@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HandlesDiff {
-    Class<? extends ISchemaDiff> diffType();
-    String[] table() default "";       // noms des tables visées
-    String[] column() default "";      // noms des colonnes visées
+    String table() default "";       // noms des tables visées
+    String column() default "";      // noms des colonnes visées
 }
