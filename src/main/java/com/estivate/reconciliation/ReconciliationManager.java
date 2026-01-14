@@ -256,13 +256,23 @@ public class ReconciliationManager {
         HandlesDiff a = objectA == null ? null : objectA.getClass().getAnnotation(HandlesDiff.class);
         HandlesDiff b = objectB == null ? null : objectB.getClass().getAnnotation(HandlesDiff.class);
 
-        return 
-        compare(a == null, b == null)
-            .or(() -> compare(StringUtils.isBlank(a.table()), StringUtils.isBlank(b.table())))
-            .or(() -> compare(StringUtils.isBlank(a.column()), StringUtils.isBlank(b.column())))
-
-            .orElse(0);
+        return or(
+            compare(a == null, b == null),
+            compare(StringUtils.isBlank(a.table()), StringUtils.isBlank(b.table())),
+            compare(StringUtils.isBlank(a.column()), StringUtils.isBlank(b.column()))
+        ).orElse(0);
+        
+        
     };
+
+    private static Optional<Integer> or(Optional<Integer>... values){
+        for(Optional<Integer> value : values){
+            if(value.isPresent()){
+                return value;
+            }
+        }
+        return Optional.empty();
+    }
 
     // 
     private static Optional<Integer> compare(boolean a, boolean b) {
