@@ -23,6 +23,7 @@ import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
 import com.estivate.query.Criterion;
+import com.estivate.query.AlterQuery;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
@@ -75,7 +76,7 @@ public class Statement implements AutoCloseable{
 			appendQuery("-- "+comment+"\n");
 		}
 		
-		// 2. Select or update or delete
+		// 2. Select or update or delete or alter table
 		if(query instanceof SelectQuery) {
 			appendQuery("SELECT");
 			
@@ -103,6 +104,9 @@ public class Statement implements AutoCloseable{
 				appendEntity(query.getEntity());
 			}
 			appendQuery("FROM");
+		}
+		else if(query instanceof AlterQuery) {
+			appendQuery("ALTER TABLE");
 		}
 		
 		// 3. Append entity
@@ -144,8 +148,29 @@ public class Statement implements AutoCloseable{
 			
 		}
 		
-		// 7. Add Where
-		if(!query.getCriterions().isEmpty()) {
+		// 6b. If alter table query, add operations
+		if(query instanceof AlterQuery) {
+			AlterQuery<?> alterQuery = (AlterQuery<?>) query;
+			List<AlterQuery.Operation> operations = alterQuery.getOperations();
+			
+			if(operations.isEmpty()) {
+				throw new RuntimeException("ALTER TABLE query must have at least one operation");
+			}
+			
+			boolean first = true;
+			for(AlterQuery.Operation operation : operations) {
+				if(!first) {
+					appendQuery(", ");
+				}
+				first = false;
+				
+				// Use polymorphism - each operation knows how to render itself
+				operation.render(context, this);
+			}
+		}
+		
+		// 7. Add Where (not applicable for ALTER TABLE)
+		if(!(query instanceof AlterQuery) && !query.getCriterions().isEmpty()) {
         	appendQuery("WHERE");
         	appendNodeToStatement(query, true);
         }

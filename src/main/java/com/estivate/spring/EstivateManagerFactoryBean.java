@@ -2,6 +2,7 @@ package com.estivate.spring;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.estivate.context.Context;
 import com.estivate.manager.ManagerInterceptor.EntityManager;
@@ -18,7 +19,8 @@ import com.estivate.manager.ManagerInterceptor;
  * 
  * <p>This factory bean is responsible for creating the actual implementation
  * of an abstract EntityManager subclass using ByteBuddy. It autowires the
- * {@link Context} from the application context.</p>
+ * {@link Context} from the application context and also autowires any
+ * dependencies declared in the manager class itself.</p>
  * 
  * @param <T> The manager type (must extend EntityManager)
  */
@@ -28,6 +30,9 @@ public class EstivateManagerFactoryBean<T extends EntityManager<?>> implements F
     
     @Autowired
     private Context context;
+    
+    @Autowired
+    private AutowireCapableBeanFactory autowireCapableBeanFactory;
 
     public EstivateManagerFactoryBean(Class<T> managerClass) {
         this.managerClass = managerClass;
@@ -36,7 +41,7 @@ public class EstivateManagerFactoryBean<T extends EntityManager<?>> implements F
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public T getObject() throws Exception {
-        return (T) new ByteBuddy()
+        T instance = (T) new ByteBuddy()
             .subclass(managerClass)
             .method(ElementMatchers.isAbstract())
             .intercept(MethodDelegation.to(new ManagerInterceptor((Class) managerClass, context)))
@@ -45,6 +50,11 @@ public class EstivateManagerFactoryBean<T extends EntityManager<?>> implements F
             .getLoaded()
             .getDeclaredConstructor()
             .newInstance();
+        
+        // Autowire dependencies declared in the manager class
+        autowireCapableBeanFactory.autowireBean(instance);
+        
+        return instance;
     }
 
     @Override
