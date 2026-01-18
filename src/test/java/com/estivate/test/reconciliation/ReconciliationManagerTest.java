@@ -14,13 +14,13 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
-import com.estivate.reconciliation.HandlesDiff;
-import com.estivate.reconciliation.ISchemaDiff.ColumnDefaultValueMismatch;
-import com.estivate.reconciliation.ISchemaDiff.ColumnLengthMismatch;
-import com.estivate.reconciliation.ISchemaDiff.ColumnMissing;
-import com.estivate.reconciliation.ISchemaDiff.ColumnNullableMismatch;
-import com.estivate.reconciliation.ISchemaDiff.ColumnTypeMismatch;
-import com.estivate.reconciliation.ISchemaDiff.SchemaDiff;
+import com.estivate.reconciliation.ReconciliationScope;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnDefaultValueMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnLengthMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnMissing;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnNullableMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnTypeMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.SchemaDiff;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
@@ -413,13 +413,13 @@ public class ReconciliationManagerTest {
 
     // ==================== HandlesDiff Comparator Tests ====================
 
-    @HandlesDiff(table = "users", column = "email")
+    @ReconciliationScope(table = "users", column = "email")
     static class ResolverWithTableAndColumn {}
 
-    @HandlesDiff(table = "users")
+    @ReconciliationScope(table = "users")
     static class ResolverWithTableOnly {}
 
-    @HandlesDiff
+    @ReconciliationScope
     static class ResolverWithNone {}
 
     static class ResolverWithoutAnnotation {}
@@ -471,28 +471,28 @@ public class ReconciliationManagerTest {
 
     // --- Test resolver classes with different specificity levels ---
 
-    @HandlesDiff(table = "users", column = "email")
+    @ReconciliationScope(table = "users", column = "email")
     static class ColumnMissingResolverTableAndColumn {}
 
-    @HandlesDiff(table = "users", column = "")
+    @ReconciliationScope(table = "users", column = "")
     static class ColumnMissingResolverTableOnly {}
 
-    @HandlesDiff(table = "", column = "")
+    @ReconciliationScope(table = "", column = "")
     static class ColumnMissingResolverGeneric {}
 
-    @HandlesDiff(table = "products", column = "price")
+    @ReconciliationScope(table = "products", column = "price")
     static class DifferentTableAndColumnResolver {}
 
-    @HandlesDiff(table = "orders", column = "id")
+    @ReconciliationScope(table = "orders", column = "id")
     static class ColumnMissingResolverDifferentTable {}
 
     static class ResolverNoAnnotation {}
 
     // Additional test resolver classes for multiple matching test
-    @HandlesDiff(table = "test", column = "col")
+    @ReconciliationScope(table = "test", column = "col")
     static class ResolverA {}
 
-    @HandlesDiff(table = "test", column = "col")
+    @ReconciliationScope(table = "test", column = "col")
     static class ResolverB {}
 
     @Test

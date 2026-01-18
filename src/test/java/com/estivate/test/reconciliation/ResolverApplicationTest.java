@@ -12,12 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
-import com.estivate.reconciliation.HandlesDiff;
-import com.estivate.reconciliation.ISchemaDiff;
-import com.estivate.reconciliation.ISchemaDiff.ColumnLengthMismatch;
-import com.estivate.reconciliation.ISchemaDiff.ColumnMissing;
-import com.estivate.reconciliation.ISchemaDiff.ColumnNullableMismatch;
-import com.estivate.reconciliation.ISchemaDiff.ColumnTypeMismatch;
+import com.estivate.reconciliation.ReconciliationScope;
+import com.estivate.reconciliation.EstivateReconciliation;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnLengthMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnMissing;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnNullableMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnTypeMismatch;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.ReconciliationManager.ApplyResolversResult;
 import com.estivate.test.DatabaseGenerator;
@@ -69,8 +69,8 @@ public class ResolverApplicationTest {
     /**
      * Generic resolver that handles any ColumnMissing diff
      */
-    @HandlesDiff(table = "", column = "")
-    public static class GenericColumnMissingResolver implements ISchemaDiff.ColumnMissingResolver {
+    @ReconciliationScope(table = "", column = "")
+    public static class GenericColumnMissingResolver implements EstivateReconciliation.IColumnMissingResolver {
         public boolean wasCalled = false;
         public ColumnMissing lastDiff = null;
         public boolean shouldSucceed = true;
@@ -86,8 +86,8 @@ public class ResolverApplicationTest {
     /**
      * Table-specific resolver for ColumnMissing
      */
-    @HandlesDiff(table = "RESOLVER_TEST_ENTITY", column = "")
-    public static class TableSpecificColumnMissingResolver implements ISchemaDiff.ColumnMissingResolver {
+    @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "")
+    public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IColumnMissingResolver {
         public boolean wasCalled = false;
         public ColumnMissing lastDiff = null;
         public boolean shouldSucceed = true;
@@ -103,8 +103,8 @@ public class ResolverApplicationTest {
     /**
      * Column-specific resolver for ColumnMissing on 'email' column
      */
-    @HandlesDiff(table = "RESOLVER_TEST_ENTITY", column = "email")
-    public static class EmailColumnMissingResolver implements ISchemaDiff.ColumnMissingResolver {
+    @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "email")
+    public static class EmailColumnMissingResolver implements EstivateReconciliation.IColumnMissingResolver {
         public boolean wasCalled = false;
         public ColumnMissing lastDiff = null;
         public boolean shouldSucceed = true;
@@ -120,8 +120,8 @@ public class ResolverApplicationTest {
     /**
      * Generic type mismatch resolver
      */
-    @HandlesDiff(table = "", column = "")
-    public static class GenericTypeMismatchResolver implements ISchemaDiff.ColumnTypeMismatchResolver {
+    @ReconciliationScope(table = "", column = "")
+    public static class GenericTypeMismatchResolver implements EstivateReconciliation.IColumnTypeMismatchResolver {
         public boolean wasCalled = false;
         public ColumnTypeMismatch lastDiff = null;
         public boolean shouldSucceed = true;
@@ -137,8 +137,8 @@ public class ResolverApplicationTest {
     /**
      * Generic nullable mismatch resolver
      */
-    @HandlesDiff(table = "", column = "")
-    public static class GenericNullableMismatchResolver implements ISchemaDiff.ColumnNullableMismatchResolver {
+    @ReconciliationScope(table = "", column = "")
+    public static class GenericNullableMismatchResolver implements EstivateReconciliation.IColumnNullableMismatchResolver {
         public boolean wasCalled = false;
         public ColumnNullableMismatch lastDiff = null;
         public boolean shouldSucceed = true;
@@ -154,8 +154,8 @@ public class ResolverApplicationTest {
     /**
      * Generic length mismatch resolver
      */
-    @HandlesDiff(table = "", column = "")
-    public static class GenericLengthMismatchResolver implements ISchemaDiff.ColumnLengthMismatchResolver {
+    @ReconciliationScope(table = "", column = "")
+    public static class GenericLengthMismatchResolver implements EstivateReconciliation.IColumnLengthMismatchResolver {
         public boolean wasCalled = false;
         public ColumnLengthMismatch lastDiff = null;
         public boolean shouldSucceed = true;
@@ -171,7 +171,7 @@ public class ResolverApplicationTest {
     /**
      * Resolver without annotation - should never be called
      */
-    public static class UnannotatedResolver implements ISchemaDiff.ColumnMissingResolver {
+    public static class UnannotatedResolver implements EstivateReconciliation.IColumnMissingResolver {
         public boolean wasCalled = false;
 
         @Override
@@ -184,8 +184,8 @@ public class ResolverApplicationTest {
     /**
      * Resolver that always fails
      */
-    @HandlesDiff(table = "", column = "")
-    public static class FailingResolver implements ISchemaDiff.ColumnMissingResolver {
+    @ReconciliationScope(table = "", column = "")
+    public static class FailingResolver implements EstivateReconciliation.IColumnMissingResolver {
         public int callCount = 0;
 
         @Override
@@ -198,8 +198,8 @@ public class ResolverApplicationTest {
     /**
      * Resolver that throws exception
      */
-    @HandlesDiff(table = "", column = "")
-    public static class ThrowingResolver implements ISchemaDiff.ColumnMissingResolver {
+    @ReconciliationScope(table = "", column = "")
+    public static class ThrowingResolver implements EstivateReconciliation.IColumnMissingResolver {
         public boolean wasCalled = false;
 
         @Override

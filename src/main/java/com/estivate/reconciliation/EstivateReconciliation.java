@@ -5,7 +5,7 @@ import com.estivate.context.Context;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-public class ISchemaDiff {
+public class EstivateReconciliation {
 
 
     public static interface SchemaDiff {}
@@ -69,22 +69,22 @@ public class ISchemaDiff {
     }
 
 
-    public static interface TableMissingResolver { public boolean resolve(Context context, TableMissing diff); }
-    public static interface ColumnMissingResolver { public boolean resolve(Context context, ColumnMissing diff); }
-    public static interface ColumnTypeMismatchResolver { public boolean resolve(Context context, ColumnTypeMismatch diff); }
-    public static interface ColumnLengthMismatchResolver { public boolean resolve(Context context, ColumnLengthMismatch diff); }
-    public static interface ColumnDefaultValueMismatchResolver { public boolean resolve(Context context, ColumnDefaultValueMismatch diff); }
-    public static interface ColumnNullableMismatchResolver { public boolean resolve(Context context, ColumnNullableMismatch diff); }
-    public static interface ColumnEncodingMismatchResolver { public boolean resolve(Context context, ColumnEncodingMismatch diff); }
+    public static interface ITableMissingResolver { public boolean resolve(Context context, TableMissing diff); }
+    public static interface IColumnMissingResolver { public boolean resolve(Context context, ColumnMissing diff); }
+    public static interface IColumnTypeMismatchResolver { public boolean resolve(Context context, ColumnTypeMismatch diff); }
+    public static interface IColumnLengthMismatchResolver { public boolean resolve(Context context, ColumnLengthMismatch diff); }
+    public static interface IColumnDefaultValueMismatchResolver { public boolean resolve(Context context, ColumnDefaultValueMismatch diff); }
+    public static interface IColumnNullableMismatchResolver { public boolean resolve(Context context, ColumnNullableMismatch diff); }
+    public static interface IColumnEncodingMismatchResolver { public boolean resolve(Context context, ColumnEncodingMismatch diff); }
 
-    public static interface SchemaDiffResolver extends 
-                            TableMissingResolver, 
-                            ColumnMissingResolver, 
-                            ColumnTypeMismatchResolver, 
-                            ColumnLengthMismatchResolver, 
-                            ColumnDefaultValueMismatchResolver, 
-                            ColumnNullableMismatchResolver, 
-                            ColumnEncodingMismatchResolver {}
+    public static interface IReconciliationResolver extends 
+                            ITableMissingResolver, 
+                            IColumnMissingResolver, 
+                            IColumnTypeMismatchResolver, 
+                            IColumnLengthMismatchResolver, 
+                            IColumnDefaultValueMismatchResolver, 
+                            IColumnNullableMismatchResolver, 
+                            IColumnEncodingMismatchResolver {}
     
 
 }

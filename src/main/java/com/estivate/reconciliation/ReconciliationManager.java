@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
-import com.estivate.reconciliation.ISchemaDiff.SchemaDiff;
+import com.estivate.reconciliation.EstivateReconciliation.SchemaDiff;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -159,14 +159,14 @@ public class ReconciliationManager {
 
             if (dbField == null) {
                 // Column missing in database
-                ISchemaDiff.ColumnMissing columnMissing = new ISchemaDiff.ColumnMissing();
+                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing();
                 columnMissing.tableName = tableName;
                 columnMissing.attributeName = entityField.getName();
                 diffs.add(columnMissing);
             } else {
                 // Check type mismatch
                 if (!entityField.typeMatches(dbField.getType())) {
-                    ISchemaDiff.ColumnTypeMismatch typeMismatch = new ISchemaDiff.ColumnTypeMismatch();
+                    EstivateReconciliation.ColumnTypeMismatch typeMismatch = new EstivateReconciliation.ColumnTypeMismatch();
                     typeMismatch.tableName = tableName;
                     typeMismatch.attributeName = entityField.getName();
                     typeMismatch.entityType = entityField.getType();
@@ -176,7 +176,7 @@ public class ReconciliationManager {
                 
                 // Check nullable mismatch
                 if (entityField.isNullable() != dbField.isNullable()) {
-                    ISchemaDiff.ColumnNullableMismatch nullableMismatch = new ISchemaDiff.ColumnNullableMismatch();
+                    EstivateReconciliation.ColumnNullableMismatch nullableMismatch = new EstivateReconciliation.ColumnNullableMismatch();
                     nullableMismatch.tableName = tableName;
                     nullableMismatch.attributeName = entityField.getName();
                     nullableMismatch.entityNullable = entityField.isNullable();
@@ -187,7 +187,7 @@ public class ReconciliationManager {
                 // Check length mismatch (if both have lengths)
                 if (entityField.getLength() != null && dbField.getLength() != null) {
                     if (!entityField.getLength().equals(dbField.getLength())) {
-                        ISchemaDiff.ColumnLengthMismatch lengthMismatch = new ISchemaDiff.ColumnLengthMismatch();
+                        EstivateReconciliation.ColumnLengthMismatch lengthMismatch = new EstivateReconciliation.ColumnLengthMismatch();
                         lengthMismatch.tableName = tableName;
                         lengthMismatch.attributeName = entityField.getName();
                         lengthMismatch.entityLength = entityField.getLength();
@@ -205,7 +205,7 @@ public class ReconciliationManager {
                                            (dbDefault == null && (entityDefault == null || entityDefault.isEmpty())) ||
                                            (entityDefault != null && entityDefault.equals(dbDefault));
                     if (!defaultsMatch) {
-                        ISchemaDiff.ColumnDefaultValueMismatch defaultValueMismatch = new ISchemaDiff.ColumnDefaultValueMismatch();
+                        EstivateReconciliation.ColumnDefaultValueMismatch defaultValueMismatch = new EstivateReconciliation.ColumnDefaultValueMismatch();
                         defaultValueMismatch.tableName = tableName;
                         defaultValueMismatch.attributeName = entityField.getName();
                         defaultValueMismatch.entityDefaultValue = entityDefault;
@@ -238,7 +238,7 @@ public class ReconciliationManager {
                 // 2. Database column name (if findEntityName returned null) -> use as attribute name (no entity field exists)
                 String attributeName = dbField.getName();
                 
-                ISchemaDiff.ColumnMissing columnMissing = new ISchemaDiff.ColumnMissing();
+                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing();
                 columnMissing.tableName = tableName;
                 columnMissing.attributeName = attributeName;
                 diffs.add(columnMissing);
@@ -253,8 +253,8 @@ public class ReconciliationManager {
 
     public static final Comparator<Object> handlesDiffComparator = (objectA, objectB) -> {
 
-        HandlesDiff a = objectA == null ? null : objectA.getClass().getAnnotation(HandlesDiff.class);
-        HandlesDiff b = objectB == null ? null : objectB.getClass().getAnnotation(HandlesDiff.class);
+        ReconciliationScope a = objectA == null ? null : objectA.getClass().getAnnotation(ReconciliationScope.class);
+        ReconciliationScope b = objectB == null ? null : objectB.getClass().getAnnotation(ReconciliationScope.class);
 
         return or(
             compare(a == null, b == null),
@@ -318,7 +318,7 @@ public class ReconciliationManager {
      * Checks if a class has @HandlesDiff annotation that matches the given diff
      */
     private boolean hasMatchingHandlesDiff(Class<?> candidateClass, String diffTable, String diffColumn) {
-        HandlesDiff annotation = candidateClass.getAnnotation(HandlesDiff.class);
+        ReconciliationScope annotation = candidateClass.getAnnotation(ReconciliationScope.class);
         if (annotation == null) {
             return false;
         }
@@ -400,26 +400,26 @@ public class ReconciliationManager {
      */
     private boolean tryApplyResolver(Object resolver, SchemaDiff diff) {
         try {
-            if (diff instanceof ISchemaDiff.TableMissing && resolver instanceof ISchemaDiff.TableMissingResolver) {
-                return ((ISchemaDiff.TableMissingResolver) resolver).resolve(context, (ISchemaDiff.TableMissing) diff);
+            if (diff instanceof EstivateReconciliation.TableMissing && resolver instanceof EstivateReconciliation.ITableMissingResolver) {
+                return ((EstivateReconciliation.ITableMissingResolver) resolver).resolve(context, (EstivateReconciliation.TableMissing) diff);
             }
-            if (diff instanceof ISchemaDiff.ColumnMissing && resolver instanceof ISchemaDiff.ColumnMissingResolver) {
-                return ((ISchemaDiff.ColumnMissingResolver) resolver).resolve(context, (ISchemaDiff.ColumnMissing) diff);
+            if (diff instanceof EstivateReconciliation.ColumnMissing && resolver instanceof EstivateReconciliation.IColumnMissingResolver) {
+                return ((EstivateReconciliation.IColumnMissingResolver) resolver).resolve(context, (EstivateReconciliation.ColumnMissing) diff);
             }
-            if (diff instanceof ISchemaDiff.ColumnTypeMismatch && resolver instanceof ISchemaDiff.ColumnTypeMismatchResolver) {
-                return ((ISchemaDiff.ColumnTypeMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnTypeMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ColumnTypeMismatch && resolver instanceof EstivateReconciliation.IColumnTypeMismatchResolver) {
+                return ((EstivateReconciliation.IColumnTypeMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnTypeMismatch) diff);
             }
-            if (diff instanceof ISchemaDiff.ColumnLengthMismatch && resolver instanceof ISchemaDiff.ColumnLengthMismatchResolver) {
-                return ((ISchemaDiff.ColumnLengthMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnLengthMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ColumnLengthMismatch && resolver instanceof EstivateReconciliation.IColumnLengthMismatchResolver) {
+                return ((EstivateReconciliation.IColumnLengthMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnLengthMismatch) diff);
             }
-            if (diff instanceof ISchemaDiff.ColumnDefaultValueMismatch && resolver instanceof ISchemaDiff.ColumnDefaultValueMismatchResolver) {
-                return ((ISchemaDiff.ColumnDefaultValueMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnDefaultValueMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ColumnDefaultValueMismatch && resolver instanceof EstivateReconciliation.IColumnDefaultValueMismatchResolver) {
+                return ((EstivateReconciliation.IColumnDefaultValueMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnDefaultValueMismatch) diff);
             }
-            if (diff instanceof ISchemaDiff.ColumnNullableMismatch && resolver instanceof ISchemaDiff.ColumnNullableMismatchResolver) {
-                return ((ISchemaDiff.ColumnNullableMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnNullableMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ColumnNullableMismatch && resolver instanceof EstivateReconciliation.IColumnNullableMismatchResolver) {
+                return ((EstivateReconciliation.IColumnNullableMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnNullableMismatch) diff);
             }
-            if (diff instanceof ISchemaDiff.ColumnEncodingMismatch && resolver instanceof ISchemaDiff.ColumnEncodingMismatchResolver) {
-                return ((ISchemaDiff.ColumnEncodingMismatchResolver) resolver).resolve(context, (ISchemaDiff.ColumnEncodingMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ColumnEncodingMismatch && resolver instanceof EstivateReconciliation.IColumnEncodingMismatchResolver) {
+                return ((EstivateReconciliation.IColumnEncodingMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnEncodingMismatch) diff);
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
