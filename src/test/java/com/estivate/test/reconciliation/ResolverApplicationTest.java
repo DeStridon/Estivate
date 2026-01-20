@@ -74,10 +74,9 @@ public class ResolverApplicationTest {
         public boolean shouldSucceed = true;
 
         @Override
-        public boolean resolve(Context context, ColumnMissing diff) {
+        public void resolve(Context context, ColumnMissing diff) {
             wasCalled = true;
             lastDiff = diff;
-            return shouldSucceed;
         }
     }
 
@@ -91,10 +90,9 @@ public class ResolverApplicationTest {
         public boolean shouldSucceed = true;
 
         @Override
-        public boolean resolve(Context context, ColumnMissing diff) {
+        public void resolve(Context context, ColumnMissing diff) {
             wasCalled = true;
             lastDiff = diff;
-            return shouldSucceed;
         }
     }
 
@@ -108,10 +106,9 @@ public class ResolverApplicationTest {
         public boolean shouldSucceed = true;
 
         @Override
-        public boolean resolve(Context context, ColumnMissing diff) {
+        public void resolve(Context context, ColumnMissing diff) {
             wasCalled = true;
             lastDiff = diff;
-            return shouldSucceed;
         }
     }
 
@@ -125,10 +122,9 @@ public class ResolverApplicationTest {
         public boolean shouldSucceed = true;
 
         @Override
-        public boolean resolve(Context context, ColumnDefinitionMismatch diff) {
+        public void resolve(Context context, ColumnDefinitionMismatch diff) {
             wasCalled = true;
             lastDiff = diff;
-            return shouldSucceed;
         }
     }
 
@@ -139,9 +135,8 @@ public class ResolverApplicationTest {
         public boolean wasCalled = false;
 
         @Override
-        public boolean resolve(Context context, ColumnMissing diff) {
+        public void resolve(Context context, ColumnMissing diff) {
             wasCalled = true;
-            return true;
         }
     }
 
@@ -153,9 +148,8 @@ public class ResolverApplicationTest {
         public int callCount = 0;
 
         @Override
-        public boolean resolve(Context context, ColumnMissing diff) {
+        public void resolve(Context context, ColumnMissing diff) {
             callCount++;
-            return false;
         }
     }
 
@@ -167,7 +161,7 @@ public class ResolverApplicationTest {
         public boolean wasCalled = false;
 
         @Override
-        public boolean resolve(Context context, ColumnMissing diff) {
+        public void resolve(Context context, ColumnMissing diff) {
             wasCalled = true;
             throw new RuntimeException("Resolver error");
         }

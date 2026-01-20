@@ -81,7 +81,7 @@ public class ManagerInterceptor<T> {
         //     return context.fetchExists(query);
         // }
         else if(methodName.startsWith("findBy")){
-            SelectQuery<?> query = getQuery(entityClass, methodName.substring(5), args);
+            SelectQuery<?> query = getQuery(entityClass, methodName.substring(6), args);
             if(method.getReturnType().equals(List.class)){
                 return context.fetchAsList(query, entityClass);
             }
@@ -123,7 +123,11 @@ public class ManagerInterceptor<T> {
             		.filter(m -> methodName.startsWith(m, fieldCursor))
                     .map(x -> x.substring(0, 1).toLowerCase() + x.substring(1))
                     .findFirst()
-                    .orElseThrow(() -> new Exception("No field match"));
+                    .orElse(null);
+
+            if(field == null){
+                throw new Exception("No field match for " + methodName.substring(i));
+            }
             
             i += field.length();
 

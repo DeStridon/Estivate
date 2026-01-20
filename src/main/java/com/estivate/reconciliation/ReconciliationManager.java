@@ -426,13 +426,13 @@ public class ReconciliationManager {
     private boolean tryApplyResolver(Object resolver, SchemaDiff diff) {
         try {
             if (diff instanceof EstivateReconciliation.TableMissing && resolver instanceof EstivateReconciliation.ITableMissingResolver) {
-                return ((EstivateReconciliation.ITableMissingResolver) resolver).resolve(context, (EstivateReconciliation.TableMissing) diff);
+                ((EstivateReconciliation.ITableMissingResolver) resolver).resolve(context, (EstivateReconciliation.TableMissing) diff);
             }
             if (diff instanceof EstivateReconciliation.ColumnMissing && resolver instanceof EstivateReconciliation.IColumnMissingResolver) {
-                return ((EstivateReconciliation.IColumnMissingResolver) resolver).resolve(context, (EstivateReconciliation.ColumnMissing) diff);
+                ((EstivateReconciliation.IColumnMissingResolver) resolver).resolve(context, (EstivateReconciliation.ColumnMissing) diff);
             }
             if (diff instanceof EstivateReconciliation.ColumnDefinitionMismatch && resolver instanceof EstivateReconciliation.IColumnDefinitionMismatchResolver) {
-                return ((EstivateReconciliation.IColumnDefinitionMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnDefinitionMismatch) diff);
+                ((EstivateReconciliation.IColumnDefinitionMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnDefinitionMismatch) diff);
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());

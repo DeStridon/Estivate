@@ -79,9 +79,9 @@ public class EstivateReconciliation {
     }
 
 
-    public static interface ITableMissingResolver { public boolean resolve(Context context, TableMissing diff); }
-    public static interface IColumnMissingResolver { public boolean resolve(Context context, ColumnMissing diff); }
-    public static interface IColumnDefinitionMismatchResolver { public boolean resolve(Context context, ColumnDefinitionMismatch diff); }
+    public static interface ITableMissingResolver { public void resolve(Context context, TableMissing diff); }
+    public static interface IColumnMissingResolver { public void resolve(Context context, ColumnMissing diff); }
+    public static interface IColumnDefinitionMismatchResolver { public void resolve(Context context, ColumnDefinitionMismatch diff); }
 
     public static interface IReconciliationResolver extends 
                             ITableMissingResolver, 
