@@ -1,5 +1,6 @@
 package com.estivate.manager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -62,6 +63,45 @@ public class ManagerInterceptor<T> {
         Type genericSuperclass = managerClass.getGenericSuperclass();
         Type entityType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
         Class<T> entityClass = (Class<T>) entityType;
+        
+        if(methodName.startsWith("findAllBy")){
+            SelectQuery<?> query = getQuery(entityClass, methodName.substring(9), args);
+            return context.fetchAsList(query, entityClass);
+        }
+        else if(methodName.startsWith("findOneBy")){
+            SelectQuery<?> query = getQuery(entityClass, methodName.substring(9), args);
+            return context.fetchAsSingle(query, entityClass);
+        }
+        else if(methodName.startsWith("countBy")){
+            SelectQuery<?> query = getQuery(entityClass, methodName.substring(7), args);
+            return context.fetchCountAll(query);
+        }
+        // else if(methodName.startsWith("existsBy")){
+        //     SelectQuery<?> query = getQuery(entityClass, methodName.substring(8), args);
+        //     return context.fetchExists(query);
+        // }
+        else if(methodName.startsWith("findBy")){
+            SelectQuery<?> query = getQuery(entityClass, methodName.substring(5), args);
+            if(method.getReturnType().equals(List.class)){
+                return context.fetchAsList(query, entityClass);
+            }
+            else if(method.getReturnType().equals(entityClass)){
+                return context.fetchAsSingle(query, entityClass);
+            }
+            else{
+                throw new Exception("Unsupported return type: " + method.getReturnType());
+            }
+        }
+        else{
+            throw new Exception("Unsupported method name: " + methodName);
+        }
+        
+
+    }
+
+    private SelectQuery<?> getQuery(Class<T> entityClass, String methodName, Object[] args) throws Exception{
+
+        int argCounter = 0;
 
         List<String> criterionList = getMethods().stream()
             .map(x -> x.substring(0, 1).toUpperCase() + x.substring(1))
@@ -73,20 +113,9 @@ public class ManagerInterceptor<T> {
     		.map(x -> x.substring(0, 1).toUpperCase() + x.substring(1))
     		.sorted((a, b) -> Integer.compare(b.length(), a.length())) 
             .collect(Collectors.toList());
-        
+
         SelectQuery<?> query = Estivate.selectQuery(entityClass);
-
-
-
-        int argCounter = 0;
-        int i = 0;
-        
-        if(!methodName.startsWith("findBy")){
-            throw new Exception("Method name must start with findBy");
-        }
-
-        
-        for(i = 6; i < methodName.length();){
+        for(int i = 0; i < methodName.length();){
 
             // match field
             final int fieldCursor = i;
@@ -140,21 +169,7 @@ public class ManagerInterceptor<T> {
             i += 3;
                 
         }
-
-
-        if(method.getReturnType().equals(List.class)){
-            return context.fetchAsList(query, entityClass);
-        }
-        // else if(method.getReturnType().equals(Long.class) || method.getReturnType().equals(Integer.class)){
-        //    return context.fetchCount(query);
-        // }
-        else if(method.getReturnType().equals(entityClass)){
-            return context.fetchAsSingle(query, entityClass);
-        }
-        else{
-            throw new Exception("Unsupported return type: " + method.getReturnType());
-        }
-
+        return query;
     }
 
 

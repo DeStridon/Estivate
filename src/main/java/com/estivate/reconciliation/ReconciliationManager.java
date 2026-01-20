@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
+import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.EstivateReconciliation.SchemaDiff;
 import com.estivate.util.FieldUtils;
 
@@ -164,7 +164,7 @@ public class ReconciliationManager {
 
             if (dbField == null) {
                 // Column missing in database - populate from entity field
-                EstivateReconciliation.ColumnDefinition columnDef = new EstivateReconciliation.ColumnDefinition(
+                AlterQuery.ColumnDefinition columnDef = new AlterQuery.ColumnDefinition(
                     entityField.getType(),
                     entityField.getLength(),
                     entityField.isNullable(),
@@ -198,7 +198,7 @@ public class ReconciliationManager {
                 }
                 
                 if (hasTypeMismatch || hasNullableMismatch || hasLengthMismatch || hasDefaultMismatch) {
-                    EstivateReconciliation.ColumnDefinition entityDef = new EstivateReconciliation.ColumnDefinition(
+                    AlterQuery.ColumnDefinition entityDef = new AlterQuery.ColumnDefinition(
                         entityField.getType(),
                         entityField.getLength(),
                         entityField.isNullable(),
@@ -208,7 +208,7 @@ public class ReconciliationManager {
                         null  // collation
                     );
                     
-                    EstivateReconciliation.ColumnDefinition dbDef = new EstivateReconciliation.ColumnDefinition(
+                    AlterQuery.ColumnDefinition dbDef = new AlterQuery.ColumnDefinition(
                         dbField.getType(),
                         dbField.getLength(),
                         dbField.isNullable(),
@@ -251,7 +251,7 @@ public class ReconciliationManager {
                 // 2. Database column name (if findEntityName returned null) -> use as attribute name (no entity field exists)
                 String attributeName = dbField.getName();
                 
-                EstivateReconciliation.ColumnDefinition columnDef = new EstivateReconciliation.ColumnDefinition(
+                AlterQuery.ColumnDefinition columnDef = new AlterQuery.ColumnDefinition(
                     dbField.getType(),
                     dbField.getLength(),
                     dbField.isNullable(),

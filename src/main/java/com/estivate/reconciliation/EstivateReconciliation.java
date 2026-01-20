@@ -1,6 +1,7 @@
 package com.estivate.reconciliation;
 
 import com.estivate.context.Context;
+import com.estivate.query.AlterQuery;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -16,68 +17,13 @@ public class EstivateReconciliation {
         public String tableName;
     }
 
-    /**
-     * Column definition containing type, constraints, and encoding information
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ColumnDefinition {
-        /** SQL type (e.g., "VARCHAR", "INT", "BIGINT") */
-        public String columnType;
-        
-        /** Column length (e.g., VARCHAR(255) -> 255) */
-        public Integer length;
-        
-        /** Whether the column is nullable */
-        public Boolean nullable;
-        
-        /** Default value if any */
-        public String defaultValue;
-        
-        /** Whether the column is auto-increment */
-        public Boolean autoIncrement;
-        
-        /** Character set (e.g., "utf8mb4", "utf8") */
-        public String charset;
-        
-        /** Collation (e.g., "utf8mb4_unicode_ci") */
-        public String collation;
-        
-        /**
-         * Builds the full SQL column type string including length if applicable
-         * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
-         */
-        public String getFullColumnType() {
-            if (columnType == null) {
-                return null;
-            }
-            
-            if (length != null && needsLength(columnType)) {
-                return columnType + "(" + length + ")";
-            }
-            
-            return columnType;
-        }
-        
-        /**
-         * Checks if a column type typically requires a length specification
-         */
-        private boolean needsLength(String type) {
-            if (type == null) return false;
-            String upper = type.toUpperCase();
-            return upper.contains("VARCHAR") || 
-                   upper.contains("CHAR") || 
-                   upper.contains("DECIMAL") ||
-                   upper.contains("NUMERIC");
-        }
-    }
 
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ColumnMissing implements SchemaDiff {
         public String tableName;
         public String attributeName;
-        public ColumnDefinition columnDefinition;
+        public AlterQuery.ColumnDefinition columnDefinition;
         
         /**
          * Constructor with basic information (no column definition)
@@ -98,8 +44,8 @@ public class EstivateReconciliation {
     public static class ColumnDefinitionMismatch implements SchemaDiff {
         public String tableName;
         public String attributeName;
-        public ColumnDefinition entityDefinition;
-        public ColumnDefinition databaseDefinition;
+        public AlterQuery.ColumnDefinition entityDefinition;
+        public AlterQuery.ColumnDefinition databaseDefinition;
         
         public boolean hasTypeMismatch() {
             if (entityDefinition == null || databaseDefinition == null) return false;

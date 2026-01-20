@@ -8,10 +8,68 @@ import com.estivate.Entity;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
+
+    /**
+     * Column definition containing type, constraints, and encoding information
+     */
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ColumnDefinition {
+        /** SQL type (e.g., "VARCHAR", "INT", "BIGINT") */
+        public String columnType;
+        
+        /** Column length (e.g., VARCHAR(255) -> 255) */
+        public Integer length;
+        
+        /** Whether the column is nullable */
+        public Boolean nullable;
+        
+        /** Default value if any */
+        public String defaultValue;
+        
+        /** Whether the column is auto-increment */
+        public Boolean autoIncrement;
+        
+        /** Character set (e.g., "utf8mb4", "utf8") */
+        public String charset;
+        
+        /** Collation (e.g., "utf8mb4_unicode_ci") */
+        public String collation;
+        
+        /**
+         * Builds the full SQL column type string including length if applicable
+         * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
+         */
+        public String getFullColumnType() {
+            if (columnType == null) {
+                return null;
+            }
+            
+            if (length != null && needsLength(columnType)) {
+                return columnType + "(" + length + ")";
+            }
+            
+            return columnType;
+        }
+        
+        /**
+         * Checks if a column type typically requires a length specification
+         */
+        private boolean needsLength(String type) {
+            if (type == null) return false;
+            String upper = type.toUpperCase();
+            return upper.contains("VARCHAR") || 
+                   upper.contains("CHAR") || 
+                   upper.contains("DECIMAL") ||
+                   upper.contains("NUMERIC");
+        }
+    }
 
     /**
      * Base interface for ALTER TABLE operations
@@ -63,38 +121,41 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
     @Getter
     public static class ModifyColumn implements Operation {
         private final String columnName;
-        private final String columnType;
-        private final String charset;
-        private final String collation;
-        private final Boolean nullable;
+        private final ColumnDefinition columnDefinition;
 
         public ModifyColumn(String columnName, String columnType) {
-            this(columnName, columnType, null, null, null);
+            this(columnName, new ColumnDefinition(columnType, null, null, null, null, null, null));
         }
 
         public ModifyColumn(String columnName, String columnType, String charset, String collation, Boolean nullable) {
+            this(columnName, new ColumnDefinition(columnType, null, nullable, null, null, charset, collation));
+        }
+
+        public ModifyColumn(String columnName, ColumnDefinition columnDefinition) {
             this.columnName = columnName;
-            this.columnType = columnType;
-            this.charset = charset;
-            this.collation = collation;
-            this.nullable = nullable;
+            this.columnDefinition = columnDefinition;
         }
 
         @Override
         public void render(Context context, Statement statement) {
             statement.appendQuery("MODIFY COLUMN");
             statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-            statement.appendQuery(columnType);
-            if (charset != null) {
+            String columnType = columnDefinition != null && columnDefinition.columnType != null 
+                ? columnDefinition.getFullColumnType() 
+                : (columnDefinition != null ? columnDefinition.columnType : null);
+            if (columnType != null) {
+                statement.appendQuery(columnType);
+            }
+            if (columnDefinition != null && columnDefinition.charset != null) {
                 statement.appendQuery("CHARACTER SET");
-                statement.appendQuery(charset);
+                statement.appendQuery(columnDefinition.charset);
             }
-            if (collation != null) {
+            if (columnDefinition != null && columnDefinition.collation != null) {
                 statement.appendQuery("COLLATE");
-                statement.appendQuery(collation);
+                statement.appendQuery(columnDefinition.collation);
             }
-            if (nullable != null) {
-                statement.appendQuery(nullable ? "NULL" : "NOT NULL");
+            if (columnDefinition != null && columnDefinition.nullable != null) {
+                statement.appendQuery(columnDefinition.nullable ? "NULL" : "NOT NULL");
             }
         }
     }
@@ -210,6 +271,7 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
     public AlterQuery<E> dropColumn(String columnName) { return addOperation(new DropColumn(columnName)); }
     public AlterQuery<E> modifyColumn(String columnName, String columnType) { return addOperation(new ModifyColumn(columnName, columnType)); }
     public AlterQuery<E> modifyColumn(String columnName, String columnType, String charset, String collation, Boolean nullable) { return addOperation(new ModifyColumn(columnName, columnType, charset, collation, nullable)); }
+    public AlterQuery<E> modifyColumn(String columnName, ColumnDefinition columnDefinition) { return addOperation(new ModifyColumn(columnName, columnDefinition)); }
     public AlterQuery<E> changeColumn(String columnName, String newColumnName, String columnType) { return addOperation(new ChangeColumn(columnName, newColumnName, columnType)); }
     public AlterQuery<E> renameColumn(String columnName, String newColumnName) { return addOperation(new RenameColumn(columnName, newColumnName)); }
     public AlterQuery<E> addIndex(String indexName, List<String> columns) { return addOperation(new AddIndex(indexName, columns)); }
