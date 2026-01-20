@@ -15,11 +15,8 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.reconciliation.ReconciliationScope;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnDefaultValueMismatch;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnLengthMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnDefinitionMismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ColumnMissing;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnNullableMismatch;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnTypeMismatch;
 import com.estivate.reconciliation.EstivateReconciliation.SchemaDiff;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.test.DatabaseGenerator;
@@ -37,10 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for ReconciliationManager covering all SchemaDiff types:
  * - TableMissing (implicitly tested when table doesn't exist)
  * - ColumnMissing (column in entity but not in DB, or column in DB but not in entity)
- * - ColumnTypeMismatch
- * - ColumnLengthMismatch
- * - ColumnNullableMismatch
- * - ColumnDefaultValueMismatch
+ * - ColumnDefinitionMismatch (type, length, nullable, default value, charset, collation)
  */
 public class ReconciliationManagerTest {
 
@@ -189,15 +183,16 @@ public class ReconciliationManagerTest {
         List<SchemaDiff> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect type mismatch");
         
-        List<ColumnTypeMismatch> typeMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnTypeMismatch)
-            .map(d -> (ColumnTypeMismatch) d)
+        List<ColumnDefinitionMismatch> typeMismatches = diffs.stream()
+            .filter(d -> d instanceof ColumnDefinitionMismatch)
+            .map(d -> (ColumnDefinitionMismatch) d)
+            .filter(ColumnDefinitionMismatch::hasTypeMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, typeMismatches.size(), "Should detect one type mismatch");
         assertEquals("age", typeMismatches.get(0).attributeName, "Should detect type mismatch for age column");
-        assertEquals("INT", typeMismatches.get(0).entityType, "Entity expects INT");
-        assertEquals("BIGINT", typeMismatches.get(0).databaseType, "Database has BIGINT");
+        assertEquals("INT", typeMismatches.get(0).entityDefinition.columnType, "Entity expects INT");
+        assertEquals("BIGINT", typeMismatches.get(0).databaseDefinition.columnType, "Database has BIGINT");
     }
 
     @Test
@@ -215,15 +210,16 @@ public class ReconciliationManagerTest {
         List<SchemaDiff> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect length mismatch");
         
-        List<ColumnLengthMismatch> lengthMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnLengthMismatch)
-            .map(d -> (ColumnLengthMismatch) d)
+        List<ColumnDefinitionMismatch> lengthMismatches = diffs.stream()
+            .filter(d -> d instanceof ColumnDefinitionMismatch)
+            .map(d -> (ColumnDefinitionMismatch) d)
+            .filter(ColumnDefinitionMismatch::hasLengthMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, lengthMismatches.size(), "Should detect one length mismatch");
         assertEquals("description", lengthMismatches.get(0).attributeName, "Should detect length mismatch for description column");
-        assertEquals(100, lengthMismatches.get(0).entityLength, "Entity expects length 100");
-        assertEquals(200, lengthMismatches.get(0).databaseLength, "Database has length 200");
+        assertEquals(100, (int) lengthMismatches.get(0).entityDefinition.length, "Entity expects length 100");
+        assertEquals(200, (int) lengthMismatches.get(0).databaseDefinition.length, "Database has length 200");
     }
 
     @Test
@@ -241,15 +237,16 @@ public class ReconciliationManagerTest {
         List<SchemaDiff> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect nullable mismatch");
         
-        List<ColumnNullableMismatch> nullableMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnNullableMismatch)
-            .map(d -> (ColumnNullableMismatch) d)
+        List<ColumnDefinitionMismatch> nullableMismatches = diffs.stream()
+            .filter(d -> d instanceof ColumnDefinitionMismatch)
+            .map(d -> (ColumnDefinitionMismatch) d)
+            .filter(ColumnDefinitionMismatch::hasNullableMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, nullableMismatches.size(), "Should detect one nullable mismatch");
         assertEquals("name", nullableMismatches.get(0).attributeName, "Should detect nullable mismatch for name column");
-        assertTrue(nullableMismatches.get(0).entityNullable, "Entity allows null");
-        assertFalse(nullableMismatches.get(0).databaseNullable, "Database does not allow null");
+        assertTrue(nullableMismatches.get(0).entityDefinition.nullable, "Entity allows null");
+        assertFalse(nullableMismatches.get(0).databaseDefinition.nullable, "Database does not allow null");
     }
 
     @Test
@@ -271,18 +268,19 @@ public class ReconciliationManagerTest {
         List<SchemaDiff> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect nullable mismatch");
         
-        List<ColumnNullableMismatch> nullableMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnNullableMismatch)
-            .map(d -> (ColumnNullableMismatch) d)
+        List<ColumnDefinitionMismatch> nullableMismatches = diffs.stream()
+            .filter(d -> d instanceof ColumnDefinitionMismatch)
+            .map(d -> (ColumnDefinitionMismatch) d)
+            .filter(ColumnDefinitionMismatch::hasNullableMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, nullableMismatches.size(), "Should detect one nullable mismatch");
         assertEquals("email", 
             nullableMismatches.get(0).attributeName, 
             "Should detect nullable mismatch for email column");
-        assertFalse(nullableMismatches.get(0).entityNullable, 
+        assertFalse(nullableMismatches.get(0).entityDefinition.nullable, 
             "Entity requires NOT NULL");
-        assertTrue(nullableMismatches.get(0).databaseNullable, 
+        assertTrue(nullableMismatches.get(0).databaseDefinition.nullable, 
             "Database allows NULL");
     }
 
@@ -302,9 +300,10 @@ public class ReconciliationManagerTest {
         
         // Note: Default value mismatch detection depends on entity annotations
         // If entity doesn't specify a default, but DB does, it should be detected
-        List<ColumnDefaultValueMismatch> defaultValueMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefaultValueMismatch)
-            .map(d -> (ColumnDefaultValueMismatch) d)
+        List<ColumnDefinitionMismatch> defaultValueMismatches = diffs.stream()
+            .filter(d -> d instanceof ColumnDefinitionMismatch)
+            .map(d -> (ColumnDefinitionMismatch) d)
+            .filter(ColumnDefinitionMismatch::hasDefaultValueMismatch)
             .collect(Collectors.toList());
         
         // This test may or may not detect the mismatch depending on implementation
@@ -337,11 +336,17 @@ public class ReconciliationManagerTest {
         List<SchemaDiff> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect multiple differences");
         
-        // Verify we have at least one of each type
+        // Verify we have at least one missing column and definition mismatches
         long missingCount = diffs.stream().filter(d -> d instanceof ColumnMissing).count();
-        long typeMismatchCount = diffs.stream().filter(d -> d instanceof ColumnTypeMismatch).count();
-        long lengthMismatchCount = diffs.stream().filter(d -> d instanceof ColumnLengthMismatch).count();
-        long nullableMismatchCount = diffs.stream().filter(d -> d instanceof ColumnNullableMismatch).count();
+        
+        List<ColumnDefinitionMismatch> definitionMismatches = diffs.stream()
+            .filter(d -> d instanceof ColumnDefinitionMismatch)
+            .map(d -> (ColumnDefinitionMismatch) d)
+            .collect(Collectors.toList());
+        
+        long typeMismatchCount = definitionMismatches.stream().filter(ColumnDefinitionMismatch::hasTypeMismatch).count();
+        long lengthMismatchCount = definitionMismatches.stream().filter(ColumnDefinitionMismatch::hasLengthMismatch).count();
+        long nullableMismatchCount = definitionMismatches.stream().filter(ColumnDefinitionMismatch::hasNullableMismatch).count();
         
         assertTrue(missingCount >= 1, "Should detect at least one missing column");
         assertTrue(typeMismatchCount >= 1, "Should detect at least one type mismatch");
@@ -563,8 +568,8 @@ public class ReconciliationManagerTest {
         List<Object> result11 = manager.findResolver(diff11, Arrays.asList(new ColumnMissingResolverTableAndColumn()));
         assertTrue(result11.isEmpty(), "Should not match when diff column is null");
 
-        // Test 12: With TypeMismatch diff
-        ColumnTypeMismatch diff12 = new ColumnTypeMismatch("users", "email", "VARCHAR", "TEXT");
+        // Test 12: With ColumnDefinitionMismatch diff
+        ColumnDefinitionMismatch diff12 = new ColumnDefinitionMismatch("users", "email", null, null);
         List<Object> result12 = manager.findResolver(diff12, Arrays.asList(new ColumnMissingResolverTableAndColumn(), new ColumnMissingResolverDifferentTable()));
         assertEquals(1, result12.size(), "Should find only the resolver with matching table/column");
         assertTrue(result12.get(0) instanceof ColumnMissingResolverTableAndColumn, "Should find ColumnMissingResolverTableAndColumn");

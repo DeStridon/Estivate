@@ -14,10 +14,8 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.reconciliation.ReconciliationScope;
 import com.estivate.reconciliation.EstivateReconciliation;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnLengthMismatch;
+import com.estivate.reconciliation.EstivateReconciliation.ColumnDefinitionMismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ColumnMissing;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnNullableMismatch;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnTypeMismatch;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.ReconciliationManager.ApplyResolversResult;
 import com.estivate.test.DatabaseGenerator;
@@ -118,50 +116,16 @@ public class ResolverApplicationTest {
     }
 
     /**
-     * Generic type mismatch resolver
+     * Generic column definition mismatch resolver (handles type, length, nullable, etc.)
      */
     @ReconciliationScope(table = "", column = "")
-    public static class GenericTypeMismatchResolver implements EstivateReconciliation.IColumnTypeMismatchResolver {
+    public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IColumnDefinitionMismatchResolver {
         public boolean wasCalled = false;
-        public ColumnTypeMismatch lastDiff = null;
+        public ColumnDefinitionMismatch lastDiff = null;
         public boolean shouldSucceed = true;
 
         @Override
-        public boolean resolve(Context context, ColumnTypeMismatch diff) {
-            wasCalled = true;
-            lastDiff = diff;
-            return shouldSucceed;
-        }
-    }
-
-    /**
-     * Generic nullable mismatch resolver
-     */
-    @ReconciliationScope(table = "", column = "")
-    public static class GenericNullableMismatchResolver implements EstivateReconciliation.IColumnNullableMismatchResolver {
-        public boolean wasCalled = false;
-        public ColumnNullableMismatch lastDiff = null;
-        public boolean shouldSucceed = true;
-
-        @Override
-        public boolean resolve(Context context, ColumnNullableMismatch diff) {
-            wasCalled = true;
-            lastDiff = diff;
-            return shouldSucceed;
-        }
-    }
-
-    /**
-     * Generic length mismatch resolver
-     */
-    @ReconciliationScope(table = "", column = "")
-    public static class GenericLengthMismatchResolver implements EstivateReconciliation.IColumnLengthMismatchResolver {
-        public boolean wasCalled = false;
-        public ColumnLengthMismatch lastDiff = null;
-        public boolean shouldSucceed = true;
-
-        @Override
-        public boolean resolve(Context context, ColumnLengthMismatch diff) {
+        public boolean resolve(Context context, ColumnDefinitionMismatch diff) {
             wasCalled = true;
             lastDiff = diff;
             return shouldSucceed;
@@ -322,16 +286,16 @@ public class ResolverApplicationTest {
 
         ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
-        GenericTypeMismatchResolver typeResolver = new GenericTypeMismatchResolver();
+        GenericDefinitionMismatchResolver definitionResolver = new GenericDefinitionMismatchResolver();
 
-        ApplyResolversResult result = manager.applyResolvers(Arrays.asList(missingResolver, typeResolver));
+        ApplyResolversResult result = manager.applyResolvers(Arrays.asList(missingResolver, definitionResolver));
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
         assertEquals(2, result.totalDiffs(), "Should have 2 total diffs");
         assertEquals(2, result.getResolved().size(), "Should have 2 resolved diffs");
         assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
         assertTrue(missingResolver.wasCalled, "Missing resolver should be called");
-        assertTrue(typeResolver.wasCalled, "Type resolver should be called");
+        assertTrue(definitionResolver.wasCalled, "Definition resolver should be called");
     }
 
     @Test
@@ -342,7 +306,7 @@ public class ResolverApplicationTest {
         context.changeColumn(ResolverTestEntity.class, "age", "BIGINT");
 
         ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
-        // Only provide resolver for ColumnMissing, not for TypeMismatch
+        // Only provide resolver for ColumnMissing, not for ColumnDefinitionMismatch
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(missingResolver));
@@ -355,8 +319,8 @@ public class ResolverApplicationTest {
         // Verify the correct diff types were resolved/unresolved
         assertTrue(result.getResolved().stream().anyMatch(d -> d instanceof ColumnMissing), 
             "ColumnMissing should be resolved");
-        assertTrue(result.getUnresolved().stream().anyMatch(d -> d instanceof ColumnTypeMismatch), 
-            "ColumnTypeMismatch should be unresolved");
+        assertTrue(result.getUnresolved().stream().anyMatch(d -> d instanceof ColumnDefinitionMismatch), 
+            "ColumnDefinitionMismatch should be unresolved");
     }
 
     @Test
@@ -411,18 +375,14 @@ public class ResolverApplicationTest {
 
         ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
-        GenericTypeMismatchResolver typeResolver = new GenericTypeMismatchResolver();
-        GenericLengthMismatchResolver lengthResolver = new GenericLengthMismatchResolver();
-        GenericNullableMismatchResolver nullableResolver = new GenericNullableMismatchResolver();
+        GenericDefinitionMismatchResolver definitionResolver = new GenericDefinitionMismatchResolver();
 
         ApplyResolversResult result = manager.applyResolvers(
-            Arrays.asList(missingResolver, typeResolver, lengthResolver, nullableResolver));
+            Arrays.asList(missingResolver, definitionResolver));
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved with all resolver types");
         assertTrue(missingResolver.wasCalled, "Missing resolver should be called");
-        assertTrue(typeResolver.wasCalled, "Type resolver should be called");
-        assertTrue(lengthResolver.wasCalled, "Length resolver should be called");
-        assertTrue(nullableResolver.wasCalled, "Nullable resolver should be called");
+        assertTrue(definitionResolver.wasCalled, "Definition resolver should be called");
     }
 
     @Test

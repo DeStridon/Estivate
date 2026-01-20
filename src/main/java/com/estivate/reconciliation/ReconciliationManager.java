@@ -71,11 +71,16 @@ public class ReconciliationManager {
         Set<Field> fields = FieldUtils.getEntityFields(entity);
         
         for (Field field : fields) {
+            String sqlType = javaTypeToSqlType(field);
+            Integer length = extractLengthFromField(field, sqlType);
+            
             TableField tableField = TableField.builder()
                 .name(field.getName())
-                .type(javaTypeToSqlType(field))
+                .type(sqlType)
                 .nullable(isNullable(field))
                 .autoIncrement(isAutoIncrement(field))
+                .length(length)
+                .defaultValue(extractDefaultValue(field))
                 .build();
 
             model.getFields().add(tableField);
@@ -158,60 +163,68 @@ public class ReconciliationManager {
             }
 
             if (dbField == null) {
-                // Column missing in database
-                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing();
-                columnMissing.tableName = tableName;
-                columnMissing.attributeName = entityField.getName();
+                // Column missing in database - populate from entity field
+                EstivateReconciliation.ColumnDefinition columnDef = new EstivateReconciliation.ColumnDefinition(
+                    entityField.getType(),
+                    entityField.getLength(),
+                    entityField.isNullable(),
+                    entityField.getDefaultValue(),
+                    entityField.isAutoIncrement(),
+                    null, // charset not available from entity field
+                    null  // collation not available from entity field
+                );
+                
+                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing(
+                    tableName,
+                    entityField.getName(),
+                    columnDef
+                );
                 diffs.add(columnMissing);
             } else {
-                // Check type mismatch
-                if (!entityField.typeMatches(dbField.getType())) {
-                    EstivateReconciliation.ColumnTypeMismatch typeMismatch = new EstivateReconciliation.ColumnTypeMismatch();
-                    typeMismatch.tableName = tableName;
-                    typeMismatch.attributeName = entityField.getName();
-                    typeMismatch.entityType = entityField.getType();
-                    typeMismatch.databaseType = dbField.getType();
-                    diffs.add(typeMismatch);
-                }
+                // Check for any column definition mismatches
+                boolean hasTypeMismatch = !entityField.typeMatches(dbField.getType());
+                boolean hasNullableMismatch = entityField.isNullable() != dbField.isNullable();
+                boolean hasLengthMismatch = entityField.getLength() != null && dbField.getLength() != null 
+                    && !entityField.getLength().equals(dbField.getLength());
                 
-                // Check nullable mismatch
-                if (entityField.isNullable() != dbField.isNullable()) {
-                    EstivateReconciliation.ColumnNullableMismatch nullableMismatch = new EstivateReconciliation.ColumnNullableMismatch();
-                    nullableMismatch.tableName = tableName;
-                    nullableMismatch.attributeName = entityField.getName();
-                    nullableMismatch.entityNullable = entityField.isNullable();
-                    nullableMismatch.databaseNullable = dbField.isNullable();
-                    diffs.add(nullableMismatch);
-                }
-                
-                // Check length mismatch (if both have lengths)
-                if (entityField.getLength() != null && dbField.getLength() != null) {
-                    if (!entityField.getLength().equals(dbField.getLength())) {
-                        EstivateReconciliation.ColumnLengthMismatch lengthMismatch = new EstivateReconciliation.ColumnLengthMismatch();
-                        lengthMismatch.tableName = tableName;
-                        lengthMismatch.attributeName = entityField.getName();
-                        lengthMismatch.entityLength = entityField.getLength();
-                        lengthMismatch.databaseLength = dbField.getLength();
-                        diffs.add(lengthMismatch);
-                    }
-                }
-                
-                // Check default value mismatch
                 String entityDefault = entityField.getDefaultValue();
                 String dbDefault = dbField.getDefaultValue();
+                boolean hasDefaultMismatch = false;
                 if (entityDefault != null || dbDefault != null) {
-                    // Compare defaults (handle null vs empty string)
                     boolean defaultsMatch = (entityDefault == null && (dbDefault == null || dbDefault.isEmpty())) ||
                                            (dbDefault == null && (entityDefault == null || entityDefault.isEmpty())) ||
                                            (entityDefault != null && entityDefault.equals(dbDefault));
-                    if (!defaultsMatch) {
-                        EstivateReconciliation.ColumnDefaultValueMismatch defaultValueMismatch = new EstivateReconciliation.ColumnDefaultValueMismatch();
-                        defaultValueMismatch.tableName = tableName;
-                        defaultValueMismatch.attributeName = entityField.getName();
-                        defaultValueMismatch.entityDefaultValue = entityDefault;
-                        defaultValueMismatch.databaseDefaultValue = dbDefault;
-                        diffs.add(defaultValueMismatch);
-                    }
+                    hasDefaultMismatch = !defaultsMatch;
+                }
+                
+                if (hasTypeMismatch || hasNullableMismatch || hasLengthMismatch || hasDefaultMismatch) {
+                    EstivateReconciliation.ColumnDefinition entityDef = new EstivateReconciliation.ColumnDefinition(
+                        entityField.getType(),
+                        entityField.getLength(),
+                        entityField.isNullable(),
+                        entityField.getDefaultValue(),
+                        entityField.isAutoIncrement(),
+                        null, // charset
+                        null  // collation
+                    );
+                    
+                    EstivateReconciliation.ColumnDefinition dbDef = new EstivateReconciliation.ColumnDefinition(
+                        dbField.getType(),
+                        dbField.getLength(),
+                        dbField.isNullable(),
+                        dbField.getDefaultValue(),
+                        dbField.isAutoIncrement(),
+                        null, // charset
+                        null  // collation
+                    );
+                    
+                    EstivateReconciliation.ColumnDefinitionMismatch mismatch = new EstivateReconciliation.ColumnDefinitionMismatch(
+                        tableName,
+                        entityField.getName(),
+                        entityDef,
+                        dbDef
+                    );
+                    diffs.add(mismatch);
                 }
             }
         }
@@ -232,15 +245,27 @@ public class ReconciliationManager {
             }
             
             if (entityField == null) {
-                // Column missing in entity
+                // Column missing in entity - populate from database field
                 // dbField.getName() could be either:
                 // 1. Entity field name (if findEntityName found a match) -> use directly as attribute name
                 // 2. Database column name (if findEntityName returned null) -> use as attribute name (no entity field exists)
                 String attributeName = dbField.getName();
                 
-                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing();
-                columnMissing.tableName = tableName;
-                columnMissing.attributeName = attributeName;
+                EstivateReconciliation.ColumnDefinition columnDef = new EstivateReconciliation.ColumnDefinition(
+                    dbField.getType(),
+                    dbField.getLength(),
+                    dbField.isNullable(),
+                    dbField.getDefaultValue(),
+                    dbField.isAutoIncrement(),
+                    null, // charset not available from SHOW COLUMNS
+                    null  // collation not available from SHOW COLUMNS
+                );
+                
+                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing(
+                    tableName,
+                    attributeName,
+                    columnDef
+                );
                 diffs.add(columnMissing);
             }
         }
@@ -406,20 +431,8 @@ public class ReconciliationManager {
             if (diff instanceof EstivateReconciliation.ColumnMissing && resolver instanceof EstivateReconciliation.IColumnMissingResolver) {
                 return ((EstivateReconciliation.IColumnMissingResolver) resolver).resolve(context, (EstivateReconciliation.ColumnMissing) diff);
             }
-            if (diff instanceof EstivateReconciliation.ColumnTypeMismatch && resolver instanceof EstivateReconciliation.IColumnTypeMismatchResolver) {
-                return ((EstivateReconciliation.IColumnTypeMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnTypeMismatch) diff);
-            }
-            if (diff instanceof EstivateReconciliation.ColumnLengthMismatch && resolver instanceof EstivateReconciliation.IColumnLengthMismatchResolver) {
-                return ((EstivateReconciliation.IColumnLengthMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnLengthMismatch) diff);
-            }
-            if (diff instanceof EstivateReconciliation.ColumnDefaultValueMismatch && resolver instanceof EstivateReconciliation.IColumnDefaultValueMismatchResolver) {
-                return ((EstivateReconciliation.IColumnDefaultValueMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnDefaultValueMismatch) diff);
-            }
-            if (diff instanceof EstivateReconciliation.ColumnNullableMismatch && resolver instanceof EstivateReconciliation.IColumnNullableMismatchResolver) {
-                return ((EstivateReconciliation.IColumnNullableMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnNullableMismatch) diff);
-            }
-            if (diff instanceof EstivateReconciliation.ColumnEncodingMismatch && resolver instanceof EstivateReconciliation.IColumnEncodingMismatchResolver) {
-                return ((EstivateReconciliation.IColumnEncodingMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnEncodingMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ColumnDefinitionMismatch && resolver instanceof EstivateReconciliation.IColumnDefinitionMismatchResolver) {
+                return ((EstivateReconciliation.IColumnDefinitionMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnDefinitionMismatch) diff);
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
@@ -554,6 +567,83 @@ public class ReconciliationManager {
         return false;
     }
 
+    /**
+     * Extracts length from entity field annotations (@Column, @Size, etc.)
+     */
+    private Integer extractLengthFromField(Field field, String sqlType) {
+        // Check @Column(length = ...)
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null && javaxColumn.length() > 0) {
+            return javaxColumn.length();
+        }
+        
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null && jakartaColumn.length() > 0) {
+            return jakartaColumn.length();
+        }
+        
+        // For String fields, default to 255 if no annotation
+        if (field.getType() == String.class && sqlType != null && sqlType.toUpperCase().contains("VARCHAR")) {
+            return 255; // Default VARCHAR length
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extracts default value from entity field annotations
+     */
+    private String extractDefaultValue(Field field) {
+        // Check @Column(columnDefinition = ...) which might contain DEFAULT
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null && javaxColumn.columnDefinition() != null && !javaxColumn.columnDefinition().isEmpty()) {
+            String columnDef = javaxColumn.columnDefinition();
+            // Try to extract DEFAULT value from columnDefinition
+            if (columnDef.toUpperCase().contains("DEFAULT")) {
+                // This is a simplified extraction - may need refinement
+                int defaultIndex = columnDef.toUpperCase().indexOf("DEFAULT");
+                if (defaultIndex >= 0) {
+                    String afterDefault = columnDef.substring(defaultIndex + 7).trim();
+                    // Extract the value (handles quoted and unquoted values)
+                    if (afterDefault.startsWith("'") && afterDefault.contains("'")) {
+                        int endQuote = afterDefault.indexOf("'", 1);
+                        return afterDefault.substring(1, endQuote);
+                    } else {
+                        // Unquoted value - take until space or end
+                        int spaceIndex = afterDefault.indexOf(" ");
+                        if (spaceIndex > 0) {
+                            return afterDefault.substring(0, spaceIndex);
+                        }
+                        return afterDefault;
+                    }
+                }
+            }
+        }
+        
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null && jakartaColumn.columnDefinition() != null && !jakartaColumn.columnDefinition().isEmpty()) {
+            String columnDef = jakartaColumn.columnDefinition();
+            if (columnDef.toUpperCase().contains("DEFAULT")) {
+                int defaultIndex = columnDef.toUpperCase().indexOf("DEFAULT");
+                if (defaultIndex >= 0) {
+                    String afterDefault = columnDef.substring(defaultIndex + 7).trim();
+                    if (afterDefault.startsWith("'") && afterDefault.contains("'")) {
+                        int endQuote = afterDefault.indexOf("'", 1);
+                        return afterDefault.substring(1, endQuote);
+                    } else {
+                        int spaceIndex = afterDefault.indexOf(" ");
+                        if (spaceIndex > 0) {
+                            return afterDefault.substring(0, spaceIndex);
+                        }
+                        return afterDefault;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
     /**
      * Extracts length from SQL type (e.g., VARCHAR(255) -> 255)
      */
