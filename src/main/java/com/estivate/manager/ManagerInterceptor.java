@@ -64,9 +64,13 @@ public class ManagerInterceptor<T> {
         Type entityType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
         Class<T> entityClass = (Class<T>) entityType;
         
+        if(methodName.equals("findAll")){
+            SelectQuery<?> query = Estivate.selectQuery(entityClass);
+            return context.fetch(query);
+        }
         if(methodName.startsWith("findAllBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(9), args);
-            return context.fetchAsList(query, entityClass);
+            return context.fetch(query);
         }
         else if(methodName.startsWith("findOneBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(9), args);
@@ -76,14 +80,14 @@ public class ManagerInterceptor<T> {
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(7), args);
             return context.fetchCountAll(query);
         }
-        // else if(methodName.startsWith("existsBy")){
-        //     SelectQuery<?> query = getQuery(entityClass, methodName.substring(8), args);
-        //     return context.fetchExists(query);
-        // }
+        else if(methodName.startsWith("existsBy")){
+            SelectQuery<?> query = getQuery(entityClass, methodName.substring(8), args);
+            return context.fetchCountAll(query) > 0;
+        }
         else if(methodName.startsWith("findBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(6), args);
             if(method.getReturnType().equals(List.class)){
-                return context.fetchAsList(query, entityClass);
+                return context.fetch(query);
             }
             else if(method.getReturnType().equals(entityClass)){
                 return context.fetchAsSingle(query, entityClass);
