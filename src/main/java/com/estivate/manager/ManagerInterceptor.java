@@ -66,15 +66,15 @@ public class ManagerInterceptor<T> {
         
         if(methodName.equals("findAll")){
             SelectQuery<?> query = Estivate.selectQuery(entityClass);
-            return context.fetch(query);
+            return context.fetchList(query);
         }
         if(methodName.startsWith("findAllBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(9), args);
-            return context.fetch(query);
+            return context.fetchList(query);
         }
         else if(methodName.startsWith("findOneBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(9), args);
-            return context.fetchAsSingle(query, entityClass);
+            return context.fetchSingle(query);
         }
         else if(methodName.startsWith("countBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(7), args);
@@ -87,10 +87,10 @@ public class ManagerInterceptor<T> {
         else if(methodName.startsWith("findBy")){
             SelectQuery<?> query = getQuery(entityClass, methodName.substring(6), args);
             if(method.getReturnType().equals(List.class)){
-                return context.fetch(query);
+                return context.fetchList(query);
             }
             else if(method.getReturnType().equals(entityClass)){
-                return context.fetchAsSingle(query, entityClass);
+                return context.fetchSingle(query);
             }
             else{
                 throw new Exception("Unsupported return type: " + method.getReturnType());
