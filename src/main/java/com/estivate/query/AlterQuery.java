@@ -87,16 +87,47 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
      * Operation to add a column to a table
      */
     @Getter
-    @RequiredArgsConstructor
     public static class AddColumn implements Operation {
         private final String columnName;
-        private final String columnType;
+        private final ColumnDefinition columnDefinition;
+
+        public AddColumn(String columnName, String columnType) {
+            this(columnName, new ColumnDefinition(columnType, null, null, null, null, null, null));
+        }
+
+        public AddColumn(String columnName, ColumnDefinition columnDefinition) {
+            this.columnName = columnName;
+            this.columnDefinition = columnDefinition;
+        }
 
         @Override
         public void render(Context context, Statement statement) {
             statement.appendQuery("ADD COLUMN");
             statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-            statement.appendQuery(columnType);
+            String columnType = columnDefinition != null && columnDefinition.columnType != null 
+                ? columnDefinition.getFullColumnType() 
+                : (columnDefinition != null ? columnDefinition.columnType : null);
+            if (columnType != null) {
+                statement.appendQuery(columnType);
+            }
+            if (columnDefinition != null && columnDefinition.charset != null) {
+                statement.appendQuery("CHARACTER SET");
+                statement.appendQuery(columnDefinition.charset);
+            }
+            if (columnDefinition != null && columnDefinition.collation != null) {
+                statement.appendQuery("COLLATE");
+                statement.appendQuery(columnDefinition.collation);
+            }
+            if (columnDefinition != null && columnDefinition.nullable != null) {
+                statement.appendQuery(columnDefinition.nullable ? "NULL" : "NOT NULL");
+            }
+            if (columnDefinition != null && columnDefinition.defaultValue != null) {
+                statement.appendQuery("DEFAULT");
+                statement.appendQuery(columnDefinition.defaultValue);
+            }
+            if (columnDefinition != null && Boolean.TRUE.equals(columnDefinition.autoIncrement)) {
+                statement.appendQuery("AUTO_INCREMENT");
+            }
         }
     }
 
@@ -268,6 +299,7 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
     }
 
     public AlterQuery<E> addColumn(String columnName, String columnType) { return addOperation(new AddColumn(columnName, columnType)); }
+    public AlterQuery<E> addColumn(String columnName, ColumnDefinition columnDefinition) { return addOperation(new AddColumn(columnName, columnDefinition)); }
     public AlterQuery<E> dropColumn(String columnName) { return addOperation(new DropColumn(columnName)); }
     public AlterQuery<E> modifyColumn(String columnName, String columnType) { return addOperation(new ModifyColumn(columnName, columnType)); }
     public AlterQuery<E> modifyColumn(String columnName, String columnType, String charset, String collation, Boolean nullable) { return addOperation(new ModifyColumn(columnName, columnType, charset, collation, nullable)); }
