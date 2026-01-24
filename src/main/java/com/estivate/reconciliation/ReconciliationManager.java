@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.AlterQuery;
-import com.estivate.reconciliation.EstivateReconciliation.SchemaDiff;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationOperation;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -43,7 +43,7 @@ public class ReconciliationManager {
     EntityModel databaseModel;
 
     @Getter
-    List<SchemaDiff> differences;
+    List<ReconciliationOperation> differences;
 
     public ReconciliationManager(Context context, Class<?> entity) {
         this.context = context;
@@ -145,8 +145,8 @@ public class ReconciliationManager {
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<SchemaDiff> compare() {
-        List<SchemaDiff> diffs = new ArrayList<>();
+    private List<ReconciliationOperation> compare() {
+        List<ReconciliationOperation> diffs = new ArrayList<>();
         String tableName = entityModel.getTableName();
 
         // Check for fields in entity but not in database
@@ -163,7 +163,7 @@ public class ReconciliationManager {
             }
 
             if (dbField == null) {
-                // Column missing in database - populate from entity field
+                // Column missing in database - needs to be added
                 AlterQuery.ColumnDefinition columnDef = new AlterQuery.ColumnDefinition(
                     entityField.getType(),
                     entityField.getLength(),
@@ -174,12 +174,12 @@ public class ReconciliationManager {
                     null  // collation not available from entity field
                 );
                 
-                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing(
+                EstivateReconciliation.AddColumn addColumn = new EstivateReconciliation.AddColumn(
                     tableName,
                     entityField.getName(),
                     columnDef
                 );
-                diffs.add(columnMissing);
+                diffs.add(addColumn);
             } else {
                 // Check for any column definition mismatches
                 boolean hasTypeMismatch = !entityField.typeMatches(dbField.getType());
@@ -218,13 +218,13 @@ public class ReconciliationManager {
                         null  // collation
                     );
                     
-                    EstivateReconciliation.ColumnDefinitionMismatch mismatch = new EstivateReconciliation.ColumnDefinitionMismatch(
+                    EstivateReconciliation.ModifyColumn modifyColumn = new EstivateReconciliation.ModifyColumn(
                         tableName,
                         entityField.getName(),
                         entityDef,
                         dbDef
                     );
-                    diffs.add(mismatch);
+                    diffs.add(modifyColumn);
                 }
             }
         }
@@ -245,11 +245,8 @@ public class ReconciliationManager {
             }
             
             if (entityField == null) {
-                // Column missing in entity - populate from database field
-                // dbField.getName() could be either:
-                // 1. Entity field name (if findEntityName found a match) -> use directly as attribute name
-                // 2. Database column name (if findEntityName returned null) -> use as attribute name (no entity field exists)
-                String attributeName = dbField.getName();
+                // Column exists in database but not in entity - needs to be removed
+                String columnName = dbField.getName();
                 
                 AlterQuery.ColumnDefinition columnDef = new AlterQuery.ColumnDefinition(
                     dbField.getType(),
@@ -261,12 +258,12 @@ public class ReconciliationManager {
                     null  // collation not available from SHOW COLUMNS
                 );
                 
-                EstivateReconciliation.ColumnMissing columnMissing = new EstivateReconciliation.ColumnMissing(
+                EstivateReconciliation.DropColumn dropColumn = new EstivateReconciliation.DropColumn(
                     tableName,
-                    attributeName,
+                    columnName,
                     columnDef
                 );
-                diffs.add(columnMissing);
+                diffs.add(dropColumn);
             }
         }
 
@@ -314,8 +311,8 @@ public class ReconciliationManager {
     /**
      * Finds resolver classes that can handle the given diff.
      * Resolvers must:
-     * - Implement the appropriate resolver interface (e.g., ColumnMissingResolver)
-     * - Have @HandlesDiff annotation
+     * - Implement the appropriate resolver interface (e.g., IAddColumnResolver)
+     * - Have @ReconciliationScope annotation
      * - Match the table/column criteria from the annotation
      * 
      * Results are sorted from most specific to most generic:
@@ -328,7 +325,7 @@ public class ReconciliationManager {
      * @param candidates Collection of potential resolver classes to search through
      * @return List of matching resolvers, sorted from most specific to most generic
      */
-    public <T> List<T> findResolver(SchemaDiff diff, Collection<T> candidates) {
+    public <T> List<T> findResolver(ReconciliationOperation diff, Collection<T> candidates) {
         // Extract table and column from the diff
         String diffTable = extractTableName(diff);
         String diffColumn = extractColumnName(diff);
@@ -340,7 +337,7 @@ public class ReconciliationManager {
     }
 
     /**
-     * Checks if a class has @HandlesDiff annotation that matches the given diff
+     * Checks if a class has @ReconciliationScope annotation that matches the given diff
      */
     private boolean hasMatchingHandlesDiff(Class<?> candidateClass, String diffTable, String diffColumn) {
         ReconciliationScope annotation = candidateClass.getAnnotation(ReconciliationScope.class);
@@ -372,8 +369,8 @@ public class ReconciliationManager {
      */
     @Getter
     public static class ApplyResolversResult {
-        private final List<SchemaDiff> resolved = new ArrayList<>();
-        private final List<SchemaDiff> unresolved = new ArrayList<>();
+        private final List<ReconciliationOperation> resolved = new ArrayList<>();
+        private final List<ReconciliationOperation> unresolved = new ArrayList<>();
         
         public boolean isFullyResolved() {
             return unresolved.isEmpty();
@@ -395,7 +392,7 @@ public class ReconciliationManager {
     public ApplyResolversResult applyResolvers(Collection<Object> candidates) {
         ApplyResolversResult result = new ApplyResolversResult();
         
-        for (SchemaDiff diff : differences) {
+        for (ReconciliationOperation diff : differences) {
             List<Object> resolvers = findResolver(diff, candidates);
             
             boolean resolved = false;
@@ -423,16 +420,28 @@ public class ReconciliationManager {
      * @param diff The schema diff to resolve
      * @return true if the resolver successfully handled the diff, false otherwise
      */
-    private boolean tryApplyResolver(Object resolver, SchemaDiff diff) {
+    private boolean tryApplyResolver(Object resolver, ReconciliationOperation diff) {
         try {
-            if (diff instanceof EstivateReconciliation.TableMissing && resolver instanceof EstivateReconciliation.ITableMissingResolver) {
-                ((EstivateReconciliation.ITableMissingResolver) resolver).resolve(context, (EstivateReconciliation.TableMissing) diff);
+            if (diff instanceof EstivateReconciliation.CreateTable && resolver instanceof EstivateReconciliation.ICreateTableResolver) {
+                ((EstivateReconciliation.ICreateTableResolver) resolver).resolve(context, (EstivateReconciliation.CreateTable) diff);
             }
-            if (diff instanceof EstivateReconciliation.ColumnMissing && resolver instanceof EstivateReconciliation.IColumnMissingResolver) {
-                ((EstivateReconciliation.IColumnMissingResolver) resolver).resolve(context, (EstivateReconciliation.ColumnMissing) diff);
+            if (diff instanceof EstivateReconciliation.AddColumn && resolver instanceof EstivateReconciliation.IAddColumnResolver) {
+                ((EstivateReconciliation.IAddColumnResolver) resolver).resolve(context, (EstivateReconciliation.AddColumn) diff);
             }
-            if (diff instanceof EstivateReconciliation.ColumnDefinitionMismatch && resolver instanceof EstivateReconciliation.IColumnDefinitionMismatchResolver) {
-                ((EstivateReconciliation.IColumnDefinitionMismatchResolver) resolver).resolve(context, (EstivateReconciliation.ColumnDefinitionMismatch) diff);
+            if (diff instanceof EstivateReconciliation.ModifyColumn && resolver instanceof EstivateReconciliation.IModifyColumnResolver) {
+                ((EstivateReconciliation.IModifyColumnResolver) resolver).resolve(context, (EstivateReconciliation.ModifyColumn) diff);
+            }
+            if (diff instanceof EstivateReconciliation.DropTable && resolver instanceof EstivateReconciliation.IDropTableResolver) {
+                ((EstivateReconciliation.IDropTableResolver) resolver).resolve(context, (EstivateReconciliation.DropTable) diff);
+            }
+            if (diff instanceof EstivateReconciliation.DropColumn && resolver instanceof EstivateReconciliation.IDropColumnResolver) {
+                ((EstivateReconciliation.IDropColumnResolver) resolver).resolve(context, (EstivateReconciliation.DropColumn) diff);
+            }
+            if (diff instanceof EstivateReconciliation.AddIndex && resolver instanceof EstivateReconciliation.IAddIndexResolver) {
+                ((EstivateReconciliation.IAddIndexResolver) resolver).resolve(context, (EstivateReconciliation.AddIndex) diff);
+            }
+            if (diff instanceof EstivateReconciliation.DropIndex && resolver instanceof EstivateReconciliation.IDropIndexResolver) {
+                ((EstivateReconciliation.IDropIndexResolver) resolver).resolve(context, (EstivateReconciliation.DropIndex) diff);
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
@@ -443,7 +452,7 @@ public class ReconciliationManager {
     /**
      * Extracts table name from a SchemaDiff using reflection
      */
-    private String extractTableName(SchemaDiff diff) {
+    private String extractTableName(ReconciliationOperation diff) {
         try {
             Field tableField = diff.getClass().getField("tableName");
             return (String) tableField.get(diff);
@@ -453,14 +462,22 @@ public class ReconciliationManager {
     }
 
     /**
-     * Extracts column/attribute name from a SchemaDiff using reflection
+     * Extracts column name or index name from a SchemaDiff using reflection.
+     * Checks for 'columnName' first, then 'indexName'.
      */
-    private String extractColumnName(SchemaDiff diff) {
+    private String extractColumnName(ReconciliationOperation diff) {
+        // Try columnName first (used by AddColumn, DropColumn, ModifyColumn)
         try {
-            Field attrField = diff.getClass().getField("attributeName");
-            return (String) attrField.get(diff);
+            Field columnField = diff.getClass().getField("columnName");
+            return (String) columnField.get(diff);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            return null;
+            // Try indexName (used by AddIndex, DropIndex)
+            try {
+                Field indexField = diff.getClass().getField("indexName");
+                return (String) indexField.get(diff);
+            } catch (NoSuchFieldException | IllegalAccessException ex) {
+                return null;
+            }
         }
     }
 

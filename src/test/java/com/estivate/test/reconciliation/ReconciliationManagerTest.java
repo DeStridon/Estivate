@@ -15,9 +15,10 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.reconciliation.ReconciliationScope;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnDefinitionMismatch;
-import com.estivate.reconciliation.EstivateReconciliation.ColumnMissing;
-import com.estivate.reconciliation.EstivateReconciliation.SchemaDiff;
+import com.estivate.reconciliation.EstivateReconciliation.AddColumn;
+import com.estivate.reconciliation.EstivateReconciliation.ModifyColumn;
+import com.estivate.reconciliation.EstivateReconciliation.DropColumn;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationOperation;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
@@ -32,9 +33,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for ReconciliationManager covering all SchemaDiff types:
- * - TableMissing (implicitly tested when table doesn't exist)
- * - ColumnMissing (column in entity but not in DB, or column in DB but not in entity)
- * - ColumnDefinitionMismatch (type, length, nullable, default value, charset, collation)
+ * - AddTable (table in code but not in DB)
+ * - AddColumn (column in code but not in DB)
+ * - RemoveTable (table in DB but not in code)
+ * - RemoveColumn (column in DB but not in code)
+ * - ModifyColumn (type, length, nullable, default value, charset, collation mismatches)
  */
 public class ReconciliationManagerTest {
 
@@ -119,7 +122,7 @@ public class ReconciliationManagerTest {
     }
 
     @Test
-    public void testColumnMissing_InDatabase() throws Exception {
+    public void testAddColumn_ColumnMissingInDatabase() throws Exception {
         // Create table with missing column
         context.createTable(TestReconciliationEntity.class);
         
@@ -129,21 +132,21 @@ public class ReconciliationManagerTest {
         // Run reconciliation
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
-        // Should detect missing column
-        List<SchemaDiff> diffs = manager.getDifferences();
+        // Should detect missing column that needs to be added
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect missing column");
         
-        List<ColumnMissing> missingColumns = diffs.stream()
-            .filter(d -> d instanceof ColumnMissing)
-            .map(d -> (ColumnMissing) d)
+        List<AddColumn> addColumns = diffs.stream()
+            .filter(d -> d instanceof AddColumn)
+            .map(d -> (AddColumn) d)
             .collect(Collectors.toList());
         
-        assertEquals(1, missingColumns.size(), "Should detect one missing column");
-        assertEquals("email", missingColumns.get(0).attributeName, "Should detect missing email column");
+        assertEquals(1, addColumns.size(), "Should detect one column to add");
+        assertEquals("email", addColumns.get(0).columnName, "Should detect missing email column");
     }
 
     @Test
-    public void testColumnMissing_InEntity() throws Exception {
+    public void testRemoveColumn_ColumnExtraInDatabase() throws Exception {
         // Create table
         context.createTable(TestReconciliationEntity.class);
         
@@ -153,23 +156,20 @@ public class ReconciliationManagerTest {
         // Run reconciliation
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
-        // Should detect extra column in database (missing in entity)
-        List<SchemaDiff> diffs = manager.getDifferences();
+        // Should detect extra column in database that needs to be removed
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect extra column in database");
         
-        // The extra column should be reported as missing in entity
-        // Note: This depends on how ReconciliationManager handles this case
-        // Looking at the code, it checks for columns in DB but not in entity
-        List<ColumnMissing> missingColumns = diffs.stream()
-            .filter(d -> d instanceof ColumnMissing)
-            .map(d -> (ColumnMissing) d)
+        List<DropColumn> dropColumns = diffs.stream()
+            .filter(d -> d instanceof DropColumn)
+            .map(d -> (DropColumn) d)
             .collect(Collectors.toList());
         
-        assertTrue(missingColumns.size() > 0, "Should detect extra column");
+        assertTrue(dropColumns.size() > 0, "Should detect column to drop");
     }
 
     @Test
-    public void testColumnTypeMismatch() throws Exception {
+    public void testModifyColumn_TypeMismatch() throws Exception {
         // Create table
         context.createTable(TestReconciliationEntity.class);
         
@@ -180,23 +180,23 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
         // Should detect type mismatch
-        List<SchemaDiff> diffs = manager.getDifferences();
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect type mismatch");
         
-        List<ColumnDefinitionMismatch> typeMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefinitionMismatch)
-            .map(d -> (ColumnDefinitionMismatch) d)
-            .filter(ColumnDefinitionMismatch::hasTypeMismatch)
+        List<ModifyColumn> typeMismatches = diffs.stream()
+            .filter(d -> d instanceof ModifyColumn)
+            .map(d -> (ModifyColumn) d)
+            .filter(ModifyColumn::hasTypeMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, typeMismatches.size(), "Should detect one type mismatch");
-        assertEquals("age", typeMismatches.get(0).attributeName, "Should detect type mismatch for age column");
+        assertEquals("age", typeMismatches.get(0).columnName, "Should detect type mismatch for age column");
         assertEquals("INT", typeMismatches.get(0).entityDefinition.columnType, "Entity expects INT");
         assertEquals("BIGINT", typeMismatches.get(0).databaseDefinition.columnType, "Database has BIGINT");
     }
 
     @Test
-    public void testColumnLengthMismatch() throws Exception {
+    public void testModifyColumn_LengthMismatch() throws Exception {
         // Create table
         context.createTable(TestReconciliationEntity.class);
         
@@ -207,23 +207,23 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
         // Should detect length mismatch
-        List<SchemaDiff> diffs = manager.getDifferences();
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect length mismatch");
         
-        List<ColumnDefinitionMismatch> lengthMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefinitionMismatch)
-            .map(d -> (ColumnDefinitionMismatch) d)
-            .filter(ColumnDefinitionMismatch::hasLengthMismatch)
+        List<ModifyColumn> lengthMismatches = diffs.stream()
+            .filter(d -> d instanceof ModifyColumn)
+            .map(d -> (ModifyColumn) d)
+            .filter(ModifyColumn::hasLengthMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, lengthMismatches.size(), "Should detect one length mismatch");
-        assertEquals("description", lengthMismatches.get(0).attributeName, "Should detect length mismatch for description column");
+        assertEquals("description", lengthMismatches.get(0).columnName, "Should detect length mismatch for description column");
         assertEquals(100, (int) lengthMismatches.get(0).entityDefinition.length, "Entity expects length 100");
         assertEquals(200, (int) lengthMismatches.get(0).databaseDefinition.length, "Database has length 200");
     }
 
     @Test
-    public void testColumnNullableMismatch_EntityNullableButDbNotNull() throws Exception {
+    public void testModifyColumn_NullableMismatch_EntityNullableButDbNotNull() throws Exception {
         // Create table
         context.createTable(TestReconciliationEntity.class);
         
@@ -234,23 +234,23 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
         // Should detect nullable mismatch
-        List<SchemaDiff> diffs = manager.getDifferences();
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect nullable mismatch");
         
-        List<ColumnDefinitionMismatch> nullableMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefinitionMismatch)
-            .map(d -> (ColumnDefinitionMismatch) d)
-            .filter(ColumnDefinitionMismatch::hasNullableMismatch)
+        List<ModifyColumn> nullableMismatches = diffs.stream()
+            .filter(d -> d instanceof ModifyColumn)
+            .map(d -> (ModifyColumn) d)
+            .filter(ModifyColumn::hasNullableMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, nullableMismatches.size(), "Should detect one nullable mismatch");
-        assertEquals("name", nullableMismatches.get(0).attributeName, "Should detect nullable mismatch for name column");
+        assertEquals("name", nullableMismatches.get(0).columnName, "Should detect nullable mismatch for name column");
         assertTrue(nullableMismatches.get(0).entityDefinition.nullable, "Entity allows null");
         assertFalse(nullableMismatches.get(0).databaseDefinition.nullable, "Database does not allow null");
     }
 
     @Test
-    public void testColumnNullableMismatch_EntityNotNullButDbNullable() throws Exception {
+    public void testModifyColumn_NullableMismatch_EntityNotNullButDbNullable() throws Exception {
         // Create table
         context.createTable(TestReconciliationEntity.class);
         
@@ -265,18 +265,18 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
         // Should detect nullable mismatch
-        List<SchemaDiff> diffs = manager.getDifferences();
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect nullable mismatch");
         
-        List<ColumnDefinitionMismatch> nullableMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefinitionMismatch)
-            .map(d -> (ColumnDefinitionMismatch) d)
-            .filter(ColumnDefinitionMismatch::hasNullableMismatch)
+        List<ModifyColumn> nullableMismatches = diffs.stream()
+            .filter(d -> d instanceof ModifyColumn)
+            .map(d -> (ModifyColumn) d)
+            .filter(ModifyColumn::hasNullableMismatch)
             .collect(Collectors.toList());
         
         assertEquals(1, nullableMismatches.size(), "Should detect one nullable mismatch");
         assertEquals("email", 
-            nullableMismatches.get(0).attributeName, 
+            nullableMismatches.get(0).columnName, 
             "Should detect nullable mismatch for email column");
         assertFalse(nullableMismatches.get(0).entityDefinition.nullable, 
             "Entity requires NOT NULL");
@@ -285,7 +285,7 @@ public class ReconciliationManagerTest {
     }
 
     @Test
-    public void testColumnDefaultValueMismatch() throws Exception {
+    public void testModifyColumn_DefaultValueMismatch() throws Exception {
         // Create table
         context.createTable(TestReconciliationEntity.class);
         
@@ -296,14 +296,14 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
         // Should detect default value mismatch (entity has no default, DB has default)
-        List<SchemaDiff> diffs = manager.getDifferences();
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         
         // Note: Default value mismatch detection depends on entity annotations
         // If entity doesn't specify a default, but DB does, it should be detected
-        List<ColumnDefinitionMismatch> defaultValueMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefinitionMismatch)
-            .map(d -> (ColumnDefinitionMismatch) d)
-            .filter(ColumnDefinitionMismatch::hasDefaultValueMismatch)
+        List<ModifyColumn> defaultValueMismatches = diffs.stream()
+            .filter(d -> d instanceof ModifyColumn)
+            .map(d -> (ModifyColumn) d)
+            .filter(ModifyColumn::hasDefaultValueMismatch)
             .collect(Collectors.toList());
         
         // This test may or may not detect the mismatch depending on implementation
@@ -333,22 +333,22 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestReconciliationEntity.class);
 
         // Should detect all differences
-        List<SchemaDiff> diffs = manager.getDifferences();
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect multiple differences");
         
-        // Verify we have at least one missing column and definition mismatches
-        long missingCount = diffs.stream().filter(d -> d instanceof ColumnMissing).count();
+        // Verify we have at least one column to add and modify column entries
+        long addColumnCount = diffs.stream().filter(d -> d instanceof AddColumn).count();
         
-        List<ColumnDefinitionMismatch> definitionMismatches = diffs.stream()
-            .filter(d -> d instanceof ColumnDefinitionMismatch)
-            .map(d -> (ColumnDefinitionMismatch) d)
+        List<ModifyColumn> modifyColumns = diffs.stream()
+            .filter(d -> d instanceof ModifyColumn)
+            .map(d -> (ModifyColumn) d)
             .collect(Collectors.toList());
         
-        long typeMismatchCount = definitionMismatches.stream().filter(ColumnDefinitionMismatch::hasTypeMismatch).count();
-        long lengthMismatchCount = definitionMismatches.stream().filter(ColumnDefinitionMismatch::hasLengthMismatch).count();
-        long nullableMismatchCount = definitionMismatches.stream().filter(ColumnDefinitionMismatch::hasNullableMismatch).count();
+        long typeMismatchCount = modifyColumns.stream().filter(ModifyColumn::hasTypeMismatch).count();
+        long lengthMismatchCount = modifyColumns.stream().filter(ModifyColumn::hasLengthMismatch).count();
+        long nullableMismatchCount = modifyColumns.stream().filter(ModifyColumn::hasNullableMismatch).count();
         
-        assertTrue(missingCount >= 1, "Should detect at least one missing column");
+        assertTrue(addColumnCount >= 1, "Should detect at least one column to add");
         assertTrue(typeMismatchCount >= 1, "Should detect at least one type mismatch");
         assertTrue(lengthMismatchCount >= 1, "Should detect at least one length mismatch");
         assertTrue(nullableMismatchCount >= 1, "Should detect at least one nullable mismatch");
@@ -380,12 +380,10 @@ public class ReconciliationManagerTest {
         // Run reconciliation
         ReconciliationManager manager = new ReconciliationManager(context, TestSimpleEntity.class);
 
-        // Should detect the extra column (missing in entity)
-        List<SchemaDiff> diffs = manager.getDifferences();
+        // Should detect the extra column (needs to be removed)
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         
-        // The extra column should be reported
-        // Note: The exact behavior depends on how ReconciliationManager handles
-        // columns that exist in DB but not in entity
+        // The extra column should be reported as RemoveColumn
         assertNotNull(diffs, "Differences should be computed");
     }
 
@@ -400,19 +398,19 @@ public class ReconciliationManagerTest {
         // Run reconciliation
         ReconciliationManager manager = new ReconciliationManager(context, TestSimpleEntity.class);
 
-        // Should detect missing column
-        List<SchemaDiff> diffs = manager.getDifferences();
+        // Should detect missing column that needs to be added
+        List<ReconciliationOperation> diffs = manager.getDifferences();
         assertFalse(diffs.isEmpty(), "Should detect missing column");
         
-        List<ColumnMissing> missingColumns = diffs.stream()
-            .filter(d -> d instanceof ColumnMissing)
-            .map(d -> (ColumnMissing) d)
+        List<AddColumn> addColumns = diffs.stream()
+            .filter(d -> d instanceof AddColumn)
+            .map(d -> (AddColumn) d)
             .collect(Collectors.toList());
         
-        assertEquals(1, missingColumns.size(), "Should detect one missing column");
-        // The attribute name should match the entity field name
+        assertEquals(1, addColumns.size(), "Should detect one column to add");
+        // The column name should match the entity field name
         assertEquals("valueData", 
-            missingColumns.get(0).attributeName, 
+            addColumns.get(0).columnName, 
             "Should detect missing valueData column");
     }
 
@@ -477,19 +475,19 @@ public class ReconciliationManagerTest {
     // --- Test resolver classes with different specificity levels ---
 
     @ReconciliationScope(table = "users", column = "email")
-    static class ColumnMissingResolverTableAndColumn {}
+    static class AddColumnResolverTableAndColumn {}
 
     @ReconciliationScope(table = "users", column = "")
-    static class ColumnMissingResolverTableOnly {}
+    static class AddColumnResolverTableOnly {}
 
     @ReconciliationScope(table = "", column = "")
-    static class ColumnMissingResolverGeneric {}
+    static class AddColumnResolverGeneric {}
 
     @ReconciliationScope(table = "products", column = "price")
     static class DifferentTableAndColumnResolver {}
 
     @ReconciliationScope(table = "orders", column = "id")
-    static class ColumnMissingResolverDifferentTable {}
+    static class AddColumnResolverDifferentTable {}
 
     static class ResolverNoAnnotation {}
 
@@ -507,72 +505,71 @@ public class ReconciliationManagerTest {
         ReconciliationManager manager = new ReconciliationManager(context, TestSimpleEntity.class);
 
         // Test 1: Exact match - should find resolver with matching table and column
-        ColumnMissing diff1 = new ColumnMissing("users", "email");
-        List<Object> result1 = manager.findResolver(diff1, Arrays.asList(new ColumnMissingResolverTableAndColumn(), new ResolverNoAnnotation()));
+        AddColumn diff1 = new AddColumn("users", "email");
+        List<Object> result1 = manager.findResolver(diff1, Arrays.asList(new AddColumnResolverTableAndColumn(), new ResolverNoAnnotation()));
         assertEquals(1, result1.size(), "Should find one matching resolver");
-        assertTrue(result1.get(0) instanceof ColumnMissingResolverTableAndColumn, "Should find the resolver with matching table and column");
+        assertTrue(result1.get(0) instanceof AddColumnResolverTableAndColumn, "Should find the resolver with matching table and column");
 
         // Test 2: No match when table and column differ
-        ColumnMissing diff2 = new ColumnMissing("users", "email");
+        AddColumn diff2 = new AddColumn("users", "email");
         List<Object> result2 = manager.findResolver(diff2, Arrays.asList(new DifferentTableAndColumnResolver()));
         assertTrue(result2.isEmpty(), "Should not find resolver when table and column don't match");
 
         // Test 3: No match when table differs
-        ColumnMissing diff3 = new ColumnMissing("users", "id");
-        List<Object> result3 = manager.findResolver(diff3, Arrays.asList(new ColumnMissingResolverDifferentTable()));
+        AddColumn diff3 = new AddColumn("users", "id");
+        List<Object> result3 = manager.findResolver(diff3, Arrays.asList(new AddColumnResolverDifferentTable()));
         assertTrue(result3.isEmpty(), "Should not find resolver when table doesn't match");
 
         // Test 4: No match when column differs
-        ColumnMissing diff4 = new ColumnMissing("users", "name");
-        List<Object> result4 = manager.findResolver(diff4, Arrays.asList(new ColumnMissingResolverTableAndColumn()));
+        AddColumn diff4 = new AddColumn("users", "name");
+        List<Object> result4 = manager.findResolver(diff4, Arrays.asList(new AddColumnResolverTableAndColumn()));
         assertTrue(result4.isEmpty(), "Should not find resolver when column doesn't match");
 
         // Test 5: Filters out candidates without annotation
-        ColumnMissing diff5 = new ColumnMissing("users", "email");
-        List<Object> result5 = manager.findResolver(diff5, Arrays.asList(new ResolverNoAnnotation(), new ColumnMissingResolverTableAndColumn(), new ResolverNoAnnotation()));
+        AddColumn diff5 = new AddColumn("users", "email");
+        List<Object> result5 = manager.findResolver(diff5, Arrays.asList(new ResolverNoAnnotation(), new AddColumnResolverTableAndColumn(), new ResolverNoAnnotation()));
         assertEquals(1, result5.size(), "Should filter out non-annotated candidates");
-        assertTrue(result5.get(0) instanceof ColumnMissingResolverTableAndColumn, 
+        assertTrue(result5.get(0) instanceof AddColumnResolverTableAndColumn, 
             "Should find only the annotated resolver");
 
         // Test 6: Empty candidates list
-        ColumnMissing diff6 = new ColumnMissing("users", "email");
+        AddColumn diff6 = new AddColumn("users", "email");
         List<Object> result6 = manager.findResolver(diff6, Arrays.asList());
         assertTrue(result6.isEmpty(), "Should return empty list when no candidates provided");
 
         // Test 7: Matches table-only resolver
-        ColumnMissing diff7 = new ColumnMissing("users", "");
-        List<Object> result7 = manager.findResolver(diff7, Arrays.asList(new ColumnMissingResolverTableOnly()));
+        AddColumn diff7 = new AddColumn("users", "");
+        List<Object> result7 = manager.findResolver(diff7, Arrays.asList(new AddColumnResolverTableOnly()));
         assertEquals(1, result7.size(), "Should find table-only resolver");
-        assertTrue(result7.get(0) instanceof ColumnMissingResolverTableOnly, 
+        assertTrue(result7.get(0) instanceof AddColumnResolverTableOnly, 
             "Should match resolver with table only");
 
         // Test 8: Matches generic resolver
-        ColumnMissing diff8 = new ColumnMissing("", "");
-        List<Object> result8 = manager.findResolver(diff8, Arrays.asList(new ColumnMissingResolverGeneric()));
+        AddColumn diff8 = new AddColumn("", "");
+        List<Object> result8 = manager.findResolver(diff8, Arrays.asList(new AddColumnResolverGeneric()));
         assertEquals(1, result8.size(), "Should find generic resolver");
-        assertTrue(result8.get(0) instanceof ColumnMissingResolverGeneric, 
+        assertTrue(result8.get(0) instanceof AddColumnResolverGeneric, 
             "Should match generic resolver with no table/column constraints");
 
         // Test 9: Multiple matching resolvers sorted by specificity
-        ColumnMissing diff9 = new ColumnMissing("test", "col");
+        AddColumn diff9 = new AddColumn("test", "col");
         List<Object> result9 = manager.findResolver(diff9, Arrays.asList(new ResolverA(), new ResolverB()));
         assertEquals(2, result9.size(), "Should find both matching resolvers");
 
         // Test 10: Null table in diff
-        ColumnMissing diff10 = new ColumnMissing(null, "email");
-        List<Object> result10 = manager.findResolver(diff10, Arrays.asList(new ColumnMissingResolverTableAndColumn()));
+        AddColumn diff10 = new AddColumn(null, "email");
+        List<Object> result10 = manager.findResolver(diff10, Arrays.asList(new AddColumnResolverTableAndColumn()));
         assertTrue(result10.isEmpty(), "Should not match when diff table is null");
 
         // Test 11: Null column in diff
-        ColumnMissing diff11 = new ColumnMissing("users", null);
-        List<Object> result11 = manager.findResolver(diff11, Arrays.asList(new ColumnMissingResolverTableAndColumn()));
+        AddColumn diff11 = new AddColumn("users", null);
+        List<Object> result11 = manager.findResolver(diff11, Arrays.asList(new AddColumnResolverTableAndColumn()));
         assertTrue(result11.isEmpty(), "Should not match when diff column is null");
 
-        // Test 12: With ColumnDefinitionMismatch diff
-        ColumnDefinitionMismatch diff12 = new ColumnDefinitionMismatch("users", "email", null, null);
-        List<Object> result12 = manager.findResolver(diff12, Arrays.asList(new ColumnMissingResolverTableAndColumn(), new ColumnMissingResolverDifferentTable()));
+        // Test 12: With ModifyColumn diff
+        ModifyColumn diff12 = new ModifyColumn("users", "email", null, null);
+        List<Object> result12 = manager.findResolver(diff12, Arrays.asList(new AddColumnResolverTableAndColumn(), new AddColumnResolverDifferentTable()));
         assertEquals(1, result12.size(), "Should find only the resolver with matching table/column");
-        assertTrue(result12.get(0) instanceof ColumnMissingResolverTableAndColumn, "Should find ColumnMissingResolverTableAndColumn");
+        assertTrue(result12.get(0) instanceof AddColumnResolverTableAndColumn, "Should find AddColumnResolverTableAndColumn");
     }
 }
-
