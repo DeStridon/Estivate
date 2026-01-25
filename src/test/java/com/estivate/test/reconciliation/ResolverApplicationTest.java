@@ -68,7 +68,7 @@ public class ResolverApplicationTest {
      * Generic resolver that handles any ColumnMissing diff
      */
     @ReconciliationScope(table = "", column = "")
-    public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
+    public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
         public boolean wasCalled = false;
         public AddColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
@@ -84,7 +84,7 @@ public class ResolverApplicationTest {
      * Table-specific resolver for ColumnMissing
      */
     @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "")
-    public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
+    public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
         public boolean wasCalled = false;
         public AddColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
@@ -100,7 +100,7 @@ public class ResolverApplicationTest {
      * Column-specific resolver for ColumnMissing on 'email' column
      */
     @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "email")
-    public static class EmailColumnMissingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
+    public static class EmailColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
         public boolean wasCalled = false;
         public AddColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
@@ -116,7 +116,7 @@ public class ResolverApplicationTest {
      * Generic column definition mismatch resolver (handles type, length, nullable, etc.)
      */
     @ReconciliationScope(table = "", column = "")
-    public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IModifyColumnDeltaResolver {
+    public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IModifyColumnResolver {
         public boolean wasCalled = false;
         public com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
@@ -131,7 +131,7 @@ public class ResolverApplicationTest {
     /**
      * Resolver without annotation - should never be called
      */
-    public static class UnannotatedResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
+    public static class UnannotatedResolver implements EstivateReconciliation.IAddColumnResolver {
         public boolean wasCalled = false;
 
         @Override
@@ -144,7 +144,7 @@ public class ResolverApplicationTest {
      * Resolver that always fails
      */
     @ReconciliationScope(table = "", column = "")
-    public static class FailingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
+    public static class FailingResolver implements EstivateReconciliation.IAddColumnResolver {
         public int callCount = 0;
 
         @Override
@@ -157,7 +157,7 @@ public class ResolverApplicationTest {
      * Resolver that throws exception
      */
     @ReconciliationScope(table = "", column = "")
-    public static class ThrowingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
+    public static class ThrowingResolver implements EstivateReconciliation.IAddColumnResolver {
         public boolean wasCalled = false;
 
         @Override

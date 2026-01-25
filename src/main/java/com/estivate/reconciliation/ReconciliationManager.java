@@ -422,26 +422,26 @@ public class ReconciliationManager {
      */
     private boolean tryApplyResolver(Object resolver, ReconciliationDelta diff) {
         try {
-            if (diff instanceof EstivateReconciliation.CreateTableDelta && resolver instanceof EstivateReconciliation.ICreateTableDeltaResolver) {
-                ((EstivateReconciliation.ICreateTableDeltaResolver) resolver).resolve(context, (EstivateReconciliation.CreateTableDelta) diff);
+            if (diff instanceof EstivateReconciliation.CreateTableDelta && resolver instanceof EstivateReconciliation.ICreateTableResolver) {
+                ((EstivateReconciliation.ICreateTableResolver) resolver).resolve(context, (EstivateReconciliation.CreateTableDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.AddColumnDelta && resolver instanceof EstivateReconciliation.IAddColumnDeltaResolver) {
-                ((EstivateReconciliation.IAddColumnDeltaResolver) resolver).resolve(context, (EstivateReconciliation.AddColumnDelta) diff);
+            if (diff instanceof EstivateReconciliation.AddColumnDelta && resolver instanceof EstivateReconciliation.IAddColumnResolver) {
+                ((EstivateReconciliation.IAddColumnResolver) resolver).resolve(context, (EstivateReconciliation.AddColumnDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.ModifyColumnDelta && resolver instanceof EstivateReconciliation.IModifyColumnDeltaResolver) {
-                ((EstivateReconciliation.IModifyColumnDeltaResolver) resolver).resolve(context, (EstivateReconciliation.ModifyColumnDelta) diff);
+            if (diff instanceof EstivateReconciliation.ModifyColumnDelta && resolver instanceof EstivateReconciliation.IModifyColumnResolver) {
+                ((EstivateReconciliation.IModifyColumnResolver) resolver).resolve(context, (EstivateReconciliation.ModifyColumnDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.DropTableDelta && resolver instanceof EstivateReconciliation.IDropTableDeltaResolver) {
-                ((EstivateReconciliation.IDropTableDeltaResolver) resolver).resolve(context, (EstivateReconciliation.DropTableDelta) diff);
+            if (diff instanceof EstivateReconciliation.DropTableDelta && resolver instanceof EstivateReconciliation.IDropTableResolver) {
+                ((EstivateReconciliation.IDropTableResolver) resolver).resolve(context, (EstivateReconciliation.DropTableDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.DropColumnDelta && resolver instanceof EstivateReconciliation.IDropColumnDeltaResolver) {
-                ((EstivateReconciliation.IDropColumnDeltaResolver) resolver).resolve(context, (EstivateReconciliation.DropColumnDelta) diff);
+            if (diff instanceof EstivateReconciliation.DropColumnDelta && resolver instanceof EstivateReconciliation.IDropColumnResolver) {
+                ((EstivateReconciliation.IDropColumnResolver) resolver).resolve(context, (EstivateReconciliation.DropColumnDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.AddIndexDelta && resolver instanceof EstivateReconciliation.IAddIndexDeltaResolver) {
-                ((EstivateReconciliation.IAddIndexDeltaResolver) resolver).resolve(context, (EstivateReconciliation.AddIndexDelta) diff);
+            if (diff instanceof EstivateReconciliation.AddIndexDelta && resolver instanceof EstivateReconciliation.IAddIndexResolver) {
+                ((EstivateReconciliation.IAddIndexResolver) resolver).resolve(context, (EstivateReconciliation.AddIndexDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.DropIndexDelta && resolver instanceof EstivateReconciliation.IDropIndexDeltaResolver) {
-                ((EstivateReconciliation.IDropIndexDeltaResolver) resolver).resolve(context, (EstivateReconciliation.DropIndexDelta) diff);
+            if (diff instanceof EstivateReconciliation.DropIndexDelta && resolver instanceof EstivateReconciliation.IDropIndexResolver) {
+                ((EstivateReconciliation.IDropIndexResolver) resolver).resolve(context, (EstivateReconciliation.DropIndexDelta) diff);
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());

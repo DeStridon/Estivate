@@ -9,7 +9,29 @@ import lombok.NoArgsConstructor;
 public class EstivateReconciliation {
 
 
-    public static interface ReconciliationDelta {}
+    public static abstract class ReconciliationDelta {
+        private ReconciliationResult reconciliationResult;
+        private String reconciliationReason;
+
+        public void closeSolved(String reason){
+            reconciliationResult = ReconciliationResult.SOLVED;
+            reconciliationReason = reason;
+        }
+
+        public void closeSkipped(String reason){
+            reconciliationResult = ReconciliationResult.SKIPPED;
+            reconciliationReason = reason;
+        }
+
+        public void closeFailed(String reason){
+            reconciliationResult = ReconciliationResult.FAILED;
+            reconciliationReason = reason;
+        }
+
+        public void closeSolved(){ closeSolved(null); }
+        public void closeSkipped(){ closeSkipped(null);}
+        public void closeFailed(){ closeFailed(null); }
+    }
 
     /**
      * Represents a table that exists in code but not in the database.
@@ -17,7 +39,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CreateTableDelta implements ReconciliationDelta {
+    public static class CreateTableDelta extends ReconciliationDelta {
         public String tableName;
     }
 
@@ -27,10 +49,11 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AddColumnDelta implements ReconciliationDelta {
+    public static class AddColumnDelta extends ReconciliationDelta {
         public String tableName;
         public String columnName;
         public AlterQuery.ColumnDefinition columnDefinition;
+
         
         /**
          * Constructor with basic information (no column definition)
@@ -42,13 +65,20 @@ public class EstivateReconciliation {
         }
     }
 
+
+    public static enum ReconciliationResult {
+        SOLVED, // treated successfully
+        SKIPPED, // not treated but doesn't need to
+        FAILED; // not treated and should have
+    }
+
     /**
      * Represents a table that exists in the database but has no corresponding entity in code.
      * Action: DROP TABLE
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DropTableDelta implements ReconciliationDelta {
+    public static class DropTableDelta extends ReconciliationDelta {
         public String tableName;
     }
 
@@ -58,7 +88,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DropColumnDelta implements ReconciliationDelta {
+    public static class DropColumnDelta extends ReconciliationDelta {
         public String tableName;
         public String columnName;
         public AlterQuery.ColumnDefinition columnDefinition;
@@ -79,7 +109,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AddIndexDelta implements ReconciliationDelta {
+    public static class AddIndexDelta extends ReconciliationDelta {
         public String tableName;
         public String indexName;
         public IndexDefinition indexDefinition;
@@ -100,7 +130,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DropIndexDelta implements ReconciliationDelta {
+    public static class DropIndexDelta extends ReconciliationDelta {
         public String tableName;
         public String indexName;
         public IndexDefinition indexDefinition;
@@ -136,7 +166,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ModifyColumnDelta implements ReconciliationDelta {
+    public static class ModifyColumnDelta extends ReconciliationDelta {
         public String tableName;
         public String columnName;
         public AlterQuery.ColumnDefinition entityDefinition;
@@ -174,22 +204,24 @@ public class EstivateReconciliation {
     }
 
 
-    public static interface ICreateTableDeltaResolver { public void resolve(Context context, CreateTableDelta diff); }
-    public static interface IAddColumnDeltaResolver { public void resolve(Context context, AddColumnDelta diff); }
-    public static interface IModifyColumnDeltaResolver { public void resolve(Context context, ModifyColumnDelta diff); }
-    public static interface IDropTableDeltaResolver { public void resolve(Context context, DropTableDelta diff); }
-    public static interface IDropColumnDeltaResolver { public void resolve(Context context, DropColumnDelta diff); }
-    public static interface IAddIndexDeltaResolver { public void resolve(Context context, AddIndexDelta diff); }
-    public static interface IDropIndexDeltaResolver { public void resolve(Context context, DropIndexDelta diff); }
+    public static interface ICreateTableResolver { public void resolve(Context context, CreateTableDelta delta); }
+    public static interface IAddColumnResolver { public void resolve(Context context, AddColumnDelta delta); }
+    public static interface IModifyColumnResolver { public void resolve(Context context, ModifyColumnDelta delta); }
+    public static interface IDropTableResolver { public void resolve(Context context, DropTableDelta delta); }
+    public static interface IDropColumnResolver { public void resolve(Context context, DropColumnDelta delta); }
+    public static interface IAddIndexResolver { public void resolve(Context context, AddIndexDelta delta); }
+    public static interface IDropIndexResolver { public void resolve(Context context, DropIndexDelta delta); }
+
+    public static interface IManualResolver { public void resolve(Context context); }
 
     public static interface IReconciliationResolver extends 
-                            ICreateTableDeltaResolver, 
-                            IAddColumnDeltaResolver, 
-                            IModifyColumnDeltaResolver,
-                            IDropTableDeltaResolver,
-                            IDropColumnDeltaResolver,
-                            IAddIndexDeltaResolver,
-                            IDropIndexDeltaResolver {}
+                            ICreateTableResolver, 
+                            IAddColumnResolver, 
+                            IModifyColumnResolver,
+                            IDropTableResolver,
+                            IDropColumnResolver,
+                            IAddIndexResolver,
+                            IDropIndexResolver {}
     
 
 }
