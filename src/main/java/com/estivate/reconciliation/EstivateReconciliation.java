@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 public class EstivateReconciliation {
 
 
-    public static interface ReconciliationOperation {}
+    public static interface ReconciliationDelta {}
 
     /**
      * Represents a table that exists in code but not in the database.
@@ -17,7 +17,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CreateTable implements ReconciliationOperation {
+    public static class CreateTableDelta implements ReconciliationDelta {
         public String tableName;
     }
 
@@ -27,7 +27,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AddColumn implements ReconciliationOperation {
+    public static class AddColumnDelta implements ReconciliationDelta {
         public String tableName;
         public String columnName;
         public AlterQuery.ColumnDefinition columnDefinition;
@@ -35,7 +35,7 @@ public class EstivateReconciliation {
         /**
          * Constructor with basic information (no column definition)
          */
-        public AddColumn(String tableName, String columnName) {
+        public AddColumnDelta(String tableName, String columnName) {
             this.tableName = tableName;
             this.columnName = columnName;
             this.columnDefinition = null;
@@ -48,7 +48,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DropTable implements ReconciliationOperation {
+    public static class DropTableDelta implements ReconciliationDelta {
         public String tableName;
     }
 
@@ -58,7 +58,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DropColumn implements ReconciliationOperation {
+    public static class DropColumnDelta implements ReconciliationDelta {
         public String tableName;
         public String columnName;
         public AlterQuery.ColumnDefinition columnDefinition;
@@ -66,7 +66,7 @@ public class EstivateReconciliation {
         /**
          * Constructor with basic information (no column definition)
          */
-        public DropColumn(String tableName, String columnName) {
+        public DropColumnDelta(String tableName, String columnName) {
             this.tableName = tableName;
             this.columnName = columnName;
             this.columnDefinition = null;
@@ -79,7 +79,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AddIndex implements ReconciliationOperation {
+    public static class AddIndexDelta implements ReconciliationDelta {
         public String tableName;
         public String indexName;
         public IndexDefinition indexDefinition;
@@ -87,7 +87,7 @@ public class EstivateReconciliation {
         /**
          * Constructor with basic information (no index definition)
          */
-        public AddIndex(String tableName, String indexName) {
+        public AddIndexDelta(String tableName, String indexName) {
             this.tableName = tableName;
             this.indexName = indexName;
             this.indexDefinition = null;
@@ -100,7 +100,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DropIndex implements ReconciliationOperation {
+    public static class DropIndexDelta implements ReconciliationDelta {
         public String tableName;
         public String indexName;
         public IndexDefinition indexDefinition;
@@ -108,7 +108,7 @@ public class EstivateReconciliation {
         /**
          * Constructor with basic information (no index definition)
          */
-        public DropIndex(String tableName, String indexName) {
+        public DropIndexDelta(String tableName, String indexName) {
             this.tableName = tableName;
             this.indexName = indexName;
             this.indexDefinition = null;
@@ -136,7 +136,7 @@ public class EstivateReconciliation {
      */
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ModifyColumn implements ReconciliationOperation {
+    public static class ModifyColumnDelta implements ReconciliationDelta {
         public String tableName;
         public String columnName;
         public AlterQuery.ColumnDefinition entityDefinition;
@@ -174,22 +174,22 @@ public class EstivateReconciliation {
     }
 
 
-    public static interface ICreateTableResolver { public void resolve(Context context, CreateTable diff); }
-    public static interface IAddColumnResolver { public void resolve(Context context, AddColumn diff); }
-    public static interface IModifyColumnResolver { public void resolve(Context context, ModifyColumn diff); }
-    public static interface IDropTableResolver { public void resolve(Context context, DropTable diff); }
-    public static interface IDropColumnResolver { public void resolve(Context context, DropColumn diff); }
-    public static interface IAddIndexResolver { public void resolve(Context context, AddIndex diff); }
-    public static interface IDropIndexResolver { public void resolve(Context context, DropIndex diff); }
+    public static interface ICreateTableDeltaResolver { public void resolve(Context context, CreateTableDelta diff); }
+    public static interface IAddColumnDeltaResolver { public void resolve(Context context, AddColumnDelta diff); }
+    public static interface IModifyColumnDeltaResolver { public void resolve(Context context, ModifyColumnDelta diff); }
+    public static interface IDropTableDeltaResolver { public void resolve(Context context, DropTableDelta diff); }
+    public static interface IDropColumnDeltaResolver { public void resolve(Context context, DropColumnDelta diff); }
+    public static interface IAddIndexDeltaResolver { public void resolve(Context context, AddIndexDelta diff); }
+    public static interface IDropIndexDeltaResolver { public void resolve(Context context, DropIndexDelta diff); }
 
     public static interface IReconciliationResolver extends 
-                            ICreateTableResolver, 
-                            IAddColumnResolver, 
-                            IModifyColumnResolver,
-                            IDropTableResolver,
-                            IDropColumnResolver,
-                            IAddIndexResolver,
-                            IDropIndexResolver {}
+                            ICreateTableDeltaResolver, 
+                            IAddColumnDeltaResolver, 
+                            IModifyColumnDeltaResolver,
+                            IDropTableDeltaResolver,
+                            IDropColumnDeltaResolver,
+                            IAddIndexDeltaResolver,
+                            IDropIndexDeltaResolver {}
     
 
 }

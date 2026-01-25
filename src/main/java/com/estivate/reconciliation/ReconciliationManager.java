@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.AlterQuery;
-import com.estivate.reconciliation.EstivateReconciliation.ReconciliationOperation;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -43,7 +43,7 @@ public class ReconciliationManager {
     EntityModel databaseModel;
 
     @Getter
-    List<ReconciliationOperation> differences;
+    List<ReconciliationDelta> differences;
 
     public ReconciliationManager(Context context, Class<?> entity) {
         this.context = context;
@@ -145,8 +145,8 @@ public class ReconciliationManager {
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<ReconciliationOperation> compare() {
-        List<ReconciliationOperation> diffs = new ArrayList<>();
+    private List<ReconciliationDelta> compare() {
+        List<ReconciliationDelta> diffs = new ArrayList<>();
         String tableName = entityModel.getTableName();
 
         // Check for fields in entity but not in database
@@ -174,7 +174,7 @@ public class ReconciliationManager {
                     null  // collation not available from entity field
                 );
                 
-                EstivateReconciliation.AddColumn addColumn = new EstivateReconciliation.AddColumn(
+                EstivateReconciliation.AddColumnDelta addColumn = new EstivateReconciliation.AddColumnDelta(
                     tableName,
                     entityField.getName(),
                     columnDef
@@ -218,7 +218,7 @@ public class ReconciliationManager {
                         null  // collation
                     );
                     
-                    EstivateReconciliation.ModifyColumn modifyColumn = new EstivateReconciliation.ModifyColumn(
+                    EstivateReconciliation.ModifyColumnDelta modifyColumn = new EstivateReconciliation.ModifyColumnDelta(
                         tableName,
                         entityField.getName(),
                         entityDef,
@@ -258,7 +258,7 @@ public class ReconciliationManager {
                     null  // collation not available from SHOW COLUMNS
                 );
                 
-                EstivateReconciliation.DropColumn dropColumn = new EstivateReconciliation.DropColumn(
+                EstivateReconciliation.DropColumnDelta dropColumn = new EstivateReconciliation.DropColumnDelta(
                     tableName,
                     columnName,
                     columnDef
@@ -311,7 +311,7 @@ public class ReconciliationManager {
     /**
      * Finds resolver classes that can handle the given diff.
      * Resolvers must:
-     * - Implement the appropriate resolver interface (e.g., IAddColumnResolver)
+     * - Implement the appropriate resolver interface (e.g., IAddColumnDeltaResolver)
      * - Have @ReconciliationScope annotation
      * - Match the table/column criteria from the annotation
      * 
@@ -325,7 +325,7 @@ public class ReconciliationManager {
      * @param candidates Collection of potential resolver classes to search through
      * @return List of matching resolvers, sorted from most specific to most generic
      */
-    public <T> List<T> findResolver(ReconciliationOperation diff, Collection<T> candidates) {
+    public <T> List<T> findResolver(ReconciliationDelta diff, Collection<T> candidates) {
         // Extract table and column from the diff
         String diffTable = extractTableName(diff);
         String diffColumn = extractColumnName(diff);
@@ -369,8 +369,8 @@ public class ReconciliationManager {
      */
     @Getter
     public static class ApplyResolversResult {
-        private final List<ReconciliationOperation> resolved = new ArrayList<>();
-        private final List<ReconciliationOperation> unresolved = new ArrayList<>();
+        private final List<ReconciliationDelta> resolved = new ArrayList<>();
+        private final List<ReconciliationDelta> unresolved = new ArrayList<>();
         
         public boolean isFullyResolved() {
             return unresolved.isEmpty();
@@ -392,7 +392,7 @@ public class ReconciliationManager {
     public ApplyResolversResult applyResolvers(Collection<Object> candidates) {
         ApplyResolversResult result = new ApplyResolversResult();
         
-        for (ReconciliationOperation diff : differences) {
+        for (ReconciliationDelta diff : differences) {
             List<Object> resolvers = findResolver(diff, candidates);
             
             boolean resolved = false;
@@ -420,28 +420,28 @@ public class ReconciliationManager {
      * @param diff The schema diff to resolve
      * @return true if the resolver successfully handled the diff, false otherwise
      */
-    private boolean tryApplyResolver(Object resolver, ReconciliationOperation diff) {
+    private boolean tryApplyResolver(Object resolver, ReconciliationDelta diff) {
         try {
-            if (diff instanceof EstivateReconciliation.CreateTable && resolver instanceof EstivateReconciliation.ICreateTableResolver) {
-                ((EstivateReconciliation.ICreateTableResolver) resolver).resolve(context, (EstivateReconciliation.CreateTable) diff);
+            if (diff instanceof EstivateReconciliation.CreateTableDelta && resolver instanceof EstivateReconciliation.ICreateTableDeltaResolver) {
+                ((EstivateReconciliation.ICreateTableDeltaResolver) resolver).resolve(context, (EstivateReconciliation.CreateTableDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.AddColumn && resolver instanceof EstivateReconciliation.IAddColumnResolver) {
-                ((EstivateReconciliation.IAddColumnResolver) resolver).resolve(context, (EstivateReconciliation.AddColumn) diff);
+            if (diff instanceof EstivateReconciliation.AddColumnDelta && resolver instanceof EstivateReconciliation.IAddColumnDeltaResolver) {
+                ((EstivateReconciliation.IAddColumnDeltaResolver) resolver).resolve(context, (EstivateReconciliation.AddColumnDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.ModifyColumn && resolver instanceof EstivateReconciliation.IModifyColumnResolver) {
-                ((EstivateReconciliation.IModifyColumnResolver) resolver).resolve(context, (EstivateReconciliation.ModifyColumn) diff);
+            if (diff instanceof EstivateReconciliation.ModifyColumnDelta && resolver instanceof EstivateReconciliation.IModifyColumnDeltaResolver) {
+                ((EstivateReconciliation.IModifyColumnDeltaResolver) resolver).resolve(context, (EstivateReconciliation.ModifyColumnDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.DropTable && resolver instanceof EstivateReconciliation.IDropTableResolver) {
-                ((EstivateReconciliation.IDropTableResolver) resolver).resolve(context, (EstivateReconciliation.DropTable) diff);
+            if (diff instanceof EstivateReconciliation.DropTableDelta && resolver instanceof EstivateReconciliation.IDropTableDeltaResolver) {
+                ((EstivateReconciliation.IDropTableDeltaResolver) resolver).resolve(context, (EstivateReconciliation.DropTableDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.DropColumn && resolver instanceof EstivateReconciliation.IDropColumnResolver) {
-                ((EstivateReconciliation.IDropColumnResolver) resolver).resolve(context, (EstivateReconciliation.DropColumn) diff);
+            if (diff instanceof EstivateReconciliation.DropColumnDelta && resolver instanceof EstivateReconciliation.IDropColumnDeltaResolver) {
+                ((EstivateReconciliation.IDropColumnDeltaResolver) resolver).resolve(context, (EstivateReconciliation.DropColumnDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.AddIndex && resolver instanceof EstivateReconciliation.IAddIndexResolver) {
-                ((EstivateReconciliation.IAddIndexResolver) resolver).resolve(context, (EstivateReconciliation.AddIndex) diff);
+            if (diff instanceof EstivateReconciliation.AddIndexDelta && resolver instanceof EstivateReconciliation.IAddIndexDeltaResolver) {
+                ((EstivateReconciliation.IAddIndexDeltaResolver) resolver).resolve(context, (EstivateReconciliation.AddIndexDelta) diff);
             }
-            if (diff instanceof EstivateReconciliation.DropIndex && resolver instanceof EstivateReconciliation.IDropIndexResolver) {
-                ((EstivateReconciliation.IDropIndexResolver) resolver).resolve(context, (EstivateReconciliation.DropIndex) diff);
+            if (diff instanceof EstivateReconciliation.DropIndexDelta && resolver instanceof EstivateReconciliation.IDropIndexDeltaResolver) {
+                ((EstivateReconciliation.IDropIndexDeltaResolver) resolver).resolve(context, (EstivateReconciliation.DropIndexDelta) diff);
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
@@ -452,7 +452,7 @@ public class ReconciliationManager {
     /**
      * Extracts table name from a SchemaDiff using reflection
      */
-    private String extractTableName(ReconciliationOperation diff) {
+    private String extractTableName(ReconciliationDelta diff) {
         try {
             Field tableField = diff.getClass().getField("tableName");
             return (String) tableField.get(diff);
@@ -465,13 +465,13 @@ public class ReconciliationManager {
      * Extracts column name or index name from a SchemaDiff using reflection.
      * Checks for 'columnName' first, then 'indexName'.
      */
-    private String extractColumnName(ReconciliationOperation diff) {
-        // Try columnName first (used by AddColumn, DropColumn, ModifyColumn)
+    private String extractColumnName(ReconciliationDelta diff) {
+        // Try columnName first (used by AddColumnDelta, DropColumnDelta, ModifyColumnDelta)
         try {
             Field columnField = diff.getClass().getField("columnName");
             return (String) columnField.get(diff);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            // Try indexName (used by AddIndex, DropIndex)
+            // Try indexName (used by AddIndexDelta, DropIndexDelta)
             try {
                 Field indexField = diff.getClass().getField("indexName");
                 return (String) indexField.get(diff);

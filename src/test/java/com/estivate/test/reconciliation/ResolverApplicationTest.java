@@ -15,7 +15,7 @@ import com.estivate.context.Context;
 import com.estivate.query.AlterQuery.ModifyColumn;
 import com.estivate.reconciliation.ReconciliationScope;
 import com.estivate.reconciliation.EstivateReconciliation;
-import com.estivate.reconciliation.EstivateReconciliation.AddColumn;
+import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.ReconciliationManager.ApplyResolversResult;
 import com.estivate.test.DatabaseGenerator;
@@ -68,13 +68,13 @@ public class ResolverApplicationTest {
      * Generic resolver that handles any ColumnMissing diff
      */
     @ReconciliationScope(table = "", column = "")
-    public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
+    public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
         public boolean wasCalled = false;
-        public AddColumn lastDiff = null;
+        public AddColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
 
         @Override
-        public void resolve(Context context, AddColumn diff) {
+        public void resolve(Context context, AddColumnDelta diff) {
             wasCalled = true;
             lastDiff = diff;
         }
@@ -84,13 +84,13 @@ public class ResolverApplicationTest {
      * Table-specific resolver for ColumnMissing
      */
     @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "")
-    public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
+    public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
         public boolean wasCalled = false;
-        public AddColumn lastDiff = null;
+        public AddColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
 
         @Override
-        public void resolve(Context context, AddColumn diff) {
+        public void resolve(Context context, AddColumnDelta diff) {
             wasCalled = true;
             lastDiff = diff;
         }
@@ -100,13 +100,13 @@ public class ResolverApplicationTest {
      * Column-specific resolver for ColumnMissing on 'email' column
      */
     @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "email")
-    public static class EmailColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
+    public static class EmailColumnMissingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
         public boolean wasCalled = false;
-        public AddColumn lastDiff = null;
+        public AddColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
 
         @Override
-        public void resolve(Context context, AddColumn diff) {
+        public void resolve(Context context, AddColumnDelta diff) {
             wasCalled = true;
             lastDiff = diff;
         }
@@ -116,26 +116,26 @@ public class ResolverApplicationTest {
      * Generic column definition mismatch resolver (handles type, length, nullable, etc.)
      */
     @ReconciliationScope(table = "", column = "")
-    public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IModifyColumnResolver {
+    public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IModifyColumnDeltaResolver {
         public boolean wasCalled = false;
-        public ModifyColumn lastDiff = null;
+        public com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta lastDiff = null;
         public boolean shouldSucceed = true;
 
         @Override
-        public void resolve(Context context, com.estivate.reconciliation.EstivateReconciliation.ModifyColumn diff) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'resolve'");
+        public void resolve(Context context, com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta diff) {
+            wasCalled = true;
+            lastDiff = diff;
         }
     }
 
     /**
      * Resolver without annotation - should never be called
      */
-    public static class UnannotatedResolver implements EstivateReconciliation.IAddColumnResolver {
+    public static class UnannotatedResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
         public boolean wasCalled = false;
 
         @Override
-        public void resolve(Context context, AddColumn diff) {
+        public void resolve(Context context, AddColumnDelta diff) {
             wasCalled = true;
         }
     }
@@ -144,11 +144,11 @@ public class ResolverApplicationTest {
      * Resolver that always fails
      */
     @ReconciliationScope(table = "", column = "")
-    public static class FailingResolver implements EstivateReconciliation.IAddColumnResolver {
+    public static class FailingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
         public int callCount = 0;
 
         @Override
-        public void resolve(Context context, AddColumn diff) {
+        public void resolve(Context context, AddColumnDelta diff) {
             callCount++;
         }
     }
@@ -157,12 +157,12 @@ public class ResolverApplicationTest {
      * Resolver that throws exception
      */
     @ReconciliationScope(table = "", column = "")
-    public static class ThrowingResolver implements EstivateReconciliation.IAddColumnResolver {
+    public static class ThrowingResolver implements EstivateReconciliation.IAddColumnDeltaResolver {
         public boolean wasCalled = false;
 
         @Override
-        public void resolve(Context context, AddColumn diff) {
-            // TODO Auto-generated method stub
+        public void resolve(Context context, AddColumnDelta diff) {
+            wasCalled = true;
             throw new UnsupportedOperationException("Unimplemented method 'resolve'");
         }
     }
@@ -311,8 +311,8 @@ public class ResolverApplicationTest {
         assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
         
         // Verify the correct diff types were resolved/unresolved
-        assertTrue(result.getResolved().stream().anyMatch(d -> d instanceof AddColumn), "AddColumn should be resolved");
-        assertTrue(result.getUnresolved().stream().anyMatch(d -> d instanceof ModifyColumn), "ModifyColumn should be unresolved");
+        assertTrue(result.getResolved().stream().anyMatch(d -> d instanceof AddColumnDelta), "AddColumnDelta should be resolved");
+        assertTrue(result.getUnresolved().stream().anyMatch(d -> d instanceof com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta), "ModifyColumnDelta should be unresolved");
     }
 
     @Test
