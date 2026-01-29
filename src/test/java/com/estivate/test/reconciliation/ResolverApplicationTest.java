@@ -219,7 +219,7 @@ public class ResolverApplicationTest {
         assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
         assertTrue(resolver.wasCalled, "Resolver should be called");
         assertNotNull(resolver.lastDiff, "Last diff should be set");
-        assertEquals("email", resolver.lastDiff.columnName, "Diff should be for email column");
+        assertEquals("email", resolver.lastDiff.entityAttribute, "Diff should be for email column");
     }
 
     @Test

@@ -33,36 +33,31 @@ public class EstivateReconciliation {
         public void closeFailed(){ closeFailed(null); }
     }
 
-    /**
-     * Represents a table that exists in code but not in the database.
-     * Action: CREATE TABLE
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
+
+
+
     public static class CreateTableDelta extends ReconciliationDelta {
+        public Class<?> entityClass;
+    }
+    
+
+    public static class DropTableDelta extends ReconciliationDelta {
         public String tableName;
     }
-
-    /**
-     * Represents a column that exists in code but not in the database.
-     * Action: ALTER TABLE ADD COLUMN
-     */
+    
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AddColumnDelta extends ReconciliationDelta {
-        public String tableName;
-        public String columnName;
-        public AlterQuery.ColumnDefinition columnDefinition;
+        public Class<?> entityClass;
+        public String entityAttribute;
+        public AlterQuery.ColumnDefinition entityColumnDefinition;
+    }
 
-        
-        /**
-         * Constructor with basic information (no column definition)
-         */
-        public AddColumnDelta(String tableName, String columnName) {
-            this.tableName = tableName;
-            this.columnName = columnName;
-            this.columnDefinition = null;
-        }
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DropColumnDelta extends ReconciliationDelta {
+        public Class<?> entityClass;
+        public String tableColumnName;
     }
 
 
@@ -72,56 +67,12 @@ public class EstivateReconciliation {
         FAILED; // not treated and should have
     }
 
-    /**
-     * Represents a table that exists in the database but has no corresponding entity in code.
-     * Action: DROP TABLE
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DropTableDelta extends ReconciliationDelta {
-        public String tableName;
-    }
-
-    /**
-     * Represents a column that exists in the database but has no corresponding field in the entity.
-     * Action: ALTER TABLE DROP COLUMN
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DropColumnDelta extends ReconciliationDelta {
-        public String tableName;
-        public String columnName;
-        public AlterQuery.ColumnDefinition columnDefinition;
-        
-        /**
-         * Constructor with basic information (no column definition)
-         */
-        public DropColumnDelta(String tableName, String columnName) {
-            this.tableName = tableName;
-            this.columnName = columnName;
-            this.columnDefinition = null;
-        }
-    }
-
-    /**
-     * Represents an index that exists in code but not in the database.
-     * Action: CREATE INDEX
-     */
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AddIndexDelta extends ReconciliationDelta {
-        public String tableName;
+        public Class<?> entityClass;
         public String indexName;
         public IndexDefinition indexDefinition;
-        
-        /**
-         * Constructor with basic information (no index definition)
-         */
-        public AddIndexDelta(String tableName, String indexName) {
-            this.tableName = tableName;
-            this.indexName = indexName;
-            this.indexDefinition = null;
-        }
     }
 
     /**
@@ -131,18 +82,9 @@ public class EstivateReconciliation {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DropIndexDelta extends ReconciliationDelta {
-        public String tableName;
+    	public Class<?> entityClass;
         public String indexName;
         public IndexDefinition indexDefinition;
-        
-        /**
-         * Constructor with basic information (no index definition)
-         */
-        public DropIndexDelta(String tableName, String indexName) {
-            this.tableName = tableName;
-            this.indexName = indexName;
-            this.indexDefinition = null;
-        }
     }
 
     /**
@@ -164,14 +106,15 @@ public class EstivateReconciliation {
      * Represents a mismatch between entity column definition and database column definition.
      * Action: ALTER TABLE MODIFY COLUMN
      */
+
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ModifyColumnDelta extends ReconciliationDelta {
-        public String tableName;
-        public String columnName;
+        public Class<?> entityClass;
+        public String attributeName;
         public AlterQuery.ColumnDefinition entityDefinition;
         public AlterQuery.ColumnDefinition databaseDefinition;
-        
+
         public boolean hasTypeMismatch() {
             if (entityDefinition == null || databaseDefinition == null) return false;
             return !java.util.Objects.equals(entityDefinition.columnType, databaseDefinition.columnType);

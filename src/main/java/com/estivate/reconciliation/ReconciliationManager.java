@@ -152,7 +152,7 @@ public class ReconciliationManager {
         // Check for fields in entity but not in database
         for (TableField entityField : entityModel.getFields()) {
             TableField dbField = databaseModel.findField(entityField.getName());
-            
+
             if (dbField == null) {
                 // Also check by mapped database column name
                 String dbColumnName = context.nameMapper.mapDatabaseField(entityField.getName());
@@ -175,12 +175,13 @@ public class ReconciliationManager {
                 );
                 
                 EstivateReconciliation.AddColumnDelta addColumn = new EstivateReconciliation.AddColumnDelta(
-                    tableName,
+                    entity,
                     entityField.getName(),
                     columnDef
                 );
                 diffs.add(addColumn);
-            } else {
+            } 
+            else {
                 // Check for any column definition mismatches
                 boolean hasTypeMismatch = !entityField.typeMatches(dbField.getType());
                 boolean hasNullableMismatch = entityField.isNullable() != dbField.isNullable();
@@ -219,7 +220,7 @@ public class ReconciliationManager {
                     );
                     
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = new EstivateReconciliation.ModifyColumnDelta(
-                        tableName,
+                        entity,
                         entityField.getName(),
                         entityDef,
                         dbDef
@@ -259,9 +260,8 @@ public class ReconciliationManager {
                 );
                 
                 EstivateReconciliation.DropColumnDelta dropColumn = new EstivateReconciliation.DropColumnDelta(
-                    tableName,
-                    columnName,
-                    columnDef
+                    entity,
+                    columnName
                 );
                 diffs.add(dropColumn);
             }
