@@ -1057,7 +1057,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	            }
 
 	            // if any other join is using this join, it is used
-				if(getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity == join.rightEntity)){
+				if(getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity.equals(join.rightEntity))){
 					continue;
 				}
 			

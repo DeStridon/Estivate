@@ -40,8 +40,32 @@ public class QueryPruneUnusedJoinsTest {
         Assert.assertTrue(afterPrune.contains("INNER JOIN ORDERENTITY"));
         Assert.assertFalse(afterPrune.contains("INNER JOIN ORDERLINEENTITY"));
         Assert.assertFalse(afterPrune.contains("INNER JOIN PRODUCTENTITY")); 
+
         
     }
+
+    @Test
+    public void testPruneUnusedJoins2() {
+    	
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .joinInner(CustomerEntity.class, OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .gt(ProductEntity.class, ProductEntity.Fields.price, 100.0);
+        
+        String beforePrune = context.queryAsString(query);
+        System.out.println(beforePrune);
+        query.pruneUnusedJoins();
+        
+        String afterPrune = context.queryAsString(query);
+        System.out.println(afterPrune);
+
+        Assert.assertTrue(beforePrune.equals(afterPrune));
+
+
+        
+    }
+
 
 
 }
