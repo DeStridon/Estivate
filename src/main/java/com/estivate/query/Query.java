@@ -1030,7 +1030,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 
 	
 	
-	public void pruneUnusedJoins(){
+	public Q pruneUnusedJoins(){
 
         List<Attribute> attributes = listNodeAttributes(this);
         
@@ -1047,44 +1047,32 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	        for(Join join : getJoins()){
 
 	        	// if any field of joined entity in where, it is used
-	            if(attributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){
-	                continue;
-	            }
+	            if(attributes.stream().anyMatch(attribute -> attribute.getEntity().equals(join.rightEntity))){ continue; }
 	            
 	            // if any field of joined entity in order by, it is used
-	            if(getOrders().stream().anyMatch(order -> order.entity.equals(join.rightEntity))){
-	                continue;
-	            }
+	            if(getOrders().stream().anyMatch(order -> order.entity.equals(join.rightEntity))){ continue; }
 
 	            // if any other join is using this join, it is used
-				if(getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity.equals(join.rightEntity))){
-					continue;
-				}
+				if(getJoins().stream().anyMatch(otherJoin -> otherJoin.leftEntity.equals(join.rightEntity))){ continue; }
 			
-	            // if any field of joined entity in select, it is used
 	        	if(this instanceof SelectQuery) {
-		            if(((SelectQuery<?>) this).getSelects().stream().anyMatch(select -> select.getEntity().equals(join.rightEntity))){
-		                continue;
-		            }
+		            // if any field of joined entity in select, it is used
+					if(((SelectQuery<?>) this).getSelects().stream().anyMatch(select -> select.getEntity().equals(join.rightEntity))){ continue; }
 		            // if any field of joined entity in group by, it is used
-		            if(((SelectQuery<?>) this).getGroupBys().stream().anyMatch(groupBy -> groupBy.entity.equals(join.rightEntity))){
-		                continue;
-		            }
+		            if(((SelectQuery<?>) this).getGroupBys().stream().anyMatch(groupBy -> groupBy.entity.equals(join.rightEntity))){ continue; }
 	        	}
-
-	            // collect join to remove
+				
 	            joinsToRemove.add(join);
 	        }
 	        
 	        // remove collected joins outside the iteration
 	        if(!joinsToRemove.isEmpty()) {
 	        	getJoins().removeAll(joinsToRemove);
-	        }
-	        
+	        }	        
         }
 		while(!joinsToRemove.isEmpty());
 
- 
+		return self();
     }
 
     public static List<Attribute> listNodeAttributes(EstivateNode node){
