@@ -79,56 +79,103 @@ public class Projection {
 	
 	/**
 	 * Maps a projection object to an entity object based on @Projection.Attribute annotations.
-	 * Only fields with @Projection.Attribute annotations pointing to the target entity class are mapped.
-	 * 
-	 * @param <E> The target entity type
-	 * @param projectionObject The source projection object containing @Projection.Attribute annotations
-	 * @param targetEntity The target entity object to populate with values from the projection object
-	 * @return The target entity object with values mapped from the projection object
+	 * <p>
+	 * Two directions are supported:
+	 * <ul>
+	 *   <li><b>Source → target:</b> Fields in the source (projection) with @Projection.Attribute pointing to the target entity class are copied to the target's corresponding attribute.</li>
+	 *   <li><b>Target pulls from source:</b> Fields in the target with @Projection.Attribute (entity, attribute) are filled from the source projection field that has the same entity/attribute in its annotation.</li>
+	 * </ul>
+	 *
+	 * @param source The source projection object containing @Projection.Attribute annotations
+	 * @param target The target entity object to populate with values from the projection object
 	 * @throws RuntimeException if fields cannot be accessed
 	 */
-	public static void mapProjectionToEntity(Object projectionObject, Object targetEntity) {
-		if (projectionObject == null || targetEntity == null) {
-			return;
+	public static <T>  T mapTo(Object source, T target) {
+		if (source == null || target == null) {
+			return null;
 		}
 		
 		try {
-			Class<?> targetEntityClass = targetEntity.getClass();
+			Class<?> targetEntityClass = target.getClass();
 			
-			// Get all fields from the projection class
-			Set<Field> projectionFields = FieldUtils.getEntityFields(projectionObject.getClass());
-			
-			for (Field projectionField : projectionFields) {
-				// Check if field has @Projection.Attribute annotation
+			// 1) Source → target: fields in source with @Attribute pointing to target entity
+			Set<Field> sourceFields = FieldUtils.getEntityFields(source.getClass());
+			for (Field projectionField : sourceFields) {
 				Attribute attributeAnnotation = projectionField.getDeclaredAnnotation(Attribute.class);
 				if (attributeAnnotation == null) {
 					continue;
 				}
-				
-				// Check if the annotation points to the target entity class
 				if (!attributeAnnotation.entity().equals(targetEntityClass)) {
 					continue;
 				}
-				
-				// Get the value from the projection field
 				projectionField.setAccessible(true);
-				Object value = projectionField.get(projectionObject);
-				
-				// Find the corresponding field in the target entity
+				Object value = projectionField.get(source);
 				Field entityField = FieldUtils.findField(targetEntityClass, attributeAnnotation.attribute());
 				if (entityField == null) {
-					continue; // Skip if field not found in entity
+					continue;
 				}
-				
-				// Set the value in the entity field
 				entityField.setAccessible(true);
-				entityField.set(targetEntity, value);
+				entityField.set(target, value);
+			}
+
+			// 2) Target pulls from source: fields in target with @Attribute (entity, attribute) get value from matching source field
+			Set<Field> targetFields = FieldUtils.getEntityFields(targetEntityClass);
+			for (Field targetField : targetFields) {
+				Attribute attributeAnnotation = targetField.getDeclaredAnnotation(Attribute.class);
+				if (attributeAnnotation == null) {
+					continue;
+				}
+				Field sourceField = findSourceFieldByAttribute(source.getClass(), attributeAnnotation.entity(), attributeAnnotation.attribute());
+				if (sourceField == null) {
+					continue;
+				}
+				sourceField.setAccessible(true);
+				Object value = sourceField.get(source);
+				targetField.setAccessible(true);
+				targetField.set(target, value);
 			}
 			
-			
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to map projection object to entity: " + targetEntity.getClass().getName(), e);
+			throw new RuntimeException("Failed to map projection object to entity: " + target.getClass().getName(), e);
 		}
+
+		return target;
+	}
+
+	/**
+	 * Maps a projection object to a new instance of the given target class.
+	 * Instantiates the target class via its no-arg constructor, then delegates to {@link #mapTo(Object, Object)}.
+	 *
+	 * @param source The source projection object
+	 * @param targetClass The class of the target entity to instantiate and populate
+	 * @param <T> The target type
+	 * @return A new instance of targetClass populated from source, or null if source is null
+	 * @throws RuntimeException if instantiation or mapping fails
+	 */
+	public static <T> T mapTo(Object source, Class<T> targetClass) {
+		if (source == null || targetClass == null) {
+			return null;
+		}
+		try {
+			T target = targetClass.getDeclaredConstructor().newInstance();
+			mapTo(source, target);
+			return target;
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to instantiate or map to: " + targetClass.getName(), e);
+		}
+	}
+
+	/**
+	 * Finds a field in the given class (or its superclasses) that has @Projection.Attribute with the given entity and attribute.
+	 */
+	private static Field findSourceFieldByAttribute(Class<?> sourceClass, Class<?> entity, String attribute) {
+		for (Field field : FieldUtils.getEntityFields(sourceClass)) {
+			Attribute ann = field.getDeclaredAnnotation(Attribute.class);
+			if (ann != null && ann.entity().equals(entity) && ann.attribute().equals(attribute)) {
+				return field;
+			}
+		}
+		return null;
 	}
 	
 }
