@@ -20,6 +20,7 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -174,11 +175,11 @@ public class ReconciliationManager {
                     null  // collation not available from entity field
                 );
                 
-                EstivateReconciliation.AddColumnDelta addColumn = new EstivateReconciliation.AddColumnDelta(
-                    entity,
-                    entityField.getName(),
-                    columnDef
-                );
+                EstivateReconciliation.AddColumnDelta addColumn = EstivateReconciliation.AddColumnDelta.builder()
+                    .entityClass(entity)
+                    .entityAttribute(entityField.getName())
+                    .entityColumnDefinition(columnDef)
+                    .build();
                 diffs.add(addColumn);
             } 
             else {
@@ -219,12 +220,12 @@ public class ReconciliationManager {
                         null  // collation
                     );
                     
-                    EstivateReconciliation.ModifyColumnDelta modifyColumn = new EstivateReconciliation.ModifyColumnDelta(
-                        entity,
-                        entityField.getName(),
-                        entityDef,
-                        dbDef
-                    );
+                    EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
+                        .entityClass(entity)
+                        .attributeName(entityField.getName())
+                        .entityDefinition(entityDef)
+                        .databaseDefinition(dbDef)
+                        .build();
                     diffs.add(modifyColumn);
                 }
             }
@@ -259,10 +260,10 @@ public class ReconciliationManager {
                     null  // collation not available from SHOW COLUMNS
                 );
                 
-                EstivateReconciliation.DropColumnDelta dropColumn = new EstivateReconciliation.DropColumnDelta(
-                    entity,
-                    columnName
-                );
+                EstivateReconciliation.DropColumnDelta dropColumn = EstivateReconciliation.DropColumnDelta.builder()
+                    .entityClass(entity)
+                    .tableColumnName(columnName)
+                    .build();
                 diffs.add(dropColumn);
             }
         }

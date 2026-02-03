@@ -1,12 +1,32 @@
 package com.estivate.reconciliation;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.List;
+
 import com.estivate.context.Context;
 import com.estivate.query.AlterQuery;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 public class EstivateReconciliation {
+
+    public static enum ReconciliationResult {
+        SOLVED, // treated successfully
+        SKIPPED, // not treated but doesn't need to
+        FAILED; // not treated and should have
+    }
+
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface ReconciliationScope {
+        String table() default "";       // noms des tables visées
+        String column() default "";      // noms des colonnes visées
+    }
 
 
     public static abstract class ReconciliationDelta {
@@ -45,68 +65,30 @@ public class EstivateReconciliation {
         public String tableName;
     }
     
+
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AddColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
         public String entityAttribute;
         public AlterQuery.ColumnDefinition entityColumnDefinition;
+
+        public List<ReconciliationDelta> entityDeltas;
     }
 
+    
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DropColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
         public String tableColumnName;
+
+        public List<ReconciliationDelta> entityDeltas;
     }
 
-
-    public static enum ReconciliationResult {
-        SOLVED, // treated successfully
-        SKIPPED, // not treated but doesn't need to
-        FAILED; // not treated and should have
-    }
-
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class AddIndexDelta extends ReconciliationDelta {
-        public Class<?> entityClass;
-        public String indexName;
-        public IndexDefinition indexDefinition;
-    }
-
-    /**
-     * Represents an index that exists in the database but has no corresponding definition in code.
-     * Action: DROP INDEX
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DropIndexDelta extends ReconciliationDelta {
-    	public Class<?> entityClass;
-        public String indexName;
-        public IndexDefinition indexDefinition;
-    }
-
-    /**
-     * Definition of an index including its columns and properties.
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class IndexDefinition {
-        public String[] columns;
-        public boolean unique;
-        
-        public IndexDefinition(String... columns) {
-            this.columns = columns;
-            this.unique = false;
-        }
-    }
-
-    /**
-     * Represents a mismatch between entity column definition and database column definition.
-     * Action: ALTER TABLE MODIFY COLUMN
-     */
-
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ModifyColumnDelta extends ReconciliationDelta {
@@ -114,6 +96,8 @@ public class EstivateReconciliation {
         public String attributeName;
         public AlterQuery.ColumnDefinition entityDefinition;
         public AlterQuery.ColumnDefinition databaseDefinition;
+
+        public List<ReconciliationDelta> entityDeltas;
 
         public boolean hasTypeMismatch() {
             if (entityDefinition == null || databaseDefinition == null) return false;
@@ -145,6 +129,55 @@ public class EstivateReconciliation {
             return !java.util.Objects.equals(entityDefinition.collation, databaseDefinition.collation);
         }
     }
+
+
+
+
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AddIndexDelta extends ReconciliationDelta {
+        public Class<?> entityClass;
+        public String indexName;
+        public IndexDefinition indexDefinition;
+
+        public List<ReconciliationDelta> entityDeltas;
+    }
+
+    /**
+     * Represents an index that exists in the database but has no corresponding definition in code.
+     * Action: DROP INDEX
+     */
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DropIndexDelta extends ReconciliationDelta {
+    	public Class<?> entityClass;
+        public String indexName;
+        public IndexDefinition indexDefinition;
+
+        public List<ReconciliationDelta> entityDeltas;
+    }
+
+    /**
+     * Definition of an index including its columns and properties.
+     */
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IndexDefinition {
+        public String[] columns;
+        public boolean unique;
+        
+        public IndexDefinition(String... columns) {
+            this.columns = columns;
+            this.unique = false;
+        }
+    }
+
+    /**
+     * Represents a mismatch between entity column definition and database column definition.
+     * Action: ALTER TABLE MODIFY COLUMN
+     */
+    
 
 
     public static interface ICreateTableResolver { public void resolve(Context context, CreateTableDelta delta); }
