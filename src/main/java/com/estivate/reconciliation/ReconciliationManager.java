@@ -107,7 +107,7 @@ public class ReconciliationManager {
      * @param entityClass The entity class to reconcile
      */
     public static ReconciliationManager forEntity(Context context, Class<?> entityClass) {
-        ReconciliationManager manager = new ReconciliationManager(context, List.of());
+        ReconciliationManager manager = new ReconciliationManager(context, new ArrayList<>());
         manager.entityClasses.add(entityClass);
         
         EntityModel entityModel = manager.scanEntityFields(entityClass);

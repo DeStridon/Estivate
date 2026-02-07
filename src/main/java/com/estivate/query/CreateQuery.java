@@ -1,6 +1,7 @@
 package com.estivate.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -142,7 +143,7 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
         private final List<String> columns;
 
         public PrimaryKey(String... columns) {
-            this.columns = new ArrayList<>(List.of(columns));
+            this.columns = new ArrayList<>(Arrays.asList(columns));
         }
 
         public PrimaryKey(List<String> columns) {
@@ -367,7 +368,7 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
 
     // Index methods
     public CreateQuery<E> index(String indexName, String... columns) {
-        indexes.add(new Index(indexName, List.of(columns)));
+        indexes.add(new Index(indexName, Arrays.asList(columns)));
         return this;
     }
     
@@ -377,7 +378,7 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
     }
     
     public CreateQuery<E> uniqueIndex(String indexName, String... columns) {
-        indexes.add(new Index(indexName, List.of(columns), true));
+        indexes.add(new Index(indexName, Arrays.asList(columns), true));
         return this;
     }
     
