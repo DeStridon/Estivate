@@ -24,6 +24,7 @@ import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
 import com.estivate.query.Criterion;
 import com.estivate.query.AlterQuery;
+import com.estivate.query.CreateQuery;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
@@ -108,9 +109,22 @@ public class Statement implements AutoCloseable{
 		else if(query instanceof AlterQuery) {
 			appendQuery("ALTER TABLE");
 		}
+		else if(query instanceof CreateQuery) {
+			CreateQuery<?> createQuery = (CreateQuery<?>) query;
+			appendQuery("CREATE");
+			if(createQuery.isTemporary()) {
+				appendQuery("TEMPORARY");
+			}
+			appendQuery("TABLE");
+			if(createQuery.isIfNotExists()) {
+				appendQuery("IF NOT EXISTS");
+			}
+		}
 		
-		// 3. Append entity
-		appendEntity(query.getEntity());
+		// 3. Append entity (not for CreateQuery which handles its own table name)
+		if(!(query instanceof CreateQuery)) {
+			appendEntity(query.getEntity());
+		}
 		
 		
 		
@@ -119,11 +133,13 @@ public class Statement implements AutoCloseable{
 			appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
 		}
 		
-		// 5. Add Join
-		for(Join join : query.getJoins()) {
-        	appendJoin(join);
-        	appendQuery("\n");
-        }
+		// 5. Add Join (not applicable for ALTER TABLE or CREATE TABLE)
+		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery)) {
+			for(Join join : query.getJoins()) {
+				appendJoin(join);
+				appendQuery("\n");
+			}
+		}
 
 		// 6. If update query, add set
 		if(query instanceof UpdateQuery) {
@@ -169,8 +185,62 @@ public class Statement implements AutoCloseable{
 			}
 		}
 		
-		// 7. Add Where (not applicable for ALTER TABLE)
-		if(!(query instanceof AlterQuery) && !query.getCriterions().isEmpty()) {
+		// 6c. If create table query, add columns and constraints
+		if(query instanceof CreateQuery) {
+			CreateQuery<?> createQuery = (CreateQuery<?>) query;
+			
+			// Append table name
+			appendQuery(context.nameMapper.toTableName(query.getEntity().entity));
+			
+			if(createQuery.getColumns().isEmpty()) {
+				throw new RuntimeException("CREATE TABLE query must have at least one column");
+			}
+			
+			appendQuery("(");
+			
+			List<String> definitions = new ArrayList<>();
+			
+			// Add columns
+			for(CreateQuery.Column column : createQuery.getColumns().values()) {
+				StringBuilder columnDef = new StringBuilder();
+				Statement columnStatement = new Statement(context, connection);
+				column.render(context, columnStatement);
+				columnDef.append(columnStatement.query().trim());
+				definitions.add(columnDef.toString());
+			}
+			
+			// Add primary key constraint (if not inline)
+			if(createQuery.getPrimaryKey() != null) {
+				Statement pkStatement = new Statement(context, connection);
+				createQuery.getPrimaryKey().render(context, pkStatement);
+				definitions.add(pkStatement.query().trim());
+			}
+			
+			// Add foreign key constraints
+			for(CreateQuery.ForeignKey fk : createQuery.getForeignKeys()) {
+				Statement fkStatement = new Statement(context, connection);
+				fk.render(context, fkStatement);
+				definitions.add(fkStatement.query().trim());
+			}
+			
+			// Add indexes
+			for(CreateQuery.Index idx : createQuery.getIndexes()) {
+				Statement idxStatement = new Statement(context, connection);
+				idx.render(context, idxStatement);
+				definitions.add(idxStatement.query().trim());
+			}
+			
+			appendQuery(String.join(", ", definitions));
+			appendQuery(")");
+			
+			// Add table options
+			if(createQuery.getTableOptions() != null) {
+				createQuery.getTableOptions().render(context, this);
+			}
+		}
+		
+		// 7. Add Where (not applicable for ALTER TABLE or CREATE TABLE)
+		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery) && !query.getCriterions().isEmpty()) {
         	appendQuery("WHERE");
         	appendNodeToStatement(query, true);
         }
@@ -189,17 +259,19 @@ public class Statement implements AutoCloseable{
 		}
 		
 		
-		// 10. Append order
-		if(!query.getOrders().isEmpty()) {
+		// 10. Append order (not applicable for ALTER TABLE or CREATE TABLE)
+		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery) && !query.getOrders().isEmpty()) {
 			appendQuery(query.getOrders().stream().map(x -> orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
 		}
 		
-		// 11. Append limit & offset
-		if(query.getLimit() != null) {
-			appendQuery("LIMIT "+query.getLimit()+"\n");
-		}
-		if(query.getOffset() != null) {
-			appendQuery("OFFSET "+ query.getOffset() +"\n");
+		// 11. Append limit & offset (not applicable for ALTER TABLE or CREATE TABLE)
+		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery)) {
+			if(query.getLimit() != null) {
+				appendQuery("LIMIT "+query.getLimit()+"\n");
+			}
+			if(query.getOffset() != null) {
+				appendQuery("OFFSET "+ query.getOffset() +"\n");
+			}
 		}
 		
 	}

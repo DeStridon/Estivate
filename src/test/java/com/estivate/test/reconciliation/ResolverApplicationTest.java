@@ -1,5 +1,10 @@
 package com.estivate.test.reconciliation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,10 +17,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
-import com.estivate.query.AlterQuery.ModifyColumn;
-import com.estivate.reconciliation.ReconciliationScope;
 import com.estivate.reconciliation.EstivateReconciliation;
 import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.ReconciliationManager.ApplyResolversResult;
 import com.estivate.test.DatabaseGenerator;
@@ -26,8 +30,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for ReconciliationManager.applyResolvers() method.
@@ -190,7 +192,7 @@ public class ResolverApplicationTest {
         // Create table matching entity exactly
         context.createTable(ResolverTestEntity.class);
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         GenericColumnMissingResolver resolver = new GenericColumnMissingResolver();
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
@@ -208,7 +210,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         GenericColumnMissingResolver resolver = new GenericColumnMissingResolver();
         resolver.shouldSucceed = true;
 
@@ -219,7 +221,7 @@ public class ResolverApplicationTest {
         assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
         assertTrue(resolver.wasCalled, "Resolver should be called");
         assertNotNull(resolver.lastDiff, "Last diff should be set");
-        assertEquals("email", resolver.lastDiff.entityAttribute, "Diff should be for email column");
+        assertEquals("email", resolver.lastDiff.entityFieldName, "Diff should be for email column");
     }
 
     @Test
@@ -228,7 +230,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         FailingResolver resolver = new FailingResolver();
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
@@ -245,7 +247,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         UnannotatedResolver resolver = new UnannotatedResolver();
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
@@ -262,7 +264,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
 
         ApplyResolversResult result = manager.applyResolvers(Collections.emptyList());
 
@@ -278,7 +280,7 @@ public class ResolverApplicationTest {
         context.dropColumn(ResolverTestEntity.class, "email");
         context.changeColumn(ResolverTestEntity.class, "age", "BIGINT");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
         GenericDefinitionMismatchResolver definitionResolver = new GenericDefinitionMismatchResolver();
 
@@ -299,7 +301,7 @@ public class ResolverApplicationTest {
         context.dropColumn(ResolverTestEntity.class, "email");
         context.changeColumn(ResolverTestEntity.class, "age", "BIGINT");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         // Only provide resolver for ColumnMissing, not for ColumnDefinitionMismatch
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
 
@@ -321,7 +323,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         ThrowingResolver throwingResolver = new ThrowingResolver();
         GenericColumnMissingResolver goodResolver = new GenericColumnMissingResolver();
 
@@ -341,7 +343,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "name");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         // Email resolver won't match 'name' column diff
         EmailColumnMissingResolver emailResolver = new EmailColumnMissingResolver();
         // Generic resolver should handle it
@@ -365,7 +367,7 @@ public class ResolverApplicationTest {
         context.changeColumn(ResolverTestEntity.class, "description", "VARCHAR(200)");
         context.changeColumn(ResolverTestEntity.class, "name", "VARCHAR(255) NOT NULL");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
         GenericDefinitionMismatchResolver definitionResolver = new GenericDefinitionMismatchResolver();
 
@@ -385,7 +387,7 @@ public class ResolverApplicationTest {
         context.dropColumn(ResolverTestEntity.class, "name");
         context.changeColumn(ResolverTestEntity.class, "age", "BIGINT");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         GenericColumnMissingResolver missingResolver = new GenericColumnMissingResolver();
         // Only resolve ColumnMissing, leave TypeMismatch unresolved
 
@@ -403,7 +405,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         GenericColumnMissingResolver firstResolver = new GenericColumnMissingResolver();
         firstResolver.shouldSucceed = true;
         GenericColumnMissingResolver secondResolver = new GenericColumnMissingResolver();
@@ -423,7 +425,7 @@ public class ResolverApplicationTest {
         context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
+        ReconciliationManager manager = ReconciliationManager.forEntity(context, ResolverTestEntity.class);
         FailingResolver failingResolver = new FailingResolver();
         GenericColumnMissingResolver successResolver = new GenericColumnMissingResolver();
         successResolver.shouldSucceed = true;

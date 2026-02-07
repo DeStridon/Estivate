@@ -11,15 +11,10 @@ import com.estivate.query.AlterQuery;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 public class EstivateReconciliation {
-
-    public static enum ReconciliationResult {
-        SOLVED, // treated successfully
-        SKIPPED, // not treated but doesn't need to
-        FAILED; // not treated and should have
-    }
 
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
@@ -28,10 +23,19 @@ public class EstivateReconciliation {
         String column() default "";      // noms des colonnes visées
     }
 
+    public static enum ReconciliationResult {
+        SOLVED, // treated successfully
+        SKIPPED, // not treated but doesn't need to
+        FAILED; // not treated and should have
+    }
 
+
+    @Data
     public static abstract class ReconciliationDelta {
         private ReconciliationResult reconciliationResult;
         private String reconciliationReason;
+
+        private List<ReconciliationDelta> currentDeltas;
 
         public void closeSolved(String reason){
             reconciliationResult = ReconciliationResult.SOLVED;
@@ -58,6 +62,7 @@ public class EstivateReconciliation {
 
     public static class CreateTableDelta extends ReconciliationDelta {
         public Class<?> entityClass;
+        
     }
     
 
@@ -71,10 +76,9 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class AddColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public String entityAttribute;
+        public String entityFieldName;
         public AlterQuery.ColumnDefinition entityColumnDefinition;
 
-        public List<ReconciliationDelta> entityDeltas;
     }
 
     
@@ -85,7 +89,6 @@ public class EstivateReconciliation {
         public Class<?> entityClass;
         public String tableColumnName;
 
-        public List<ReconciliationDelta> entityDeltas;
     }
 
     @Builder
@@ -93,11 +96,9 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class ModifyColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public String attributeName;
+        public String entityFieldName;
         public AlterQuery.ColumnDefinition entityDefinition;
         public AlterQuery.ColumnDefinition databaseDefinition;
-
-        public List<ReconciliationDelta> entityDeltas;
 
         public boolean hasTypeMismatch() {
             if (entityDefinition == null || databaseDefinition == null) return false;
@@ -140,8 +141,6 @@ public class EstivateReconciliation {
         public Class<?> entityClass;
         public String indexName;
         public IndexDefinition indexDefinition;
-
-        public List<ReconciliationDelta> entityDeltas;
     }
 
     /**
@@ -154,8 +153,6 @@ public class EstivateReconciliation {
     	public Class<?> entityClass;
         public String indexName;
         public IndexDefinition indexDefinition;
-
-        public List<ReconciliationDelta> entityDeltas;
     }
 
     /**

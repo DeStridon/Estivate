@@ -6,15 +6,21 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import org.reflections.util.ConfigurationBuilder;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
@@ -30,46 +36,161 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Compares entity definitions in code with actual database table structures.
  * Useful for detecting schema drift and migration issues.
+ * 
+ * Can be initialized with:
+ * - A list of package names to scan for @Entity annotated classes
+ * - A single entity class (for backward compatibility)
  */
 @Slf4j
 public class ReconciliationManager {
 
     final Context context;
-    final Class<?> entity;
+    final List<String> packageNames;
+    
+    @Getter
+    final List<Class<?>> entityClasses;
 
     @Getter
-    EntityModel entityModel;
+    Map<Class<?>, EntityModel> entityModels = new LinkedHashMap<>();
 
     @Getter
-    EntityModel databaseModel;
+    Map<Class<?>, EntityModel> databaseModels = new LinkedHashMap<>();
 
     @Getter
     List<ReconciliationDelta> differences;
 
-    public ReconciliationManager(Context context, Class<?> entity) {
+    /**
+     * Creates a ReconciliationManager that scans the specified packages for entity classes.
+     * 
+     * @param context The database context
+     * @param packageNames Package names to scan for @Entity annotated classes
+     */
+    public ReconciliationManager(Context context, String... packageNames) {
+        this(context, Arrays.asList(packageNames));
+    }
+
+    /**
+     * Creates a ReconciliationManager that scans the specified packages for entity classes.
+     * 
+     * @param context The database context
+     * @param packageNames List of package names to scan for @Entity annotated classes
+     */
+    public ReconciliationManager(Context context, List<String> packageNames) {
         this.context = context;
-        this.entity = entity;
+        this.packageNames = packageNames;
+        
+        // Scan packages for entity classes
+        this.entityClasses = scanPackagesForEntities(packageNames);
+        
+        log.info("Found {} entity classes in packages: {}", entityClasses.size(), packageNames);
+        
+        // Process each entity
+        for (Class<?> entityClass : entityClasses) {
+            // Scan entity fields from code
+            EntityModel entityModel = scanEntityFields(entityClass);
+            entityModels.put(entityClass, entityModel);
 
-        // Scan entity fields from code
-        this.entityModel = scanEntityFields();
+            // Get table information from database
+            EntityModel databaseModel = scanDatabaseTable(entityClass);
+            databaseModels.put(entityClass, databaseModel);
+        }
 
-        // Get table information from database
-        this.databaseModel = scanDatabaseTable();
-
-        // Compare both
-        this.differences = compare();
+        // Compare all entities
+        this.differences = compareAll();
+    }
+    
+    /**
+     * Creates a ReconciliationManager for a single entity class.
+     * Kept for backward compatibility.
+     * 
+     * @param context The database context
+     * @param entityClass The entity class to reconcile
+     */
+    public static ReconciliationManager forEntity(Context context, Class<?> entityClass) {
+        ReconciliationManager manager = new ReconciliationManager(context, List.of());
+        manager.entityClasses.add(entityClass);
+        
+        EntityModel entityModel = manager.scanEntityFields(entityClass);
+        manager.entityModels.put(entityClass, entityModel);
+        
+        EntityModel databaseModel = manager.scanDatabaseTable(entityClass);
+        manager.databaseModels.put(entityClass, databaseModel);
+        
+        manager.differences = manager.compareAll();
+        
+        return manager;
+    }
+    
+    /**
+     * Scans the specified packages for classes annotated with @Entity (javax or jakarta)
+     */
+    private List<Class<?>> scanPackagesForEntities(List<String> packages) {
+        List<Class<?>> entities = new ArrayList<>();
+        
+        for (String packageName : packages) {
+            try {
+                Reflections reflections = new Reflections(
+                    new ConfigurationBuilder()
+                        .forPackage(packageName)
+                        .setScanners(Scanners.TypesAnnotated, Scanners.SubTypes)
+                );
+                
+                // Find classes with javax.persistence.Entity
+                Set<Class<?>> javaxEntities = reflections.getTypesAnnotatedWith(javax.persistence.Entity.class);
+                entities.addAll(javaxEntities);
+                
+                // Find classes with jakarta.persistence.Entity
+                Set<Class<?>> jakartaEntities = reflections.getTypesAnnotatedWith(jakarta.persistence.Entity.class);
+                entities.addAll(jakartaEntities);
+                
+                log.debug("Package '{}': found {} javax entities, {} jakarta entities", 
+                    packageName, javaxEntities.size(), jakartaEntities.size());
+                
+            } catch (Exception e) {
+                log.warn("Failed to scan package '{}': {}", packageName, e.getMessage());
+            }
+        }
+        
+        // Remove duplicates (in case a class has both annotations)
+        return entities.stream().distinct().collect(Collectors.toList());
+    }
+    
+    
+    /**
+     * Returns differences for a specific entity class
+     */
+    public List<ReconciliationDelta> getDifferences(Class<?> entityClass) {
+        return differences.stream()
+            .filter(diff -> {
+                Class<?> diffEntityClass = extractEntityClass(diff);
+                return diffEntityClass != null && diffEntityClass.equals(entityClass);
+            })
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Extracts the entity class from a ReconciliationDelta
+     */
+    private Class<?> extractEntityClass(ReconciliationDelta diff) {
+        try {
+            Field entityClassField = diff.getClass().getDeclaredField("entityClass");
+            entityClassField.setAccessible(true);
+            return (Class<?>) entityClassField.get(diff);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
     }
 
     /**
      * Scans the entity class and builds an EntityModel from its fields
      */
-    private EntityModel scanEntityFields() {
+    private EntityModel scanEntityFields(Class<?> entityClass) {
         EntityModel model = EntityModel.builder()
-            .tableName(context.nameMapper.toTableName(entity))
-            .entityClass(entity)
+            .tableName(context.nameMapper.toTableName(entityClass))
+            .entityClass(entityClass)
             .build();
 
-        Set<Field> fields = FieldUtils.getEntityFields(entity);
+        Set<Field> fields = FieldUtils.getEntityFields(entityClass);
         
         for (Field field : fields) {
             String sqlType = javaTypeToSqlType(field);
@@ -94,15 +215,15 @@ public class ReconciliationManager {
      * Queries the database to get the actual table structure
      */
     @SneakyThrows
-    private EntityModel scanDatabaseTable() {
+    private EntityModel scanDatabaseTable(Class<?> entityClass) {
         EntityModel model = EntityModel.builder()
-            .tableName(context.nameMapper.toTableName(entity))
+            .tableName(context.nameMapper.toTableName(entityClass))
             .build();
 
         try (Connection connection = context.datasource.getConnection();
              Statement statement = new Statement(context, connection)) {
 
-            statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(context.nameMapper.toTableName(entity));
+            statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(context.nameMapper.toTableName(entityClass));
             
             try (ResultSet resultSet = statement.executeForResultSet()) {
                 while (resultSet.next()) {
@@ -121,7 +242,7 @@ public class ReconciliationManager {
                     }
 
                     // Convert database column name back to entity field name
-                    String fieldName = context.findEntityName(entity, columnName);
+                    String fieldName = context.findEntityName(entityClass, columnName);
                     if (fieldName == null) {
                         fieldName = columnName; // Keep original if no match found
                     }
@@ -142,13 +263,31 @@ public class ReconciliationManager {
 
         return model;
     }
+    
+    /**
+     * Compares all entity models with their database models and returns all differences
+     */
+    private List<ReconciliationDelta> compareAll() {
+        List<ReconciliationDelta> allDiffs = new ArrayList<>();
+        
+        for (Class<?> entityClass : entityClasses) {
+            EntityModel entityModel = entityModels.get(entityClass);
+            EntityModel databaseModel = databaseModels.get(entityClass);
+            
+            if (entityModel != null && databaseModel != null) {
+                List<ReconciliationDelta> entityDiffs = compare(entityClass, entityModel, databaseModel);
+                allDiffs.addAll(entityDiffs);
+            }
+        }
+        
+        return allDiffs;
+    }
 
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<ReconciliationDelta> compare() {
+    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel entityModel, EntityModel databaseModel) {
         List<ReconciliationDelta> diffs = new ArrayList<>();
-        String tableName = entityModel.getTableName();
 
         // Check for fields in entity but not in database
         for (TableField entityField : entityModel.getFields()) {
@@ -176,8 +315,8 @@ public class ReconciliationManager {
                 );
                 
                 EstivateReconciliation.AddColumnDelta addColumn = EstivateReconciliation.AddColumnDelta.builder()
-                    .entityClass(entity)
-                    .entityAttribute(entityField.getName())
+                    .entityClass(entityClass)
+                    .entityFieldName(entityField.getName())
                     .entityColumnDefinition(columnDef)
                     .build();
                 diffs.add(addColumn);
@@ -221,8 +360,8 @@ public class ReconciliationManager {
                     );
                     
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
-                        .entityClass(entity)
-                        .attributeName(entityField.getName())
+                        .entityClass(entityClass)
+                        .entityFieldName(entityField.getName())
                         .entityDefinition(entityDef)
                         .databaseDefinition(dbDef)
                         .build();
@@ -261,7 +400,7 @@ public class ReconciliationManager {
                 );
                 
                 EstivateReconciliation.DropColumnDelta dropColumn = EstivateReconciliation.DropColumnDelta.builder()
-                    .entityClass(entity)
+                    .entityClass(entityClass)
                     .tableColumnName(columnName)
                     .build();
                 diffs.add(dropColumn);
