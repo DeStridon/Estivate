@@ -18,9 +18,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-import org.reflections.util.ConfigurationBuilder;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
@@ -28,6 +25,7 @@ import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.util.FieldUtils;
+import com.estivate.util.ReflectionUtils;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -80,7 +78,7 @@ public class ReconciliationManager {
         this.packageNames = packageNames;
         
         // Scan packages for entity classes
-        this.entityClasses = scanPackagesForEntities(packageNames);
+        this.entityClasses = ReflectionUtils.scanPackagesForEntities(packageNames);
         
         log.info("Found {} entity classes in packages: {}", entityClasses.size(), packageNames);
         
@@ -121,39 +119,7 @@ public class ReconciliationManager {
         return manager;
     }
     
-    /**
-     * Scans the specified packages for classes annotated with @Entity (javax or jakarta)
-     */
-    private List<Class<?>> scanPackagesForEntities(List<String> packages) {
-        List<Class<?>> entities = new ArrayList<>();
-        
-        for (String packageName : packages) {
-            try {
-                Reflections reflections = new Reflections(
-                    new ConfigurationBuilder()
-                        .forPackage(packageName)
-                        .setScanners(Scanners.TypesAnnotated, Scanners.SubTypes)
-                );
-                
-                // Find classes with javax.persistence.Entity
-                Set<Class<?>> javaxEntities = reflections.getTypesAnnotatedWith(javax.persistence.Entity.class);
-                entities.addAll(javaxEntities);
-                
-                // Find classes with jakarta.persistence.Entity
-                Set<Class<?>> jakartaEntities = reflections.getTypesAnnotatedWith(jakarta.persistence.Entity.class);
-                entities.addAll(jakartaEntities);
-                
-                log.debug("Package '{}': found {} javax entities, {} jakarta entities", 
-                    packageName, javaxEntities.size(), jakartaEntities.size());
-                
-            } catch (Exception e) {
-                log.warn("Failed to scan package '{}': {}", packageName, e.getMessage());
-            }
-        }
-        
-        // Remove duplicates (in case a class has both annotations)
-        return entities.stream().distinct().collect(Collectors.toList());
-    }
+   
     
     
     /**
