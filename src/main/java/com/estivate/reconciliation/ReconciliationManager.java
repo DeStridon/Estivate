@@ -453,13 +453,13 @@ public class ReconciliationManager {
         
         // Check table match
         String table = annotation.table();
-        if (!table.equals(diffTable)) {
+        if (table != null && !table.equals("") && !table.equals(diffTable)) {
             return false;
         }
         
         // Check column match
         String columns = annotation.column();
-        if (!columns.equals(diffColumn)) {
+        if (columns != null && !columns.equals("") && !columns.equals(diffColumn)) {
             return false;
         }
         
