@@ -195,11 +195,6 @@ public class ReconciliationManager {
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("Field");
                     String columnType = resultSet.getString("Type");
-                    if(columnType != null && columnType.toUpperCase().startsWith("VARCHAR")) {
-                        columnType = "VARCHAR";
-                    }
-
-                        
                     String nullableStr = resultSet.getString("Null");
                     String keyStr = resultSet.getString("Key");
                     String defaultValue = resultSet.getString("Default");
@@ -220,7 +215,7 @@ public class ReconciliationManager {
 
                     TableField tableField = TableField.builder()
                         .name(fieldName)
-                        .type(columnType)
+                        .type(extractColumnType(columnType))
                         .nullable("YES".equalsIgnoreCase(nullableStr))
                         .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
                         .defaultValue(defaultValue)
@@ -673,14 +668,12 @@ public class ReconciliationManager {
      * Checks if a field is auto-increment
      */
     private boolean isAutoIncrement(Field field) {
-        javax.persistence.GeneratedValue javaxGenerated = 
-            field.getDeclaredAnnotation(javax.persistence.GeneratedValue.class);
+        javax.persistence.GeneratedValue javaxGenerated = field.getDeclaredAnnotation(javax.persistence.GeneratedValue.class);
         if (javaxGenerated != null && javaxGenerated.strategy() == javax.persistence.GenerationType.IDENTITY) {
             return true;
         }
 
-        jakarta.persistence.GeneratedValue jakartaGenerated = 
-            field.getDeclaredAnnotation(jakarta.persistence.GeneratedValue.class);
+        jakarta.persistence.GeneratedValue jakartaGenerated = field.getDeclaredAnnotation(jakarta.persistence.GeneratedValue.class);
         if (jakartaGenerated != null && jakartaGenerated.strategy() == jakarta.persistence.GenerationType.IDENTITY) {
             return true;
         }
@@ -804,6 +797,13 @@ public class ReconciliationManager {
             // Ignore parsing errors
         }
         return null;
+    }
+
+    private String extractColumnType(String columnType) {
+        if(columnType != null && columnType.toUpperCase().startsWith("VARCHAR")) {
+            return "VARCHAR";
+        }
+        return columnType;
     }
 
 }
