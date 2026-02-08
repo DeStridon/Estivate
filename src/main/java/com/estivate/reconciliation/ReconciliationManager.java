@@ -627,7 +627,7 @@ public class ReconciliationManager {
             jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
             if (javaxColumn != null || jakartaColumn != null) {
                 String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
-                if (columnDef != null && !columnDef.isBlank() && columnDef.trim().equalsIgnoreCase("text")) {
+                if (columnDef != null && columnDef.trim().equalsIgnoreCase("text")) {
                     return "TEXT";
                 }
             }
