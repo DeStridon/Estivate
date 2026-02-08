@@ -195,7 +195,7 @@ public class ReconciliationManager {
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("Field");
                     String columnType = resultSet.getString("Type");
-                    if(columnType != null && columnType.toLowerCase().startsWith("VARCHAR")) {
+                    if(columnType != null && columnType.toUpperCase().startsWith("VARCHAR")) {
                         columnType = "VARCHAR";
                     }
 
