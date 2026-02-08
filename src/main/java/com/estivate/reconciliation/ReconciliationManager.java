@@ -195,6 +195,11 @@ public class ReconciliationManager {
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("Field");
                     String columnType = resultSet.getString("Type");
+                    if(columnType != null && columnType.toLowerCase().startsWith("VARCHAR")) {
+                        columnType = "VARCHAR";
+                    }
+
+                        
                     String nullableStr = resultSet.getString("Null");
                     String keyStr = resultSet.getString("Key");
                     String defaultValue = resultSet.getString("Default");
@@ -617,7 +622,17 @@ public class ReconciliationManager {
         if (type == Float.class || type == float.class) return "FLOAT";
         if (type == Double.class || type == double.class) return "DOUBLE";
         if (type == Boolean.class || type == boolean.class) return "BOOLEAN";
-        if (type == String.class) return "VARCHAR";
+        if (type == String.class) {
+            javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+            jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+            if (javaxColumn != null || jakartaColumn != null) {
+                String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
+                if (columnDef != null && !columnDef.isBlank() && columnDef.trim().equalsIgnoreCase("text")) {
+                    return "TEXT";
+                }
+            }
+            return "VARCHAR";
+        } 
         if (type == Date.class || type == java.sql.Date.class) return "DATETIME";
         if (type == LocalDateTime.class) return "DATETIME";
         if (type == LocalDate.class) return "DATE";
