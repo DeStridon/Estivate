@@ -61,6 +61,7 @@ public class TableField {
             case "INTEGER": return "INT";
             case "BOOL": return "BOOLEAN";
             case "TINYINT": return "BOOLEAN"; // MySQL stores booleans as TINYINT(1)
+            case "BIT": return "BOOLEAN";     // MySQL/MariaDB store booleans as BIT(1)
             default: return upper;
         }
     }

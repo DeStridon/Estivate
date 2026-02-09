@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.estivate.context.Context;
@@ -128,6 +129,17 @@ public class EstivateReconciliation {
         public boolean hasCollationMismatch() {
             if (entityDefinition == null || databaseDefinition == null) return false;
             return !java.util.Objects.equals(entityDefinition.collation, databaseDefinition.collation);
+        }
+
+        public List<String> getMismatches() {
+            List<String> mismatches = new ArrayList<>();
+            if (hasTypeMismatch()) mismatches.add("Type");
+            if (hasLengthMismatch()) mismatches.add("Length");
+            if (hasNullableMismatch()) mismatches.add("Nullable");
+            if (hasDefaultValueMismatch()) mismatches.add("DefaultValue");
+            if (hasCharsetMismatch()) mismatches.add("Charset");
+            if (hasCollationMismatch()) mismatches.add("Collation");
+            return mismatches;
         }
     }
 

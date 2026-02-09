@@ -596,17 +596,16 @@ public class ReconciliationManager {
         Class<?> type = field.getType();
 
         // Check for @Convert annotation
-        if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null ||
-            field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-            return "VARCHAR";
+        if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+            type = String.class;
         }
 
         // Handle enums
         if (type.isEnum()) {
             if (isEnumeratedAsString(field)) {
-                return "VARCHAR";
+                type = String.class;
             }
-            return "INT";
+            type = Integer.class;
         }
 
         // Primitive types and wrappers
@@ -812,8 +811,14 @@ public class ReconciliationManager {
     }
 
     private String extractColumnType(String columnType) {
-        if(columnType != null && columnType.toUpperCase().startsWith("VARCHAR")) {
+        if (columnType == null) return null;
+        String upper = columnType.toUpperCase().trim();
+        if (upper.startsWith("VARCHAR")) {
             return "VARCHAR";
+        }
+        // Normalize BIT(1) to BOOLEAN so entity boolean matches DB (avoids false positive mismatch)
+        if (upper.startsWith("BIT(") || "BIT".equals(upper)) {
+            return "BOOLEAN";
         }
         return columnType;
     }
