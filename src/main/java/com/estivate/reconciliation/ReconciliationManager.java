@@ -645,6 +645,11 @@ public class ReconciliationManager {
             return false;
         }
 
+        // Check for @NotNull (javax.validation / jakarta.validation)
+        if (hasAnnotationByName(field, "javax.validation.constraints.NotNull") || hasAnnotationByName(field, "jakarta.validation.constraints.NotNull")) {
+           return false;
+        }
+
         // Check for @Column(nullable = false)
         javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
         if (javaxColumn != null) {
@@ -656,10 +661,17 @@ public class ReconciliationManager {
             return jakartaColumn.nullable();
         }
 
-       
-
         // Default to nullable for object types
         return true;
+    }
+
+    private boolean hasAnnotationByName(Field field, String annotationClassName) {
+        for (java.lang.annotation.Annotation a : field.getDeclaredAnnotations()) {
+            if (annotationClassName.equals(a.annotationType().getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     
