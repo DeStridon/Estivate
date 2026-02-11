@@ -95,6 +95,7 @@ public class ReconciliationManager {
 
         // Compare all entities
         this.differences = compareAll();
+        this.differences.stream().forEach(x -> x.setCurrentDeltas(differences));
     }
     
     /**
@@ -115,6 +116,7 @@ public class ReconciliationManager {
         manager.databaseModels.put(entityClass, databaseModel);
         
         manager.differences = manager.compareAll();
+        manager.differences.stream().forEach(x -> x.setCurrentDeltas(manager.differences));
         
         return manager;
     }

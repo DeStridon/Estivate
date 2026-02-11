@@ -9,6 +9,7 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
     /**
      * Column definition containing type, constraints, and encoding information
      */
+    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ColumnDefinition {
