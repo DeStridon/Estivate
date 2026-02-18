@@ -8,13 +8,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.query.Attribute;
 import com.estivate.query.SelectQuery;
+import com.estivate.result.ResultTable;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
@@ -816,6 +819,169 @@ public class SelectFetchAsTest {
         
         assertNotNull(customerName);
         assertEquals("John Doe", customerName);
+    }
+
+    // ========================================================================================
+    // fetchAsOptional Tests - basic, AttributeGetter, and with Function
+    // ========================================================================================
+    
+    @Test
+    public void testFetchAsOptional_CustomerName_WithAttributeGetter() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
+        
+        Optional<String> result = query.fetchAsOptional(context, CustomerEntity::getName);
+        
+        assertNotNull(result);
+        assertTrue(result.isPresent());
+        assertEquals("John Doe", result.get());
+    }
+    
+    @Test
+    public void testFetchAsOptional_CustomerName_WithAttributeGetterAndFunction() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
+        
+        Optional<String> result = query.fetchAsOptional(context, CustomerEntity::getName, Estivate.Functions.lower);
+        
+        assertNotNull(result);
+        assertTrue(result.isPresent());
+        assertEquals("john doe", result.get());
+    }
+    
+    @Test
+    public void testFetchAsOptional_CountWithAttributeGetterAndFunction() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
+        
+        Optional<Long> result = query.fetchAsOptional(context, CustomerEntity::getId, Estivate.Functions.count);
+        
+        assertNotNull(result);
+        assertTrue(result.isPresent());
+        assertTrue(result.get() >= 1);
+    }
+    
+    @Test
+    public void testFetchAsOptional_EmptyWhenNoMatch() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, -99999L);
+        
+        Optional<String> result = query.fetchAsOptional(context, CustomerEntity::getName);
+        
+        assertNotNull(result);
+        assertFalse(result.isPresent());
+    }
+
+    // ========================================================================================
+    // fetchAsSingle Tests - AttributeGetter and with Function
+    // ========================================================================================
+    
+    @Test
+    public void testFetchAsSingle_WithAttributeGetter() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
+        
+        String result = query.fetchAsSingle(context, CustomerEntity::getName);
+        
+        assertNotNull(result);
+        assertEquals("John Doe", result);
+    }
+    
+    @Test
+    public void testFetchAsSingle_WithAttributeGetterAndFunction() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
+        
+        String result = query.fetchAsSingle(context, CustomerEntity::getName, Estivate.Functions.upper);
+        
+        assertNotNull(result);
+        assertEquals("JOHN DOE", result);
+    }
+    
+    @Test
+    public void testFetchAsSingle_CountWithAttributeGetterAndFunction() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
+        
+        Long result = query.fetchAsSingle(context, CustomerEntity::getId, Estivate.Functions.count);
+        
+        assertNotNull(result);
+        assertTrue(result >= 1);
+    }
+
+    // ========================================================================================
+    // ResultTable.asSingle(Attribute) with function - when result has multiple columns
+    // ========================================================================================
+    /**
+     * When a query selects multiple columns including one with a function (e.g. LOWER(name)),
+     * ResultTable.asSingle(Attribute) must use the attribute's position (indexOf) to extract
+     * the correct column value, not row[0]. Otherwise it returns the wrong column.
+     */
+    @Test
+    public void testResultTable_AsSingle_AttributeWithFunction_WhenMultipleColumns() {
+        Attribute nameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
+        Attribute lowerNameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name, Estivate.Functions.lower);
+
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
+            .select(nameAttr)
+            .select(lowerNameAttr);
+
+        ResultTable result = context.fetch(query);
+
+        Object plainName = result.asSingle(nameAttr);
+        Object lowerName = result.asSingle(lowerNameAttr);
+
+        assertNotNull(plainName);
+        assertEquals("John Doe", plainName);
+
+        assertNotNull(lowerName);
+        assertEquals("john doe", lowerName);
+    }
+
+    // ========================================================================================
+    // fetchAsList Tests - AttributeGetter and with Function
+    // ========================================================================================
+    
+    @Test
+    public void testFetchAsList_WithAttributeGetter() {
+        CustomerEntity customer2 = CustomerEntity.builder()
+            .name("Jane")
+            .email("jane@example.com")
+            .country(CustomerEntity.Country.GERMANY)
+            .build();
+        context.updateOrInsert(customer2);
+        
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .in(CustomerEntity.class, AbstractEntity.Fields.id, 
+                Arrays.asList(customer.getId(), customer2.getId()));
+        
+        List<String> result = query.fetchAsList(context, CustomerEntity::getName);
+        
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains("John Doe"));
+        assertTrue(result.contains("Jane"));
+    }
+    
+    @Test
+    public void testFetchAsList_WithAttributeGetterAndFunction() {
+        CustomerEntity customer2 = CustomerEntity.builder()
+            .name("Jane")
+            .email("jane@example.com")
+            .country(CustomerEntity.Country.GERMANY)
+            .build();
+        context.updateOrInsert(customer2);
+        
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .in(CustomerEntity.class, AbstractEntity.Fields.id, 
+                Arrays.asList(customer.getId(), customer2.getId()))
+            .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
+        
+        List<String> result = query.fetchAsList(context, CustomerEntity::getName, Estivate.Functions.lower);
+        
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("jane", result.get(0));
+        assertEquals("john doe", result.get(1));
     }
     
 }
