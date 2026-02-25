@@ -26,25 +26,25 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 public abstract class IMapper<U> {
 	
-	abstract public U map(String[] row);
+	abstract public U map(String row);
 
-	public static class StringMapper extends IMapper<String>{ public String map(String[] row) { return row[0]; } }
-	public static class IntegerMapper extends IMapper<Integer>{ public Integer map(String[] row){ if(row[0] == null) return null; return Integer.parseInt(row[0]); } }
-	public static class FloatMapper extends IMapper<Float>{ public Float map(String[] row) { if(row[0] == null) return null; return Float.parseFloat(row[0]); } }
-	public static class DoubleMapper extends IMapper<Double>{ public Double map(String[] row) { if(row[0] == null) return null; return Double.parseDouble(row[0]); } }
-	public static class LongMapper extends IMapper<Long>{ public Long map(String[] row) { if(row[0] == null) return null; return Long.parseLong(row[0]); } }
-	public static class ShortMapper extends IMapper<Short>{ public Short map(String[] row) { if(row[0] == null) return null; return Short.parseShort(row[0]); } }
-	public static class BooleanMapper extends IMapper<Boolean>{ public Boolean map(String[] row) { if(row[0] == null) return null; return Boolean.parseBoolean(row[0]); } }
+	public static class StringMapper extends IMapper<String>{ public String map(String row) { return row; } }
+	public static class IntegerMapper extends IMapper<Integer>{ public Integer map(String row){ if(row == null) return null; return Integer.parseInt(row); } }
+	public static class FloatMapper extends IMapper<Float>{ public Float map(String row) { if(row == null) return null; return Float.parseFloat(row); } }
+	public static class DoubleMapper extends IMapper<Double>{ public Double map(String row) { if(row == null) return null; return Double.parseDouble(row); } }
+	public static class LongMapper extends IMapper<Long>{ public Long map(String row) { if(row == null) return null; return Long.parseLong(row); } }
+	public static class ShortMapper extends IMapper<Short>{ public Short map(String row) { if(row == null) return null; return Short.parseShort(row); } }
+	public static class BooleanMapper extends IMapper<Boolean>{ public Boolean map(String row) { if(row == null) return null; return Boolean.parseBoolean(row); } }
 
-	public static class LocalDateTimeMapper extends IMapper<LocalDateTime> { public LocalDateTime map(String[] row) { if(row[0]==null) return null; return LocalDateTime.parse(row[0], DateMapper.formatter); }}
+	public static class LocalDateTimeMapper extends IMapper<LocalDateTime> { public LocalDateTime map(String row) { if(row==null) return null; return LocalDateTime.parse(row, DateMapper.formatter); }}
 	public static class DateMapper extends IMapper<Date> { 
 
 		static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]");
 	
 		
-		public Date map(String[] row) { 
-			if(row[0] == null) { return null; } 
-			LocalDateTime ldt = LocalDateTime.parse(row[0], formatter);
+		public Date map(String row) { 
+			if(row == null) { return null; } 
+			LocalDateTime ldt = LocalDateTime.parse(row, formatter);
 			return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
 		}	
 
@@ -66,11 +66,11 @@ public abstract class IMapper<U> {
 		final Class<U> enumClass;
 
 		@Override
-		public U map(String[] row) {
-			if(row[0] == null) {
+		public U map(String row) {
+			if(row == null) {
 				return null;
 			}
-			return (U) Enum.valueOf((Class<U>) enumClass, row[0]);
+			return (U) Enum.valueOf((Class<U>) enumClass, row);
 		}
 	}
 
@@ -80,11 +80,11 @@ public abstract class IMapper<U> {
 		final Class<U> enumClass;
 
 		@Override
-		public U map(String[] row) {
-			if(row[0] == null) {
+		public U map(String row) {
+			if(row == null) {
 				return null;
 			}
-			return (U) enumClass.getEnumConstants()[Integer.parseInt(row[0])];
+			return (U) enumClass.getEnumConstants()[Integer.parseInt(row)];
 		}
 	}
 
@@ -131,15 +131,23 @@ public abstract class IMapper<U> {
 
 		final Field field;
 		final Type type;
+		// final Attribute attribute;
+		// final SelectQuery<?> query;
 
-		public AttributeMapper(Class entity, String attributeName) {
+		public AttributeMapper(Class<?> entity, String attributeName) {
 			field = FieldUtils.findField(entity, attributeName);
 			type = field.getGenericType();
 		}
+
+		// public AttributeMapper(SelectQuery<?> query, Attribute attribute) {
+		// 	field = FieldUtils.findField(attribute.entity.entity, attribute.attribute);
+		// 	type = field.getGenericType();
+		// 	attribute = attribute;
+		// }
  
 		@Override
 		@SneakyThrows
-		public Object map(String[] row) {
+		public Object map(String row) {
 			
 			// @Convert
 			if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
@@ -150,7 +158,7 @@ public abstract class IMapper<U> {
 					return null;
 				}
 				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
-				Object attributeValue = attributeConverter.convertToEntityAttribute(row[0]);
+				Object attributeValue = attributeConverter.convertToEntityAttribute(row);
 				return attributeValue;
 			}
 			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
@@ -161,43 +169,43 @@ public abstract class IMapper<U> {
 					return null;
 				}
 				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
-				Object attributeValue = attributeConverter.convertToEntityAttribute(row[0]);
+				Object attributeValue = attributeConverter.convertToEntityAttribute(row);
 				return attributeValue;
 			}
 
-			if(type == String.class) { return row[0]; }
-			if(type == boolean.class || type == Boolean.class) { return Boolean.parseBoolean(row[0]); }
-			if(type == byte.class || type == Byte.class) { return Byte.parseByte(row[0]);}
-			if(type == short.class || type == Short.class) { return Short.parseShort(row[0]);}
-			if(type == int.class || type == Integer.class) { return Integer.parseInt(row[0]);}
-			if(type == long.class || type == Long.class) { return Long.parseLong(row[0]);}
-			if(type == float.class || type == Float.class) { return Float.parseFloat(row[0]);}
-			if(type == double.class || type == Double.class) { return Double.parseDouble(row[0]);}
-			if(type == BigDecimal.class) { return new BigDecimal(row[0]);}
-			if(type == Date.class) { LocalDateTime dateTime = DateMapper.mapDate(row[0]); return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()); }
-			if(type == LocalDateTime.class) { return LocalDateTime.parse(row[0], DateMapper.formatter);}
-			if(type == LocalDate.class) { return LocalDate.parse(row[0], DateMapper.formatter);}
-			if(type == Character.class) { return row[0].charAt(0); }
+			if(type == String.class) { return row; }
+			if(type == boolean.class || type == Boolean.class) { return Boolean.parseBoolean(row); }
+			if(type == byte.class || type == Byte.class) { return Byte.parseByte(row); }
+			if(type == short.class || type == Short.class) { return Short.parseShort(row); }
+			if(type == int.class || type == Integer.class) { return Integer.parseInt(row); }
+			if(type == long.class || type == Long.class) { return Long.parseLong(row); }
+			if(type == float.class || type == Float.class) { return Float.parseFloat(row); }
+			if(type == double.class || type == Double.class) { return Double.parseDouble(row); }
+			if(type == BigDecimal.class) { return new BigDecimal(row); }
+			if(type == Date.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()); }
+			if(type == LocalDateTime.class) { return LocalDateTime.parse(row, DateMapper.formatter); }
+			if(type == LocalDate.class) { return LocalDate.parse(row, DateMapper.formatter);}
+			if(type == Character.class) { return row.charAt(0); }
 			
 			// @Enumerated
             if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
     
                 javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
                 if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
-                    return Enum.valueOf((Class)type, row[0]);
+                    return Enum.valueOf((Class)type, row);
                 }
                 else {
-                    int ordinal = Integer.parseInt(row[0]);
+                    int ordinal = Integer.parseInt(row);
                     return field.getType().getEnumConstants()[ordinal];
                 }
             }
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
 				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
-					return Enum.valueOf((Class)type, row[0]);
+					return Enum.valueOf((Class)type, row);
 				}
 				else {
-					int ordinal = Integer.parseInt(row[0]);
+					int ordinal = Integer.parseInt(row);
 					return field.getType().getEnumConstants()[ordinal];
 				}
 			}

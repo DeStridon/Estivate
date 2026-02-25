@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,17 +60,17 @@ public class ResultTable implements Iterable<ResultRow>{
 
     // ==================== SINGLE VALUE MAPPING ====================
 
-    public <T> T asSingleMapped(IMapper<T> mapper, Integer index) { return rows.isEmpty() ? null : mapper.map(index == null ? rows.get(0).getColumnValues() : new String[] { rows.get(0).getColumnValues()[index] }); }
-    public <T> T asSingleMapped(IMapper<T> mapper) { return rows.isEmpty() ? null : mapper.map(rows.get(0).getColumnValues()); }
-
+    public <T> T asSingleMapped(IMapper<T> mapper, int index) { return rows.isEmpty() ? null : mapper.map(rows.get(0).getColumnValues()[index]); }
+    public <T> T asSingleMapped(IMapper<T> mapper) { return asSingleMapped(mapper, 0); }
+    
     // Entity mapping
-    public <T> T asSingle(Class<T> entity) { return asSingleMapped(new EntityMapper<>(context, query, new Entity<>(entity))); }
-    public <T> T asSingle(Entity<T> entity) { return asSingleMapped(new EntityMapper<>(context, query, entity)); }
+    public <T> T asSingle(Class<T> entity) { return rows.isEmpty() ? null : new EntityMapper<>(context, query, new Entity<>(entity)).map(rows.get(0).getColumnValues()); }
+    public <T> T asSingle(Entity<T> entity) { return rows.isEmpty() ? null : new EntityMapper<>(context, query, entity).map(rows.get(0).getColumnValues()); }
     
     // Attribute mapping
-    public Object asSingle(Attribute attribute) { return asSingleMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
-    public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity, attribute)); }
-    public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity.entity, attribute)); }
+    public Object asSingle(Attribute attribute) { return asSingleMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute), indexOf(attribute)); }
+    public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
+    public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity.entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
     public <T, P> P asSingle(AttributeGetter<T, P> attributeGetter) { return (P) asSingle(Estivate.attribute(attributeGetter)); }
 
 
@@ -220,19 +221,28 @@ public class ResultTable implements Iterable<ResultRow>{
 
     // ==================== LIST MAPPING ====================
 
-    public <T> List<T> asListMapped(IMapper<T> mapper, Integer index) {
+    public <T> List<T> asListMapped(IMapper<T> mapper, int index) {
         List<T> results = new ArrayList<>();
         for(ResultRow row : rows) {
-            T result = mapper.map(index == null ? row.getColumnValues() : new String[] { row.getColumnValues()[index] });
+            T result = mapper.map(row.getColumnValues()[index]);
             results.add(result);
         }
         return results;
     }
-    public <T> List<T> asListMapped(IMapper<T> mapper) { return asListMapped(mapper, null); }
+    public <T> List<T> asListMapped(IMapper<T> mapper) { return asListMapped(mapper, 0); }
 
     // Entity list mapping
-    public <T> List<T> asList(Class<T> entity) { return asListMapped(new EntityMapper<>(context, query, new Entity<>(entity))); }
-    public <T> List<T> asList(Entity<T> entity) { return asListMapped(new EntityMapper<>(context, query, entity)); }
+    public <T> List<T> asList(Class<T> entity) { return asList(new Entity<>(entity)); }
+    public <T> List<T> asList(Entity<T> entity) { 
+        EntityMapper<T> entityMapper = new EntityMapper<>(context, query, entity);
+        List<T> results = new ArrayList<>();
+        for(ResultRow row : rows) {
+            T result = entityMapper.map(row.getColumnValues());
+            results.add(result);
+        }
+        return results;
+    }
+        
 
     // Attribute list mapping
     public List<?> asList(Attribute attribute) { return asListMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
@@ -311,12 +321,20 @@ public class ResultTable implements Iterable<ResultRow>{
 
     // ==================== SET MAPPING ====================
 
-    public <T> Set<T> asSetMapped(IMapper<T> mapper, Integer index) { return asListMapped(mapper, index).stream().collect(Collectors.toSet()); }
-    public <T> Set<T> asSetMapped(IMapper<T> mapper) { return asSetMapped(mapper, null); }
+    public <T> Set<T> asSetMapped(IMapper<T> mapper, int index) { return asListMapped(mapper, index).stream().collect(Collectors.toSet()); }
+    public <T> Set<T> asSetMapped(IMapper<T> mapper) { return asSetMapped(mapper, 0); }
 
     // Entity set mapping
-    public <T> Set<T> asSet(Class<T> entity) { return asSetMapped(new EntityMapper<>(context, query, new Entity<>(entity))); }
-    public <T> Set<T> asSet(Entity<T> entity) { return asSetMapped(new EntityMapper<>(context, query, entity)); }
+    public <T> Set<T> asSet(Class<T> entity) { return asSet(new Entity<>(entity)); }
+    public <T> Set<T> asSet(Entity<T> entity) {
+        EntityMapper<T> entityMapper = new EntityMapper<>(context, query, entity);
+        Set<T> results = new LinkedHashSet<>();
+        for(ResultRow row : rows) {
+            T result = entityMapper.map(row.getColumnValues());
+            results.add(result);
+        }
+        return results;
+    }
 
     // Attribute set mapping
     public Set<?> asSetAttribute(Attribute attribute) { return asSetMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }

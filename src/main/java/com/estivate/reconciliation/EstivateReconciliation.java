@@ -13,6 +13,7 @@ import com.estivate.query.AlterQuery;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class EstivateReconciliation {
@@ -27,6 +28,7 @@ public class EstivateReconciliation {
     public static enum ReconciliationResult {
         SOLVED, // treated successfully
         SKIPPED, // not treated but doesn't need to
+        POSTPONED, // not treated but should be treated later
         FAILED; // not treated and should have
     }
 
@@ -36,6 +38,7 @@ public class EstivateReconciliation {
         private ReconciliationResult reconciliationResult;
         private String reconciliationReason;
 
+        @Getter
         private List<ReconciliationDelta> currentDeltas;
 
         public void closeSolved(String reason){
@@ -48,6 +51,11 @@ public class EstivateReconciliation {
             reconciliationReason = reason;
         }
 
+        public void closePostponed(String reason){
+            reconciliationResult = ReconciliationResult.POSTPONED;
+            reconciliationReason = reason;
+        }
+
         public void closeFailed(String reason){
             reconciliationResult = ReconciliationResult.FAILED;
             reconciliationReason = reason;
@@ -55,7 +63,9 @@ public class EstivateReconciliation {
 
         public void closeSolved(){ closeSolved(null); }
         public void closeSkipped(){ closeSkipped(null);}
+        public void closePostponed(){ closePostponed(null);}
         public void closeFailed(){ closeFailed(null); }
+        
     }
 
 

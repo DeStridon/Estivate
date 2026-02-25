@@ -21,7 +21,7 @@ import com.estivate.context.Context;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
-import com.estivate.util.Chronometer;
+import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
 
@@ -30,7 +30,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EntityMapper<U> extends IMapper<U> {
+public class EntityMapper<U> {
 
 	// Entity side
 	final Entity<U> entity;
@@ -294,7 +294,6 @@ public class EntityMapper<U> extends IMapper<U> {
 
 		Field field;
 
-//		String columnName;
 
 		public ColumnMapping(Attribute attribute, Field field){
 			this.attribute = attribute;
