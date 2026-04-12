@@ -137,9 +137,11 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q eq   			(Attribute attribute, Object value)	{ super.eq(attribute, value);  return self(); }
 	public Q eqIfNotNull   	(Attribute attribute, Object value) { super.eqIfNotNull(attribute, value);  return self(); }
+	public Q eqIfNotBlank  	(Attribute attribute, String value) { super.eqIfNotBlank(attribute, value);  return self(); }
 	public Q eqNullable		(Attribute attribute, Object value) { super.eqNullable(attribute, value); return self(); }
 	public Q notEq			(Attribute attribute, Object value) { super.notEq(attribute, value);  return self(); }
 	public Q notEqIfNotNull	(Attribute attribute, Object value) { super.notEqIfNotNull(attribute, value);  return self(); }
+	public Q notEqIfNotBlank(Attribute attribute, String value) { super.notEqIfNotBlank(attribute, value); return self(); }
 	public Q notEqNullable	(Attribute attribute, Object value)	{ super.notEqNullable(attribute, value); return self(); }
 	
 	public Q lt   			(Attribute attribute, Object value) { super.lt(attribute, value);  return self(); }
@@ -245,9 +247,11 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 
 	public Q eq   			(String attribute, Object value) { super.eq(this.entity, attribute, value);  return self(); }
 	public Q eqIfNotNull   	(String attribute, Object value) { super.eqIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q eqIfNotBlank   (String attribute, String value) { super.eqIfNotBlank(this.entity, attribute, value); return self(); }
 	public Q eqNullable		(String attribute, Object value) { super.eqNullable(this.entity, attribute, value); return self(); }
 	public Q notEq			(String attribute, Object value) { super.notEq(this.entity, attribute, value);  return self(); }
 	public Q notEqIfNotNull	(String attribute, Object value) { super.notEqIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q notEqIfNotBlank(String attribute, String value) { super.notEqIfNotBlank(this.entity, attribute, value); return self(); }
 	public Q notEqNullable	(String attribute, Object value) { super.notEqNullable(this.entity, attribute, value); return self(); }
 	
 	public Q lt   			(String attribute, Object value) { super.lt(this.entity, attribute, value);  return self(); }
@@ -350,9 +354,11 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	// Class wrappers
 	public Q eq   			(Class<?> entity, String attribute, Object value)	{ super.eq(entity, attribute, value);  return self(); }
 	public Q eqIfNotNull   (Class<?> entity, String attribute, Object value)   { super.eqIfNotNull(entity, attribute, value);  return self(); }
+	public Q eqIfNotBlank  (Class<?> entity, String attribute, String value)   { super.eqIfNotBlank(entity, attribute, value); return self(); }
 	public Q eqNullable	(Class<?> entity, String attribute, Object value)   { super.eqNullable(entity, attribute, value); return self(); }
 	public Q notEq			(Class<?> entity, String attribute, Object value)   { super.notEq(entity, attribute, value);  return self(); }
 	public Q notEqIfNotNull(Class<?> entity, String attribute, Object value)   { super.notEqIfNotNull(entity, attribute, value);  return self(); }
+	public Q notEqIfNotBlank(Class<?> entity, String attribute, String value)  { super.notEqIfNotBlank(entity, attribute, value); return self(); }
 	public Q notEqNullable	(Class<?> entity, String attribute, Object value)	{ super.notEqNullable(entity, attribute, value); return self(); }
 	
 	public Q lt   			(Class<?> entity, String attribute, Object value)   { super.lt(entity, attribute, value);  return self(); }
@@ -476,9 +482,11 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 
 
 	public Q eq   			(Entity<?> entity, String attribute, Object value)      { super.eq    	(entity, attribute, value);  		return self(); }
-	public Q eqNullable	(Entity<?> entity, String attribute, Object value)		{ super.eqNullable(entity, attribute, value); 		return self(); }
+	public Q eqIfNotBlank 	(Entity<?> entity, String attribute, String value)   	{ super.eqIfNotBlank(entity, attribute, value); 	return self(); }
+	public Q eqNullable		(Entity<?> entity, String attribute, Object value)		{ super.eqNullable(entity, attribute, value); 		return self(); }
 	public Q notEq			(Entity<?> entity, String attribute, Object value)      { super.notEq 	(entity, attribute, value);  		return self(); }
-	public Q notEqIfNotNull(Entity<?> entity, String attribute, Object value)		{ super.notEqIfNotNull(entity, attribute, value); 	return self(); }
+	public Q notEqIfNotNull	(Entity<?> entity, String attribute, Object value)		{ super.notEqIfNotNull(entity, attribute, value); 	return self(); }
+	public Q notEqIfNotBlank(Entity<?> entity, String attribute, String value)      { super.notEqIfNotBlank(entity, attribute, value);  return self(); }
 	public Q notEqNullable	(Entity<?> entity, String attribute, Object value)		{ super.notEqNullable(entity, attribute, value); 	return self(); }
 	
 
@@ -584,10 +592,12 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	/* Wrappers for Lambda */
 	public <T, P> Q eq   			(AttributeGetter<T, P> function, P value) { super.eq(function, value);  return self(); }
 	public <T, P> Q eqIfNotNull   	(AttributeGetter<T, P> function, P value) { super.eqIfNotNull(function, value);  return self(); }
+	public <T>    Q eqIfNotBlank    (AttributeGetter<T, String> function, String value) { super.eqIfNotBlank(function, value); return self(); }
 	public <T, P> Q eqNullable		(AttributeGetter<T, P> function, P value) { super.eqNullable(function, value); return self(); }
 	public <T, P> Q eqOrNull		(AttributeGetter<T, P> function, P value) { super.eqOrNull(function, value); return self(); }
 	public <T, P> Q notEq			(AttributeGetter<T, P> function, P value) { super.notEq(function, value);  return self(); }
 	public <T, P> Q notEqIfNotNull	(AttributeGetter<T, P> function, P value) { super.notEqIfNotNull(function, value);  return self(); }
+	public <T>	  Q notEqIfNotBlank (AttributeGetter<T, String> function, String value) { super.notEqIfNotBlank(function, value); return self(); }
 	public <T, P> Q notEqNullable	(AttributeGetter<T, P> function, P value) { super.notEqNullable(function, value); return self(); }
 	public <T, P> Q notEqOrNull		(AttributeGetter<T, P> function, P value) { super.notEqOrNull(function, value); return self(); }
 

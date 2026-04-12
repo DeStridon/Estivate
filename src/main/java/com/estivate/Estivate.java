@@ -9,9 +9,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Entity.SubQueryEntity;
-import com.estivate.context.Context;
-import com.estivate.manager.ManagerInterceptor;
-import com.estivate.manager.ManagerInterceptor.EntityManager;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.AlterQuery;
@@ -176,10 +173,12 @@ public class Estivate {
 	// Eq methods
 	public static Criterion eq   			(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.Eq, value); }
 	public static Criterion eqIfNotNull		(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return null; }
+	public static Criterion eqIfNotBlank	(Attribute attribute, String value) { if(StringUtils.isNotBlank(value)) { return eq(attribute, value); } return null; }
 	public static Criterion eqNullable		(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return isNull(attribute); }
 	public static Aggregator eqOrNull		(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).eq(attribute, value).isNull(attribute); }
 	public static Criterion notEq			(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.NotEq, value); }
 	public static Criterion notEqIfNotNull	(Attribute attribute, Object value) { if(value != null) {return notEq(attribute, value);} return null; }
+	public static Criterion notEqIfNotBlank (Attribute attribute, String value) { if(StringUtils.isNotBlank(value)) { return notEq(attribute, value); } return null; }
 	public static Criterion notEqNullable	(Attribute attribute, Object value) { if(value != null) {return notEq(attribute, value);} return isNotNull(attribute); }
 	public static Aggregator notEqOrNull	(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).notEq(attribute, value).isNull(attribute); }
 	
@@ -327,10 +326,12 @@ public class Estivate {
 	// Eq methods
 	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return eq(Estivate.attribute(entity, attribute), value); }
 	public static Criterion eqIfNotNull		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return null; }
+	public static Criterion eqIfNotBlank	(Entity<?> entity, String attribute, String value) { if(StringUtils.isNotBlank(value)) { return eq(entity, attribute, value); } return null; }
 	public static Criterion eqNullable		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return isNull(entity, attribute); }
 	public static Aggregator eqOrNull		(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).eq(entity, attribute, value).isNull(entity, attribute); }
 	public static Criterion notEq			(Entity<?> entity, String attribute, Object value) { return notEq(Estivate.attribute(entity, attribute), value); }
 	public static Criterion notEqIfNotNull	(Entity<?> entity, String attribute, Object value) { if(value != null) {return notEq(entity, attribute, value);} return null; }
+	public static Criterion notEqIfNotBlank (Entity<?> entity, String attribute, String value) { if(StringUtils.isNotBlank(value)) { return notEq(entity, attribute, value); } return null; }
 	public static Criterion notEqNullable	(Entity<?> entity, String attribute, Object value) { if(value != null) {return notEq(entity, attribute, value);} return isNotNull(entity, attribute); }
 	public static Aggregator notEqOrNull	(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).notEq(entity, attribute, value).isNull(entity, attribute); }
 	
@@ -472,11 +473,13 @@ public class Estivate {
 	
 	public static Criterion eq    			(Class<?> entity, String attribute, Object value) { return eq(new Entity<>(entity), attribute, value); }
 	public static Criterion eqIfNotNull		(Class<?> entity, String attribute, Object value) { return eqIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion eqIfNotBlank	(Class<?> entity, String attribute, String value) { return eqIfNotBlank(new Entity<>(entity), attribute, value); }
 	public static Criterion eqNullable		(Class<?> entity, String attribute, Object value) { return eqNullable(new Entity<>(entity), attribute, value); }
 	public static Aggregator eqOrNull		(Class<?> entity, String attribute, Object value) { return eqOrNull(new Entity<>(entity), attribute, value); }
 
 	public static Criterion notEq 			(Class<?> entity, String attribute, Object value) { return notEq(new Entity<>(entity), attribute, value); }
 	public static Criterion notEqIfNotNull	(Class<?> entity, String attribute, Object value) { return notEqIfNotNull(new Entity<>(entity), attribute, value); }
+	public static Criterion notEqIfNotBlank (Class<?> entity, String attribute, String value) { return notEqIfNotBlank(new Entity<>(entity), attribute, value); }
 	public static Criterion notEqNullable	(Class<?> entity, String attribute, Object value) { return notEqNullable(new Entity<>(entity), attribute, value); }
 	public static Aggregator notEqOrNull	(Class<?> entity, String attribute, Object value) { return notEqOrNull(new Entity<>(entity), attribute, value); }
 
@@ -593,11 +596,13 @@ public class Estivate {
 	
 	public static <E, P> Criterion eq    			(AttributeGetter<E, P> getter, P value) { return eq(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion eqIfNotNull		(AttributeGetter<E, P> getter, P value) { return eqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> 	 Criterion eqIfNotBlank		(AttributeGetter<E, String> getter, String value) { return eqIfNotBlank(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion eqNullable		(AttributeGetter<E, P> getter, P value) { return eqNullable(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator eqOrNull		(AttributeGetter<E, P> getter, P value) { return eqOrNull(Estivate.attribute(getter), value); }
 
 	public static <E, P> Criterion notEq 			(AttributeGetter<E, P> getter, P value) { return notEq(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion notEqIfNotNull	(AttributeGetter<E, P> getter, P value) { return notEqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> 	 Criterion notEqIfNotBlank	(AttributeGetter<E, String> getter, String value) { return notEqIfNotBlank(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion notEqNullable	(AttributeGetter<E, P> getter, P value) { return notEqNullable(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator notEqOrNull	(AttributeGetter<E, P> getter, P value) { return notEqOrNull(Estivate.attribute(getter), value); }
 
