@@ -208,6 +208,8 @@ public class FieldUtils {
 			columnMappings.add(null);
 		}
 
+		List<String> unmappedFields = new ArrayList<>();
+
 		for(Field field : getEntityFields(entityClass.entity)) {
 			ColumnMapping columnMapping = getColumnMapping(entityClass, field);
 
@@ -217,9 +219,13 @@ public class FieldUtils {
 			if(index != -1) {
 				columnMappings.set(index, columnMapping);
 			} else {
-				log.error("Field {} is not in the query", field.getName());
+				unmappedFields.add(field.getName());
 			}
 
+		}
+
+		if(!unmappedFields.isEmpty()) {
+			log.warn("In following query : " + query.toString()+", trying to map to entity : " + entityClass.toString() + ", fields missing : " + String.join(", ", unmappedFields));
 		}
 		return columnMappings;
 	}
