@@ -10,9 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +25,7 @@ import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.ReflectionUtils;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -43,19 +42,18 @@ import lombok.extern.slf4j.Slf4j;
 public class ReconciliationManager {
 
     final Context context;
-    final List<String> packageNames;
     
     @Getter
     final List<Class<?>> entityClasses;
 
-    @Getter
-    Map<Class<?>, EntityModel> entityModels = new LinkedHashMap<>();
+    // @Getter
+    // Map<Class<?>, EntityModel> entityModels = new LinkedHashMap<>();
+
+    // @Getter
+    // Map<String, EntityModel> databaseModels = new LinkedHashMap<>();
 
     @Getter
-    Map<Class<?>, EntityModel> databaseModels = new LinkedHashMap<>();
-
-    @Getter
-    List<ReconciliationDelta> differences;
+    List<ReconciliationDelta> differences = new ArrayList<>();
 
     /**
      * Creates a ReconciliationManager that scans the specified packages for entity classes.
@@ -75,51 +73,83 @@ public class ReconciliationManager {
      */
     public ReconciliationManager(Context context, List<String> packageNames) {
         this.context = context;
-        this.packageNames = packageNames;
         
         // Scan packages for entity classes
         this.entityClasses = ReflectionUtils.scanPackagesForEntities(packageNames);
         
         log.info("Found {} entity classes in packages: {}", entityClasses.size(), packageNames);
         
+        scanAllEntities();
+    }
+
+    public ReconciliationManager(Context context, Class<?> entityClass) {
+        this.context = context;
+        
+        // Scan packages for entity classes
+        this.entityClasses = List.of(entityClass);
+        scanAllEntities();
+    }
+
+    private void scanAllEntities() {
+
+        List<String> databaseTables = context.showTables();
         // Process each entity
         for (Class<?> entityClass : entityClasses) {
             // Scan entity fields from code
             EntityModel entityModel = scanEntityFields(entityClass);
-            entityModels.put(entityClass, entityModel);
+            // entityModels.put(entityClass, entityModel);
 
-            // Get table information from database
-            EntityModel databaseModel = scanDatabaseTable(entityClass);
-            databaseModels.put(entityClass, databaseModel);
+            String tableName = context.nameMapper.toTableName(entityClass);
+            if(!databaseTables.contains(tableName)) {
+                EstivateReconciliation.CreateTableDelta createTable = EstivateReconciliation.CreateTableDelta.builder()
+                    .entityClass(entityClass)
+                    .build();
+                differences.add(createTable);
+                continue;
+            }
+
+            databaseTables.remove(tableName);
+            EntityModel databaseModel = scanDatabaseTable(tableName);
+
+            List<ReconciliationDelta> entityDiffs = compare(entityClass, entityModel, databaseModel);
+            differences.addAll(entityDiffs);
+
         }
 
-        // Compare all entities
-        this.differences = compareAll();
+        // Tables that are in database but not in entity classes
+        for(String tableName : databaseTables) {
+            EstivateReconciliation.DropTableDelta dropTable = EstivateReconciliation.DropTableDelta.builder()
+                .tableName(tableName)
+                .build();
+            differences.add(dropTable);
+        }
+
+        
         this.differences.stream().forEach(x -> x.setCurrentDeltas(differences));
     }
     
-    /**
-     * Creates a ReconciliationManager for a single entity class.
-     * Kept for backward compatibility.
-     * 
-     * @param context The database context
-     * @param entityClass The entity class to reconcile
-     */
-    public static ReconciliationManager forEntity(Context context, Class<?> entityClass) {
-        ReconciliationManager manager = new ReconciliationManager(context, new ArrayList<>());
-        manager.entityClasses.add(entityClass);
+    // /**
+    //  * Creates a ReconciliationManager for a single entity class.
+    //  * Kept for backward compatibility.
+    //  * 
+    //  * @param context The database context
+    //  * @param entityClass The entity class to reconcile
+    //  */
+    // public static ReconciliationManager forEntity(Context context, Class<?> entityClass) {
+    //     ReconciliationManager manager = new ReconciliationManager(context, new ArrayList<>());
+    //     manager.entityClasses.add(entityClass);
         
-        EntityModel entityModel = manager.scanEntityFields(entityClass);
-        manager.entityModels.put(entityClass, entityModel);
+    //     EntityModel entityModel = manager.scanEntityFields(entityClass);
+    //     manager.entityModels.put(entityClass, entityModel);
         
-        EntityModel databaseModel = manager.scanDatabaseTable(entityClass);
-        manager.databaseModels.put(entityClass, databaseModel);
+    //     EntityModel databaseModel = manager.scanDatabaseTable(entityClass);
+    //     manager.databaseModels.put(entityClass, databaseModel);
         
-        manager.differences = manager.compareAll();
-        manager.differences.stream().forEach(x -> x.setCurrentDeltas(manager.differences));
+    //     manager.differences = manager.compareAll();
+    //     manager.differences.stream().forEach(x -> x.setCurrentDeltas(manager.differences));
         
-        return manager;
-    }
+    //     return manager;
+    // }
     
    
     
@@ -165,7 +195,7 @@ public class ReconciliationManager {
             Integer length = extractLengthFromField(field, sqlType);
             
             TableField tableField = TableField.builder()
-                .name(field.getName())
+                .name(context.nameMapper.mapDatabaseField(field.getName()))
                 .type(sqlType)
                 .nullable(isNullable(field))
                 .autoIncrement(isAutoIncrement(field))
@@ -183,22 +213,21 @@ public class ReconciliationManager {
      * Queries the database to get the actual table structure
      */
     @SneakyThrows
-    private EntityModel scanDatabaseTable(Class<?> entityClass) {
+    private EntityModel scanDatabaseTable(String tableName) {
         EntityModel model = EntityModel.builder()
-            .tableName(context.nameMapper.toTableName(entityClass))
+            .tableName(tableName)
             .build();
 
         try (Connection connection = context.datasource.getConnection();
              Statement statement = new Statement(context, connection)) {
 
-            statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(context.nameMapper.toTableName(entityClass));
+            statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(tableName);
             
             try (ResultSet resultSet = statement.executeForResultSet()) {
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("Field");
                     String columnType = resultSet.getString("Type");
                     String nullableStr = resultSet.getString("Null");
-                    String keyStr = resultSet.getString("Key");
                     String defaultValue = resultSet.getString("Default");
                     // H2 doesn't have "Extra" column, so we need to handle it gracefully
                     String extra = null;
@@ -210,13 +239,10 @@ public class ReconciliationManager {
                     }
 
                     // Convert database column name back to entity field name
-                    String fieldName = context.findEntityName(entityClass, columnName);
-                    if (fieldName == null) {
-                        fieldName = columnName; // Keep original if no match found
-                    }
+
 
                     TableField tableField = TableField.builder()
-                        .name(fieldName)
+                        .name(columnName)
                         .type(extractColumnType(columnType))
                         .nullable("YES".equalsIgnoreCase(nullableStr))
                         .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
@@ -232,24 +258,7 @@ public class ReconciliationManager {
         return model;
     }
     
-    /**
-     * Compares all entity models with their database models and returns all differences
-     */
-    private List<ReconciliationDelta> compareAll() {
-        List<ReconciliationDelta> allDiffs = new ArrayList<>();
-        
-        for (Class<?> entityClass : entityClasses) {
-            EntityModel entityModel = entityModels.get(entityClass);
-            EntityModel databaseModel = databaseModels.get(entityClass);
-            
-            if (entityModel != null && databaseModel != null) {
-                List<ReconciliationDelta> entityDiffs = compare(entityClass, entityModel, databaseModel);
-                allDiffs.addAll(entityDiffs);
-            }
-        }
-        
-        return allDiffs;
-    }
+   
 
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
@@ -475,6 +484,7 @@ public class ReconciliationManager {
     /**
      * Result of applying resolvers to schema differences.
      */
+    @Data
     @Getter
     public static class ApplyResolversResult {
         private final List<ReconciliationDelta> resolved = new ArrayList<>();

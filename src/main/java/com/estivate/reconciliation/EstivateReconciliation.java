@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 public class EstivateReconciliation {
 
@@ -39,6 +40,7 @@ public class EstivateReconciliation {
         private String reconciliationReason;
 
         @Getter
+        @ToString.Exclude
         private List<ReconciliationDelta> currentDeltas;
 
         public void closeSolved(String reason){
@@ -71,17 +73,26 @@ public class EstivateReconciliation {
 
 
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CreateTableDelta extends ReconciliationDelta {
         public Class<?> entityClass;
         
     }
     
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class DropTableDelta extends ReconciliationDelta {
         public String tableName;
     }
     
 
+    @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -93,6 +104,7 @@ public class EstivateReconciliation {
     }
 
     
+    @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -102,6 +114,7 @@ public class EstivateReconciliation {
 
     }
 
+    @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -156,6 +169,7 @@ public class EstivateReconciliation {
 
 
 
+    @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -169,6 +183,9 @@ public class EstivateReconciliation {
      * Represents an index that exists in the database but has no corresponding definition in code.
      * Action: DROP INDEX
      */
+    
+    @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DropIndexDelta extends ReconciliationDelta {
