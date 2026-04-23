@@ -174,7 +174,7 @@ public class ResolverApplicationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        dropTableIfExists("RESOLVER_TEST_ENTITY");
+        context.showTables().forEach(this::dropTableIfExists);
     }
 
     private void dropTableIfExists(String tableName) {

@@ -86,7 +86,7 @@ public class ReconciliationManager {
         this.context = context;
         
         // Scan packages for entity classes
-        this.entityClasses = List.of(entityClass);
+        this.entityClasses = Arrays.asList(entityClass);
         scanAllEntities();
     }
 
