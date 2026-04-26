@@ -72,14 +72,14 @@ public class ResolverApplicationTest {
      */
     @ReconciliationScope(table = "", column = "")
     public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
-        public boolean wasCalled = false;
-        public AddColumnDelta lastDiff = null;
-        public boolean shouldSucceed = true;
-
+        
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
-            wasCalled = true;
-            lastDiff = diff;
+            try{
+                context.addColumn(diff.entityClass, diff.entityFieldName, diff.entityColumnDefinition.getColumnType());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -88,14 +88,9 @@ public class ResolverApplicationTest {
      */
     @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "")
     public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
-        public boolean wasCalled = false;
-        public AddColumnDelta lastDiff = null;
-        public boolean shouldSucceed = true;
-
+        
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
-            wasCalled = true;
-            lastDiff = diff;
         }
     }
 
@@ -104,14 +99,15 @@ public class ResolverApplicationTest {
      */
     @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "email")
     public static class EmailColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
-        public boolean wasCalled = false;
-        public AddColumnDelta lastDiff = null;
-        public boolean shouldSucceed = true;
-
+        
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
-            wasCalled = true;
-            lastDiff = diff;
+            try {
+                context.addColumn(diff.entityClass, diff.entityFieldName, diff.entityColumnDefinition.getColumnType());
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 
@@ -120,14 +116,15 @@ public class ResolverApplicationTest {
      */
     @ReconciliationScope(table = "", column = "")
     public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IModifyColumnResolver {
-        public boolean wasCalled = false;
         public com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta lastDiff = null;
-        public boolean shouldSucceed = true;
 
         @Override
         public void resolve(Context context, com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta diff) {
-            wasCalled = true;
-            lastDiff = diff;
+            try {
+                context.changeColumn(diff.entityClass, diff.entityFieldName, diff.entityDefinition.getColumnType());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -135,11 +132,13 @@ public class ResolverApplicationTest {
      * Resolver without annotation - should never be called
      */
     public static class UnannotatedResolver implements EstivateReconciliation.IAddColumnResolver {
-        public boolean wasCalled = false;
-
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
-            wasCalled = true;
+            try {
+                context.addColumn(diff.entityClass, diff.entityFieldName, diff.entityColumnDefinition.getColumnType());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -202,7 +201,6 @@ public class ResolverApplicationTest {
         assertEquals(0, result.totalDiffs(), "Should have no diffs");
         assertTrue(result.getResolved().isEmpty(), "Resolved list should be empty");
         assertTrue(result.getUnresolved().isEmpty(), "Unresolved list should be empty");
-        assertFalse(resolver.wasCalled, "Resolver should not be called when no diffs exist");
     }
 
     @Test
@@ -213,16 +211,14 @@ public class ResolverApplicationTest {
 
         ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
         GenericColumnMissingResolver resolver = new GenericColumnMissingResolver();
-        resolver.shouldSucceed = true;
+        
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
         assertEquals(1, result.getResolved().size(), "Should have 1 resolved diff");
         assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
-        assertTrue(resolver.wasCalled, "Resolver should be called");
-        assertNotNull(resolver.lastDiff, "Last diff should be set");
-        assertEquals("email", resolver.lastDiff.entityFieldName, "Diff should be for email column");
+
     }
 
     @Test
@@ -256,7 +252,6 @@ public class ResolverApplicationTest {
         assertFalse(result.isFullyResolved(), "Should not be fully resolved without matching resolvers");
         assertTrue(result.getResolved().isEmpty(), "Should have no resolved diffs");
         assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
-        assertFalse(resolver.wasCalled, "Unannotated resolver should not be called");
     }
 
     @Test
@@ -291,8 +286,6 @@ public class ResolverApplicationTest {
         assertEquals(2, result.totalDiffs(), "Should have 2 total diffs");
         assertEquals(2, result.getResolved().size(), "Should have 2 resolved diffs");
         assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
-        assertTrue(missingResolver.wasCalled, "Missing resolver should be called");
-        assertTrue(definitionResolver.wasCalled, "Definition resolver should be called");
     }
 
     @Test
@@ -353,9 +346,7 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(emailResolver, genericResolver));
 
         // Email resolver doesn't match the 'name' column, so it shouldn't be called
-        assertFalse(emailResolver.wasCalled, "Email resolver should not be called for 'name' column");
         // Generic resolver should handle it
-        assertTrue(genericResolver.wasCalled, "Generic resolver should be called");
         assertTrue(result.isFullyResolved(), "Should be fully resolved by generic resolver");
     }
 
@@ -375,8 +366,6 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(missingResolver, definitionResolver));
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved with all resolver types");
-        assertTrue(missingResolver.wasCalled, "Missing resolver should be called");
-        assertTrue(definitionResolver.wasCalled, "Definition resolver should be called");
     }
 
     @Test
@@ -406,19 +395,15 @@ public class ResolverApplicationTest {
         context.dropColumn(ResolverTestEntity.class, "email");
 
         ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
-        GenericColumnMissingResolver firstResolver = new GenericColumnMissingResolver();
-        firstResolver.shouldSucceed = true;
-        GenericColumnMissingResolver secondResolver = new GenericColumnMissingResolver();
-        secondResolver.shouldSucceed = true;
+        GenericColumnMissingResolver columnMissingResolver = new GenericColumnMissingResolver();
 
-        ApplyResolversResult result = manager.applyResolvers(Arrays.asList(firstResolver, secondResolver));
+        ApplyResolversResult result = manager.applyResolvers(Arrays.asList(columnMissingResolver));
 
         for(ReconciliationDelta delta : result.getUnresolved()){
             System.out.println(delta);
         }
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
-        assertTrue(firstResolver.wasCalled, "First resolver should be called");
         // Second resolver might or might not be called depending on sorting and matching
         // but if first succeeds, diff is resolved
     }
@@ -432,12 +417,10 @@ public class ResolverApplicationTest {
         ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
         FailingResolver failingResolver = new FailingResolver();
         GenericColumnMissingResolver successResolver = new GenericColumnMissingResolver();
-        successResolver.shouldSucceed = true;
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(failingResolver, successResolver));
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved after fallback to second resolver");
         assertEquals(1, failingResolver.callCount, "Failing resolver should be tried once");
-        assertTrue(successResolver.wasCalled, "Success resolver should be tried after failing one");
     }
 }

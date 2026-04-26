@@ -730,6 +730,19 @@ public abstract class Context {
 					fieldCreation.append("AUTO_INCREMENT");
 				}
 			}
+
+			if(field.getDeclaredAnnotation(javax.persistence.Column.class) != null) {
+				javax.persistence.Column column = field.getDeclaredAnnotation(javax.persistence.Column.class);
+				if(column.nullable() == false) {
+					fieldCreation.append("NOT NULL");
+				}
+			}
+			else if(field.getDeclaredAnnotation(jakarta.persistence.Column.class) != null) {
+				jakarta.persistence.Column column = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+				if(column.nullable() == false) {
+					fieldCreation.append("NOT NULL");
+				}
+			}
 			
 			fields.add(fieldCreation.toString());
 		}
@@ -839,7 +852,8 @@ public abstract class Context {
 			Statement statement = new Statement(this, connection, preExecute(query));) {
 			return statement.query();
 		}
-		
 	}
+
+	abstract public String javaTypeToSqlType(Field field);
 	
 }

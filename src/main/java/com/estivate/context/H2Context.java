@@ -1,8 +1,12 @@
 package com.estivate.context;
 
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +73,7 @@ public class H2Context extends Context {
 	 * Helper method to execute H2-compatible ALTER TABLE statements
 	 */
 	@SneakyThrows
-	public void executeH2AlterTable(String sql) {
+	private void executeH2AlterTable(String sql) {
 		try (Connection connection = datasource.getConnection();
 			 java.sql.Statement stmt = connection.createStatement()) {
 			stmt.execute(sql);
@@ -84,6 +88,71 @@ public class H2Context extends Context {
 		String columnName = nameMapper.mapDatabaseField(fieldName);
 		String tableName = nameMapper.toTableName(c);
 		executeH2AlterTable("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " " + columnType);
+	}
+
+
+
+	/**
+     * Converts Java field type to SQL type string
+     */
+    public String javaTypeToSqlType(Field field) {
+        Class<?> type = field.getType();
+
+        // Check for @Convert annotation
+        if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+            type = String.class;
+        }
+
+        // Handle enums
+        if (type.isEnum()) {
+            if (isEnumeratedAsString(field)) {
+                type = String.class;
+            }
+            type = Integer.class;
+        }
+
+        // Primitive types and wrappers
+        if (type == Integer.class || type == int.class) return "INTEGER";
+        if (type == Long.class || type == long.class) return "INTEGER";
+        if (type == Short.class || type == short.class) return "INTEGER";
+        if (type == Byte.class || type == byte.class) return "TINYINT";
+        if (type == Float.class || type == float.class) return "FLOAT";
+        if (type == Double.class || type == double.class) return "DOUBLE";
+        if (type == Boolean.class || type == boolean.class) return "BOOLEAN";
+        if (type == String.class) {
+            javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+            jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+            if (javaxColumn != null || jakartaColumn != null) {
+                String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
+                if (columnDef != null && columnDef.trim().equalsIgnoreCase("text")) {
+                    return "TEXT";
+                }
+            }
+            return "CHARACTER VARYING";
+        } 
+        if (type == Date.class || type == java.sql.Date.class) return "TIMESTAMP";
+        if (type == LocalDateTime.class) return "TIMESTAMP";
+        if (type == LocalDate.class) return "DATE";
+        if (type == byte[].class) return "BLOB";
+
+        return "VARCHAR"; // Default fallback
+    }
+
+	/**
+	 * Checks if an enum field is stored as STRING
+	 */
+	private boolean isEnumeratedAsString(Field field) {
+		javax.persistence.Enumerated javaxEnum = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+		if (javaxEnum != null && javaxEnum.value() == javax.persistence.EnumType.STRING) {
+			return true;
+		}
+
+		jakarta.persistence.Enumerated jakartaEnum = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+		if (jakartaEnum != null && jakartaEnum.value() == jakarta.persistence.EnumType.STRING) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

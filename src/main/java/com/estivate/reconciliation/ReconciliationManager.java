@@ -191,7 +191,7 @@ public class ReconciliationManager {
         Set<Field> fields = FieldUtils.getEntityFields(entityClass);
         
         for (Field field : fields) {
-            String sqlType = javaTypeToSqlType(field);
+            String sqlType = context.javaTypeToSqlType(field);
             Integer length = extractLengthFromField(field, sqlType);
             
             TableField tableField = TableField.builder()
@@ -305,15 +305,9 @@ public class ReconciliationManager {
                 boolean hasLengthMismatch = entityField.getLength() != null && dbField.getLength() != null 
                     && !entityField.getLength().equals(dbField.getLength());
                 
-                String entityDefault = entityField.getDefaultValue();
-                String dbDefault = dbField.getDefaultValue();
-                boolean hasDefaultMismatch = false;
-                if (entityDefault != null || dbDefault != null) {
-                    boolean defaultsMatch = (entityDefault == null && (dbDefault == null || dbDefault.isEmpty())) ||
-                                           (dbDefault == null && (entityDefault == null || entityDefault.isEmpty())) ||
-                                           (entityDefault != null && entityDefault.equals(dbDefault));
-                    hasDefaultMismatch = !defaultsMatch;
-                }
+                String entityDefault = entityField.getDefaultValue() == null ? "NULL" : entityField.getDefaultValue();
+                String dbDefault = dbField.getDefaultValue() == null ? "NULL" : dbField.getDefaultValue();
+                boolean hasDefaultMismatch = !entityDefault.equals(dbDefault);
                 
                 if (hasTypeMismatch || hasNullableMismatch || hasLengthMismatch || hasDefaultMismatch) {
                     AlterQuery.ColumnDefinition entityDef = new AlterQuery.ColumnDefinition(
@@ -527,7 +521,7 @@ public class ReconciliationManager {
             }
         }
         
-        return result;
+        return result; 
     }
 
     /**
@@ -542,24 +536,31 @@ public class ReconciliationManager {
         try {
             if (diff instanceof EstivateReconciliation.CreateTableDelta && resolver instanceof EstivateReconciliation.ICreateTableResolver) {
                 ((EstivateReconciliation.ICreateTableResolver) resolver).resolve(context, (EstivateReconciliation.CreateTableDelta) diff);
+                return true;
             }
             if (diff instanceof EstivateReconciliation.AddColumnDelta && resolver instanceof EstivateReconciliation.IAddColumnResolver) {
                 ((EstivateReconciliation.IAddColumnResolver) resolver).resolve(context, (EstivateReconciliation.AddColumnDelta) diff);
+                return true;
             }
             if (diff instanceof EstivateReconciliation.ModifyColumnDelta && resolver instanceof EstivateReconciliation.IModifyColumnResolver) {
                 ((EstivateReconciliation.IModifyColumnResolver) resolver).resolve(context, (EstivateReconciliation.ModifyColumnDelta) diff);
+                return true;
             }
             if (diff instanceof EstivateReconciliation.DropTableDelta && resolver instanceof EstivateReconciliation.IDropTableResolver) {
                 ((EstivateReconciliation.IDropTableResolver) resolver).resolve(context, (EstivateReconciliation.DropTableDelta) diff);
+                return true;
             }
             if (diff instanceof EstivateReconciliation.DropColumnDelta && resolver instanceof EstivateReconciliation.IDropColumnResolver) {
                 ((EstivateReconciliation.IDropColumnResolver) resolver).resolve(context, (EstivateReconciliation.DropColumnDelta) diff);
+                return true;
             }
             if (diff instanceof EstivateReconciliation.AddIndexDelta && resolver instanceof EstivateReconciliation.IAddIndexResolver) {
                 ((EstivateReconciliation.IAddIndexResolver) resolver).resolve(context, (EstivateReconciliation.AddIndexDelta) diff);
+                return true;
             }
             if (diff instanceof EstivateReconciliation.DropIndexDelta && resolver instanceof EstivateReconciliation.IDropIndexResolver) {
                 ((EstivateReconciliation.IDropIndexResolver) resolver).resolve(context, (EstivateReconciliation.DropIndexDelta) diff);
+                return true;
             }
         } catch (Exception e) {
             log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
@@ -601,51 +602,7 @@ public class ReconciliationManager {
 
     // ==================== Helper Methods ====================
 
-    /**
-     * Converts Java field type to SQL type string
-     */
-    private String javaTypeToSqlType(Field field) {
-        Class<?> type = field.getType();
-
-        // Check for @Convert annotation
-        if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-            type = String.class;
-        }
-
-        // Handle enums
-        if (type.isEnum()) {
-            if (isEnumeratedAsString(field)) {
-                type = String.class;
-            }
-            type = Integer.class;
-        }
-
-        // Primitive types and wrappers
-        if (type == Integer.class || type == int.class) return "INT";
-        if (type == Long.class || type == long.class) return "BIGINT";
-        if (type == Short.class || type == short.class) return "SMALLINT";
-        if (type == Byte.class || type == byte.class) return "TINYINT";
-        if (type == Float.class || type == float.class) return "FLOAT";
-        if (type == Double.class || type == double.class) return "DOUBLE";
-        if (type == Boolean.class || type == boolean.class) return "BOOLEAN";
-        if (type == String.class) {
-            javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
-            jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
-            if (javaxColumn != null || jakartaColumn != null) {
-                String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
-                if (columnDef != null && columnDef.trim().equalsIgnoreCase("text")) {
-                    return "TEXT";
-                }
-            }
-            return "VARCHAR";
-        } 
-        if (type == Date.class || type == java.sql.Date.class) return "DATETIME";
-        if (type == LocalDateTime.class) return "DATETIME";
-        if (type == LocalDate.class) return "DATE";
-        if (type == byte[].class) return "BLOB";
-
-        return "VARCHAR"; // Default fallback
-    }
+    
 
     /**
      * Checks if a field is nullable based on annotations
@@ -704,22 +661,7 @@ public class ReconciliationManager {
         return false;
     }
 
-    /**
-     * Checks if an enum field is stored as STRING
-     */
-    private boolean isEnumeratedAsString(Field field) {
-        javax.persistence.Enumerated javaxEnum = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
-        if (javaxEnum != null && javaxEnum.value() == javax.persistence.EnumType.STRING) {
-            return true;
-        }
 
-        jakarta.persistence.Enumerated jakartaEnum = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
-        if (jakartaEnum != null && jakartaEnum.value() == jakarta.persistence.EnumType.STRING) {
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * Extracts length from entity field annotations (@Column, @Size, etc.)
@@ -834,5 +776,7 @@ public class ReconciliationManager {
         }
         return columnType;
     }
+
+    
 
 }
