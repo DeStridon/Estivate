@@ -9,9 +9,11 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
@@ -20,28 +22,16 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
      * Column definition containing type, constraints, and encoding information
      */
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ColumnDefinition {
-        /** SQL type (e.g., "VARCHAR", "INT", "BIGINT") */
-        public String columnType;
-        
-        /** Column length (e.g., VARCHAR(255) -> 255) */
-        public Integer length;
-        
-        /** Whether the column is nullable */
-        public Boolean nullable;
-        
-        /** Default value if any */
+        public @NonNull String columnType; // SQL type (e.g., "VARCHAR", "INT", "BIGINT")
+        public Integer length; 
+        public Boolean nullable; 
         public String defaultValue;
-        
-        /** Whether the column is auto-increment */
         public Boolean autoIncrement;
-        
-        /** Character set (e.g., "utf8mb4", "utf8") */
         public String charset;
-        
-        /** Collation (e.g., "utf8mb4_unicode_ci") */
         public String collation;
         
         /**
@@ -49,14 +39,9 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
          * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
          */
         public String getFullColumnType() {
-            if (columnType == null) {
-                return null;
-            }
-            
             if (length != null && needsLength(columnType)) {
                 return columnType + "(" + length + ")";
             }
-            
             return columnType;
         }
         
@@ -70,6 +55,32 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
                    upper.contains("CHAR") || 
                    upper.contains("DECIMAL") ||
                    upper.contains("NUMERIC");
+        }
+
+        public void appendToStatement(Context context, Statement statement){
+            String columnType = getFullColumnType(); 
+            if (columnType != null) {
+                statement.appendQuery(columnType);
+            }
+            if (charset != null) {
+                statement.appendQuery("CHARACTER SET");
+                statement.appendQuery(charset);
+            }
+            if (collation != null) {
+                statement.appendQuery("COLLATE");
+                statement.appendQuery(collation);
+            }
+            if (nullable != null) {
+                statement.appendQuery(nullable ? "NULL" : "NOT NULL");
+            }
+            if (defaultValue != null) {
+                statement.appendQuery("DEFAULT");
+                statement.appendQuery(defaultValue);
+            }
+            if (Boolean.TRUE.equals(autoIncrement)) {
+                statement.appendQuery("AUTO_INCREMENT");
+            }
+
         }
     }
 
@@ -93,10 +104,6 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
         private final String columnName;
         private final ColumnDefinition columnDefinition;
 
-        public AddColumn(String columnName, String columnType) {
-            this(columnName, new ColumnDefinition(columnType, null, null, null, null, null, null));
-        }
-
         public AddColumn(String columnName, ColumnDefinition columnDefinition) {
             this.columnName = columnName;
             this.columnDefinition = columnDefinition;
@@ -106,30 +113,8 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
         public void render(Context context, Statement statement) {
             statement.appendQuery("ADD COLUMN");
             statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-            String columnType = columnDefinition != null && columnDefinition.columnType != null 
-                ? columnDefinition.getFullColumnType() 
-                : (columnDefinition != null ? columnDefinition.columnType : null);
-            if (columnType != null) {
-                statement.appendQuery(columnType);
-            }
-            if (columnDefinition != null && columnDefinition.charset != null) {
-                statement.appendQuery("CHARACTER SET");
-                statement.appendQuery(columnDefinition.charset);
-            }
-            if (columnDefinition != null && columnDefinition.collation != null) {
-                statement.appendQuery("COLLATE");
-                statement.appendQuery(columnDefinition.collation);
-            }
-            if (columnDefinition != null && columnDefinition.nullable != null) {
-                statement.appendQuery(columnDefinition.nullable ? "NULL" : "NOT NULL");
-            }
-            if (columnDefinition != null && columnDefinition.defaultValue != null) {
-                statement.appendQuery("DEFAULT");
-                statement.appendQuery(columnDefinition.defaultValue);
-            }
-            if (columnDefinition != null && Boolean.TRUE.equals(columnDefinition.autoIncrement)) {
-                statement.appendQuery("AUTO_INCREMENT");
-            }
+            columnDefinition.appendToStatement(context, statement);
+            
         }
     }
 
@@ -156,14 +141,6 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
         private final String columnName;
         private final ColumnDefinition columnDefinition;
 
-        public ModifyColumn(String columnName, String columnType) {
-            this(columnName, new ColumnDefinition(columnType, null, null, null, null, null, null));
-        }
-
-        public ModifyColumn(String columnName, String columnType, String charset, String collation, Boolean nullable) {
-            this(columnName, new ColumnDefinition(columnType, null, nullable, null, null, charset, collation));
-        }
-
         public ModifyColumn(String columnName, ColumnDefinition columnDefinition) {
             this.columnName = columnName;
             this.columnDefinition = columnDefinition;
@@ -173,23 +150,7 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
         public void render(Context context, Statement statement) {
             statement.appendQuery("MODIFY COLUMN");
             statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-            String columnType = columnDefinition != null && columnDefinition.columnType != null 
-                ? columnDefinition.getFullColumnType() 
-                : (columnDefinition != null ? columnDefinition.columnType : null);
-            if (columnType != null) {
-                statement.appendQuery(columnType);
-            }
-            if (columnDefinition != null && columnDefinition.charset != null) {
-                statement.appendQuery("CHARACTER SET");
-                statement.appendQuery(columnDefinition.charset);
-            }
-            if (columnDefinition != null && columnDefinition.collation != null) {
-                statement.appendQuery("COLLATE");
-                statement.appendQuery(columnDefinition.collation);
-            }
-            if (columnDefinition != null && columnDefinition.nullable != null) {
-                statement.appendQuery(columnDefinition.nullable ? "NULL" : "NOT NULL");
-            }
+            columnDefinition.appendToStatement(context, statement);
         }
     }
 
@@ -300,11 +261,8 @@ public class AlterQuery<E> extends Query<AlterQuery<E>, E> {
         super(entity);
     }
 
-    public AlterQuery<E> addColumn(String columnName, String columnType) { return addOperation(new AddColumn(columnName, columnType)); }
     public AlterQuery<E> addColumn(String columnName, ColumnDefinition columnDefinition) { return addOperation(new AddColumn(columnName, columnDefinition)); }
     public AlterQuery<E> dropColumn(String columnName) { return addOperation(new DropColumn(columnName)); }
-    public AlterQuery<E> modifyColumn(String columnName, String columnType) { return addOperation(new ModifyColumn(columnName, columnType)); }
-    public AlterQuery<E> modifyColumn(String columnName, String columnType, String charset, String collation, Boolean nullable) { return addOperation(new ModifyColumn(columnName, columnType, charset, collation, nullable)); }
     public AlterQuery<E> modifyColumn(String columnName, ColumnDefinition columnDefinition) { return addOperation(new ModifyColumn(columnName, columnDefinition)); }
     public AlterQuery<E> changeColumn(String columnName, String newColumnName, String columnType) { return addOperation(new ChangeColumn(columnName, newColumnName, columnType)); }
     public AlterQuery<E> renameColumn(String columnName, String newColumnName) { return addOperation(new RenameColumn(columnName, newColumnName)); }

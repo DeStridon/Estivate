@@ -20,6 +20,7 @@ import com.estivate.context.Context;
 import com.estivate.reconciliation.EstivateReconciliation;
 import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.ReconciliationManager.ApplyResolversResult;
@@ -151,7 +152,7 @@ public class ResolverApplicationTest {
 
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
-            callCount++;
+            diff.setReconciliationResult(ReconciliationResult.FAILED);
         }
     }
 
@@ -199,8 +200,6 @@ public class ResolverApplicationTest {
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved when no differences exist");
         assertEquals(0, result.totalDiffs(), "Should have no diffs");
-        assertTrue(result.getResolved().isEmpty(), "Resolved list should be empty");
-        assertTrue(result.getUnresolved().isEmpty(), "Unresolved list should be empty");
     }
 
     @Test
@@ -216,8 +215,7 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
-        assertEquals(1, result.getResolved().size(), "Should have 1 resolved diff");
-        assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
+        assertEquals(1, result.getDeltas().size(), "Should have 1 resolved diff");
 
     }
 
@@ -233,8 +231,7 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
 
         assertFalse(result.isFullyResolved(), "Should not be fully resolved when resolver fails");
-        assertTrue(result.getResolved().isEmpty(), "Should have no resolved diffs");
-        assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
+        assertEquals(1, result.getDeltas().size(), "Should have 1 diff");
         assertEquals(1, resolver.callCount, "Resolver should be called once");
     }
 
@@ -250,8 +247,6 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(resolver));
 
         assertFalse(result.isFullyResolved(), "Should not be fully resolved without matching resolvers");
-        assertTrue(result.getResolved().isEmpty(), "Should have no resolved diffs");
-        assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
     }
 
     @Test
@@ -265,8 +260,7 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers(Collections.emptyList());
 
         assertFalse(result.isFullyResolved(), "Should not be fully resolved with empty candidates");
-        assertTrue(result.getResolved().isEmpty(), "Should have no resolved diffs");
-        assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
+        assertEquals(1, result.getDeltas().size(), "Should have 1 diff");
     }
 
     @Test
@@ -284,8 +278,6 @@ public class ResolverApplicationTest {
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
         assertEquals(2, result.totalDiffs(), "Should have 2 total diffs");
-        assertEquals(2, result.getResolved().size(), "Should have 2 resolved diffs");
-        assertTrue(result.getUnresolved().isEmpty(), "Should have no unresolved diffs");
     }
 
     @Test
@@ -303,12 +295,10 @@ public class ResolverApplicationTest {
 
         assertFalse(result.isFullyResolved(), "Should not be fully resolved");
         assertEquals(2, result.totalDiffs(), "Should have 2 total diffs");
-        assertEquals(1, result.getResolved().size(), "Should have 1 resolved diff");
-        assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
+        assertEquals(1, result.getDeltas().stream().filter(x -> x.getReconciliationResult() == ReconciliationResult.SOLVED).count(), "Should have 1 diff");
         
         // Verify the correct diff types were resolved/unresolved
-        assertTrue(result.getResolved().stream().anyMatch(d -> d instanceof AddColumnDelta), "AddColumnDelta should be resolved");
-        assertTrue(result.getUnresolved().stream().anyMatch(d -> d instanceof com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta), "ModifyColumnDelta should be unresolved");
+        assertTrue(result.getDeltas().stream().anyMatch(d -> d instanceof AddColumnDelta), "AddColumnDelta should be resolved");
     }
 
     @Test
@@ -384,8 +374,7 @@ public class ResolverApplicationTest {
 
         // Should have 2 missing columns resolved and 1 type mismatch unresolved
         assertEquals(3, result.totalDiffs(), "Total diffs should be sum of resolved and unresolved");
-        assertEquals(2, result.getResolved().size(), "Should have 2 resolved diffs");
-        assertEquals(1, result.getUnresolved().size(), "Should have 1 unresolved diff");
+        assertEquals(2, result.getDeltas().stream().filter(x -> x.getReconciliationResult() == ReconciliationResult.SOLVED).count(), "Should have 2 resolved diffs");
     }
 
     @Test
@@ -399,9 +388,6 @@ public class ResolverApplicationTest {
 
         ApplyResolversResult result = manager.applyResolvers(Arrays.asList(columnMissingResolver));
 
-        for(ReconciliationDelta delta : result.getUnresolved()){
-            System.out.println(delta);
-        }
 
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
         // Second resolver might or might not be called depending on sorting and matching

@@ -21,6 +21,7 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.ReflectionUtils;
@@ -481,15 +482,14 @@ public class ReconciliationManager {
     @Data
     @Getter
     public static class ApplyResolversResult {
-        private final List<ReconciliationDelta> resolved = new ArrayList<>();
-        private final List<ReconciliationDelta> unresolved = new ArrayList<>();
+        private final List<ReconciliationDelta> deltas = new ArrayList<>();
         
         public boolean isFullyResolved() {
-            return unresolved.isEmpty();
+            return deltas.stream().allMatch(d -> d.getReconciliationResult() == ReconciliationResult.SOLVED);
         }
         
         public int totalDiffs() {
-            return resolved.size() + unresolved.size();
+            return deltas.size();
         }
     }
 
@@ -498,27 +498,22 @@ public class ReconciliationManager {
      * For each diff, finds matching resolvers sorted by specificity (most specific first),
      * and applies the first resolver that successfully handles the diff.
      * 
-     * @param candidates Collection of resolver objects to search through
+     * @param resolverCandidates Collection of resolver objects to search through
      * @return ApplyResolversResult containing resolved and unresolved diffs
      */
-    public ApplyResolversResult applyResolvers(Collection<Object> candidates) {
+    public ApplyResolversResult applyResolvers(Collection<Object> resolverCandidates) {
         ApplyResolversResult result = new ApplyResolversResult();
         
         for (ReconciliationDelta diff : differences) {
-            List<Object> resolvers = findResolver(diff, candidates);
+            List<Object> resolvers = findResolver(diff, resolverCandidates);
             
-            boolean resolved = false;
             for (Object resolver : resolvers) {
                 if (tryApplyResolver(resolver, diff)) {
-                    result.resolved.add(diff);
-                    resolved = true;
+                    result.deltas.add(diff);
                     break;
                 }
             }
             
-            if (!resolved) {
-                result.unresolved.add(diff);
-            }
         }
         
         return result; 
