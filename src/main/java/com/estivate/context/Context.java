@@ -825,7 +825,9 @@ public abstract class Context {
 		}
 	}
 
+	// TODO : remove
 	public void addColumn(Class<?> c, String fieldName, String columnType) throws Exception {
+		// TODO : use ColumnDefinition
 		String columnName = nameMapper.mapDatabaseField(fieldName);
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
@@ -855,5 +857,6 @@ public abstract class Context {
 	}
 
 	abstract public String javaTypeToSqlType(Field field);
+	public Integer getDefaultLength(String columnType) { return null; }
 	
 }

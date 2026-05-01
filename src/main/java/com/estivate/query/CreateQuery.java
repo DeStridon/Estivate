@@ -57,9 +57,13 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
          * Builds the full SQL column type string including length if applicable
          * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
          */
-        public String getFullColumnType() {
+        public String getFullColumnType(Context context) {
             if (columnType == null) {
                 return null;
+            }
+
+            if(length == null){
+                length = context.getDefaultLength(columnType);
             }
             
             if (length != null && needsLength(columnType)) {
@@ -90,9 +94,6 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
         private final String columnName;
         private final ColumnDefinition columnDefinition;
 
-        public Column(String columnName, String columnType) {
-            this(columnName, new ColumnDefinition(columnType, null, null, null, null, null, null, null, null));
-        }
 
         public Column(String columnName, ColumnDefinition columnDefinition) {
             this.columnName = columnName;
@@ -102,7 +103,7 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
         public void render(Context context, Statement statement) {
             statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
             String columnType = columnDefinition != null && columnDefinition.columnType != null 
-                ? columnDefinition.getFullColumnType() 
+                ? columnDefinition.getFullColumnType(context) 
                 : (columnDefinition != null ? columnDefinition.columnType : null);
             if (columnType != null) {
                 statement.appendQuery(columnType);
@@ -317,11 +318,6 @@ public class CreateQuery<E> extends Query<CreateQuery<E>, E> {
         super(entity);
     }
 
-    // Column methods
-    public CreateQuery<E> column(String columnName, String columnType) { 
-        columns.put(columnName, new Column(columnName, columnType)); 
-        return this; 
-    }
     
     public CreateQuery<E> column(String columnName, ColumnDefinition columnDefinition) { 
         columns.put(columnName, new Column(columnName, columnDefinition)); 

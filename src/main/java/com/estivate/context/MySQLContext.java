@@ -168,7 +168,13 @@ public class MySQLContext extends Context {
 		return false;
 	}
 	
-	
+	@Override
+	public Integer getDefaultLength(String columnType) {
+		if(columnType.equalsIgnoreCase("VARCHAR")) {
+			return 255;
+		}
+		return null; 
+	}
 	
 
 }

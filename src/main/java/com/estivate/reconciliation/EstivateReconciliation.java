@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,7 +99,8 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class AddColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public String entityFieldName;
+        public Field entityField;
+        public String tableColumnName;
         public AlterQuery.ColumnDefinition entityColumnDefinition;
 
     }
@@ -120,7 +122,8 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class ModifyColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public String entityFieldName;
+        public Field entityField;
+        public String tableColumnName;
         public AlterQuery.ColumnDefinition entityDefinition;
         public AlterQuery.ColumnDefinition databaseDefinition;
 

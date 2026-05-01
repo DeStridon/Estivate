@@ -3,13 +3,10 @@ package com.estivate.reconciliation;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -97,7 +94,7 @@ public class ReconciliationManager {
         // Process each entity
         for (Class<?> entityClass : entityClasses) {
             // Scan entity fields from code
-            EntityModel entityModel = scanEntityFields(entityClass);
+            // EntityModel entityModel = scanEntityFields(entityClass);
             // entityModels.put(entityClass, entityModel);
 
             String tableName = context.nameMapper.toTableName(entityClass);
@@ -112,7 +109,7 @@ public class ReconciliationManager {
             databaseTables.remove(tableName);
             EntityModel databaseModel = scanDatabaseTable(tableName);
 
-            List<ReconciliationDelta> entityDiffs = compare(entityClass, entityModel, databaseModel);
+            List<ReconciliationDelta> entityDiffs = compare(entityClass, databaseModel);
             differences.addAll(entityDiffs);
 
         }
@@ -127,6 +124,7 @@ public class ReconciliationManager {
 
         
         this.differences.stream().forEach(x -> x.setCurrentDeltas(differences));
+
     }
     
     // /**
@@ -192,19 +190,7 @@ public class ReconciliationManager {
         Set<Field> fields = FieldUtils.getEntityFields(entityClass);
         
         for (Field field : fields) {
-            String sqlType = context.javaTypeToSqlType(field);
-            Integer length = extractLengthFromField(field, sqlType);
             
-            TableField tableField = TableField.builder()
-                .name(context.nameMapper.mapDatabaseField(field.getName()))
-                .type(sqlType)
-                .nullable(isNullable(field))
-                .autoIncrement(isAutoIncrement(field))
-                .length(length)
-                .defaultValue(extractDefaultValue(field))
-                .build();
-
-            model.getFields().add(tableField);
         }
 
         return model;
@@ -264,11 +250,28 @@ public class ReconciliationManager {
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel entityModel, EntityModel databaseModel) {
+    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel databaseModel) {
         List<ReconciliationDelta> diffs = new ArrayList<>();
+        List<String> projectedFieldNames = new ArrayList<>();
 
         // Check for fields in entity but not in database
-        for (TableField entityField : entityModel.getFields()) {
+        for (Field entityField : FieldUtils.getEntityFields(entityClass)) {
+
+
+            String sqlType = context.javaTypeToSqlType(entityField);
+            Integer length = extractLengthFromField(entityField, sqlType);
+            
+            TableField projectedField = TableField.builder()
+                .name(context.nameMapper.mapDatabaseField(entityField.getName()))
+                .type(sqlType)
+                .nullable(isNullable(entityField))
+                .autoIncrement(isAutoIncrement(entityField))
+                .length(length)
+                .defaultValue(extractDefaultValue(entityField))
+                .build();
+
+            projectedFieldNames.add(projectedField.getName());
+
             TableField dbField = databaseModel.findField(entityField.getName());
 
             if (dbField == null) {
@@ -283,40 +286,41 @@ public class ReconciliationManager {
             if (dbField == null) {
                 // Column missing in database - needs to be added
                 AlterQuery.ColumnDefinition columnDef = new AlterQuery.ColumnDefinition(
-                    entityField.getType(),
-                    entityField.getLength(),
-                    entityField.isNullable(),
-                    entityField.getDefaultValue(),
-                    entityField.isAutoIncrement(),
+                    projectedField.getType(),
+                    projectedField.getLength(),
+                    projectedField.isNullable(),
+                    projectedField.getDefaultValue(),
+                    projectedField.isAutoIncrement(),
                     null, // charset not available from entity field
                     null  // collation not available from entity field
                 );
                 
                 EstivateReconciliation.AddColumnDelta addColumn = EstivateReconciliation.AddColumnDelta.builder()
                     .entityClass(entityClass)
-                    .entityFieldName(entityField.getName())
+                    .entityField(entityField)
+                    .tableColumnName(projectedField.getName())
                     .entityColumnDefinition(columnDef)
                     .build();
                 diffs.add(addColumn);
             } 
             else {
                 // Check for any column definition mismatches
-                boolean hasTypeMismatch = !entityField.typeMatches(dbField.getType());
-                boolean hasNullableMismatch = entityField.isNullable() != dbField.isNullable();
-                boolean hasLengthMismatch = entityField.getLength() != null && dbField.getLength() != null 
-                    && !entityField.getLength().equals(dbField.getLength());
+                boolean hasTypeMismatch = !projectedField.typeMatches(dbField.getType());
+                boolean hasNullableMismatch = projectedField.isNullable() != dbField.isNullable();
+                boolean hasLengthMismatch = projectedField.getLength() != null && dbField.getLength() != null 
+                    && !projectedField.getLength().equals(dbField.getLength());
                 
-                String entityDefault = entityField.getDefaultValue() == null ? "NULL" : entityField.getDefaultValue();
+                String entityDefault = projectedField.getDefaultValue() == null ? "NULL" : projectedField.getDefaultValue();
                 String dbDefault = dbField.getDefaultValue() == null ? "NULL" : dbField.getDefaultValue();
                 boolean hasDefaultMismatch = !entityDefault.equals(dbDefault);
                 
                 if (hasTypeMismatch || hasNullableMismatch || hasLengthMismatch || hasDefaultMismatch) {
                     AlterQuery.ColumnDefinition entityDef = new AlterQuery.ColumnDefinition(
-                        entityField.getType(),
-                        entityField.getLength(),
-                        entityField.isNullable(),
-                        entityField.getDefaultValue(),
-                        entityField.isAutoIncrement(),
+                        projectedField.getType(),
+                        projectedField.getLength(),
+                        projectedField.isNullable(),
+                        projectedField.getDefaultValue(),
+                        projectedField.isAutoIncrement(),
                         null, // charset
                         null  // collation
                     );
@@ -333,7 +337,7 @@ public class ReconciliationManager {
                     
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
                         .entityClass(entityClass)
-                        .entityFieldName(entityField.getName())
+                        .tableColumnName(projectedField.getName())
                         .entityDefinition(entityDef)
                         .databaseDefinition(dbDef)
                         .build();
@@ -346,37 +350,18 @@ public class ReconciliationManager {
         // We need to check against the actual database column names
         // Since databaseModel stores entity field names (after conversion), we need to map back
         for (TableField dbField : databaseModel.getFields()) {
-            TableField entityField = entityModel.findField(dbField.getName());
-            
-            // Also check by mapped database column name
-            if (entityField == null) {
-                String dbColumnName = context.nameMapper.mapDatabaseField(dbField.getName());
-                entityField = entityModel.getFields().stream()
-                    .filter(f -> dbColumnName.equalsIgnoreCase(context.nameMapper.mapDatabaseField(f.getName())))
-                    .findFirst()
-                    .orElse(null);
+            // If found in known fields, skip
+            if(projectedFieldNames.contains(dbField.getName())) {
+                continue;
             }
             
-            if (entityField == null) {
-                // Column exists in database but not in entity - needs to be removed
-                String columnName = dbField.getName();
-                
-                AlterQuery.ColumnDefinition columnDef = new AlterQuery.ColumnDefinition(
-                    dbField.getType(),
-                    dbField.getLength(),
-                    dbField.isNullable(),
-                    dbField.getDefaultValue(),
-                    dbField.isAutoIncrement(),
-                    null, // charset not available from SHOW COLUMNS
-                    null  // collation not available from SHOW COLUMNS
-                );
-                
-                EstivateReconciliation.DropColumnDelta dropColumn = EstivateReconciliation.DropColumnDelta.builder()
-                    .entityClass(entityClass)
-                    .tableColumnName(columnName)
-                    .build();
-                diffs.add(dropColumn);
-            }
+            // Column exists in database but not in entity - needs to be removed            
+            EstivateReconciliation.DropColumnDelta dropColumn = EstivateReconciliation.DropColumnDelta.builder()
+                .entityClass(entityClass)
+                .tableColumnName(dbField.getName())
+                .build();
+            diffs.add(dropColumn);
+            
         }
 
         return diffs;
@@ -503,13 +488,13 @@ public class ReconciliationManager {
      */
     public ApplyResolversResult applyResolvers(Collection<Object> resolverCandidates) {
         ApplyResolversResult result = new ApplyResolversResult();
+        result.deltas.addAll(differences);
         
         for (ReconciliationDelta diff : differences) {
             List<Object> resolvers = findResolver(diff, resolverCandidates);
             
             for (Object resolver : resolvers) {
                 if (tryApplyResolver(resolver, diff)) {
-                    result.deltas.add(diff);
                     break;
                 }
             }

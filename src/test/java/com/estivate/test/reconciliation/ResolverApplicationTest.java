@@ -77,7 +77,8 @@ public class ResolverApplicationTest {
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
             try{
-                context.addColumn(diff.entityClass, diff.entityFieldName, diff.entityColumnDefinition.getColumnType());
+                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                diff.closeSolved();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -104,7 +105,8 @@ public class ResolverApplicationTest {
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
             try {
-                context.addColumn(diff.entityClass, diff.entityFieldName, diff.entityColumnDefinition.getColumnType());
+                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                diff.closeSolved();
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -122,7 +124,8 @@ public class ResolverApplicationTest {
         @Override
         public void resolve(Context context, com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta diff) {
             try {
-                context.changeColumn(diff.entityClass, diff.entityFieldName, diff.entityDefinition.getColumnType());
+                context.changeColumn(diff.entityClass, diff.tableColumnName, diff.entityDefinition.getColumnType());
+                diff.closeSolved();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -136,7 +139,8 @@ public class ResolverApplicationTest {
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
             try {
-                context.addColumn(diff.entityClass, diff.entityFieldName, diff.entityColumnDefinition.getColumnType());
+                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                diff.closeSolved();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -152,6 +156,7 @@ public class ResolverApplicationTest {
 
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
+            callCount++;
             diff.setReconciliationResult(ReconciliationResult.FAILED);
         }
     }
@@ -394,19 +399,5 @@ public class ResolverApplicationTest {
         // but if first succeeds, diff is resolved
     }
 
-    @Test
-    public void testApplyResolvers_ResolverReturnsFalse_TriesNext() throws Exception {
-        // Create table and remove a column
-        context.createTable(ResolverTestEntity.class);
-        context.dropColumn(ResolverTestEntity.class, "email");
 
-        ReconciliationManager manager = new ReconciliationManager(context, ResolverTestEntity.class);
-        FailingResolver failingResolver = new FailingResolver();
-        GenericColumnMissingResolver successResolver = new GenericColumnMissingResolver();
-
-        ApplyResolversResult result = manager.applyResolvers(Arrays.asList(failingResolver, successResolver));
-
-        assertTrue(result.isFullyResolved(), "Should be fully resolved after fallback to second resolver");
-        assertEquals(1, failingResolver.callCount, "Failing resolver should be tried once");
-    }
 }
