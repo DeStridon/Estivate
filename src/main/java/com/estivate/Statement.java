@@ -109,22 +109,22 @@ public class Statement implements AutoCloseable{
 		else if(query instanceof AlterQuery) {
 			appendQuery("ALTER TABLE");
 		}
-		else if(query instanceof CreateQuery) {
-			CreateQuery<?> createQuery = (CreateQuery<?>) query;
-			appendQuery("CREATE");
-			if(createQuery.isTemporary()) {
-				appendQuery("TEMPORARY");
-			}
-			appendQuery("TABLE");
-			if(createQuery.isIfNotExists()) {
-				appendQuery("IF NOT EXISTS");
-			}
-		}
+		// else if(query instanceof CreateQuery) {
+		// 	CreateQuery<?> createQuery = (CreateQuery<?>) query;
+		// 	appendQuery("CREATE");
+		// 	if(createQuery.isTemporary()) {
+		// 		appendQuery("TEMPORARY");
+		// 	}
+		// 	appendQuery("TABLE");
+		// 	if(createQuery.isIfNotExists()) {
+		// 		appendQuery("IF NOT EXISTS");
+		// 	}
+		// }
 		
 		// 3. Append entity (not for CreateQuery which handles its own table name)
-		if(!(query instanceof CreateQuery)) {
-			appendEntity(query.getEntity());
-		}
+		// if(!(query instanceof CreateQuery)) {
+		appendEntity(query.getEntity());
+		// }
 		
 		
 		
@@ -134,7 +134,7 @@ public class Statement implements AutoCloseable{
 		}
 		
 		// 5. Add Join (not applicable for ALTER TABLE or CREATE TABLE)
-		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery)) {
+		if(!(query instanceof AlterQuery)) {
 			for(Join join : query.getJoins()) {
 				appendJoin(join);
 				appendQuery("\n");
@@ -186,61 +186,61 @@ public class Statement implements AutoCloseable{
 		}
 		
 		// 6c. If create table query, add columns and constraints
-		if(query instanceof CreateQuery) {
-			CreateQuery<?> createQuery = (CreateQuery<?>) query;
+		// if(query instanceof CreateQuery) {
+		// 	CreateQuery<?> createQuery = (CreateQuery<?>) query;
 			
-			// Append table name
-			appendQuery(context.nameMapper.toTableName(query.getEntity().entity));
+		// 	// Append table name
+		// 	appendQuery(context.nameMapper.toTableName(query.getEntity().entity));
 			
-			if(createQuery.getColumns().isEmpty()) {
-				throw new RuntimeException("CREATE TABLE query must have at least one column");
-			}
+		// 	if(createQuery.getColumns().isEmpty()) {
+		// 		throw new RuntimeException("CREATE TABLE query must have at least one column");
+		// 	}
 			
-			appendQuery("(");
+		// 	appendQuery("(");
 			
-			List<String> definitions = new ArrayList<>();
+		// 	List<String> definitions = new ArrayList<>();
 			
-			// Add columns
-			for(CreateQuery.Column column : createQuery.getColumns().values()) {
-				StringBuilder columnDef = new StringBuilder();
-				Statement columnStatement = new Statement(context, connection);
-				column.render(context, columnStatement);
-				columnDef.append(columnStatement.query().trim());
-				definitions.add(columnDef.toString());
-			}
+		// 	// Add columns
+		// 	for(CreateQuery.Column column : createQuery.getColumns().values()) {
+		// 		StringBuilder columnDef = new StringBuilder();
+		// 		Statement columnStatement = new Statement(context, connection);
+		// 		column.render(context, columnStatement);
+		// 		columnDef.append(columnStatement.query().trim());
+		// 		definitions.add(columnDef.toString());
+		// 	}
 			
-			// Add primary key constraint (if not inline)
-			if(createQuery.getPrimaryKey() != null) {
-				Statement pkStatement = new Statement(context, connection);
-				createQuery.getPrimaryKey().render(context, pkStatement);
-				definitions.add(pkStatement.query().trim());
-			}
+		// 	// Add primary key constraint (if not inline)
+		// 	if(createQuery.getPrimaryKey() != null) {
+		// 		Statement pkStatement = new Statement(context, connection);
+		// 		createQuery.getPrimaryKey().render(context, pkStatement);
+		// 		definitions.add(pkStatement.query().trim());
+		// 	}
 			
-			// Add foreign key constraints
-			for(CreateQuery.ForeignKey fk : createQuery.getForeignKeys()) {
-				Statement fkStatement = new Statement(context, connection);
-				fk.render(context, fkStatement);
-				definitions.add(fkStatement.query().trim());
-			}
+		// 	// Add foreign key constraints
+		// 	for(CreateQuery.ForeignKey fk : createQuery.getForeignKeys()) {
+		// 		Statement fkStatement = new Statement(context, connection);
+		// 		fk.render(context, fkStatement);
+		// 		definitions.add(fkStatement.query().trim());
+		// 	}
 			
-			// Add indexes
-			for(CreateQuery.Index idx : createQuery.getIndexes()) {
-				Statement idxStatement = new Statement(context, connection);
-				idx.render(context, idxStatement);
-				definitions.add(idxStatement.query().trim());
-			}
+		// 	// Add indexes
+		// 	for(CreateQuery.Index idx : createQuery.getIndexes()) {
+		// 		Statement idxStatement = new Statement(context, connection);
+		// 		idx.render(context, idxStatement);
+		// 		definitions.add(idxStatement.query().trim());
+		// 	}
 			
-			appendQuery(String.join(", ", definitions));
-			appendQuery(")");
+		// 	appendQuery(String.join(", ", definitions));
+		// 	appendQuery(")");
 			
-			// Add table options
-			if(createQuery.getTableOptions() != null) {
-				createQuery.getTableOptions().render(context, this);
-			}
-		}
+		// 	// Add table options
+		// 	if(createQuery.getTableOptions() != null) {
+		// 		createQuery.getTableOptions().render(context, this);
+		// 	}
+		// }
 		
 		// 7. Add Where (not applicable for ALTER TABLE or CREATE TABLE)
-		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery) && !query.getCriterions().isEmpty()) {
+		if(!(query instanceof AlterQuery) && !query.getCriterions().isEmpty()) {
         	appendQuery("WHERE");
         	appendNodeToStatement(query, true);
         }
@@ -260,12 +260,12 @@ public class Statement implements AutoCloseable{
 		
 		
 		// 10. Append order (not applicable for ALTER TABLE or CREATE TABLE)
-		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery) && !query.getOrders().isEmpty()) {
+		if(!(query instanceof AlterQuery) && !query.getOrders().isEmpty()) {
 			appendQuery(query.getOrders().stream().map(x -> orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
 		}
 		
 		// 11. Append limit & offset (not applicable for ALTER TABLE or CREATE TABLE)
-		if(!(query instanceof AlterQuery) && !(query instanceof CreateQuery)) {
+		if(!(query instanceof AlterQuery)) {
 			if(query.getLimit() != null) {
 				appendQuery("LIMIT "+query.getLimit()+"\n");
 			}
@@ -545,13 +545,13 @@ public class Statement implements AutoCloseable{
 		}
 
 		if(attribute.function != null && attribute.function.equals(Estivate.Functions.count) && (attribute.entity == null || attribute.entity.entity == null)) {
-			return "COUNT(*)"+(attribute.alias != null ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
+			return "COUNT(*)"+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
 		}
 		else if (attribute.function != null) {
-			return attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute))+(attribute.alias != null ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
+			return attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute))+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
 		}
 
-		return context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)+" as `"+(attribute.alias != null ? context.nameMapper.mapEntityField(attribute.alias) : context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute))+"`";
+		return context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)+" as `"+(attribute.alias != null && !attribute.alias.isEmpty() ? context.nameMapper.mapEntityField(attribute.alias) : context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute))+"`";
 	
 	}
 

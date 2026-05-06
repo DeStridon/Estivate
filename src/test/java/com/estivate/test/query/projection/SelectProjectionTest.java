@@ -139,6 +139,8 @@ public class SelectProjectionTest {
     @BeforeEach
     public void setUp() {
         // Clean up existing test data
+        context.createTableIfNotExists(CustomerEntity.class);
+        context.createTableIfNotExists(ProductEntity.class);
         context.truncateTable(CustomerEntity.class);
         context.truncateTable(ProductEntity.class);
         

@@ -56,7 +56,7 @@ public class Estivate {
 	public static <U> DeleteQuery<U> deleteQuery(Class<U> entity)	{ return new DeleteQuery<>(entity); }
 	public static <U> AlterQuery<U> alterQuery(Entity<U> entity) { return new AlterQuery<>(entity); }
 	public static <U> AlterQuery<U> alterQuery(Class<U> entity) { return new AlterQuery<>(entity); }
-	public static <U> CreateQuery<U> createQuery(Entity<U> entity) { return new CreateQuery<>(entity); }
+
 	public static <U> CreateQuery<U> createQuery(Class<U> entity) { return new CreateQuery<>(entity); }
 
 

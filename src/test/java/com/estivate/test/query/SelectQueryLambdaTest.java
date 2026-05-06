@@ -48,25 +48,25 @@ public class SelectQueryLambdaTest {
 	@Test
 	public void testNotEqLambda() {
 		CustomerEntity customer1 = CustomerEntity.builder()
-				.name("Customer 1")
-				.email("customer1@test.com")
+				.name("Customer 11")
+				.email("customer11@test.com")
 				.build();
 		CustomerEntity customer2 = CustomerEntity.builder()
-				.name("Customer 2")
-				.email("customer2@test.com")
+				.name("Customer 12")
+				.email("customer12@test.com")
 				.build();
 		context.updateOrInsert(customer1);
 		context.updateOrInsert(customer2);
 		
 		// Test notEq with lambda
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-				.notEq(CustomerEntity::getName, "Customer 1");
+				.notEq(CustomerEntity::getName, "Customer 11");
 		
 		List<CustomerEntity> results = query.fetchList(context);
 		
 		assertNotNull(results);
 		// Should not contain customer1
-		assertTrue(results.stream().noneMatch(c -> "Customer 1".equals(c.getName())));
+		assertTrue(results.stream().noneMatch(c -> "Customer 11".equals(c.getName())));
 	}
 	
 	@Test

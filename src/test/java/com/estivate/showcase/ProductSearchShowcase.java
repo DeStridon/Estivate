@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -25,6 +26,13 @@ public class ProductSearchShowcase {
 	
 	Context context = DatabaseGenerator.getContext();
 
+	@BeforeEach
+    public void setUp() {
+		context.createTableIfNotExists(ProductEntity.class);
+		context.createTableIfNotExists(OrderLineEntity.class);
+		context.createTableIfNotExists(UserProductRatingEntity.class);
+	}
+	
     @Builder
     @AllArgsConstructor
     public static class ProductSearchInput{

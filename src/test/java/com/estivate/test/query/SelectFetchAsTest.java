@@ -37,6 +37,10 @@ public class SelectFetchAsTest {
     @BeforeEach
     public void setUp() {
         // Clean up tables
+        context.createTableIfNotExists(OrderLineEntity.class);
+        context.createTableIfNotExists(OrderEntity.class);
+        context.createTableIfNotExists(ProductEntity.class);
+        context.createTableIfNotExists(CustomerEntity.class);
         context.truncateTable(OrderLineEntity.class);
         context.truncateTable(OrderEntity.class);
         context.truncateTable(ProductEntity.class);

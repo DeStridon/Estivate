@@ -71,7 +71,7 @@ public class ResolverApplicationTest {
     /**
      * Generic resolver that handles any ColumnMissing diff
      */
-    @ReconciliationScope(table = "", column = "")
+    @ReconciliationScope
     public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
         
         @Override

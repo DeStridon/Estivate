@@ -12,6 +12,7 @@ import org.h2.tools.Server;
 import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -49,6 +50,7 @@ public class DatabaseGenerator {
 			orderIndexDiff.addUnimplemented();
 
 			context.createTable(CustomerEntity.class);
+			System.out.println(context.showTables());
 			IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
 			customerIndexDiff.addUnimplemented();
 			
@@ -85,12 +87,23 @@ public class DatabaseGenerator {
 		return customerEntity;
 
 	}
+
+	public static ProductEntity createRandomProduct() {
+		ProductEntity productEntity = new ProductEntity();
+		productEntity.setName("Random Product "+randomInt(1, 1000));
+		productEntity.setDescription("Random Description "+randomInt(1, 1000));
+		productEntity.setPrice(randomInt(1, 1000) + 0.0f);
+		productEntity.setStock(randomInt(1, 1000));
+		productEntity.setCategory(randomEnum(ProductEntity.ProductCategory.class));
+		return productEntity;
+	}
 	
 	public static class TestNameMapper extends NameMapper{
 		public String mapEntityClass(Class<?> c) { return toSnakeCase(c.getSimpleName()).toUpperCase();}
 		public String mapEntityField(String field) { return toSnakeCase(field).toUpperCase();  }
 		public String mapDatabaseClass(Class<?> c) { return c.getSimpleName().toUpperCase(); }
 		public String mapDatabaseField(String field) { return field.toUpperCase(); }
+		public String mapIndex(TableIndex index) { return super.mapIndex(index).toUpperCase(); }
 	}
 	
 	public static String toSnakeCase(String name) {

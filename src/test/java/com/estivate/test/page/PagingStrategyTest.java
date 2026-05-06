@@ -34,6 +34,7 @@ public class PagingStrategyTest {
     @BeforeEach
     public void setUp() {
         // Clear existing products
+        context.createTableIfNotExists(ProductEntity.class);
         context.truncateTable(ProductEntity.class);
         testProducts.clear();
 
@@ -448,9 +449,8 @@ public class PagingStrategyTest {
                 
                 // Extract IDs from this page
                 for (int i = 0; i < result.size(); i++) {
-                    Long id = result.get(i).asLong(
-                        context.nameMapper.toTableNameAttribute(ProductEntity.class, AbstractEntity.Fields.id)
-                    );
+                	
+                    Long id = result.get(i).asLong(ProductEntity.class, AbstractEntity.Fields.id);
                     assertFalse(allIds.contains(id), "Should not have duplicate ID: " + id);
                     allIds.add(id);
                 }
@@ -472,6 +472,11 @@ public class PagingStrategyTest {
 
         @Test
         public void testBothStrategies_ReturnSameTotalItems() {
+            for(int i = 0; i < 25; i++) {
+                ProductEntity product = DatabaseGenerator.createRandomProduct();
+                context.insert(product);
+            }
+            
             SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
                 .orderByAsc(ProductEntity.class, AbstractEntity.Fields.id);
 
@@ -494,9 +499,12 @@ public class PagingStrategyTest {
                 if (!result.isHasNext()) break;
                 keysetStrategy = (KeysetPagingStrategy) result.getPagingStrategy();
             }
+            
+            Long count = context.fetchCountAll(Estivate.selectQuery(ProductEntity.class));
+            
 
             assertEquals(offsetTotal, keysetTotal, "Both strategies should return same total items");
-            assertEquals(25, offsetTotal, "Should have 25 total items");
+            assertEquals(count, offsetTotal, "Should have 25 total items");
         }
 
         @Test

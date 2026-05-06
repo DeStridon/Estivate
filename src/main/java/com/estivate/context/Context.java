@@ -3,12 +3,11 @@ package com.estivate.context;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -30,11 +29,14 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
+import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
 import com.estivate.query.Attribute;
+import com.estivate.query.CreateQuery;
+import com.estivate.query.CreateQuery.ColumnDefinition;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
@@ -44,7 +46,6 @@ import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
-import com.estivate.util.StringPipe;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -124,6 +125,8 @@ public abstract class Context {
 		
 		return clonedQuery;
 	}
+
+	
 	
 	/**
 	 * Pre-processes an object before insert
@@ -145,6 +148,71 @@ public abstract class Context {
 			return statement.executeForValidation();
 		}
 	}
+
+	@SneakyThrows
+	public Boolean execute(CreateQuery<?> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, datasource.getConnection())) {
+
+			statement.appendQuery("CREATE TABLE");
+			if(query.isIfNotExists()) {
+				statement.appendQuery("IF NOT EXISTS");
+			}
+			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
+			
+			statement.appendQuery(" (");
+			for(int i = 0; i < query.getColumns().size(); i++) {
+			
+				ColumnDefinition columnDefinition = query.getColumns().get(i);
+				statement.appendQuery(nameMapper.mapDatabaseField(columnDefinition.getName()));
+
+				String type = getTypeForColumn(columnDefinition);
+				statement.appendQuery(type);
+
+				if(columnDefinition.length == null) {
+					columnDefinition.length = getDefaultLengthForColumn(type, columnDefinition);
+				}
+				if(columnDefinition.length != null) {
+					statement.appendQuery("(" + columnDefinition.length + ")");
+				}
+
+				//statement.appendQuery(columnDefinition.getFullColumnType(this));
+				if (columnDefinition.charset != null) {
+					statement.appendQuery("CHARACTER SET");
+					statement.appendQuery(columnDefinition.charset);
+				}
+				if (columnDefinition.collation != null) {
+					statement.appendQuery("COLLATE");
+					statement.appendQuery(columnDefinition.collation);
+				}
+				if (Boolean.FALSE.equals(columnDefinition.nullable)) {
+					statement.appendQuery("NOT NULL");
+				}
+				if (columnDefinition.defaultValue != null) {
+					statement.appendQuery("DEFAULT");
+					statement.appendQuery(columnDefinition.defaultValue);
+				}
+				if (Boolean.TRUE.equals(columnDefinition.autoIncrement)) {
+					statement.appendQuery("AUTO_INCREMENT");
+				}
+				if (Boolean.TRUE.equals(columnDefinition.primaryKey)) {
+					statement.appendQuery("PRIMARY KEY");
+				}
+				if (columnDefinition.comment != null) {
+					statement.appendQuery("COMMENT");
+					statement.appendQuery("'" + columnDefinition.comment.replace("'", "''") + "'");
+				}
+				if (i < query.getColumns().size() - 1) {
+					statement.appendQuery(",");
+				}
+			}
+			statement.appendQuery(")");
+			return statement.executeForValidation();
+		}
+
+		
+	}
+	
 	
 	
 	@SneakyThrows
@@ -657,102 +725,49 @@ public abstract class Context {
 		    return rows;
 		}
 	}
+
+
+	public <U> boolean createTable(Class<U> entityClass) {
+
+		CreateQuery<U> query = Estivate.createQuery(entityClass);
+		execute(query);
+
+		TableIndex[] compositeIndex = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
+		
+		for(TableIndex index : compositeIndex) {
+			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
+			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
+			addIndex(entityClass, name, index.type(), columns);
+		}
+
+		return true;
+
+	}
+	
 	
 	@SneakyThrows
-	public <U> boolean createTable(Class<U> entityClass) {
-		List<String> fields = new ArrayList<>();
-		for(Field field : FieldUtils.getEntityFields(entityClass)) {
-			StringPipe fieldCreation = new StringPipe();
-			fieldCreation.separator(" ");
+	public <U> boolean createTableIfNotExists(Class<U> entityClass) {
+
+		CreateQuery<U> query = Estivate.createQuery(entityClass);
+		query.ifNotExists();
+		execute(query);
+
+		List<TableIndex> tableIndexes = listIndexes(entityClass);
+
+		TableIndex[] entityIndexes = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
+		
+		for(TableIndex index : entityIndexes) {
+			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
+			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
 			
-			fieldCreation.append(nameMapper.mapDatabaseField(field.getName()));
-			
-			Class<?> returnClass = field.getType();
-			
-			if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
-				returnClass = String.class;
-			}
-			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-				returnClass = String.class;
-			}
-			
-			if(returnClass.isEnum()) {
-	
-				if(field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null && field.getDeclaredAnnotation(javax.persistence.Enumerated.class).value() != null && field.getDeclaredAnnotation(javax.persistence.Enumerated.class).value() == javax.persistence.EnumType.STRING) {
-					returnClass = String.class;
-				}
-				else if(field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class).value() != null && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class).value() == jakarta.persistence.EnumType.STRING) {
-					returnClass = String.class;
-				}
-				else {
-					returnClass = Integer.class;
-				}
-			}
-			
-			if(returnClass == org.slf4j.Logger.class || returnClass == CachedEntity.class) {
+			if(tableIndexes.stream().anyMatch(x -> x.name().equals(name))) {
 				continue;
 			}
-			else if(returnClass == Integer.class || returnClass == Integer.TYPE || returnClass == Long.class || returnClass == Long.TYPE) {
-				fieldCreation.append("INT");
-			}
-			else if(returnClass == Float.class || returnClass == Float.TYPE) {
-				fieldCreation.append("FLOAT");
-			}
-			else if(returnClass == Double.class || returnClass == Double.TYPE) {
-				fieldCreation.append("DOUBLE");
-			}
-			else if(returnClass == String.class) {
-				fieldCreation.append("VARCHAR");
-			}
-			else if(returnClass == Boolean.class || returnClass == boolean.class) {
-				fieldCreation.append("BOOL");
-			}
-			else if(returnClass == java.util.Date.class || returnClass == java.sql.Date.class) {
-				fieldCreation.append("DATETIME");
-			}
-			else {
-				throw new RuntimeException("Cannot map field "+entityClass.getSimpleName()+"."+field.getName()+" type="+field.getType());
-			}
-			
-			if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
-				fieldCreation.append("PRIMARY KEY");
-			}
 
-			if(field.getDeclaredAnnotation(javax.persistence.GeneratedValue.class) != null) {
-				javax.persistence.GeneratedValue generatedValue = field.getDeclaredAnnotation(javax.persistence.GeneratedValue.class);
-				if(generatedValue.strategy() == javax.persistence.GenerationType.IDENTITY) {
-					fieldCreation.append("AUTO_INCREMENT");
-				}
-			}
-			else if(field.getDeclaredAnnotation(jakarta.persistence.GeneratedValue.class) != null) {
-				jakarta.persistence.GeneratedValue generatedValue = field.getDeclaredAnnotation(jakarta.persistence.GeneratedValue.class);
-				if(generatedValue.strategy() == jakarta.persistence.GenerationType.IDENTITY) {
-					fieldCreation.append("AUTO_INCREMENT");
-				}
-			}
+			addIndex(entityClass, name, index.type(), columns);
+		}
 
-			if(field.getDeclaredAnnotation(javax.persistence.Column.class) != null) {
-				javax.persistence.Column column = field.getDeclaredAnnotation(javax.persistence.Column.class);
-				if(column.nullable() == false) {
-					fieldCreation.append("NOT NULL");
-				}
-			}
-			else if(field.getDeclaredAnnotation(jakarta.persistence.Column.class) != null) {
-				jakarta.persistence.Column column = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
-				if(column.nullable() == false) {
-					fieldCreation.append("NOT NULL");
-				}
-			}
-			
-			fields.add(fieldCreation.toString());
-		}
-		
-		String result = "CREATE TABLE "+nameMapper.toTableName(entityClass)+" ("+fields.stream().collect(Collectors.joining(", "))+")";
-		
-		try(Connection connection = datasource.getConnection(); 
-			PreparedStatement statement = connection.prepareStatement(result);){
-			return statement.execute();
-		}
+		return true;
 	}
 
 	@SneakyThrows
@@ -856,7 +871,15 @@ public abstract class Context {
 		}
 	}
 
+	@Deprecated
 	abstract public String javaTypeToSqlType(Field field);
+	
+	@Deprecated
 	public Integer getDefaultLength(String columnType) { return null; }
+
+	abstract public String getTypeForColumn(ColumnDefinition columnDefinition);
+	abstract public Integer getDefaultLengthForColumn(String type, ColumnDefinition columnDefinition);
+
+
 	
 }

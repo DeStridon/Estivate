@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Entity;
@@ -31,6 +32,14 @@ public class SelectQueryCriterionTest {
 
 	Context context = DatabaseGenerator.getContext();
 	
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		context.createTableIfNotExists(OrderEntity.class);
+		context.createTableIfNotExists(CustomerEntity.class);
+	
+	}
+
 	@Test
 	public void insertTest() {
 		

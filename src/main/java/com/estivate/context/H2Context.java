@@ -15,9 +15,10 @@ import javax.sql.DataSource;
 import com.estivate.Statement;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
-import com.estivate.index.Annotations.TableIndex;
-import com.estivate.result.ResultRow;
 import com.estivate.index.Annotations.IndexType;
+import com.estivate.index.Annotations.TableIndex;
+import com.estivate.query.CreateQuery;
+import com.estivate.result.ResultRow;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +109,9 @@ public class H2Context extends Context {
             if (isEnumeratedAsString(field)) {
                 type = String.class;
             }
-            type = Integer.class;
+			else{
+				type = Integer.class;
+			}
         }
 
         // Primitive types and wrappers
@@ -153,6 +156,41 @@ public class H2Context extends Context {
 		}
 
 		return false;
+	}
+
+	@Override
+	public String getTypeForColumn(CreateQuery.ColumnDefinition columnDefinition) {
+
+
+		if(columnDefinition.getExplicitType() != null) {
+			return columnDefinition.getExplicitType();
+		}
+
+		// Primitive types and wrappers
+		if (columnDefinition.getType() == Integer.class || columnDefinition.getType() == int.class) return "INTEGER";
+		if (columnDefinition.getType() == Long.class || columnDefinition.getType() == long.class) return "INTEGER";
+		if (columnDefinition.getType() == Short.class || columnDefinition.getType() == short.class) return "INTEGER";
+		if (columnDefinition.getType() == Byte.class || columnDefinition.getType() == byte.class) return "TINYINT";
+		if (columnDefinition.getType() == Float.class || columnDefinition.getType() == float.class) return "FLOAT";
+		if (columnDefinition.getType() == Double.class || columnDefinition.getType() == double.class) return "DOUBLE";
+		if (columnDefinition.getType() == Boolean.class || columnDefinition.getType() == boolean.class) return "BOOLEAN";
+		if (columnDefinition.getType() == String.class) return "CHARACTER VARYING"; 
+		if (columnDefinition.getType() == Date.class || columnDefinition.getType() == java.sql.Date.class) return "TIMESTAMP";
+		if (columnDefinition.getType() == LocalDateTime.class) return "TIMESTAMP";
+		if (columnDefinition.getType() == LocalDate.class) return "DATE";
+		if (columnDefinition.getType() == byte[].class) return "BLOB";
+
+		return "VARCHAR"; // Default fallback
+
+
+	}
+
+	@Override
+	public Integer getDefaultLengthForColumn(String type, CreateQuery.ColumnDefinition columnDefinition) {
+		if(type.equalsIgnoreCase("VARCHAR")) {
+			return 255;
+		}
+		return null;
 	}
 
 }

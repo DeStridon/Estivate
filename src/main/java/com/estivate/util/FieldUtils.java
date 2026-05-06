@@ -290,5 +290,186 @@ public class FieldUtils {
 		return new ColumnMapping(Estivate.attribute(entityClass, field.getName()), field);
 	}
 
+	/**
+     * Checks if a field is nullable based on annotations
+     */
+    public static boolean isNullable(Field field) {
+        // Primitives are never nullable
+        if (field.getType().isPrimitive()) {
+            return false;
+        }
+
+        // Check for @NotNull (javax.validation / jakarta.validation)
+        if (hasAnnotationByName(field, "javax.validation.constraints.NotNull") || hasAnnotationByName(field, "jakarta.validation.constraints.NotNull")) {
+           return false;
+        }
+
+        // Check for @Column(nullable = false)
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null) {
+            return javaxColumn.nullable();
+        }
+        
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null) {
+            return jakartaColumn.nullable();
+        }
+
+        // Default to nullable for object types
+        return true;
+    }
+
+	public static boolean hasAnnotationByName(Field field, String annotationClassName) {
+        for (java.lang.annotation.Annotation a : field.getDeclaredAnnotations()) {
+            if (annotationClassName.equals(a.annotationType().getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+	/**
+     * Extracts length from entity field annotations (@Column, @Size, etc.)
+     */
+    public static Integer extractLengthFromField(Field field, String sqlType) {
+        // Check @Column(length = ...)
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null && javaxColumn.length() > 0) {
+            return javaxColumn.length();
+        }
+        
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null && jakartaColumn.length() > 0) {
+            return jakartaColumn.length();
+        }
+        
+        // For String fields, default to 255 if no annotation
+        if (field.getType() == String.class && sqlType != null && sqlType.toUpperCase().contains("VARCHAR")) {
+            return 255; // Default VARCHAR length
+        }
+        
+        return null;
+    }
+
+	/**
+     * Extracts default value from entity field annotations
+     */
+    public static String extractDefaultValue(Field field) {
+        // Check @Column(columnDefinition = ...) which might contain DEFAULT
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null && javaxColumn.columnDefinition() != null && !javaxColumn.columnDefinition().isEmpty()) {
+            String columnDef = javaxColumn.columnDefinition();
+            // Try to extract DEFAULT value from columnDefinition
+            if (columnDef.toUpperCase().contains("DEFAULT")) {
+                // This is a simplified extraction - may need refinement
+                int defaultIndex = columnDef.toUpperCase().indexOf("DEFAULT");
+                if (defaultIndex >= 0) {
+                    String afterDefault = columnDef.substring(defaultIndex + 7).trim();
+                    // Extract the value (handles quoted and unquoted values)
+                    if (afterDefault.startsWith("'") && afterDefault.contains("'")) {
+                        int endQuote = afterDefault.indexOf("'", 1);
+                        return afterDefault.substring(1, endQuote);
+                    } else {
+                        // Unquoted value - take until space or end
+                        int spaceIndex = afterDefault.indexOf(" ");
+                        if (spaceIndex > 0) {
+                            return afterDefault.substring(0, spaceIndex);
+                        }
+                        return afterDefault;
+                    }
+                }
+            }
+        }
+        
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null && jakartaColumn.columnDefinition() != null && !jakartaColumn.columnDefinition().isEmpty()) {
+            String columnDef = jakartaColumn.columnDefinition();
+            if (columnDef.toUpperCase().contains("DEFAULT")) {
+                int defaultIndex = columnDef.toUpperCase().indexOf("DEFAULT");
+                if (defaultIndex >= 0) {
+                    String afterDefault = columnDef.substring(defaultIndex + 7).trim();
+                    if (afterDefault.startsWith("'") && afterDefault.contains("'")) {
+                        int endQuote = afterDefault.indexOf("'", 1);
+                        return afterDefault.substring(1, endQuote);
+                    } else {
+                        int spaceIndex = afterDefault.indexOf(" ");
+                        if (spaceIndex > 0) {
+                            return afterDefault.substring(0, spaceIndex);
+                        }
+                        return afterDefault;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+
+	/**
+     * Checks if a field is auto-increment
+     */
+    public static boolean isAutoIncrement(Field field) {
+        javax.persistence.GeneratedValue javaxGenerated = field.getDeclaredAnnotation(javax.persistence.GeneratedValue.class);
+        if (javaxGenerated != null && javaxGenerated.strategy() == javax.persistence.GenerationType.IDENTITY) {
+            return true;
+        }
+
+        jakarta.persistence.GeneratedValue jakartaGenerated = field.getDeclaredAnnotation(jakarta.persistence.GeneratedValue.class);
+        if (jakartaGenerated != null && jakartaGenerated.strategy() == jakarta.persistence.GenerationType.IDENTITY) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+	/**
+	 * Checks if an enum field is stored as STRING
+	 */
+	public static boolean isEnumeratedAsString(Field field) {
+		javax.persistence.Enumerated javaxEnum = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+		if (javaxEnum != null && javaxEnum.value() == javax.persistence.EnumType.STRING) {
+			return true;
+		}
+
+		jakarta.persistence.Enumerated jakartaEnum = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+		if (jakartaEnum != null && jakartaEnum.value() == jakarta.persistence.EnumType.STRING) {
+			return true;
+		}
+
+		return false;
+	}
+
+
+    public static Integer readFieldForLength(Field field) {
+        
+		javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+		if (javaxColumn != null && javaxColumn.length() > 0) {
+			return javaxColumn.length();
+		}
+
+		jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+		if (jakartaColumn != null && jakartaColumn.length() > 0) {
+			return jakartaColumn.length();
+		}
+
+		return null;
+
+    }
+
+
+    public static String readFieldForExplicitType(Field field) {
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null && javaxColumn.columnDefinition() != null && !javaxColumn.columnDefinition().isEmpty()) {
+            return javaxColumn.columnDefinition();
+        }
+
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null && jakartaColumn.columnDefinition() != null && !jakartaColumn.columnDefinition().isEmpty()) {
+            return jakartaColumn.columnDefinition();
+        }
+        return null;
+    }
+
 	
 }

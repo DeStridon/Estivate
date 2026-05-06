@@ -17,6 +17,7 @@ import com.estivate.Entity;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.DateMapper;
+import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -97,8 +98,8 @@ public class ResultRow {
 	
 	@SneakyThrows
 	public <T> T as(Class<?> c, String attribute) { 
-		try {
-			Field field = c.getDeclaredField(attribute);
+//		try {
+			Field field = FieldUtils.findField(c, attribute);
 			Type type = field.getGenericType();
 
 			if(type == String.class) {
@@ -182,10 +183,10 @@ public class ResultRow {
 			else {
 				log.error("This type is not mapped yet : "+type);
 			}
-		}
-		catch(NoSuchFieldException e) {
-			log.error("Didn't manage to get field", e);
-		}
+//		}
+//		catch(NoSuchFieldException e) {
+//			log.error("Didn't manage to get field", e);
+//		}
 		return null;
 	}
 

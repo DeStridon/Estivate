@@ -3,16 +3,26 @@ package com.estivate.test.query;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.ProductEntity;
 
 public class InsertInterceptorTest {
 
     Context context = DatabaseGenerator.getContext();
 
+    
+    @BeforeEach
+    public void setUp() {
+        // Clear existing products
+        context.createTableIfNotExists(CustomerEntity.class);
+        context.truncateTable(CustomerEntity.class);
+    }
+    
     @Test
     public void testInsertInterceptorWithCollection() {
         // Set up interceptor to add prefix to names

@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -20,7 +19,10 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
+import com.estivate.query.CreateQuery;
+import com.estivate.query.CreateQuery.ColumnDefinition;
 import com.estivate.result.ResultRow;
+import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -118,10 +120,12 @@ public class MySQLContext extends Context {
 
         // Handle enums
         if (type.isEnum()) {
-            if (isEnumeratedAsString(field)) {
+            if (FieldUtils.isEnumeratedAsString(field)) {
                 type = String.class;
             }
-            type = Integer.class;
+			else{
+	            type = Integer.class;
+			}
         }
 
         // Primitive types and wrappers
@@ -151,26 +155,47 @@ public class MySQLContext extends Context {
         return "VARCHAR"; // Default fallback
     }
 
-	/**
-	 * Checks if an enum field is stored as STRING
-	 */
-	private boolean isEnumeratedAsString(Field field) {
-		javax.persistence.Enumerated javaxEnum = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
-		if (javaxEnum != null && javaxEnum.value() == javax.persistence.EnumType.STRING) {
-			return true;
-		}
 
-		jakarta.persistence.Enumerated jakartaEnum = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
-		if (jakartaEnum != null && jakartaEnum.value() == jakarta.persistence.EnumType.STRING) {
-			return true;
-		}
-
-		return false;
-	}
 	
 	@Override
 	public Integer getDefaultLength(String columnType) {
 		if(columnType.equalsIgnoreCase("VARCHAR")) {
+			return 255;
+		}
+		return null; 
+	}
+
+	@Override
+	public String getTypeForColumn(CreateQuery.ColumnDefinition columnDefinition) {
+
+
+		if(columnDefinition.getExplicitType() != null) {
+			return columnDefinition.getExplicitType();
+		}
+
+		// Primitive types and wrappers
+        if (columnDefinition.getType() == Integer.class || columnDefinition.getType() == int.class) return "INT";
+        if (columnDefinition.getType() == Long.class || columnDefinition.getType() == long.class) return "BIGINT";
+        if (columnDefinition.getType() == Short.class || columnDefinition.getType() == short.class) return "SMALLINT";
+        if (columnDefinition.getType() == Byte.class || columnDefinition.getType() == byte.class) return "TINYINT";
+        if (columnDefinition.getType() == Float.class || columnDefinition.getType() == float.class) return "FLOAT";
+        if (columnDefinition.getType() == Double.class || columnDefinition.getType() == double.class) return "DOUBLE";
+        if (columnDefinition.getType() == Boolean.class || columnDefinition.getType() == boolean.class) return "BOOLEAN";
+		if (columnDefinition.getType() == String.class) return "VARCHAR"; 
+        if (columnDefinition.getType() == Date.class || columnDefinition.getType() == java.sql.Date.class) return "DATETIME";
+        if (columnDefinition.getType() == LocalDateTime.class) return "DATETIME";
+        if (columnDefinition.getType() == LocalDate.class) return "DATE";
+        if (columnDefinition.getType() == byte[].class) return "BLOB";
+
+		return "VARCHAR"; // Default fallback
+
+	}
+
+
+
+	@Override
+	public Integer getDefaultLengthForColumn(String type, ColumnDefinition columnDefinition) {
+		if(type.equalsIgnoreCase("VARCHAR")) {
 			return 255;
 		}
 		return null; 
