@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -42,26 +43,15 @@ public class ReconciliationManager {
     final Context context;
     
     @Getter
-    final List<Class<?>> entityClasses;
+    Set<Class<?>> entityClasses = new HashSet<>();
 
-    // @Getter
-    // Map<Class<?>, EntityModel> entityModels = new LinkedHashMap<>();
-
-    // @Getter
-    // Map<String, EntityModel> databaseModels = new LinkedHashMap<>();
+    @Getter
+    List<Object> resolvers = new ArrayList<>();
 
     @Getter
     List<ReconciliationDelta> differences = new ArrayList<>();
 
-    /**
-     * Creates a ReconciliationManager that scans the specified packages for entity classes.
-     * 
-     * @param context The database context
-     * @param packageNames Package names to scan for @Entity annotated classes
-     */
-    public ReconciliationManager(Context context, String... packageNames) {
-        this(context, Arrays.asList(packageNames));
-    }
+
 
     /**
      * Creates a ReconciliationManager that scans the specified packages for entity classes.
@@ -69,24 +59,50 @@ public class ReconciliationManager {
      * @param context The database context
      * @param packageNames List of package names to scan for @Entity annotated classes
      */
-    public ReconciliationManager(Context context, List<String> packageNames) {
+    public ReconciliationManager(Context context) {
         this.context = context;
-        
-        // Scan packages for entity classes
-        this.entityClasses = ReflectionUtils.scanPackagesForEntities(packageNames);
-        
-        log.info("Found {} entity classes in packages: {}", entityClasses.size(), packageNames);
-        
-        scanAllEntities();
     }
 
-    public ReconciliationManager(Context context, Class<?> entityClass) {
-        this.context = context;
-        
-        // Scan packages for entity classes
-        this.entityClasses = Arrays.asList(entityClass);
+    public ReconciliationManager addEntitiesFromPackages(String... packageNames) {
+        List<Class<?>> newEntities = ReflectionUtils.scanPackagesForEntities(Arrays.asList(packageNames));
+        this.entityClasses.addAll(newEntities);
         scanAllEntities();
+        return this;
     }
+
+    public ReconciliationManager addEntities( Class<?>... entityClasses) {
+        this.entityClasses.addAll(Arrays.asList(entityClasses));
+        scanAllEntities();
+        return this;
+    }
+
+    public ReconciliationManager addResolvers(String... resolverPackageNames) {
+        List<Class<?>> resolverClasses = ReflectionUtils.scanPackagesForAnnotatedClasses(resolverPackageNames, ReconciliationScope.class);
+        List<Object> resolverInstances = new ArrayList<>();
+        for (Class<?> resolverClass : resolverClasses) {
+            try {
+                resolverInstances.add(resolverClass.getDeclaredConstructor().newInstance());
+            } catch (Exception e) {
+                log.warn("Could not instantiate resolver class {}: {}", resolverClass.getName(), e.getMessage());
+            }
+        }
+        this.resolvers.addAll(resolverInstances);
+        return this;
+    }
+
+    public ReconciliationManager addResolvers(Class<?>... resolverClasses) {
+        List<Object> resolverInstances = new ArrayList<>();
+        for (Class<?> resolverClass : resolverClasses) {
+            try {
+                resolverInstances.add(resolverClass.getDeclaredConstructor().newInstance());
+            } catch (Exception e) {
+                log.warn("Could not instantiate resolver class {}: {}", resolverClass.getName(), e.getMessage());
+            }
+        }
+        this.resolvers.addAll(resolverInstances);
+        return this;
+    }
+
 
     private void scanAllEntities() {
 
@@ -127,30 +143,6 @@ public class ReconciliationManager {
 
     }
     
-    // /**
-    //  * Creates a ReconciliationManager for a single entity class.
-    //  * Kept for backward compatibility.
-    //  * 
-    //  * @param context The database context
-    //  * @param entityClass The entity class to reconcile
-    //  */
-    // public static ReconciliationManager forEntity(Context context, Class<?> entityClass) {
-    //     ReconciliationManager manager = new ReconciliationManager(context, new ArrayList<>());
-    //     manager.entityClasses.add(entityClass);
-        
-    //     EntityModel entityModel = manager.scanEntityFields(entityClass);
-    //     manager.entityModels.put(entityClass, entityModel);
-        
-    //     EntityModel databaseModel = manager.scanDatabaseTable(entityClass);
-    //     manager.databaseModels.put(entityClass, databaseModel);
-        
-    //     manager.differences = manager.compareAll();
-    //     manager.differences.stream().forEach(x -> x.setCurrentDeltas(manager.differences));
-        
-    //     return manager;
-    // }
-    
-   
     
     
     /**
@@ -178,23 +170,9 @@ public class ReconciliationManager {
         }
     }
 
-    /**
-     * Scans the entity class and builds an EntityModel from its fields
-     */
-    private EntityModel scanEntityFields(Class<?> entityClass) {
-        EntityModel model = EntityModel.builder()
-            .tableName(context.nameMapper.toTableName(entityClass))
-            .entityClass(entityClass)
-            .build();
 
-        Set<Field> fields = FieldUtils.getEntityFields(entityClass);
-        
-        for (Field field : fields) {
-            
-        }
 
-        return model;
-    }
+
 
     /**
      * Queries the database to get the actual table structure
@@ -486,22 +464,38 @@ public class ReconciliationManager {
      * @param resolverCandidates Collection of resolver objects to search through
      * @return ApplyResolversResult containing resolved and unresolved diffs
      */
-    public ApplyResolversResult applyResolvers(Collection<Object> resolverCandidates) {
+    // public ApplyResolversResult applyResolvers(Collection<Object> resolverCandidates) {
+    //     ApplyResolversResult result = new ApplyResolversResult();
+    //     result.deltas.addAll(differences);
+        
+    //     for (ReconciliationDelta diff : differences) {
+    //         List<Object> resolvers = findResolver(diff, resolverCandidates);
+            
+    //         for (Object resolver : resolvers) {
+    //             if (tryApplyResolver(resolver, diff)) {
+    //                 break;
+    //             }
+    //         }
+            
+    //     }
+        
+    //     return result; 
+    // }
+
+    public ApplyResolversResult applyResolvers(){
         ApplyResolversResult result = new ApplyResolversResult();
         result.deltas.addAll(differences);
         
         for (ReconciliationDelta diff : differences) {
-            List<Object> resolvers = findResolver(diff, resolverCandidates);
+            List<Object> compliantResolvers = findResolver(diff, this.resolvers);
             
-            for (Object resolver : resolvers) {
+            for (Object resolver : compliantResolvers) {
                 if (tryApplyResolver(resolver, diff)) {
                     break;
                 }
             }
-            
         }
-        
-        return result; 
+        return result;
     }
 
     /**

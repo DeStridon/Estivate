@@ -48,4 +48,24 @@ public class ReflectionUtils {
         return entities.stream().distinct().collect(Collectors.toList());
     }
 
+     public static List<Class<?>> scanPackagesForAnnotatedClasses(String[] packageNames, Class<? extends java.lang.annotation.Annotation> annotationClass) {
+        List<Class<?>> classes = new ArrayList<>();
+        for (String packageName : packageNames) {
+            try {
+                Reflections reflections = new Reflections(
+                    new ConfigurationBuilder()
+                        .forPackage(packageName)
+                        .setScanners(Scanners.TypesAnnotated)
+                );
+
+                Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(annotationClass);
+                classes.addAll(annotatedClasses);
+                log.debug("Package '{}': found {} classes annotated with {}", packageName, annotatedClasses.size(), annotationClass.getSimpleName());
+            } catch (Exception e) {
+                log.warn("Failed to scan package '{}': {}", packageName, e.getMessage());
+            }
+        }
+        return classes.stream().distinct().collect(Collectors.toList());
+     }
+
 }

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
@@ -25,6 +26,13 @@ public class SelectQueryLambdaTest {
 
 	Context context = DatabaseGenerator.getContext();
 	
+	@BeforeEach
+	public void setUp() {
+		context.createTableIfNotExists(CustomerEntity.class);
+		context.createTableIfNotExists(OrderEntity.class);
+	}
+
+
 	@Test
 	public void testEqLambda() {
 		// Create test data
