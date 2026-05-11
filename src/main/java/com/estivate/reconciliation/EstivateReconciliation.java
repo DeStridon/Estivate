@@ -23,8 +23,10 @@ public class EstivateReconciliation {
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface ReconciliationScope {
-        String table() default "";       // noms des tables visées
-        String column() default "";      // noms des colonnes visées
+        Class<?> entity() default void.class;
+        // String field() default "";
+        // String table() default "";       // noms des tables visées
+        // String column() default "";      // noms des colonnes visées
     }
 
     public static enum ReconciliationResult {
@@ -123,7 +125,7 @@ public class EstivateReconciliation {
     public static class ModifyColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
         public Field entityField;
-        public String tableColumnName;
+        //public String tableColumnName;
         public AlterQuery.ColumnDefinition entityDefinition;
         public AlterQuery.ColumnDefinition databaseDefinition;
 
