@@ -103,6 +103,11 @@ public class ReconciliationManager {
         return this;
     }
 
+    public ReconciliationManager addResolvers(Object... resolvers) {
+        this.resolvers.addAll(Arrays.asList(resolvers));
+        return this;
+    }
+
 
     private void scanAllEntities() {
 
@@ -304,6 +309,7 @@ public class ReconciliationManager {
                     
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
                         .entityClass(entityClass)
+                        .entityField(entityField)
                         //.tableColumnName(projectedField.getName())
                         .entityDefinition(entityDef)
                         .databaseDefinition(dbDef)
@@ -389,10 +395,8 @@ public class ReconciliationManager {
      * @param candidates Collection of potential resolver classes to search through
      * @return List of matching resolvers, sorted from most specific to most generic
      */
-    public <T> List<T> findBestResolver(ReconciliationDelta diff, Collection<T> candidates) {
-        // Extract table and column from the diff
-        String diffTable = extractTableName(diff);
-        String diffColumn = extractColumnName(diff);
+    public <T> T findBestResolver(ReconciliationDelta diff, Collection<T> candidates) throws Exception {
+
         
         List<T> matchingCandidates = candidates.stream()
             //.filter(candidate -> hasMatchingHandlesDiff(candidate.getClass(), diffTable, diffColumn))
@@ -414,10 +418,9 @@ public class ReconciliationManager {
             .collect(Collectors.toList());
 
         if (entityScoped.size() == 1) {
-            return entityScoped;
+            return entityScoped.get(0);
         } else if (entityScoped.size() > 1) {
-            System.err.println("WARNING: Multiple resolvers with matching entity for diff: " + diff + ". Conflict.");
-            return entityScoped;
+            throw new Exception("Multiple resolvers with matching entity for diff: " + diff + ". Conflict.");
         }
 
         // Next, filter matchingCandidates for generic ReconciliationScope (entity == void.class)
@@ -430,14 +433,13 @@ public class ReconciliationManager {
             .collect(Collectors.toList());
 
         if (genericScoped.size() == 1) {
-            return genericScoped;
+            return genericScoped.get(0);
         } else if (genericScoped.size() > 1) {
-            System.err.println("WARNING: Multiple generic resolvers for diff: " + diff + ". Conflict.");
-            return genericScoped;
+            throw new Exception("Multiple generic resolvers for diff: " + diff + ". Conflict.");
         }
 
         // No resolver found
-        return new ArrayList<>();
+        return null;
             
     }
 
@@ -517,10 +519,12 @@ public class ReconciliationManager {
         result.deltas.addAll(differences);
         
         for (ReconciliationDelta diff : differences) {
-            Object bestResolver = findBestResolver(diff, this.resolvers);
-            
-            if (tryApplyResolver(bestResolver, diff)) {
-                
+            try{
+                Object bestResolver = findBestResolver(diff, this.resolvers);
+                tryApplyResolver(bestResolver, diff);
+            }
+            catch (Exception e) {
+                log.warn("Resolver {} failed for diff {}: {}", e.getMessage());
             }
         }
         return result;
@@ -535,6 +539,7 @@ public class ReconciliationManager {
      * @return true if the resolver successfully handled the diff, false otherwise
      */
     private boolean tryApplyResolver(Object resolver, ReconciliationDelta diff) {
+
         try {
             if (diff instanceof EstivateReconciliation.CreateTableDelta && resolver instanceof EstivateReconciliation.ICreateTableResolver) {
                 ((EstivateReconciliation.ICreateTableResolver) resolver).resolve(context, (EstivateReconciliation.CreateTableDelta) diff);
@@ -570,72 +575,6 @@ public class ReconciliationManager {
         return false;
     }
 
-    /**
-     * Extracts table name from a SchemaDiff using reflection
-     */
-    private String extractTableName(ReconciliationDelta diff) {
-        
-
-        if(diff instanceof EstivateReconciliation.CreateTableDelta) {
-            return ((EstivateReconciliation.CreateTableDelta) diff).getEntityClass().getSimpleName();
-        }
-        if(diff instanceof EstivateReconciliation.DropTableDelta) {
-            return ((EstivateReconciliation.DropTableDelta) diff).getTableName();
-        }
-        if(diff instanceof EstivateReconciliation.AddColumnDelta) {
-            return ((EstivateReconciliation.AddColumnDelta) diff).getEntityClass().getSimpleName();
-        }
-        if(diff instanceof EstivateReconciliation.DropColumnDelta) {
-            return ((EstivateReconciliation.DropColumnDelta) diff).getEntityClass().getSimpleName();
-        }
-        if(diff instanceof EstivateReconciliation.ModifyColumnDelta) {
-            return ((EstivateReconciliation.ModifyColumnDelta) diff).getEntityClass().getSimpleName();
-        }
-        if(diff instanceof EstivateReconciliation.AddIndexDelta) {
-            return ((EstivateReconciliation.AddIndexDelta) diff).getEntityClass().getSimpleName();
-        }
-        if(diff instanceof EstivateReconciliation.DropIndexDelta) {
-            return ((EstivateReconciliation.DropIndexDelta) diff).getEntityClass().getSimpleName();
-        }
-        return null;
-    }
-
-    /**
-     * Extracts column name or index name from a SchemaDiff using reflection.
-     * Checks for 'columnName' first, then 'indexName'.
-     */
-    private String extractColumnName(ReconciliationDelta diff) {
-        
-        if(diff instanceof EstivateReconciliation.AddColumnDelta) {
-            return ((EstivateReconciliation.AddColumnDelta) diff).getEntityField().getName();
-        }
-        if(diff instanceof EstivateReconciliation.DropColumnDelta) {
-            return ((EstivateReconciliation.DropColumnDelta) diff).getTableColumnName();
-        }
-        if(diff instanceof EstivateReconciliation.ModifyColumnDelta) {
-            return ((EstivateReconciliation.ModifyColumnDelta) diff).getEntityField().getName();
-        }
-        if(diff instanceof EstivateReconciliation.AddIndexDelta) {
-            return ((EstivateReconciliation.AddIndexDelta) diff).getIndexName();
-        }
-        if(diff instanceof EstivateReconciliation.DropIndexDelta) {
-            return ((EstivateReconciliation.DropIndexDelta) diff).getIndexName();
-        }
-        return null;
-    }
-
-    private String extractFieldName(ReconciliationDelta diff) {
-        if(diff instanceof EstivateReconciliation.AddColumnDelta) {
-            return ((EstivateReconciliation.AddColumnDelta) diff).getEntityField().getName();
-        }
-        if(diff instanceof EstivateReconciliation.DropColumnDelta) {
-            return ((EstivateReconciliation.DropColumnDelta) diff).getTableColumnName();
-        }
-        if(diff instanceof EstivateReconciliation.ModifyColumnDelta) {
-            return ((EstivateReconciliation.ModifyColumnDelta) diff).getEntityField().getName();
-        }
-        return null;
-    }
 
     private Class<?> extractEntityClass(ReconciliationDelta diff) {
         if(diff instanceof EstivateReconciliation.CreateTableDelta) {

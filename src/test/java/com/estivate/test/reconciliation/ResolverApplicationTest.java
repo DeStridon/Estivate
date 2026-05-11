@@ -73,10 +73,11 @@ public class ResolverApplicationTest {
      */
     @ReconciliationScope
     public static class GenericColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
-        
+        public boolean wasCalled = false;
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
             try{
+                wasCalled = true;
                 context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
                 diff.closeSolved();
             } catch (Exception e) {
@@ -85,52 +86,20 @@ public class ResolverApplicationTest {
         }
     }
 
-    /**
-     * Table-specific resolver for ColumnMissing
-     */
-    // @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "")
-    // public static class TableSpecificColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
-        
-    //     @Override
-    //     public void resolve(Context context, AddColumnDelta diff) {
-    //     }
-    // }
-
-    /**
-     * Column-specific resolver for ColumnMissing on 'email' column
-     */
-    // @ReconciliationScope(table = "RESOLVER_TEST_ENTITY", column = "email")
-    // public static class EmailColumnMissingResolver implements EstivateReconciliation.IAddColumnResolver {
-        
-    //     @Override
-    //     public void resolve(Context context, AddColumnDelta diff) {
-    //         try {
-    //             context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
-    //             diff.closeSolved();
-    //         } catch (Exception e) {
-    //             // TODO Auto-generated catch block
-    //             e.printStackTrace();
-    //         }
-    //     }
-    // }
-
-    /**
-     * Generic column definition mismatch resolver (handles type, length, nullable, etc.)
-     */
-    // @ReconciliationScope(table = "", column = "")
-    // public static class GenericDefinitionMismatchResolver implements EstivateReconciliation.IModifyColumnResolver {
-    //     public com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta lastDiff = null;
-
-    //     @Override
-    //     public void resolve(Context context, com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta diff) {
-    //         try {
-    //             context.changeColumn(diff.entityClass, diff.tableColumnName, diff.entityDefinition.getColumnType());
-    //             diff.closeSolved();
-    //         } catch (Exception e) {
-    //             e.printStackTrace();
-    //         }
-    //     }
-    // }
+    @ReconciliationScope(entity = ResolverTestEntity.class)
+    public static class ResolverTestEntityResolver implements EstivateReconciliation.IAddColumnResolver {
+        public boolean wasCalled = false;
+        @Override
+        public void resolve(Context context, AddColumnDelta diff) {
+            try{
+                wasCalled = true;
+                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                diff.closeSolved();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * Resolver without annotation - should never be called
@@ -147,33 +116,6 @@ public class ResolverApplicationTest {
         }
     }
 
-    /**
-     * Resolver that always fails
-     */
-    // @ReconciliationScope(table = "", column = "")
-    // public static class FailingResolver implements EstivateReconciliation.IAddColumnResolver {
-    //     public int callCount = 0;
-
-    //     @Override
-    //     public void resolve(Context context, AddColumnDelta diff) {
-    //         callCount++;
-    //         diff.setReconciliationResult(ReconciliationResult.FAILED);
-    //     }
-    // }
-
-    /**
-     * Resolver that throws exception
-     */
-    // @ReconciliationScope(table = "", column = "")
-    // public static class ThrowingResolver implements EstivateReconciliation.IAddColumnResolver {
-    //     public boolean wasCalled = false;
-
-    //     @Override
-    //     public void resolve(Context context, AddColumnDelta diff) {
-    //         wasCalled = true;
-    //         throw new UnsupportedOperationException("Unimplemented method 'resolve'");
-    //     }
-    // }
 
     // ==================== Setup ====================
 
@@ -211,7 +153,7 @@ public class ResolverApplicationTest {
     @Test
     public void testApplyResolvers_SingleDiff_ResolverSucceeds() throws Exception {
         // Create table and remove a column
-        context.createTable(ResolverTestEntity.class);
+        context.createTableIfNotExists(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
 
         ReconciliationManager manager = new ReconciliationManager(context)
@@ -226,22 +168,25 @@ public class ResolverApplicationTest {
 
     }
 
-    // @Test
-    // public void testApplyResolvers_SingleDiff_ResolverFails() throws Exception {
-    //     // Create table and remove a column
-    //     context.createTable(ResolverTestEntity.class);
-    //     context.dropColumn(ResolverTestEntity.class, "email");
+    @Test
+    public void testApplyResolvers_MultipleResolvers() throws Exception {
+        // Create table and remove a column
+        context.createTableIfNotExists(ResolverTestEntity.class);
+        context.dropColumn(ResolverTestEntity.class, "email");
 
-    //     ReconciliationManager manager = new ReconciliationManager(context)
-    //         .addEntities( ResolverTestEntity.class)
-    //         .addResolvers( FailingResolver.class);
+        GenericColumnMissingResolver genericResolver = new GenericColumnMissingResolver();
+        ResolverTestEntityResolver resolverTestEntityResolver = new ResolverTestEntityResolver();
 
-    //     ApplyResolversResult result = manager.applyResolvers();
+        ReconciliationManager manager = new ReconciliationManager(context)
+        .addEntities( ResolverTestEntity.class)
+        .addResolvers( genericResolver, resolverTestEntityResolver);
 
-    //     assertFalse(result.isFullyResolved(), "Should not be fully resolved when resolver fails");
-    //     assertEquals(1, result.getDeltas().size(), "Should have 1 diff");
-    //     //assertEquals(1, resolver.callCount, "Resolver should be called once");
-    // }
+        manager.applyResolvers();
+
+        assertTrue(resolverTestEntityResolver.wasCalled, "ResolverTestEntity resolver should be called");
+        assertFalse(genericResolver.wasCalled, "Generic resolver should not be called");
+        
+    }
 
     @Test
     public void testApplyResolvers_NoMatchingResolvers() throws Exception {
