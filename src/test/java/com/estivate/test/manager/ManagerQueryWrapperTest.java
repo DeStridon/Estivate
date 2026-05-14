@@ -1,4 +1,4 @@
-package com.estivate.manager;
+package com.estivate.test.manager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -10,6 +10,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
+import com.estivate.manager.ManagerInterceptor;
+import com.estivate.manager.ManagerQueryWrapper;
 import com.estivate.manager.ManagerInterceptor.EntityManager;
 import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;

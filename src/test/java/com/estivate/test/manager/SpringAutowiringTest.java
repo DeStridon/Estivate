@@ -1,4 +1,4 @@
-package com.estivate.test;
+package com.estivate.test.manager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,8 +13,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.estivate.context.Context;
 import com.estivate.spring.EnableEstivateManagers;
+import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
-import com.estivate.test.managers.CustomerManager;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,7 +63,7 @@ public class SpringAutowiringTest {
     }
 
     @Configuration
-    @EnableEstivateManagers(basePackages = "com.estivate.test.managers")
+    @EnableEstivateManagers(basePackages = "com.estivate.test.manager")
     static class TestConfig {
         
         @Bean

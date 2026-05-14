@@ -1,4 +1,4 @@
-package com.estivate.test.managers;
+package com.estivate.test.manager;
 
 import java.util.List;
 
@@ -29,5 +29,10 @@ public abstract class CustomerManager extends EntityManager<CustomerEntity> {
     public abstract List<CustomerEntity> findByCountryOrderByCreatedDesc(CustomerEntity.Country country);
 
     public abstract List<CustomerEntity> findByIdNotEq(long id);
+
+    public abstract List<CustomerEntity> findByEmailVerifiedIsTrue();
+
+
+
 }
 

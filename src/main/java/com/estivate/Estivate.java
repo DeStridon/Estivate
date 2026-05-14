@@ -302,6 +302,8 @@ public class Estivate {
 	// isNull
 	public static Criterion isNull		(Attribute attribute) 						{ return new NullCheck(attribute, true);}
 	public static Criterion isNotNull	(Attribute attribute) 						{ return new NullCheck(attribute, false);}
+	public static Criterion isTrue		(Attribute attribute) 						{ return new Operator(attribute, OperatorType.Eq, true); }
+	public static Criterion isFalse		(Attribute attribute) 						{ return new Operator(attribute, OperatorType.Eq, false); }
 	
 	// natively
 	public static Criterion nativeCriterion (Attribute attribute, String criterion) { return new NativeCriterion(attribute, criterion); }
@@ -455,6 +457,8 @@ public class Estivate {
 	// isNull
 	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return isNull(Estivate.attribute(entity, attribute));}
 	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return isNotNull(Estivate.attribute(entity, attribute));}
+	public static Criterion isTrue		(Entity<?> entity, String attribute) 						{ return isTrue(Estivate.attribute(entity, attribute));}
+	public static Criterion isFalse		(Entity<?> entity, String attribute) 						{ return isFalse(Estivate.attribute(entity, attribute));}
 	
 	// natively
 	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return nativeCriterion(Estivate.attribute(entity, attribute), criterion); }
@@ -569,6 +573,8 @@ public class Estivate {
 
 	public static Criterion isNull		(Class<?> entity, String attribute) 						{ return isNull(new Entity<>(entity), attribute);}
 	public static Criterion isNotNull	(Class<?> entity, String attribute) 						{ return isNotNull(new Entity<>(entity), attribute);}
+	public static Criterion isTrue		(Class<?> entity, String attribute) 						{ return isTrue(new Entity<>(entity), attribute);}
+	public static Criterion isFalse		(Class<?> entity, String attribute) 						{ return isFalse(new Entity<>(entity), attribute);}
 	
 
 	public static Criterion matchAgainst(Class<?> entity, String attribute, String value) 			{ return matchAgainst(new Entity<>(entity), attribute, value); }	
@@ -706,6 +712,8 @@ public class Estivate {
 
 	public static <E, P> Criterion isNull		(AttributeGetter<E, P> getter)	{ return isNull(Estivate.attribute(getter));}
 	public static <E, P> Criterion isNotNull	(AttributeGetter<E, P> getter) 	{ return isNotNull(Estivate.attribute(getter));}
+	public static <E, P> Criterion isTrue		(AttributeGetter<E, P> getter) 	{ return isTrue(Estivate.attribute(getter));}
+	public static <E, P> Criterion isFalse		(AttributeGetter<E, P> getter) 	{ return isFalse(Estivate.attribute(getter));}
 	
 
 	public static <E> Criterion matchAgainst(AttributeGetter<E, String> getter, String value) 			{ return matchAgainst(Estivate.attribute(getter), value); }	

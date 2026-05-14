@@ -235,6 +235,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q isNotNull	(Attribute attribute) 				{ super.isNotNull(attribute); 		return self();}
 	public Q isNull		(Attribute attribute) 				{ super.isNull(attribute); 			return self();}
+	public Q isTrue		(Attribute attribute) 				{ super.isTrue(attribute); 			return self();}
+	public Q isFalse	(Attribute attribute) 				{ super.isFalse(attribute); 			return self();}
 
 	public Q eqOrNull	(Attribute attribute, Object value) 	{ super.eqOrNull(attribute, value); return self();	}
 	public Q ltOrNull	(Attribute attribute, Object value) 	{ super.ltOrNull(attribute, value); return self();	}
@@ -343,6 +345,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q isNotNull	(String attribute) 				{ super.isNotNull(this.entity, attribute); 		return self();}
 	public Q isNull		(String attribute) 				{ super.isNull(this.entity, attribute); 			return self();}
+	public Q isTrue		(String attribute) 				{ super.isTrue(this.entity, attribute); 			return self();}
+	public Q isFalse	(String attribute) 				{ super.isFalse(this.entity, attribute); 			return self();}
 
 	public Q eqOrNull	(String attribute, Object value) 	{ super.eqOrNull(this.entity, attribute, value); return self();	}
 	public Q ltOrNull	(String attribute, Object value) 	{ super.ltOrNull(this.entity, attribute, value); return self();	}
@@ -572,6 +576,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q isNotNull			(Entity<?> entity, String attribute) {super.isNotNull(entity, attribute); return self();}
 	public Q isNull				(Entity<?> entity, String attribute) {super.isNull(entity, attribute); return self();}
+	public Q isTrue				(Entity<?> entity, String attribute) {super.isTrue(entity, attribute); return self();}
+	public Q isFalse			(Entity<?> entity, String attribute) {super.isFalse(entity, attribute); return self();}
 	public Q eqOrNull			(Entity<?> entity, String attribute, Object value) { super.eqOrNull(entity, attribute, value); return self();	}
 	public Q ltOrNull			(Entity<?> entity, String attribute, Object value) { super.ltOrNull(entity, attribute, value); return self();	}
 	public Q gtOrNull			(Entity<?> entity, String attribute, Object value) { super.gtOrNull(entity, attribute, value); return self();	}
@@ -690,6 +696,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public <T> Q isNotNull	(AttributeGetter<T, ?> function) 				{ super.isNotNull(function); return self();}
 	public <T> Q isNull		(AttributeGetter<T, ?> function) 				{ super.isNull(function); return self();}
+	public <T> Q isTrue		(AttributeGetter<T, ?> function) 				{ super.isTrue(function); return self();}
+	public <T> Q isFalse	(AttributeGetter<T, ?> function) 				{ super.isFalse(function); return self();}
 
 	
 	

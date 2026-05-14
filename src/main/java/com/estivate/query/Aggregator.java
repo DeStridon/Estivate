@@ -117,8 +117,10 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notLikeEndsWithIfNotNull 	(Attribute attribute, String value) { add(Estivate.notLikeEndsWithIfNotNull(attribute, value)); return this; }
 	public Aggregator notLikeContainsIfNotNull 	(Attribute attribute, String value) { add(Estivate.notLikeContainsIfNotNull(attribute, value)); return this; }
 
-	public Aggregator isNull(Attribute attribute) 	{ add(Estivate.isNull(attribute)); 	return this; }
-	public Aggregator isNotNull(Attribute attribute) { add(Estivate.isNotNull(attribute)); return this; }
+	public Aggregator isNull(Attribute attribute) 		{ add(Estivate.isNull(attribute)); 	return this; }
+	public Aggregator isNotNull(Attribute attribute) 	{ add(Estivate.isNotNull(attribute)); return this; }
+	public Aggregator isTrue(Attribute attribute) 		{ add(Estivate.isTrue(attribute)); return this; }
+	public Aggregator isFalse(Attribute attribute) 		{ add(Estivate.isFalse(attribute)); return this; }
 
 	public Aggregator matchAgainst(Attribute attribute, String value) { add(Estivate.matchAgainst(attribute, value)); return this; }
 	public Aggregator matchAgainstIfNotNull(Attribute attribute, String value) { add(Estivate.matchAgainstIfNotNull(attribute, value)); return this; }
@@ -254,6 +256,8 @@ public class Aggregator implements EstivateNode {
 
 	public Aggregator isNull(Entity<?> entity, String attribute) 	{ add(Estivate.isNull(entity, attribute)); 	return this; }
 	public Aggregator isNotNull(Entity<?> entity, String attribute) { add(Estivate.isNotNull(entity, attribute)); return this; }
+	public Aggregator isTrue(Entity<?> entity, String attribute) 	{ add(Estivate.isTrue(entity, attribute)); return this; }
+	public Aggregator isFalse(Entity<?> entity, String attribute) 	{ add(Estivate.isFalse(entity, attribute)); return this; }
 
 	public Aggregator matchAgainst(Entity<?> entity, String attribute, String value) { add(Estivate.matchAgainst(entity, attribute, value)); return this; }
 	public Aggregator matchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { add(Estivate.matchAgainstIfNotNull(entity, attribute, value)); return this; }
@@ -384,6 +388,8 @@ public class Aggregator implements EstivateNode {
 	
 	public Aggregator isNotNull(Class<?> entity, String attribute) { return isNotNull(new Entity<>(entity), attribute); }
 	public Aggregator isNull(Class<?> entity, String attribute) { return isNull(new Entity<>(entity), attribute); }
+	public Aggregator isTrue(Class<?> entity, String attribute) { return isTrue(new Entity<>(entity), attribute); }
+	public Aggregator isFalse(Class<?> entity, String attribute) { return isFalse(new Entity<>(entity), attribute); }
 
 	
 	public Aggregator matchAgainst(Class<?> entity, String attribute, String value) { return matchAgainst(new Entity<>(entity), attribute, value); }
@@ -491,6 +497,8 @@ public class Aggregator implements EstivateNode {
 
 	public <T> Aggregator isNull(AttributeGetter<T, ?> function) 	{ add(Estivate.isNull(function)); 	return this; }
 	public <T> Aggregator isNotNull(AttributeGetter<T, ?> function) { add(Estivate.isNotNull(function)); return this; }
+	public <T> Aggregator isTrue(AttributeGetter<T, ?> function) 	{ add(Estivate.isTrue(function)); return this; }
+	public <T> Aggregator isFalse(AttributeGetter<T, ?> function) 	{ add(Estivate.isFalse(function)); return this; }
 
 	public <T> Aggregator matchAgainst(AttributeGetter<T, String> function, String value) { add(Estivate.matchAgainst(function, value)); return this; }
 	public <T> Aggregator matchAgainstIfNotNull(AttributeGetter<T, String> function, String value) { add(Estivate.matchAgainstIfNotNull(function, value)); return this; }

@@ -84,9 +84,12 @@ public class ManagerQueryWrapper {
             
             // Count expected arguments based on criterion
             
-            Method criterionMethod = Arrays.asList(SelectQuery.class.getMethods()).stream()
+            List<Method> criterionMethods = Arrays.asList(SelectQuery.class.getMethods()).stream()
+            .filter(x -> x.getParameterCount() > 0 && x.getParameterTypes()[0].equals(String.class))
+            .collect(Collectors.toList());
+
+            Method criterionMethod = criterionMethods.stream()
             .filter(x -> x.getName().equalsIgnoreCase(criterion.isEmpty() ? "eq" : criterion))
-            .filter(x -> x.getParameterTypes()[0].equals(String.class))
             .findFirst().orElseThrow(() -> new Exception("No criterion method found, available methods: " + criterionList.stream().collect(Collectors.joining(", "))));
             
             criterions.add(new Pair<>(criterionMethod, field));
@@ -161,7 +164,7 @@ public class ManagerQueryWrapper {
         result.addAll(new StringComposer().compose("in", "notIn").compose("", "IfNotEmpty", "IfNotEmptyNullable", "OrNull", "IfNotEmptyOrNull", "OrFalseIfEmpty").results);
         result.addAll(new StringComposer().compose("eq", "notEq", "gt", "gte", "lt", "lte", "between").compose("", "IfNotNull", "OrNull", "Nullable").results);
         result.addAll(new StringComposer().compose("like", "notLike").compose("", "StartsWith", "EndsWith", "Contains").compose("", "IfNotNull", "In", "InIfNotEmpty").results);
-        result.addAll(Arrays.asList("isNull", "isNotNull"));
+        result.addAll(Arrays.asList("isNull", "isNotNull", "isTrue", "isFalse"));
         return result;
     }
 
