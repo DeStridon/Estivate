@@ -12,9 +12,9 @@ import com.estivate.Entity.SubQueryEntity;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.AlterQuery;
-import com.estivate.query.CreateQuery;
 import com.estivate.query.Attribute;
 import com.estivate.query.Attribute.Function;
+import com.estivate.query.CreateQuery;
 import com.estivate.query.Criterion;
 import com.estivate.query.Criterion.Between;
 import com.estivate.query.Criterion.ExistsSubQuery;
@@ -28,6 +28,7 @@ import com.estivate.query.Criterion.Operator;
 import com.estivate.query.Criterion.Operator.OperatorType;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
+import com.estivate.query.InsertQuery;
 import com.estivate.query.Join;
 import com.estivate.query.Join.JoinType;
 import com.estivate.query.Keyword;
@@ -38,10 +39,7 @@ import com.estivate.query.UpdateQuery;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.matcher.ElementMatchers;
+
 
 public class Estivate {
 
@@ -58,7 +56,7 @@ public class Estivate {
 	public static <U> AlterQuery<U> alterQuery(Class<U> entity) { return new AlterQuery<>(entity); }
 
 	public static <U> CreateQuery<U> createQuery(Class<U> entity) { return new CreateQuery<>(entity); }
-
+	public static <U> InsertQuery<U> insertQuery(Class<U> entity) { return new InsertQuery<>(entity); }
 
 	public static Attribute attribute(Entity<?> entity, String field, Attribute.Function function, String alias) { return new Attribute(entity, field, function, alias); }
 	public static Attribute attribute(Class<?> entity, String field, Attribute.Function function, String alias) { return new Attribute(new Entity<>(entity), field, function, alias); }

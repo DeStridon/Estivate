@@ -29,7 +29,6 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
-import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
@@ -38,6 +37,7 @@ import com.estivate.query.Attribute;
 import com.estivate.query.CreateQuery;
 import com.estivate.query.CreateQuery.ColumnDefinition;
 import com.estivate.query.DeleteQuery;
+import com.estivate.query.InsertQuery;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
@@ -210,6 +210,34 @@ public abstract class Context {
 			return statement.executeForValidation();
 		}
 
+		
+	}
+
+	@SneakyThrows
+	public <T> void execute(InsertQuery<T> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+	
+			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
+			
+			query.getFields().stream().forEach(x -> x.setAccessible(true));
+			String columnsString = query.getFields().stream().map(x -> nameMapper.mapDatabaseField(x.getName())).collect(Collectors.joining(", "));
+			String valuesString = query.getFields().stream().map(x -> "?").collect(Collectors.joining(", "));
+			statement.appendQuery("(", columnsString, ") VALUES ");
+
+			for(int i = 0; i < query.getValues().size(); i++) {
+				statement.appendQuery("(", valuesString, ")");
+				for(Field field : query.getFields()) {
+					statement.appendObjectAsValue(query.getValues().get(i).getClass(), field.getName(), field.get(query.getValues().get(i)));
+				}
+				if(i < query.getValues().size() - 1) {
+					statement.appendQuery(",");
+				}
+			}
+			
+			statement.executeForValidation();
+			
+		}
 		
 	}
 	

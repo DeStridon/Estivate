@@ -284,6 +284,13 @@ public class Statement implements AutoCloseable{
 		return this;
 	}
 
+	public Statement appendQuery(String... queryContents) {
+		for(String queryContent : queryContents) {
+			appendQuery(queryContent);
+		}
+		return this;
+	}
+
 	public Statement appendAttributeAsParameter(Attribute attribute){
 		
 		//TODO : handle alias ?

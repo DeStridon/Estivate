@@ -27,5 +27,7 @@ public abstract class CustomerManager extends EntityManager<CustomerEntity> {
     public abstract List<CustomerEntity> findByIdBetween(long id1, long id2);
     
     public abstract List<CustomerEntity> findByCountryOrderByCreatedDesc(CustomerEntity.Country country);
+
+    public abstract List<CustomerEntity> findByIdNotEq(long id);
 }
 

@@ -104,7 +104,7 @@ public class EstivateReconciliation {
         public Field entityField;
         public String tableColumnName;
         public AlterQuery.ColumnDefinition entityColumnDefinition;
-
+        public EntityModel tableModel;
     }
 
     

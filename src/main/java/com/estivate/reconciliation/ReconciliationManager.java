@@ -6,14 +6,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
@@ -143,11 +139,9 @@ public class ReconciliationManager {
             differences.add(dropTable);
         }
 
-        
         this.differences.stream().forEach(x -> x.setCurrentDeltas(differences));
 
     }
-    
     
     
     /**
@@ -163,11 +157,6 @@ public class ReconciliationManager {
     }
     
     
-
-
-
-
-
     /**
      * Queries the database to get the actual table structure
      */
@@ -222,7 +211,7 @@ public class ReconciliationManager {
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel databaseModel) {
+    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel tableModel) {
         List<ReconciliationDelta> diffs = new ArrayList<>();
         List<String> projectedFieldNames = new ArrayList<>();
 
@@ -244,12 +233,12 @@ public class ReconciliationManager {
 
             projectedFieldNames.add(projectedField.getName());
 
-            TableField dbField = databaseModel.findField(entityField.getName());
+            TableField dbField = tableModel.findField(entityField.getName());
 
             if (dbField == null) {
                 // Also check by mapped database column name
                 String dbColumnName = context.nameMapper.mapDatabaseField(entityField.getName());
-                dbField = databaseModel.getFields().stream()
+                dbField = tableModel.getFields().stream()
                     .filter(f -> dbColumnName.equalsIgnoreCase(context.nameMapper.mapDatabaseField(f.getName())))
                     .findFirst()
                     .orElse(null);
@@ -272,6 +261,7 @@ public class ReconciliationManager {
                     .entityField(entityField)
                     .tableColumnName(projectedField.getName())
                     .entityColumnDefinition(columnDef)
+                    .tableModel(tableModel)
                     .build();
                 diffs.add(addColumn);
             } 
@@ -322,7 +312,7 @@ public class ReconciliationManager {
         // Check for columns in database but not in entity
         // We need to check against the actual database column names
         // Since databaseModel stores entity field names (after conversion), we need to map back
-        for (TableField dbField : databaseModel.getFields()) {
+        for (TableField dbField : tableModel.getFields()) {
             // If found in known fields, skip
             if(projectedFieldNames.contains(dbField.getName())) {
                 continue;
@@ -343,39 +333,7 @@ public class ReconciliationManager {
     // ==================== Resolver Discovery ====================
 
 
-    // public static final Comparator<Object> handlesDiffComparator = (objectA, objectB) -> {
 
-    //     ReconciliationScope a = objectA == null ? null : objectA.getClass().getAnnotation(ReconciliationScope.class);
-    //     ReconciliationScope b = objectB == null ? null : objectB.getClass().getAnnotation(ReconciliationScope.class);
-
-    //     return or(
-    //         compare(a == null, b == null),
-    //         compare(StringUtils.isBlank(a.table()), StringUtils.isBlank(b.table())),
-    //         compare(StringUtils.isBlank(a.column()), StringUtils.isBlank(b.column()))
-    //     ).orElse(0);
-        
-        
-    // };
-
-    // private static Optional<Integer> or(Optional<Integer>... values){
-    //     for(Optional<Integer> value : values){
-    //         if(value.isPresent()){
-    //             return value;
-    //         }
-    //     }
-    //     return Optional.empty();
-    // }
-
-    // // 
-    // private static Optional<Integer> compare(boolean a, boolean b) {
-    //     if(a && b){ return Optional.of(0); }
-    //     // a true : a is more specific
-    //     if (a && !b) { return Optional.of(1); }
-    //     // b true : b is more specific
-    //     if (!a && b) { return Optional.of(-1);}
-    //     // both false
-    //     return Optional.empty();
-    // }
 
 
     /**
@@ -399,7 +357,7 @@ public class ReconciliationManager {
 
         
         List<T> matchingCandidates = candidates.stream()
-            //.filter(candidate -> hasMatchingHandlesDiff(candidate.getClass(), diffTable, diffColumn))
+            .filter(candidate -> isResolverMatchingDiff(candidate, diff))
             //.sorted(ReconciliationManager.handlesDiffComparator)
             .collect(Collectors.toList());
 
@@ -470,6 +428,31 @@ public class ReconciliationManager {
     
 
     // ==================== Resolver Application ====================
+
+    private boolean isResolverMatchingDiff(Object resolver, ReconciliationDelta delta) {
+        if(resolver instanceof EstivateReconciliation.ICreateTableResolver && delta instanceof EstivateReconciliation.CreateTableDelta) {
+            return true;
+        }
+        if(resolver instanceof EstivateReconciliation.IAddColumnResolver && delta instanceof EstivateReconciliation.AddColumnDelta) {
+            return true;
+        }
+        if(resolver instanceof EstivateReconciliation.IModifyColumnResolver && delta instanceof EstivateReconciliation.ModifyColumnDelta) {
+            return true;
+        }
+        if(resolver instanceof EstivateReconciliation.IDropTableResolver && delta instanceof EstivateReconciliation.DropTableDelta) {
+            return true;
+        }
+        if(resolver instanceof EstivateReconciliation.IDropColumnResolver && delta instanceof EstivateReconciliation.DropColumnDelta) {
+            return true;
+        }
+        if(resolver instanceof EstivateReconciliation.IAddIndexResolver && delta instanceof EstivateReconciliation.AddIndexDelta) {
+            return true;
+        }
+        if(resolver instanceof EstivateReconciliation.IDropIndexResolver && delta instanceof EstivateReconciliation.DropIndexDelta) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Result of applying resolvers to schema differences.
