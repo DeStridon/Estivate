@@ -8,12 +8,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
 
-import com.estivate.index.Annotations.IndexColumn;
-import com.estivate.index.Annotations.IndexType;
-import com.estivate.index.Annotations.TableIndex;
-
-import lombok.Data;
-
 public class Annotations {
 	
 	@Target(ElementType.TYPE)
@@ -40,8 +34,9 @@ public class Annotations {
 	public static enum IndexType{ 
 		DEFAULT,
 		UNIQUE,
-		PRIMARY
-	}	
+		PRIMARY,
+		FULLTEXT
+	}
 	
 	public static TableIndex CompositeIndex(String name, IndexType type, List<IndexColumn> columns) {
 		IndexColumn[] array = new IndexColumn[columns.size()];

@@ -239,15 +239,15 @@ public class Estivate {
 	
 	// Like In
 	public static Aggregator likeIn 			(Attribute attribute, Collection<String> values) { return or(values.stream().map(x -> like(attribute, x)).collect(Collectors.toList())); }
-	public static Aggregator likeInIfNotEmpty	(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> like(attribute, x)).collect(Collectors.toList()));} return null; }
-	public static Aggregator notLikeIn			(Attribute attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLike(attribute, x)).collect(Collectors.toList()));  		}
-	public static Aggregator notLikeInIfNotEmpty(Attribute attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notLike(attribute, x)).collect(Collectors.toList()));} return null; }
+	public static Aggregator likeInIfNotEmpty	(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return likeIn(attribute, values); } return null; }
+	public static Aggregator notLikeIn			(Attribute attribute, Collection<String> values) { return and(values.stream().map(x -> notLike(attribute, x)).collect(Collectors.toList()));  		}
+	public static Aggregator notLikeInIfNotEmpty(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return notLikeIn(attribute, values); } return null; }
 
 	// Match Against In
-	public static Aggregator matchAgainstIn 			(Attribute attribute, Collection<String> values)	{ return matchAgainstIn(attribute, values); }
-	public static Aggregator matchAgainstInIfNotEmpty	(Attribute attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(attribute, values); } 
-	public static Aggregator notMatchAgainstIn			(Attribute attribute, Collection<String> values)	{ return notMatchAgainstIn(attribute, values); }
-	public static Aggregator notMatchAgainstInIfNotEmpty(Attribute attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(attribute, values); }
+	public static Aggregator matchAgainstIn 			(Attribute attribute, Collection<String> values) { return or(values.stream().map(x -> matchAgainst(attribute, x)).collect(Collectors.toList())); }
+	public static Aggregator matchAgainstInIfNotEmpty	(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) {  return matchAgainstIn(attribute, values); } return null; } 
+	public static Aggregator notMatchAgainstIn			(Attribute attribute, Collection<String> values) { return and(values.stream().map(x -> notMatchAgainst(attribute, x)).collect(Collectors.toList())); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return notMatchAgainstIn(attribute, values); } return null; }
 
 	// Like starts
 	public static Criterion likeStartsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.Like, value+"%");	}
@@ -325,140 +325,140 @@ public class Estivate {
 	
 	// Eq methods
 	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return eq(Estivate.attribute(entity, attribute), value); }
-	public static Criterion eqIfNotNull		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return null; }
-	public static Criterion eqIfNotBlank	(Entity<?> entity, String attribute, String value) { if(StringUtils.isNotBlank(value)) { return eq(entity, attribute, value); } return null; }
-	public static Criterion eqNullable		(Entity<?> entity, String attribute, Object value) { if(value != null) {return eq(entity, attribute, value);} return isNull(entity, attribute); }
-	public static Aggregator eqOrNull		(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).eq(entity, attribute, value).isNull(entity, attribute); }
+	public static Criterion eqIfNotNull		(Entity<?> entity, String attribute, Object value) { return eqIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion eqIfNotBlank	(Entity<?> entity, String attribute, String value) { return eqIfNotBlank(Estivate.attribute(entity, attribute), value); }
+	public static Criterion eqNullable		(Entity<?> entity, String attribute, Object value) { return eqNullable(Estivate.attribute(entity, attribute), value); }
+	public static Aggregator eqOrNull		(Entity<?> entity, String attribute, Object value) { return eqOrNull(Estivate.attribute(entity, attribute), value); }
 	public static Criterion notEq			(Entity<?> entity, String attribute, Object value) { return notEq(Estivate.attribute(entity, attribute), value); }
-	public static Criterion notEqIfNotNull	(Entity<?> entity, String attribute, Object value) { if(value != null) {return notEq(entity, attribute, value);} return null; }
-	public static Criterion notEqIfNotBlank (Entity<?> entity, String attribute, String value) { if(StringUtils.isNotBlank(value)) { return notEq(entity, attribute, value); } return null; }
-	public static Criterion notEqNullable	(Entity<?> entity, String attribute, Object value) { if(value != null) {return notEq(entity, attribute, value);} return isNotNull(entity, attribute); }
-	public static Aggregator notEqOrNull	(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).notEq(entity, attribute, value).isNull(entity, attribute); }
+	public static Criterion notEqIfNotNull	(Entity<?> entity, String attribute, Object value) { return notEqIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notEqIfNotBlank (Entity<?> entity, String attribute, String value) { return notEqIfNotBlank(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notEqNullable	(Entity<?> entity, String attribute, Object value) { return notEqNullable(Estivate.attribute(entity, attribute), value); }
+	public static Aggregator notEqOrNull	(Entity<?> entity, String attribute, Object value) { return notEqOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	// Lt 
-	public static Criterion lt   	(Entity<?> entity, String attribute, Object value)        		{ return lt(Estivate.attribute(entity, attribute), value); }
-	public static Criterion ltIfNotNull   	(Entity<?> entity, String attribute, Object value) { if(value != null) {return lt(entity, attribute, value);} return null; }
-	public static Aggregator ltOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).lt(entity, attribute, value).isNull(entity, attribute); }
+	public static Criterion lt   	(Entity<?> entity, String attribute, Object value)        	{ return lt(Estivate.attribute(entity, attribute), value); }
+	public static Criterion ltIfNotNull   	(Entity<?> entity, String attribute, Object value) 	{ return ltIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Aggregator ltOrNull(Entity<?> entity, String attribute, Object value) 		{ return ltOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	// Lte
-	public static Criterion lte  	(Entity<?> entity, String attribute, Object value)        		{ return lte(Estivate.attribute(entity, attribute), value); }
-	public static Criterion lteIfNotNull  	(Entity<?> entity, String attribute, Object value) { if(value != null) {return lte(entity, attribute, value);} return null; }
-	public static Aggregator lteOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).lte(entity, attribute, value).isNull(entity, attribute); }
+	public static Criterion lte  	(Entity<?> entity, String attribute, Object value)        	{ return lte(Estivate.attribute(entity, attribute), value); }
+	public static Criterion lteIfNotNull  	(Entity<?> entity, String attribute, Object value) 	{ return lteIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Aggregator lteOrNull(Entity<?> entity, String attribute, Object value) 		{ return lteOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	
 	// Gt 
-	public static Criterion gt   	(Entity<?> entity, String attribute, Object value)        		{ return gt(Estivate.attribute(entity, attribute), value); }
-	public static Criterion gtIfNotNull   	(Entity<?> entity, String attribute, Object value) { if(value != null) {return gt(entity, attribute, value);} return null; }
-	public static Aggregator gtOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).gt(entity, attribute, value).isNull(entity, attribute); }
+	public static Criterion gt   	(Entity<?> entity, String attribute, Object value)        	{ return gt(Estivate.attribute(entity, attribute), value); }
+	public static Criterion gtIfNotNull   	(Entity<?> entity, String attribute, Object value) 	{ return gtIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Aggregator gtOrNull(Entity<?> entity, String attribute, Object value) 		{ return gtOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	// Gte
-	public static Criterion gte  	(Entity<?> entity, String attribute, Object value)        		{ return gte(Estivate.attribute(entity, attribute), value); }
-	public static Criterion gteIfNotNull  	(Entity<?> entity, String attribute, Object value) { if(value != null) {return gte(entity, attribute, value);} return null; }
-	public static Aggregator gteOrNull(Entity<?> entity, String attribute, Object value) { return new Aggregator(GroupType.OR).gte(entity, attribute, value).isNull(entity, attribute); }
+	public static Criterion gte  	(Entity<?> entity, String attribute, Object value)        	{ return gte(Estivate.attribute(entity, attribute), value); }
+	public static Criterion gteIfNotNull  	(Entity<?> entity, String attribute, Object value) 	{ return gteIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Aggregator gteOrNull(Entity<?> entity, String attribute, Object value) 		{ return gteOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	
 	// Between
 	public static Criterion between (Entity<?> entity, String attribute, Object min, Object max) 	{ return between(Estivate.attribute(entity, attribute), min, max); }
-	public static Criterion betweenIfNotNull(Entity<?> entity, String attribute, Object min, Object max) {if(min != null && max != null) { return between(entity, attribute, min, max);} return null; }
-	public static Aggregator betweenOrNull(Entity<?> entity, String attribute, Object min, Object max) { return new Aggregator(GroupType.OR).between(entity, attribute, min, max).isNull(entity, attribute); }
+	public static Criterion betweenIfNotNull(Entity<?> entity, String attribute, Object min, Object max) { return betweenIfNotNull(Estivate.attribute(entity, attribute), min, max); }
+	public static Aggregator betweenOrNull(Entity<?> entity, String attribute, Object min, Object max) { return betweenOrNull(Estivate.attribute(entity, attribute), min, max); }
 	
 	// In
 	public static Criterion in   					(Entity<?> entity, String attribute, Collection<?> values){ return in(Estivate.attribute(entity, attribute), values); }
-	public static Criterion inIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return null; }
-	public static Aggregator inOrNull				(Entity<?> entity, String attribute, Collection<?> values){ return or(in(entity, attribute, values), isNull(entity, attribute)); }
-	public static Aggregator inIfNotEmptyOrNull		(Entity<?> entity, String attribute, Collection<?> values){ return or(inIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
-	public static Aggregator inIfNotEmptyNullable	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return Estivate.or(inIfNotEmpty(entity, attribute, values.stream().filter(x -> x != null).collect(Collectors.toList()))).addIf(values.stream().anyMatch(x -> x == null), Estivate.isNull(entity, attribute)); } return null; }
-	public static EstivateNode inOrFalseIfEmpty		(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return in(entity, attribute, values);} return keywordFalse(); }
+	public static Criterion inIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ return inIfNotEmpty(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator inOrNull				(Entity<?> entity, String attribute, Collection<?> values){ return inOrNull(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator inIfNotEmptyOrNull		(Entity<?> entity, String attribute, Collection<?> values){ return inIfNotEmptyOrNull(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator inIfNotEmptyNullable	(Entity<?> entity, String attribute, Collection<?> values){ return inIfNotEmptyNullable(Estivate.attribute(entity, attribute), values); }
+	public static EstivateNode inOrFalseIfEmpty		(Entity<?> entity, String attribute, Collection<?> values){ return inOrFalseIfEmpty(Estivate.attribute(entity, attribute), values); }
 	
 	public static Criterion notIn   				(Entity<?> entity, String attribute, Collection<?> values){ return notIn(Estivate.attribute(entity, attribute), values); }
-	public static Criterion notInIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return null; }
-	public static Aggregator notInOrNull			(Entity<?> entity, String attribute, Collection<?> values){ return or(notIn(entity, attribute, values), isNull(entity, attribute)); }
-	public static Aggregator notInIfNotEmptyOrNull	(Entity<?> entity, String attribute, Collection<?> values){ return or(notInIfNotEmpty(entity, attribute, values), isNull(entity, attribute)); }
-	public static EstivateNode notInOrTrueIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ if(values != null && !values.isEmpty()) {return notIn(entity, attribute, values);} return keywordTrue(); }
+	public static Criterion notInIfNotEmpty			(Entity<?> entity, String attribute, Collection<?> values){ return notInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notInOrNull			(Entity<?> entity, String attribute, Collection<?> values){ return notInOrNull(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notInIfNotEmptyOrNull	(Entity<?> entity, String attribute, Collection<?> values){ return notInIfNotEmptyOrNull(Estivate.attribute(entity, attribute), values); }
+	public static EstivateNode notInOrTrueIfEmpty	(Entity<?> entity, String attribute, Collection<?> values){ return notInOrTrueIfEmpty(Estivate.attribute(entity, attribute), values); }
 
 	// Like
-	public static Criterion like 			(Entity<?> entity, String attribute, String value) { return like(Estivate.attribute(entity, attribute), value); }
-	public static Criterion notLike			(Entity<?> entity, String attribute, String value) { return notLike(Estivate.attribute(entity, attribute), value); }
-	public static Criterion likeIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return like(entity, attribute, value);} return null;  }
-	public static Criterion notLikeIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLike(entity, attribute, value);} return null;  }
-	public static Criterion likeIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isEmpty(value)) {return like(entity, attribute, value);} return null; }
-	public static Criterion notLikeIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isEmpty(value)) {return notLike(entity, attribute, value);} return null; }
-	public static Criterion likeIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isBlank(value)) {return like(entity, attribute, value);} return null; }
-	public static Criterion notLikeIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isBlank(value)) {return notLike(entity, attribute, value);} return null; }
+	public static Criterion like 			(Entity<?> entity, String attribute, String value) 	{ return like(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLike			(Entity<?> entity, String attribute, String value) 	{ return notLike(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeIfNotNull 	(Entity<?> entity, String attribute, String value) 	{ return likeIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeIfNotNull(Entity<?> entity, String attribute, String value) 	{ return notLikeIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeIfNotEmpty(Entity<?> entity, String attribute, String value) 	{ return likeIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeIfNotEmpty(Entity<?> entity, String attribute, String value) { return notLikeIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeIfNotBlank(Entity<?> entity, String attribute, String value) 	{ return likeIfNotBlank(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeIfNotBlank(Entity<?> entity, String attribute, String value) { return notLikeIfNotBlank(Estivate.attribute(entity, attribute), value); }
 	
 	// Match Against
-	public static Criterion matchAgainst			(Entity<?> entity, String attribute, String value) { return matchAgainst(entity, attribute, value); }
-	public static Criterion notMatchAgainst 		(Entity<?> entity, String attribute, String value) { return notMatchAgainst(entity, attribute, value); }
-	public static Criterion matchAgainstIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return matchAgainst(entity, attribute, value);} return null;  }
-	public static Criterion notMatchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notMatchAgainst(entity, attribute, value);} return null;  }
+	public static Criterion matchAgainst			(Entity<?> entity, String attribute, String value) { return matchAgainst(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notMatchAgainst 		(Entity<?> entity, String attribute, String value) { return notMatchAgainst(Estivate.attribute(entity, attribute), value); }
+	public static Criterion matchAgainstIfNotNull 	(Entity<?> entity, String attribute, String value) { return matchAgainstIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notMatchAgainstIfNotNull(Entity<?> entity, String attribute, String value) { return notMatchAgainstIfNotNull(Estivate.attribute(entity, attribute), value); }
 	
 	// Like In
-	public static Aggregator likeIn 			(Entity<?> entity, String attribute, Collection<String> values) { return or(values.stream().map(x -> like(entity, attribute, x)).collect(Collectors.toList())); }
-	public static Aggregator likeInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return or(values.stream().map(x -> like(entity, attribute, x)).collect(Collectors.toList()));} return null; }
-	public static Aggregator notLikeIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLike(entity, attribute, x)).collect(Collectors.toList()));  		}
-	public static Aggregator notLikeInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return and(values.stream().map(x -> notLike(entity, attribute, x)).collect(Collectors.toList()));} return null; }
+	public static Aggregator likeIn 			(Entity<?> entity, String attribute, Collection<String> values) { return likeIn(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator likeInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { return likeInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notLikeIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notLikeIn(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notLikeInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notLikeInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
 
 	// Match Against In
-	public static Aggregator matchAgainstIn 			(Entity<?> entity, String attribute, Collection<String> values)	{ return matchAgainstIn(entity, attribute, values); }
-	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(entity, attribute, values); } 
-	public static Aggregator notMatchAgainstIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstIn(entity, attribute, values); }
-	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(entity, attribute, values); }
+	public static Aggregator matchAgainstIn 			(Entity<?> entity, String attribute, Collection<String> values)	{ return matchAgainstIn(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator matchAgainstInIfNotEmpty	(Entity<?> entity, String attribute, Collection<String> values) { return matchAgainstInIfNotEmpty(Estivate.attribute(entity, attribute), values); } 
+	public static Aggregator notMatchAgainstIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstIn(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
 
 	// Like starts
-	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)		{ return likeStartsWith(Estivate.attribute(entity, attribute), value);	}
-	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)		{ return notLikeStartsWith(Estivate.attribute(entity, attribute), value);}
-	public static Criterion likeStartsWithIfNotNull (Entity<?> entity, String attribute, String value) 	{ if(value != null) {return likeStartsWith(entity, attribute, value);} return null; }
-	public static Criterion notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value){ if(value != null) {return notLikeStartsWith(entity, attribute, value);} return null; }
-	public static Criterion likeStartsWithIfNotEmpty (Entity<?> entity, String attribute, String value) 	{ if(value != null && !StringUtils.isEmpty(value)) {return likeStartsWith(entity, attribute, value);} return null; }
-	public static Criterion notLikeStartsWithIfNotEmpty(Entity<?> entity, String attribute, String value){ if(value != null && !StringUtils.isEmpty(value)) {return notLikeStartsWith(entity, attribute, value);} return null; }
-	public static Criterion likeStartsWithIfNotBlank (Entity<?> entity, String attribute, String value) 	{ if(value != null && !StringUtils.isBlank(value)) {return likeStartsWith(entity, attribute, value);} return null; }
-	public static Criterion notLikeStartsWithIfNotBlank(Entity<?> entity, String attribute, String value){ if(value != null && !StringUtils.isBlank(value)) {return notLikeStartsWith(entity, attribute, value);} return null; }
+	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)				{ return likeStartsWith(Estivate.attribute(entity, attribute), value);	}
+	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)				{ return notLikeStartsWith(Estivate.attribute(entity, attribute), value);}
+	public static Criterion likeStartsWithIfNotNull (Entity<?> entity, String attribute, String value) 		{ return likeStartsWithIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeStartsWithIfNotNull(Entity<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeStartsWithIfNotEmpty (Entity<?> entity, String attribute, String value) 	{ return likeStartsWithIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeStartsWithIfNotEmpty(Entity<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeStartsWithIfNotBlank (Entity<?> entity, String attribute, String value) 	{ return likeStartsWithIfNotBlank(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeStartsWithIfNotBlank(Entity<?> entity, String attribute, String value)	{ return notLikeStartsWithIfNotBlank(Estivate.attribute(entity, attribute), value); }
 	
 	// Like starts in
-	public static Aggregator likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return or(values.stream().map(x -> likeStartsWith(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeStartsWithIn(entity, attribute, values); } return null; }
-	public static Aggregator notLikeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeStartsWith(entity, attribute, x)).collect(Collectors.toList()));}
-	public static Aggregator notLikeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return notLikeStartsWithIn(entity, attribute, values); } return null; }
+	public static Aggregator likeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)				{ return likeStartsWithIn(Estivate.attribute(entity, attribute), values);	}
+	public static Aggregator likeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 		{ return likeStartsWithInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notLikeStartsWithIn(Entity<?> entity, String attribute, Collection<String> values)				{ return notLikeStartsWithIn(Estivate.attribute(entity, attribute), values);	}
+	public static Aggregator notLikeStartsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ return notLikeStartsWithInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
 	
 	
 	// Like ends
-	public static Criterion likeEndsWith(Entity<?> entity, String attribute, String value)			{ return likeEndsWith(Estivate.attribute(entity, attribute), value); }
-	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)		{ return notLikeEndsWith(Estivate.attribute(entity, attribute), value);	}
-	public static Criterion likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeEndsWith(entity, attribute, value);} return null; }
-	public static Criterion notLikeEndsWithIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeEndsWith(entity, attribute, value);} return null; }
-	public static Criterion likeEndsWithIfNotEmpty 	(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isEmpty(value)) {return likeEndsWith(entity, attribute, value);} return null; }
-	public static Criterion notLikeEndsWithIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isEmpty(value)) {return notLikeEndsWith(entity, attribute, value);} return null; }
-	public static Criterion likeEndsWithIfNotBlank 	(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isBlank(value)) {return likeEndsWith(entity, attribute, value);} return null; }
-	public static Criterion notLikeEndsWithIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isBlank(value)) {return notLikeEndsWith(entity, attribute, value);} return null; }
+	public static Criterion likeEndsWith(Entity<?> entity, String attribute, String value)				{ return likeEndsWith(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeEndsWith(Entity<?> entity, String attribute, String value)			{ return notLikeEndsWith(Estivate.attribute(entity, attribute), value);	}
+	public static Criterion likeEndsWithIfNotNull 	(Entity<?> entity, String attribute, String value) 	{ return likeEndsWithIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeEndsWithIfNotNull(Entity<?> entity, String attribute, String value) 	{ return notLikeEndsWithIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeEndsWithIfNotEmpty 	(Entity<?> entity, String attribute, String value) 	{ return likeEndsWithIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeEndsWithIfNotEmpty(Entity<?> entity, String attribute, String value) { return notLikeEndsWithIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeEndsWithIfNotBlank 	(Entity<?> entity, String attribute, String value) 	{ return likeEndsWithIfNotBlank(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeEndsWithIfNotBlank(Entity<?> entity, String attribute, String value) { return notLikeEndsWithIfNotBlank(Estivate.attribute(entity, attribute), value); }
 	
 	// Like ends in
-	public static Aggregator likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeEndsWithIn(entity, attribute, values); } return null; }
-	public static Aggregator notLikeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeEndsWith(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator notLikeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ if(values != null && !values.isEmpty()) { return notLikeEndsWithIn(entity, attribute, values); } return null; }
+	public static Aggregator likeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)				{ return likeEndsWithIn(Estivate.attribute(entity, attribute), values);	}
+	public static Aggregator likeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return likeEndsWithInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notLikeEndsWithIn(Entity<?> entity, String attribute, Collection<String> values)			{ return notLikeEndsWithIn(Estivate.attribute(entity, attribute), values);	}
+	public static Aggregator notLikeEndsWithInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notLikeEndsWithInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
 	
 	// Like contains
-	public static Criterion likeContains(Entity<?> entity, String attribute, String value)			{ return likeContains(Estivate.attribute(entity, attribute), value);	}
-	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)		{ return notLikeContains(Estivate.attribute(entity, attribute), value);	}
-	public static Criterion likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) { if(value != null) {return likeContains(entity, attribute, value);} return null; }
-	public static Criterion notLikeContainsIfNotNull(Entity<?> entity, String attribute, String value) { if(value != null) {return notLikeContains(entity, attribute, value);} return null; }
-	public static Criterion likeContainsIfNotEmpty 	(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isEmpty(value)) {return likeContains(entity, attribute, value);} return null; }
-	public static Criterion notLikeContainsIfNotEmpty(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isEmpty(value)) {return notLikeContains(entity, attribute, value);} return null; }
-	public static Criterion likeContainsIfNotBlank 	(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isBlank(value)) {return likeContains(entity, attribute, value);} return null; }
-	public static Criterion notLikeContainsIfNotBlank(Entity<?> entity, String attribute, String value) { if(value != null && !StringUtils.isBlank(value)) {return notLikeContains(entity, attribute, value);} return null; }
+	public static Criterion likeContains(Entity<?> entity, String attribute, String value)				{ return likeContains(Estivate.attribute(entity, attribute), value);	}
+	public static Criterion notLikeContains(Entity<?> entity, String attribute, String value)			{ return notLikeContains(Estivate.attribute(entity, attribute), value);	}
+	public static Criterion likeContainsIfNotNull 	(Entity<?> entity, String attribute, String value) 	{ return likeContainsIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeContainsIfNotNull(Entity<?> entity, String attribute, String value) 	{ return notLikeContainsIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeContainsIfNotEmpty 	(Entity<?> entity, String attribute, String value) 	{ return likeContainsIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeContainsIfNotEmpty(Entity<?> entity, String attribute, String value) { return notLikeContainsIfNotEmpty(Estivate.attribute(entity, attribute), value); }
+	public static Criterion likeContainsIfNotBlank 	(Entity<?> entity, String attribute, String value) 	{ return likeContainsIfNotBlank(Estivate.attribute(entity, attribute), value); }
+	public static Criterion notLikeContainsIfNotBlank(Entity<?> entity, String attribute, String value) { return notLikeContainsIfNotBlank(Estivate.attribute(entity, attribute), value); }
 
 
 	// Like contains in
-	public static Aggregator likeContainsIn(Entity<?> entity, String attribute, Collection<String> values)		{ return or(values.stream().map(x -> likeContains(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator likeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return likeContainsIn(entity, attribute, values); } return null; }
-	public static Aggregator notLikeContainsIn(Entity<?> entity, String attribute, Collection<String> values)	{ return and(values.stream().map(x -> notLikeContains(entity, attribute, x)).collect(Collectors.toList()));	}
-	public static Aggregator notLikeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ if(values != null && !values.isEmpty()) { return notLikeContainsIn(entity, attribute, values); } return null; }
+	public static Aggregator likeContainsIn(Entity<?> entity, String attribute, Collection<String> values)				{ return likeContainsIn(Estivate.attribute(entity, attribute), values);	}
+	public static Aggregator likeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) 	{ return likeContainsInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
+	public static Aggregator notLikeContainsIn(Entity<?> entity, String attribute, Collection<String> values)			{ return notLikeContainsIn(Estivate.attribute(entity, attribute), values);	}
+	public static Aggregator notLikeContainsInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { return notLikeContainsInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
 	
 	// isNull
-	public static Criterion isNull		(Entity<?> entity, String attribute) 						{ return isNull(Estivate.attribute(entity, attribute));}
-	public static Criterion isNotNull	(Entity<?> entity, String attribute) 						{ return isNotNull(Estivate.attribute(entity, attribute));}
-	public static Criterion isTrue		(Entity<?> entity, String attribute) 						{ return isTrue(Estivate.attribute(entity, attribute));}
-	public static Criterion isFalse		(Entity<?> entity, String attribute) 						{ return isFalse(Estivate.attribute(entity, attribute));}
+	public static Criterion isNull		(Entity<?> entity, String attribute) { return isNull(Estivate.attribute(entity, attribute));}
+	public static Criterion isNotNull	(Entity<?> entity, String attribute) { return isNotNull(Estivate.attribute(entity, attribute));}
+	public static Criterion isTrue		(Entity<?> entity, String attribute) { return isTrue(Estivate.attribute(entity, attribute));}
+	public static Criterion isFalse		(Entity<?> entity, String attribute) { return isFalse(Estivate.attribute(entity, attribute));}
 	
 	// natively
 	public static Criterion nativeCriterion (Entity<?> entity, String attribute, String criterion) { return nativeCriterion(Estivate.attribute(entity, attribute), criterion); }

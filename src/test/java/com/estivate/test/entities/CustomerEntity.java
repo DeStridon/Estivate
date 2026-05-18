@@ -25,7 +25,8 @@ import lombok.experimental.SuperBuilder;
 @FieldNameConstants
 @TableIndexes({
 	@TableIndex(type = IndexType.UNIQUE, columns = { @IndexColumn(value = CustomerEntity.Fields.email) }),
-	@TableIndex(columns = { @IndexColumn(value = CustomerEntity.Fields.name) })
+	@TableIndex(columns = { @IndexColumn(value = CustomerEntity.Fields.name) }),
+	@TableIndex(name = "FT_NAME", type = IndexType.FULLTEXT, columns = { @IndexColumn(value = CustomerEntity.Fields.name) })
 })
 public class CustomerEntity extends AbstractEntity{
 

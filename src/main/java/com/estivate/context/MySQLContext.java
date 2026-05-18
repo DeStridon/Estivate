@@ -55,7 +55,11 @@ public class MySQLContext extends Context {
 			List<ResultRow> results = this.fetchListAsResults(statement);
 			List<IndexRow> indexRows = new ArrayList<>();
 			for(ResultRow result : results) {
-				
+				String physicalIndexType = null;
+				if(result.getResultTable().getColumnNames().contains("Index_type")) {
+					physicalIndexType = result.asString("Index_type");
+				}
+
 				IndexRow indexRow = IndexRow.builder()
 					.table(result.asString("Table"))
 					.keyName(result.asString("Key_name"))
@@ -63,6 +67,7 @@ public class MySQLContext extends Context {
 					.seqInIndex(result.asInteger("Seq_in_index"))
 					.columnName(result.asString("Column_name"))
 					.columnLength(result.asInteger("Sub_part"))
+					.physicalIndexType(physicalIndexType)
 					.build();
 			
 				indexRows.add(indexRow);
@@ -76,13 +81,11 @@ public class MySQLContext extends Context {
 
 				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.getColumnName()), x.getColumnLength() != null ? x.getColumnLength() : 0)).collect(Collectors.toList());
 
-				IndexType indexType = IndexType.DEFAULT;
-				if(indexRowMapEntry.getKey().equals("PRIMARY")) {
-					indexType = IndexType.PRIMARY;
-				}
-				else if(!indexRowMapEntry.getValue().get(0).getNonUnique()) {
-					indexType = IndexType.UNIQUE;
-				}
+				IndexRow firstRow = indexRowMapEntry.getValue().get(0);
+				IndexType indexType = resolveIndexType(
+						indexRowMapEntry.getKey(),
+						firstRow.getNonUnique(),
+						firstRow.getPhysicalIndexType());
 				
 				TableIndex ci = Annotations.CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
 				indexes.add(ci);
@@ -91,6 +94,20 @@ public class MySQLContext extends Context {
 		}
 		return indexes;
     }
+
+	/** Maps {@code SHOW INDEX} metadata to {@link IndexType}. Package-private for unit tests. */
+	static IndexType resolveIndexType(String keyName, boolean nonUnique, String physicalIndexType) {
+		if("PRIMARY".equals(keyName)) {
+			return IndexType.PRIMARY;
+		}
+		if(!nonUnique) {
+			return IndexType.UNIQUE;
+		}
+		if(physicalIndexType != null && physicalIndexType.equalsIgnoreCase("FULLTEXT")) {
+			return IndexType.FULLTEXT;
+		}
+		return IndexType.DEFAULT;
+	}
 	
 	@Data
 	@Builder
@@ -103,6 +120,8 @@ public class MySQLContext extends Context {
 		Integer seqInIndex;
 		String columnName; 
 		Integer columnLength;
+		/** MySQL {@code SHOW INDEX} {@code Index_type}: BTREE, HASH, FULLTEXT, SPATIAL, etc. */
+		String physicalIndexType;
 		
 	}
 

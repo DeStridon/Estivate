@@ -858,6 +858,33 @@ public abstract class Context {
 	public abstract List<TableIndex> listIndexes(Class<?> c);
 
 
+	public boolean indexEquals(TableIndex left, TableIndex right) {
+		if(!left.name().toUpperCase().equals(right.name().toUpperCase())) {
+			return false;
+		}
+		if(left.type() != right.type()) {
+			return false;
+		}
+		return indexColumnsEquals(left, right);
+	}
+
+	public boolean indexColumnsEquals(TableIndex left, TableIndex right) {
+		if(left.columns().length != right.columns().length) {
+			return false;
+		}
+		for(int i = 0; i < left.columns().length; i++) {
+			IndexColumn leftColumn = left.columns()[i];
+			IndexColumn rightColumn = right.columns()[i];
+			
+			if(!leftColumn.value().equals(rightColumn.value())) {
+				return false;
+			}
+			if(leftColumn.length() != 0 && rightColumn.length() != 0 && leftColumn.length() != rightColumn.length()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public void dropColumn(Class<?> c, String fieldName) throws Exception {
 		String columnName = nameMapper.mapDatabaseField(fieldName);

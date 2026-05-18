@@ -40,13 +40,16 @@ public class H2Context extends Context {
 		
 		try(Connection connection = datasource.getConnection(); 
 			Statement indexQueryStatement = new Statement(this, connection);
-			Statement indexColumnQueryStatement = new Statement(this, connection); ){
+			Statement indexColumnQueryStatement = new Statement(this, connection);
+			Statement fulltextIndexQueryStatement = new Statement(this, connection); ){
 			
 			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
 			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
-			
+			fulltextIndexQueryStatement.appendQuery("SELECT * FROM FT.INDEXES;").appendQuery("'"+nameMapper.toTableName(c)+"'");
+
 			List<ResultRow> indexResults = fetchListAsResults(indexQueryStatement);
 			List<ResultRow> columnResults = fetchListAsResults(indexColumnQueryStatement);
+			List<ResultRow> fulltextIndexResults = fetchListAsResults(fulltextIndexQueryStatement);
 			
 			for(ResultRow indexResult : indexResults) {
 				List<ResultRow> indexColumnResults = columnResults.stream().filter(x -> x.asString("INDEX_NAME").equals(indexResult.asString("INDEX_NAME"))).collect(Collectors.toList());
@@ -64,9 +67,10 @@ public class H2Context extends Context {
 
 	public IndexType getIndexType(String typeName) {
 		switch(typeName) {
-			case "PRIMARY KEY": return IndexType.PRIMARY;
-			case "UNIQUE INDEX": return IndexType.UNIQUE;
-			default: return IndexType.DEFAULT;
+			case "PRIMARY KEY"	: return IndexType.PRIMARY;
+			case "UNIQUE INDEX"	: return IndexType.UNIQUE;
+			case "FULLTEXT"		: return IndexType.FULLTEXT;
+			default				: return IndexType.DEFAULT;
 		}
 	}
 	
@@ -89,6 +93,41 @@ public class H2Context extends Context {
 		String columnName = nameMapper.mapDatabaseField(fieldName);
 		String tableName = nameMapper.toTableName(c);
 		executeH2AlterTable("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " " + columnType);
+	}
+
+	@SneakyThrows
+	public boolean addIndex(Class<?> c, String name, IndexType type, List<String> columns) {
+
+		if(type == IndexType.FULLTEXT) {
+			try(Connection connection = datasource.getConnection(); 
+			Statement statement = new Statement(this, connection); ){
+				statement.appendQuery("CREATE ALIAS IF NOT EXISTS FT_INIT FOR \"org.h2.fulltext.FullText.init\";");
+				//statement.executeForValidation();
+				
+				//statement = new Statement(this, connection);
+				statement.appendQuery("CALL FT_INIT();");
+				statement.executeForValidation();
+
+				//statement = new Statement(this, connection);
+				statement.appendQuery("CALL FT_CREATE_INDEX('PUBLIC', '"+nameMapper.toTableName(c)+"', '"+columns.stream().collect(Collectors.joining(", "))+"');");
+
+				return statement.executeForValidation();
+			}
+		}
+
+		return super.addIndex(c, name, type, columns);
+
+	}
+
+	@Override
+	public boolean indexEquals(TableIndex left, TableIndex right) {
+		// H2 FULLTEXT indexes are not named, so we compare the columns
+		if(left.type() == IndexType.FULLTEXT && right.type() == IndexType.FULLTEXT) {
+			return indexColumnsEquals(left, right);
+		}
+		else{
+			return super.indexEquals(left, right);
+		}
 	}
 
 

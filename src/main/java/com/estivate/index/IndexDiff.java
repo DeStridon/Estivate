@@ -43,7 +43,7 @@ public class IndexDiff {
 		List<TableIndex> resultIndexes = new ArrayList<>();
 
 		for(TableIndex databaseIndex : databaseIndexes) {
-			TableIndex entityIndex = entityIndexes.stream().filter(x -> indexEquals(x, databaseIndex)).findFirst().orElse(null);
+			TableIndex entityIndex = entityIndexes.stream().filter(x -> context.indexEquals(x, databaseIndex)).findFirst().orElse(null);
 			if(entityIndex == null) {
 				resultIndexes.add(databaseIndex);
 			}
@@ -60,7 +60,7 @@ public class IndexDiff {
 		List<TableIndex> resultIndexes = new ArrayList<>();
 
 		for(TableIndex databaseIndex : databaseIndexes) {
-			TableIndex entityIndex = entityIndexes.stream().filter(x -> !indexEquals(x, databaseIndex) && indexColumnsEquals(x, databaseIndex)).findFirst().orElse(null);
+			TableIndex entityIndex = entityIndexes.stream().filter(x -> !context.indexEquals(x, databaseIndex) && context.indexColumnsEquals(x, databaseIndex)).findFirst().orElse(null);
 			if(entityIndex == null) {
 				resultIndexes.add(databaseIndex);
 			}
@@ -75,8 +75,9 @@ public class IndexDiff {
 		List<TableIndex> databaseIndexes = getDatabaseIndexes();
 		List<TableIndex> resultIndexes = new ArrayList<>();
 		
+		// TODO : handle fulltext indexes for h2
 		for(TableIndex entityIndex : entityIndexes) {
-			TableIndex databaseIndex = databaseIndexes.stream().filter(x -> indexEquals(x, entityIndex)).findFirst().orElse(null);
+			TableIndex databaseIndex = databaseIndexes.stream().filter(x -> context.indexEquals(x, entityIndex)).findFirst().orElse(null);
 			if(databaseIndex == null) {
 				resultIndexes.add(entityIndex);
 			}
@@ -142,30 +143,9 @@ public class IndexDiff {
 	}
 	
 	
-	boolean indexEquals(TableIndex left, TableIndex right) {
-		if(!left.name().toUpperCase().equals(right.name().toUpperCase())) {
-			return false;
-		}
-		return indexColumnsEquals(left, right);
-	}
+
 	
-	boolean indexColumnsEquals(TableIndex left, TableIndex right) {
-		if(left.columns().length != right.columns().length) {
-			return false;
-		}
-		for(int i = 0; i < left.columns().length; i++) {
-			IndexColumn leftColumn = left.columns()[i];
-			IndexColumn rightColumn = right.columns()[i];
-			
-			if(!leftColumn.value().equals(rightColumn.value())) {
-				return false;
-			}
-			if(leftColumn.length() != 0 && rightColumn.length() != 0 && leftColumn.length() != rightColumn.length()) {
-				return false;
-			}
-		}
-		return true;
-	}
+
 
 
 

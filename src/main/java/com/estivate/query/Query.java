@@ -323,6 +323,10 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q likeStartsWithInIfNotEmpty (String attribute, Collection<String> values) { super.likeStartsWithInIfNotEmpty(this.entity, attribute, values); return self(); }
 	public Q likeEndsWithInIfNotEmpty	(String attribute, Collection<String> values) { super.likeEndsWithInIfNotEmpty(this.entity, attribute, values); return self(); }
 	public Q likeContainsInIfNotEmpty	(String attribute, Collection<String> values) { super.likeContainsInIfNotEmpty(this.entity, attribute, values); return self(); }
+
+	public Q likeStartsWithIfNotBlank(String attribute, String value) { super.likeStartsWithIfNotBlank(this.entity, attribute, value); return self(); }
+	public Q likeEndsWithIfNotBlank(String attribute, String value) { super.likeEndsWithIfNotBlank(this.entity, attribute, value); return self(); }
+	public Q likeContainsIfNotBlank(String attribute, String value) { super.likeContainsIfNotBlank(this.entity, attribute, value); return self(); }
 	
 	public Q notLikeIfNotNull 			(String attribute, String value)        	{ super.notLikeIfNotNull (this.entity, attribute, value);  return self(); }
 	public Q notLikeStartsWithIfNotNull (String attribute, String value)        	{ super.notLikeStartsWithIfNotNull (this.entity, attribute, value);  return self(); }
