@@ -487,9 +487,11 @@ public class Estivate {
 
 	
 	public static Criterion lt    	(Class<?> entity, String attribute, Object value)        { return lt(new Entity<>(entity), attribute, value); }
+	public static Criterion ltIfNotNull   	(Class<?> entity, String attribute, Object value) { return ltIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Aggregator ltOrNull(Class<?> entity, String attribute, Object value) { return ltOrNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion lte   	(Class<?> entity, String attribute, Object value)        { return lte(new Entity<>(entity), attribute, value); }
+	public static Criterion lteIfNotNull   	(Class<?> entity, String attribute, Object value) { return lteIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Aggregator lteOrNull(Class<?> entity, String attribute, Object value) { return lteOrNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion gt    	(Class<?> entity, String attribute, Object value)        { return gt(new Entity<>(entity), attribute, value); }
@@ -497,10 +499,12 @@ public class Estivate {
 	public static Criterion gtIfNotNull   	(Class<?> entity, String attribute, Object value) { return gtIfNotNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion gte   	(Class<?> entity, String attribute, Object value)        { return gte(new Entity<>(entity), attribute, value); }
+	public static Criterion gteIfNotNull  	(Class<?> entity, String attribute, Object value) { return gteIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Aggregator gteOrNull(Class<?> entity, String attribute, Object value) { return gteOrNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion between	(Class<?> entity, String attribute, Object left, Object right) { return between(new Entity<>(entity), attribute, left, right); }
-	
+	public static Criterion betweenIfNotNull(Class<?> entity, String attribute, Object min, Object max) { return betweenIfNotNull(new Entity<>(entity), attribute, min, max); }
+
 	public static Criterion in    				(Class<?> entity, String attribute, Collection<?> values) { return in(new Entity<>(entity), attribute, values); }
 	public static Criterion inIfNotEmpty		(Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmpty(new Entity<>(entity), attribute, values); }
 	public static EstivateNode inIfNotEmptyNullable  (Class<?> entity, String attribute, Collection<?> values) { return inIfNotEmptyNullable(new Entity<>(entity), attribute, values); }
@@ -542,14 +546,13 @@ public class Estivate {
 	public static Criterion notLikeContains	(Class<?> entity, String attribute, String value)	{ return notLikeContains(new Entity<>(entity), attribute, value); }
 	public static Criterion likeContainsIfNotNull(Class<?> entity, String attribute, String value)	{ return likeContainsIfNotNull(new Entity<>(entity), attribute, value); }
 	public static Criterion notLikeContainsIfNotNull(Class<?> entity, String attribute, String value)	{ return notLikeContainsIfNotNull(new Entity<>(entity), attribute, value); }
-
+	public static Criterion likeContainsIfNotEmpty(Class<?> entity, String attribute, String value)	{ return likeContainsIfNotEmpty(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeContainsIfNotEmpty(Class<?> entity, String attribute, String value)	{ return notLikeContainsIfNotEmpty(new Entity<>(entity), attribute, value); }
+	public static Criterion likeContainsIfNotBlank(Class<?> entity, String attribute, String value)	{ return likeContainsIfNotBlank(new Entity<>(entity), attribute, value); }
+	public static Criterion notLikeContainsIfNotBlank(Class<?> entity, String attribute, String value)	{ return notLikeContainsIfNotBlank(new Entity<>(entity), attribute, value); }
 	
-	public static Criterion ltIfNotNull   	(Class<?> entity, String attribute, Object value) { return ltIfNotNull(new Entity<>(entity), attribute, value); }
-
-	public static Criterion lteIfNotNull  	(Class<?> entity, String attribute, Object value) { return lteIfNotNull(new Entity<>(entity), attribute, value); }
-	public static Criterion gteIfNotNull  	(Class<?> entity, String attribute, Object value) { return gteIfNotNull(new Entity<>(entity), attribute, value); }
-	public static Criterion betweenIfNotNull(Class<?> entity, String attribute, Object min, Object max) { return betweenIfNotNull(new Entity<>(entity), attribute, min, max); }
-
+	
+	
 	public static Aggregator likeStartsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ return likeStartsWithIn(new Entity<>(entity), attribute, value); }
 	public static Aggregator likeStartsWithInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(new Entity<>(entity), attribute, values);}
 	public static Aggregator notLikeStartsWithIn(Class<?> entity, String attribute, Collection<String> value)	{ return notLikeStartsWithIn(new Entity<>(entity), attribute, value); }
