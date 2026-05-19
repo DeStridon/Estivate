@@ -143,7 +143,7 @@ public class MySQLContext extends Context {
                 type = String.class;
             }
 			else{
-	            type = Integer.class;
+				return "TINYINT";
 			}
         }
 
@@ -163,6 +163,9 @@ public class MySQLContext extends Context {
                 if (columnDef != null && columnDef.trim().equalsIgnoreCase("text")) {
                     return "TEXT";
                 }
+				else if (columnDef != null && columnDef.trim().equalsIgnoreCase("longtext")) {
+					return "LONGTEXT";
+				}
             }
             return "VARCHAR";
         } 
