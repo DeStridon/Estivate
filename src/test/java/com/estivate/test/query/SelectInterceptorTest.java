@@ -1,11 +1,14 @@
 package com.estivate.test.query;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.DeleteQuery;
+import com.estivate.query.InsertQuery;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
 import com.estivate.test.DatabaseGenerator;
@@ -100,12 +103,13 @@ public class SelectInterceptorTest {
 
     @Test
     public void testInsertPreProcessor() {
-        context.insertInterceptor = (object) -> {
-            if(object instanceof CustomerEntity) {
-                CustomerEntity customer = (CustomerEntity) object;
-                // Set a default value during preprocessing
-                if(customer.getName() == null || customer.getName().isEmpty()) {
-                    customer.setName("Default Customer Name");
+        context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
+            if(insertQuery.getEntity() == CustomerEntity.class) {
+                for(CustomerEntity customer : (List<CustomerEntity>) insertQuery.getValues()) {
+                    // Set a default value during preprocessing
+                    if(customer.getName() == null || customer.getName().isEmpty()) {
+                        customer.setName("Default Customer Name");
+                    }
                 }
             }
         };
@@ -198,10 +202,11 @@ public class SelectInterceptorTest {
 
     @Test
     public void testPreProcessorWithInsertQuery() {
-        context.insertInterceptor = (object) -> {
-            if(object instanceof CustomerEntity) {
-                CustomerEntity customer = (CustomerEntity) object;
-                customer.setName("PreProcessed Name");
+        context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
+            if(insertQuery.getEntity() == CustomerEntity.class) {
+                for(CustomerEntity customer : (List<CustomerEntity>) insertQuery.getValues()) {
+                    customer.setName("PreProcessed Name");
+                }
             }
         };
 

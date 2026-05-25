@@ -7,9 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
+import com.estivate.query.InsertQuery;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
-import com.estivate.test.entities.ProductEntity;
 
 public class InsertInterceptorTest {
 
@@ -26,15 +26,18 @@ public class InsertInterceptorTest {
     @Test
     public void testInsertInterceptorWithCollection() {
         // Set up interceptor to add prefix to names
-        context.insertInterceptor = (object) -> {
-            if(object instanceof CustomerEntity) {
-                CustomerEntity customer = (CustomerEntity) object;
-                if(customer.getName() == null || customer.getName().isEmpty()) {
-                    customer.setName("Default Name");
+        context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
+
+            if(insertQuery.getEntity() == CustomerEntity.class) {
+                for(CustomerEntity customer : (List<CustomerEntity>) insertQuery.getValues()) {
+                    if(customer.getName() == null || customer.getName().isEmpty()) {
+                        customer.setName("Default Name");
+                    }
+                    // Add prefix to all names
+                    customer.setName("BATCH_" + customer.getName());
                 }
-                // Add prefix to all names
-                customer.setName("BATCH_" + customer.getName());
             }
+
         };
 
         // Create a list of customers
@@ -86,8 +89,8 @@ public class InsertInterceptorTest {
         // Counter to track interceptor calls
         final int[] interceptorCallCount = {0};
         
-        context.insertInterceptor = (object) -> {
-            if(object instanceof CustomerEntity) {
+        context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
+            if(insertQuery.getEntity() == CustomerEntity.class) {
                 interceptorCallCount[0]++;
             }
         };
@@ -106,10 +109,11 @@ public class InsertInterceptorTest {
 
     @Test
     public void testInsertInterceptorWithNullCollection() {
-        context.insertInterceptor = (object) -> {
-            if(object instanceof CustomerEntity) {
-                CustomerEntity customer = (CustomerEntity) object;
-                customer.setName("Should not be called");
+        context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
+            if(insertQuery.getEntity() == CustomerEntity.class) {
+                for(CustomerEntity customer : (List<CustomerEntity>) insertQuery.getValues()) { 
+                    customer.setName("Should not be called");
+                }
             }
         };
 

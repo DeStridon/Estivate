@@ -2,12 +2,9 @@ package com.estivate.test.reconciliation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -16,10 +13,11 @@ import javax.persistence.Table;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.EstivateReconciliation;
 import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
-import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.reconciliation.ReconciliationManager;
@@ -78,7 +76,9 @@ public class ResolverApplicationTest {
         public void resolve(Context context, AddColumnDelta diff) {
             try{
                 wasCalled = true;
-                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                Estivate.alterQuery(diff.entityClass)
+                    .addColumn(diff.entityColumnDefinition)
+                    .execute(context);
                 diff.closeSolved();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -93,7 +93,9 @@ public class ResolverApplicationTest {
         public void resolve(Context context, AddColumnDelta diff) {
             try{
                 wasCalled = true;
-                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                Estivate.alterQuery(diff.entityClass)
+                    .addColumn(diff.entityColumnDefinition)
+                    .execute(context);
                 diff.closeSolved();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -108,7 +110,9 @@ public class ResolverApplicationTest {
         @Override
         public void resolve(Context context, AddColumnDelta diff) {
             try {
-                context.addColumn(diff.entityClass, diff.tableColumnName, diff.entityColumnDefinition.getColumnType());
+                Estivate.alterQuery(diff.entityClass)
+                    .addColumn(diff.entityColumnDefinition)
+                    .execute(context);
                 diff.closeSolved();
             } catch (Exception e) {
                 e.printStackTrace();

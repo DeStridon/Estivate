@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
 import com.estivate.Entity.InsertDate;
 import com.estivate.Entity.UpdateDate;
@@ -33,14 +36,17 @@ import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexDiff;
+import com.estivate.query.AlterQuery;
 import com.estivate.query.Attribute;
 import com.estivate.query.CreateQuery;
-import com.estivate.query.CreateQuery.ColumnDefinition;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
+import com.estivate.reconciliation.ColumnModel;
+import com.estivate.reconciliation.ColumnModel.EntityColumn;
+import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
@@ -61,7 +67,7 @@ public abstract class Context {
 	public Consumer<SelectQuery<?>> selectInterceptor = null;
 	public Consumer<UpdateQuery<?>> updateInterceptor = null;
 	public Consumer<DeleteQuery<?>> deleteInterceptor = null;
-	public Consumer<Object> 		insertInterceptor = null;
+	public Consumer<InsertQuery<?>> insertInterceptor = null;
 	
 		
 	public Context(DataSource datasource) {
@@ -126,12 +132,17 @@ public abstract class Context {
 		return clonedQuery;
 	}
 
+	private AlterQuery<?> preExecute(AlterQuery<?> query) {
+		AlterQuery<?> clonedQuery = query.clone();
+		return clonedQuery;
+	}
+
 	
 	
 	/**
 	 * Pre-processes an object before insert
 	 */
-	private <U> void preInsert(U object) {
+	private <U> void preInsert(InsertQuery<U> object) {
 		if(insertInterceptor != null) {
 			insertInterceptor.accept(object);
 		}
@@ -150,6 +161,97 @@ public abstract class Context {
 	}
 
 	@SneakyThrows
+	public Boolean execute(AlterQuery<?> query) {
+
+		if(query.getOperations() == null || query.getOperations().isEmpty()) {
+			throw new RuntimeException("ALTER TABLE query must have at least one operation");
+		}
+
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, datasource.getConnection())) {
+
+			statement.appendQuery("ALTER TABLE");
+			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
+			
+			for(Iter8<AlterQuery.Operation> operationIterator : Iter8.from(query.getOperations())) {
+
+				AlterQuery.Operation operation = operationIterator.getValue();
+				
+				if(operation instanceof AlterQuery.AddColumn) {
+					AlterQuery.AddColumn addColumnOperation = (AlterQuery.AddColumn) operation;
+					TableField tableField = getTableField(addColumnOperation.getColumnDefinition());
+					statement.appendQuery("ADD COLUMN");
+					statement.appendQuery(nameMapper.mapDatabaseField(addColumnOperation.getColumnName()));
+					statement.appendQuery(tableField.type);
+					if(tableField.getLength() != null) {
+						statement.appendQuery("(" + tableField.getLength() + ")");
+					}
+					if(!tableField.isNullable()) {
+						statement.appendQuery("NOT NULL");
+					}
+					if(tableField.isAutoIncrement()) {
+						statement.appendQuery("AUTO_INCREMENT");
+					}
+				}
+				else if(operation instanceof AlterQuery.DropColumn) {
+					AlterQuery.DropColumn dropColumnOperation = (AlterQuery.DropColumn) operation;
+					statement.appendQuery("DROP COLUMN");
+					statement.appendQuery(nameMapper.mapDatabaseField(dropColumnOperation.getColumnName()));
+				}
+				else if(operation instanceof AlterQuery.ModifyColumn) {
+					AlterQuery.ModifyColumn modifyColumnOperation = (AlterQuery.ModifyColumn) operation;
+					statement.appendQuery("MODIFY COLUMN");
+					TableField tableField = getTableField(modifyColumnOperation.getColumnDefinition());
+					statement.appendQuery(nameMapper.mapDatabaseField(modifyColumnOperation.getColumnName()));
+					statement.appendQuery(tableField.type);
+					if(tableField.getLength() != null) {
+						statement.appendQuery("(" + tableField.getLength() + ")");
+					}
+					if(!tableField.isNullable()) {
+						statement.appendQuery("NOT NULL");
+					}
+					if(tableField.isAutoIncrement()) {
+						statement.appendQuery("AUTO_INCREMENT");
+					}
+				}
+				else if(operation instanceof AlterQuery.RenameColumn) {
+					statement.appendQuery("RENAME COLUMN");
+					AlterQuery.RenameColumn renameColumnOperation = (AlterQuery.RenameColumn) operation;
+					statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getColumnName()));
+					statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getNewColumnName()));
+				}
+				else if(operation instanceof AlterQuery.AddIndex) {
+					statement.appendQuery("ADD INDEX");
+					AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
+					statement.appendQuery(addIndexOperation.getIndexName());
+					statement.appendQuery("(");
+					statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col)).collect(Collectors.joining(", ")));
+					statement.appendQuery(")");
+				}
+				else if(operation instanceof AlterQuery.DropIndex) {
+					statement.appendQuery("DROP INDEX");
+					AlterQuery.DropIndex dropIndexOperation = (AlterQuery.DropIndex) operation;
+					statement.appendQuery(dropIndexOperation.getIndexName());
+				}
+				else if(operation instanceof AlterQuery.RenameTable) {
+					statement.appendQuery("RENAME TABLE");
+					AlterQuery.RenameTable renameTableOperation = (AlterQuery.RenameTable) operation;
+					statement.appendQuery(renameTableOperation.getNewTableName());
+				}
+				else {
+					throw new RuntimeException("Unsupported operation: " + operation.getClass().getName());
+				}
+				if(!operationIterator.isLast()) {
+					statement.appendQuery(",");
+				}
+			}
+			
+			return statement.executeForValidation();
+
+		}
+	}
+
+	@SneakyThrows
 	public Boolean execute(CreateQuery<?> query) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, datasource.getConnection())) {
@@ -161,48 +263,45 @@ public abstract class Context {
 			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
 			
 			statement.appendQuery(" (");
-			for(int i = 0; i < query.getColumns().size(); i++) {
+			for(Iter8<EntityColumn> entityColumns : Iter8.from(query.getColumns())) {
 			
-				ColumnDefinition columnDefinition = query.getColumns().get(i);
-				statement.appendQuery(nameMapper.mapDatabaseField(columnDefinition.getName()));
+				EntityColumn entityColumn = entityColumns.getValue();
+			
+				TableField tableField = getTableField(entityColumn);
+				statement.appendQuery(tableField.getName());
+				statement.appendQuery(tableField.getType());
 
-				String type = getTypeForColumn(columnDefinition);
-				statement.appendQuery(type);
-
-				if(columnDefinition.length == null) {
-					columnDefinition.length = getDefaultLengthForColumn(type, columnDefinition);
-				}
-				if(columnDefinition.length != null) {
-					statement.appendQuery("(" + columnDefinition.length + ")");
+				if(tableField.getLength() != null) {
+					statement.appendQuery("(" + tableField.getLength() + ")");
 				}
 
 				//statement.appendQuery(columnDefinition.getFullColumnType(this));
-				if (columnDefinition.charset != null) {
-					statement.appendQuery("CHARACTER SET");
-					statement.appendQuery(columnDefinition.charset);
-				}
-				if (columnDefinition.collation != null) {
-					statement.appendQuery("COLLATE");
-					statement.appendQuery(columnDefinition.collation);
-				}
-				if (Boolean.FALSE.equals(columnDefinition.nullable)) {
+				// if (tableField.getCharset() != null) {
+				// 	statement.appendQuery("CHARACTER SET");
+				// 	statement.appendQuery(tableField.getCharset());
+				// }
+				// if (tableField.getCollation() != null) {
+				// 	statement.appendQuery("COLLATE");
+				// 	statement.appendQuery(tableField.getCollation());
+				// }
+				if (Boolean.FALSE.equals(entityColumn.isNullable())) {
 					statement.appendQuery("NOT NULL");
 				}
-				if (columnDefinition.defaultValue != null) {
+				if (entityColumn.getDefaultValue() != null) {
 					statement.appendQuery("DEFAULT");
-					statement.appendQuery(columnDefinition.defaultValue);
+					statement.appendQuery(entityColumn.getDefaultValue());
 				}
-				if (Boolean.TRUE.equals(columnDefinition.autoIncrement)) {
+				if (Boolean.TRUE.equals(entityColumn.isAutoIncrement())) {
 					statement.appendQuery("AUTO_INCREMENT");
 				}
-				if (Boolean.TRUE.equals(columnDefinition.primaryKey)) {
+				if (Boolean.TRUE.equals(entityColumn.isPrimaryKey())) {
 					statement.appendQuery("PRIMARY KEY");
 				}
-				if (columnDefinition.comment != null) {
-					statement.appendQuery("COMMENT");
-					statement.appendQuery("'" + columnDefinition.comment.replace("'", "''") + "'");
-				}
-				if (i < query.getColumns().size() - 1) {
+				// if (entityColumn.getComment() != null) {
+				// 	statement.appendQuery("COMMENT");
+				// 	statement.appendQuery("'" + entityColumn.getComment().replace("'", "''") + "'");
+				// }
+				if(!entityColumns.isLast()){
 					statement.appendQuery(",");
 				}
 			}
@@ -218,6 +317,8 @@ public abstract class Context {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 	
+			preInsert(query);
+
 			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
 			
 			query.getFields().stream().forEach(x -> x.setAccessible(true));
@@ -225,21 +326,161 @@ public abstract class Context {
 			String valuesString = query.getFields().stream().map(x -> "?").collect(Collectors.joining(", "));
 			statement.appendQuery("(", columnsString, ") VALUES ");
 
-			for(int i = 0; i < query.getValues().size(); i++) {
+			for(T value : query.getValues()) {
+				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PrePersist.class);
+				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PrePersist.class);
+			}
+
+			for(Iter8<T> valueIterator : Iter8.from(query.getValues())) {
 				statement.appendQuery("(", valuesString, ")");
 				for(Field field : query.getFields()) {
-					statement.appendObjectAsValue(query.getValues().get(i).getClass(), field.getName(), field.get(query.getValues().get(i)));
+					statement.appendObjectAsValue(valueIterator.getValue().getClass(), field.getName(), field.get(valueIterator.getValue()));
 				}
-				if(i < query.getValues().size() - 1) {
+				if(!valueIterator.isLast()) {
 					statement.appendQuery(",");
 				}
 			}
 			
-			statement.executeForValidation();
 			
+			try(ResultSet resultSet = statement.executeForGeneratedKeys()){
+				// TODO : handle other types of generated keys
+				List<Long> generatedKeys = new ArrayList<>();
+				while(resultSet.next()) {
+					generatedKeys.add(resultSet.getLong(1));
+				}
+				if(generatedKeys.size() == query.getValues().size() && query.getIdField() != null) {
+					for(int i = 0; i < query.getValues().size(); i++) {
+						if(query.getIdField().getType() == long.class) {
+							query.getIdField().setLong(query.getValues().get(i), generatedKeys.get(i));
+						} 
+						else if(query.getIdField().getType() == Long.class) {
+							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i));
+						} 
+						else if(query.getIdField().getType() == int.class) {
+							query.getIdField().setInt(query.getValues().get(i), generatedKeys.get(i).intValue());
+						}
+						else if(query.getIdField().getType() == Integer.class) {
+							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i).intValue());
+						}
+						else if(query.getIdField().getType() == short.class) {
+							query.getIdField().setShort(query.getValues().get(i), generatedKeys.get(i).shortValue());
+						}
+						else if(query.getIdField().getType() == Short.class) {
+							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i).shortValue());
+						}
+						else {
+							throw new IllegalStateException("ID field must be of type long or Long, but found: " + query.getIdField().getType());
+						}
+						query.getIdField().set(query.getValues().get(i), generatedKeys.get(i));
+					}
+				}
+
+
+			}
+
+			// Post Persist
+			for(T value : query.getValues()) {
+				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PostPersist.class);
+				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PostPersist.class);
+			}
+
 		}
 		
 	}
+
+	// ==================== PERSISTENCE METHODS ====================
+		
+	@SneakyThrows
+	public <U> void insert(U object) {
+
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){	
+			
+
+			InsertQuery<U> insertQuery = Estivate.insertQuery((Class<U>) object.getClass());
+			insertQuery.value(object);
+			execute(insertQuery);
+
+			// preInsert(insertQuery);
+			
+			// FieldUtils.invokeLifecycleMethods(object, javax.persistence.PrePersist.class);
+			// FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PrePersist.class);
+
+			// List<String> fieldValueList = new ArrayList<>();
+			
+			// statement.appendQuery("INSERT INTO ")
+			// 		.appendQuery(nameMapper.toTableName(object.getClass()));
+			
+			
+			// for(Field field : FieldUtils.getEntityFields(object.getClass())) {
+			// 	field.setAccessible(true);
+			// 	// Skip Id, will be auto generated by db
+			// 	if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
+			// 		continue;
+			// 	}
+			// 	else if(field.isAnnotationPresent(InsertDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+			// 		field.set(object, new Date());
+			// 	}
+				
+			// 	try {
+					
+			// 		if(field.get(object) == null) {
+			// 			continue;
+			// 		}
+					
+			// 		fieldValueList.add(nameMapper.mapDatabaseField(field.getName()));
+			// 		statement.appendObjectAsValue(object.getClass(), field.getName(), field.get(object));
+					
+			// 	}
+			// 	catch(Exception e) {
+			// 		log.error("Cannot map field "+field.getName(), e);
+			// 		throw e;
+			// 	}
+				
+			// }
+					
+			// statement.appendQuery("(")
+			// 		.appendQuery(fieldValueList.stream().collect(Collectors.joining(", ")))
+			// 		.appendQuery(") VALUES (")
+			// 		.appendQuery(fieldValueList.stream().map(x -> "?").collect(Collectors.joining(", ")))
+			// 		.appendQuery(")");
+			
+			// try(ResultSet rs = statement.executeForGeneratedKeys()){
+			// 	if (rs.next()) {
+			// 		Field field = FieldUtils.getIdField(object.getClass());
+			// 		field.setAccessible(true);
+			// 		long generatedId = rs.getLong(1);
+					
+			// 		// Handle both primitive long and wrapper Long types
+			// 		if (field.getType() == long.class) {
+			// 			field.setLong(object, generatedId);
+			// 		} else if (field.getType() == Long.class) {
+			// 			field.set(object, generatedId);
+			// 		} else {
+			// 			throw new IllegalStateException("ID field must be of type long or Long, but found: " + field.getType());
+			// 		}
+			// 	}
+				
+			// 	// FieldUtils.invokeLifecycleMethods(object, javax.persistence.PostPersist.class);
+			// 	// FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PostPersist.class);
+				
+			// }
+		}
+	}
+
+
+	@SneakyThrows
+	public <T> void insert(Collection<T> entities) {
+		if(entities != null) {
+			for(T entity : entities) {
+				insert(entity);
+			}
+		}
+	}
+
+	
+
+
 	
 	
 	
@@ -429,90 +670,7 @@ public abstract class Context {
 		return map;
 	}
 	
-	// ==================== PERSISTENCE METHODS ====================
-		
-	@SneakyThrows
-	public <U> void insert(U object) {
-
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){	
-			
-			preInsert(object);
-			
-			FieldUtils.invokeLifecycleMethods(object, javax.persistence.PrePersist.class);
-			FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PrePersist.class);
-
-			List<String> fieldValueList = new ArrayList<>();
-			
-			statement.appendQuery("INSERT INTO ")
-					.appendQuery(nameMapper.toTableName(object.getClass()));
-			
-			
-			for(Field field : FieldUtils.getEntityFields(object.getClass())) {
-				field.setAccessible(true);
-				// Skip Id, will be auto generated by db
-				if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
-					continue;
-				}
-				else if(field.isAnnotationPresent(InsertDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
-					field.set(object, new Date());
-				}
-				
-				try {
-					
-					if(field.get(object) == null) {
-						continue;
-					}
-					
-					fieldValueList.add(nameMapper.mapDatabaseField(field.getName()));
-					statement.appendObjectAsValue(object.getClass(), field.getName(), field.get(object));
-					
-				}
-				catch(Exception e) {
-					log.error("Cannot map field "+field.getName(), e);
-					throw e;
-				}
-				
-			}
-					
-			statement.appendQuery("(")
-					.appendQuery(fieldValueList.stream().collect(Collectors.joining(", ")))
-					.appendQuery(") VALUES (")
-					.appendQuery(fieldValueList.stream().map(x -> "?").collect(Collectors.joining(", ")))
-					.appendQuery(")");
-			
-			try(ResultSet rs = statement.executeForGeneratedKeys()){
-				if (rs.next()) {
-					Field field = FieldUtils.getIdField(object.getClass());
-					field.setAccessible(true);
-					long generatedId = rs.getLong(1);
-					
-					// Handle both primitive long and wrapper Long types
-					if (field.getType() == long.class) {
-						field.setLong(object, generatedId);
-					} else if (field.getType() == Long.class) {
-						field.set(object, generatedId);
-					} else {
-						throw new IllegalStateException("ID field must be of type long or Long, but found: " + field.getType());
-					}
-				}
-				
-				FieldUtils.invokeLifecycleMethods(object, javax.persistence.PostPersist.class);
-				FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PostPersist.class);
-				
-			}
-		}
-	}
-
-
-	@SneakyThrows
-	public <T> void insert(Collection<T> entities) {
-		if(entities != null) {
-			for(T entity : entities) {
-				insert(entity);
-			}
-		}
-	}
+	
 
 	
 
@@ -895,16 +1053,16 @@ public abstract class Context {
 		}
 	}
 
-	// TODO : remove
-	public void addColumn(Class<?> c, String fieldName, String columnType) throws Exception {
-		// TODO : use ColumnDefinition
-		String columnName = nameMapper.mapDatabaseField(fieldName);
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
-			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" ADD COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
-			statement.executeForValidation();
-		}
-	}
+	// // TODO : remove
+	// public void addColumn(Class<?> c, String fieldName, String columnType) throws Exception {
+	// 	// TODO : use ColumnDefinition
+	// 	String columnName = nameMapper.mapDatabaseField(fieldName);
+	// 	try(Connection connection = datasource.getConnection();
+	// 		Statement statement = new Statement(this, connection); ){
+	// 		statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" ADD COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
+	// 		statement.executeForValidation();
+	// 	}
+	// }
 
 	public void changeColumn(Class<?> c, String fieldName, String columnType) throws Exception {
 		String columnName = nameMapper.mapDatabaseField(fieldName);
@@ -926,15 +1084,80 @@ public abstract class Context {
 		}
 	}
 
-	@Deprecated
-	abstract public String javaTypeToSqlType(Field field);
 	
-	@Deprecated
-	public Integer getDefaultLength(String columnType) { return null; }
-
-	abstract public String getTypeForColumn(ColumnDefinition columnDefinition);
-	abstract public Integer getDefaultLengthForColumn(String type, ColumnDefinition columnDefinition);
+	abstract public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn);
 
 
+
+	public static ColumnModel.EntityColumn getEntityColumn(Field entityField) {
+		ColumnModel.EntityColumn entityColumn = new ColumnModel.EntityColumn();
+		entityColumn.setName(entityField.getName());
+		entityColumn.setType(entityField.getType());
+
+		// Primary key
+		if(entityField.isAnnotationPresent(javax.persistence.Id.class) || entityField.isAnnotationPresent(jakarta.persistence.Id.class)){
+			entityColumn.setPrimaryKey(true);
+		}
+
+		if(FieldUtils.isAutoIncrement(entityField)) {
+			entityColumn.setAutoIncrement(true);
+		}
+		
+
+		javax.persistence.Column javaxColumn = entityField.getDeclaredAnnotation(javax.persistence.Column.class);
+		jakarta.persistence.Column jakartaColumn = entityField.getDeclaredAnnotation(jakarta.persistence.Column.class);
+		if (javaxColumn != null || jakartaColumn != null) {
+			String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
+			Integer columnLength = javaxColumn != null ? javaxColumn.length() : jakartaColumn.length();
+			entityColumn.setDesignedType(columnDef);
+			entityColumn.setDesignedLength(columnLength);
+		}
+
+		if (entityField.getDeclaredAnnotation(javax.persistence.Convert.class) != null || entityField.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+			entityColumn.setType(String.class);
+		}
+
+		// Handle enums
+		if (entityField.getType().isEnum()) {
+			if (FieldUtils.isEnumeratedAsString(entityField)) {
+				String enumValues = Arrays.stream(entityField.getType().getEnumConstants())
+						.map(c -> "'" + ((Enum<?>) c).name() + "'")
+						.collect(Collectors.joining(","));
+				entityColumn.setDesignedType("ENUM(" + enumValues + ")");
+			}
+			else{
+				entityColumn.setDesignedType("TINYINT");
+			}
+		}
+
+		
+
+		return entityColumn;
+	}
+
+	public TableField getTableField(ColumnModel.EntityColumn entityColumn) {
+		if(StringUtils.isEmpty(entityColumn.getDesignedType())) {
+			ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
+			return TableField.builder()
+				.name(nameMapper.mapDatabaseField(entityColumn.getName()))
+				.type(columnFormat.getType())
+				.length(columnFormat.getLength())
+				.nullable(entityColumn.isNullable())
+				.autoIncrement(entityColumn.isAutoIncrement())
+				.build();
+		}
+		return TableField.builder()
+			.name(nameMapper.mapDatabaseField(entityColumn.getName()))
+			.type(entityColumn.getDesignedType())
+			.length(entityColumn.getDesignedLength())
+			.nullable(entityColumn.isNullable())
+			.autoIncrement(entityColumn.isAutoIncrement())
+			.build();
+	}
+
+	public TableField getTableField(Field entityField) {
+		return getTableField(getEntityColumn(entityField));
+	}
+		
 	
 }

@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.query.CreateQuery;
-import com.estivate.query.CreateQuery.ColumnDefinition;
+import com.estivate.reconciliation.ColumnModel;
 import com.estivate.result.ResultRow;
 import com.estivate.util.FieldUtils;
 
@@ -126,101 +127,30 @@ public class MySQLContext extends Context {
 	}
 
 
-	/**
-     * Converts Java field type to SQL type string
-     */
-    public String javaTypeToSqlType(Field field) {
-        Class<?> type = field.getType();
-
-        // Check for @Convert annotation
-        if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-            type = String.class;
-        }
-
-        // Handle enums
-        if (type.isEnum()) {
-            if (FieldUtils.isEnumeratedAsString(field)) {
-                type = String.class;
-            }
-			else{
-				return "TINYINT";
-			}
-        }
-
-        // Primitive types and wrappers
-        if (type == Integer.class || type == int.class) return "INT";
-        if (type == Long.class || type == long.class) return "BIGINT";
-        if (type == Short.class || type == short.class) return "SMALLINT";
-        if (type == Byte.class || type == byte.class) return "TINYINT";
-        if (type == Float.class || type == float.class) return "FLOAT";
-        if (type == Double.class || type == double.class) return "DOUBLE";
-        if (type == Boolean.class || type == boolean.class) return "BOOLEAN";
-        if (type == String.class) {
-            javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
-            jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
-            if (javaxColumn != null || jakartaColumn != null) {
-                String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
-                if (columnDef != null && columnDef.trim().equalsIgnoreCase("text")) {
-                    return "TEXT";
-                }
-				else if (columnDef != null && columnDef.trim().equalsIgnoreCase("longtext")) {
-					return "LONGTEXT";
-				}
-            }
-            return "VARCHAR";
-        } 
-        if (type == Date.class || type == java.sql.Date.class) return "DATETIME";
-        if (type == LocalDateTime.class) return "DATETIME";
-        if (type == LocalDate.class) return "DATE";
-        if (type == byte[].class) return "BLOB";
-
-        return "VARCHAR"; // Default fallback
-    }
-
-
 	
-	@Override
-	public Integer getDefaultLength(String columnType) {
-		if(columnType.equalsIgnoreCase("VARCHAR")) {
-			return 255;
-		}
-		return null; 
-	}
-
-	@Override
-	public String getTypeForColumn(CreateQuery.ColumnDefinition columnDefinition) {
 
 
-		if(columnDefinition.getExplicitType() != null) {
-			return columnDefinition.getExplicitType();
-		}
 
-		// Primitive types and wrappers
-        if (columnDefinition.getType() == Integer.class || columnDefinition.getType() == int.class) return "INT";
-        if (columnDefinition.getType() == Long.class || columnDefinition.getType() == long.class) return "BIGINT";
-        if (columnDefinition.getType() == Short.class || columnDefinition.getType() == short.class) return "SMALLINT";
-        if (columnDefinition.getType() == Byte.class || columnDefinition.getType() == byte.class) return "TINYINT";
-        if (columnDefinition.getType() == Float.class || columnDefinition.getType() == float.class) return "FLOAT";
-        if (columnDefinition.getType() == Double.class || columnDefinition.getType() == double.class) return "DOUBLE";
-        if (columnDefinition.getType() == Boolean.class || columnDefinition.getType() == boolean.class) return "BOOLEAN";
-		if (columnDefinition.getType() == String.class) return "VARCHAR"; 
-        if (columnDefinition.getType() == Date.class || columnDefinition.getType() == java.sql.Date.class) return "DATETIME";
-        if (columnDefinition.getType() == LocalDateTime.class) return "DATETIME";
-        if (columnDefinition.getType() == LocalDate.class) return "DATE";
-        if (columnDefinition.getType() == byte[].class) return "BLOB";
-
-		return "VARCHAR"; // Default fallback
-
-	}
 
 
 
 	@Override
-	public Integer getDefaultLengthForColumn(String type, ColumnDefinition columnDefinition) {
-		if(type.equalsIgnoreCase("VARCHAR")) {
-			return 255;
-		}
-		return null; 
+	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
+		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INT");
+        if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("BIGINT");
+        if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("SMALLINT");
+        if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT");
+        if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT");
+        if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE");
+		if (entityColumn.getType() == java.math.BigDecimal.class) return new ColumnModel.ColumnFormat("DECIMAL");
+        if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN");
+		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("VARCHAR", 255); 
+        if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("DATETIME");
+		if (entityColumn.getType() == java.sql.Timestamp.class) return new ColumnModel.ColumnFormat("DATETIME");
+        if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("DATETIME");
+        if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE");
+        if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
+		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
 	}
 	
 

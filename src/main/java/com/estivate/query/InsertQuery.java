@@ -14,17 +14,16 @@ import com.estivate.util.FieldUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
+@Getter
 public class InsertQuery<E> {
 
-    @Getter
     private final Class<E> entity;
 
-    @Getter
     private List<E> values = new ArrayList<>();
 
-    @Getter
     private final Set<Field> fields;
 
+    private Field idField;
 
     public InsertQuery(Class<E> entity) {
         this.entity = entity;
@@ -32,6 +31,10 @@ public class InsertQuery<E> {
 
         for(Field field : FieldUtils.getEntityFields(entity)) {
             if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
+                if(idField != null) {
+                    throw new IllegalArgumentException("Multiple id fields found for entity: " + entity.getName());
+                }
+                idField = field;
                 continue;
             }
             field.setAccessible(true);

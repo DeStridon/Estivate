@@ -8,12 +8,13 @@ import java.util.stream.Collectors;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
+import com.estivate.reconciliation.ColumnModel;
+import com.estivate.reconciliation.ColumnModel.EntityColumn;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 public class CreateQuery<E> {
 
@@ -25,7 +26,7 @@ public class CreateQuery<E> {
     private List<String> comments = new ArrayList<>();
 
     @Getter
-    private List<ColumnDefinition> columns = new ArrayList<>();
+    private List<EntityColumn> columns = new ArrayList<>();
     
     @Getter
     private PrimaryKey primaryKey;
@@ -57,11 +58,11 @@ public class CreateQuery<E> {
     public CreateQuery(Class<E> entity) { 
         this.entity = entity;
 		for(Field field : FieldUtils.getEntityFields(entity)) {
-			column(ColumnDefinition.fromField(field));
+			column(Context.getEntityColumn(field));
 		}
     }
 
-    public CreateQuery<E> column(ColumnDefinition column) {  columns.add(column); return this; }
+    public CreateQuery<E> column(ColumnModel.EntityColumn column) {  columns.add(column); return this; }
     public CreateQuery<E> primaryKey(String... columns) {  this.primaryKey = new PrimaryKey(columns); return this; }
     public CreateQuery<E> primaryKey(List<String> columns) {  this.primaryKey = new PrimaryKey(columns); return this; }
     public CreateQuery<E> primaryKey(PrimaryKey primaryKey) { this.primaryKey = primaryKey; return this; }
@@ -127,74 +128,74 @@ public class CreateQuery<E> {
     /**
      * Column definition containing type, constraints, and encoding information
      */
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ColumnDefinition {
+    // @Getter
+    // @NoArgsConstructor
+    // @AllArgsConstructor
+    // public static class ColumnDefinition {
         
-        public String name;
-        public Class<?> type;
-        public String explicitType;
-        public Integer length;
-        public Boolean nullable;
-        public String defaultValue;
-        public Boolean autoIncrement;
-        public String charset;
-        public String collation;
-        public Boolean primaryKey;
-        public String comment;
+    //     public String name;
+    //     public Class<?> type;
+    //     public String explicitType;
+    //     public Integer length;
+    //     public Boolean nullable;
+    //     public String defaultValue;
+    //     public Boolean autoIncrement;
+    //     public String charset;
+    //     public String collation;
+    //     public Boolean primaryKey;
+    //     public String comment;
         
         
-        public static ColumnDefinition fromField(Field field) {
-            ColumnDefinition columnDefinition = new ColumnDefinition();
-            columnDefinition.name = field.getName();
+    //     public static ColumnDefinition fromField(Field field) {
+    //         ColumnDefinition columnDefinition = new ColumnDefinition();
+    //         columnDefinition.name = field.getName();
 
-            Class<?> type = field.getType();
+    //         Class<?> type = field.getType();
 
-            // Check for @Convert annotation
-            if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-                columnDefinition.type = String.class;
-            }
-            // Handle enums
-            else if (type.isEnum()) {
-                columnDefinition.type = FieldUtils.isEnumeratedAsString(field) ? String.class : Integer.class;
-            }
-            else{
-                columnDefinition.type = type;
-            }
+    //         // Check for @Convert annotation
+    //         if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+    //             columnDefinition.type = String.class;
+    //         }
+    //         // Handle enums
+    //         else if (type.isEnum()) {
+    //             columnDefinition.type = FieldUtils.isEnumeratedAsString(field) ? String.class : Integer.class;
+    //         }
+    //         else{
+    //             columnDefinition.type = type;
+    //         }
 
-            columnDefinition.explicitType = FieldUtils.readFieldForExplicitType(field);
+    //         columnDefinition.explicitType = FieldUtils.readFieldForExplicitType(field);
 
-            columnDefinition.length = FieldUtils.readFieldForLength(field);
-            columnDefinition.nullable = FieldUtils.isNullable(field);
-            columnDefinition.defaultValue = FieldUtils.extractDefaultValue(field);
-            columnDefinition.autoIncrement = FieldUtils.isAutoIncrement(field);
-            columnDefinition.primaryKey = field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class);
+    //         columnDefinition.length = FieldUtils.readFieldForLength(field);
+    //         columnDefinition.nullable = FieldUtils.isNullable(field);
+    //         columnDefinition.defaultValue = FieldUtils.extractDefaultValue(field);
+    //         columnDefinition.autoIncrement = FieldUtils.isAutoIncrement(field);
+    //         columnDefinition.primaryKey = field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class);
 			
-            return columnDefinition;
-        }
+    //         return columnDefinition;
+    //     }
         
-        // /**
-        //  * Builds the full SQL column type string including length if applicable
-        //  * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
-        //  */
-        // public String getFullColumnType(Context context) {
-        //     if (type == null) {
-        //         return null;
-        //     }
+    //     // /**
+    //     //  * Builds the full SQL column type string including length if applicable
+    //     //  * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
+    //     //  */
+    //     // public String getFullColumnType(Context context) {
+    //     //     if (type == null) {
+    //     //         return null;
+    //     //     }
 
-        //     if(length == null){
-        //         length = context.getDefaultLength(type);
-        //     }
+    //     //     if(length == null){
+    //     //         length = context.getDefaultLength(type);
+    //     //     }
             
-        //     if (length != null) {
-        //         return type + "(" + length + ")";
-        //     }
+    //     //     if (length != null) {
+    //     //         return type + "(" + length + ")";
+    //     //     }
             
-        //     return type;
-        // }
+    //     //     return type;
+    //     // }
         
-    }
+    // }
 
     /**
      * Represents a column to be created in the table

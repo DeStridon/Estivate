@@ -103,7 +103,7 @@ public class EstivateReconciliation {
         public Class<?> entityClass;
         public Field entityField;
         public String tableColumnName;
-        public AlterQuery.ColumnDefinition entityColumnDefinition;
+        public ColumnModel.EntityColumn entityColumnDefinition;
         public EntityModel tableModel;
     }
 
@@ -126,38 +126,38 @@ public class EstivateReconciliation {
         public Class<?> entityClass;
         public Field entityField;
         //public String tableColumnName;
-        public AlterQuery.ColumnDefinition entityDefinition;
-        public AlterQuery.ColumnDefinition databaseDefinition;
+        public TableField projectedDefinition;
+        public TableField databaseDefinition;
 
         public boolean hasTypeMismatch() {
-            if (entityDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(entityDefinition.columnType, databaseDefinition.columnType);
+            if (projectedDefinition == null || databaseDefinition == null) return false;
+            return !java.util.Objects.equals(projectedDefinition.type, databaseDefinition.type);
         }
         
         public boolean hasLengthMismatch() {
-            if (entityDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(entityDefinition.length, databaseDefinition.length);
+            if (projectedDefinition == null || databaseDefinition == null) return false;
+            return !java.util.Objects.equals(projectedDefinition.length, databaseDefinition.length);
         }
         
         public boolean hasNullableMismatch() {
-            if (entityDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(entityDefinition.nullable, databaseDefinition.nullable);
+            if (projectedDefinition == null || databaseDefinition == null) return false;
+            return !java.util.Objects.equals(projectedDefinition.nullable, databaseDefinition.nullable);
         }
         
         public boolean hasDefaultValueMismatch() {
-            if (entityDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(entityDefinition.defaultValue, databaseDefinition.defaultValue);
+            if (projectedDefinition == null || databaseDefinition == null) return false;
+            return !java.util.Objects.equals(projectedDefinition.defaultValue, databaseDefinition.defaultValue);
         }
         
-        public boolean hasCharsetMismatch() {
-            if (entityDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(entityDefinition.charset, databaseDefinition.charset);
-        }
+        // public boolean hasCharsetMismatch() {
+        //     if (projectedDefinition == null || databaseDefinition == null) return false;
+        //     return !java.util.Objects.equals(projectedDefinition.charset, databaseDefinition.charset);
+        // }
         
-        public boolean hasCollationMismatch() {
-            if (entityDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(entityDefinition.collation, databaseDefinition.collation);
-        }
+        // public boolean hasCollationMismatch() {
+        //     if (projectedDefinition == null || databaseDefinition == null) return false;
+        //     return !java.util.Objects.equals(projectedDefinition.collation, databaseDefinition.collation);
+        // }
 
         public List<String> getMismatches() {
             List<String> mismatches = new ArrayList<>();
@@ -165,8 +165,8 @@ public class EstivateReconciliation {
             if (hasLengthMismatch()) mismatches.add("Length");
             if (hasNullableMismatch()) mismatches.add("Nullable");
             if (hasDefaultValueMismatch()) mismatches.add("DefaultValue");
-            if (hasCharsetMismatch()) mismatches.add("Charset");
-            if (hasCollationMismatch()) mismatches.add("Collation");
+            // if (hasCharsetMismatch()) mismatches.add("Charset");
+            // if (hasCollationMismatch()) mismatches.add("Collation");
             return mismatches;
         }
     }

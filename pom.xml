@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.28</version>
+			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -78,6 +78,11 @@
 		    <groupId>com.github.DeStridon</groupId>
 		    <artifactId>RegexBuilder</artifactId>
 		    <version>alpha-2024.01.10</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.github.DeStridon</groupId>
+		    <artifactId>Iter8</artifactId>
+		    <version>alpha-2026.05.24</version>
 		</dependency>
 		
 		<dependency>
