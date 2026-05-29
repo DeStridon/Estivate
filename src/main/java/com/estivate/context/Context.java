@@ -46,6 +46,7 @@ import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
 import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
+import com.estivate.reconciliation.EntityModel;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
@@ -1102,7 +1103,8 @@ public abstract class Context {
 		if(FieldUtils.isAutoIncrement(entityField)) {
 			entityColumn.setAutoIncrement(true);
 		}
-		
+
+		entityColumn.setNullable(FieldUtils.isNullable(entityField));
 
 		javax.persistence.Column javaxColumn = entityField.getDeclaredAnnotation(javax.persistence.Column.class);
 		jakarta.persistence.Column jakartaColumn = entityField.getDeclaredAnnotation(jakarta.persistence.Column.class);
@@ -1158,6 +1160,44 @@ public abstract class Context {
 	public TableField getTableField(Field entityField) {
 		return getTableField(getEntityColumn(entityField));
 	}
-		
+
+	public abstract EntityModel scanDatabaseTable(String tableName);
+	
+	protected String extractColumnType(String columnType) {
+        if (columnType == null) return null;
+        String upper = columnType.toUpperCase().trim();
+        if (upper.startsWith("VARCHAR")) {
+            return "VARCHAR";
+        }
+        // Normalize BIT(1) to BOOLEAN so entity boolean matches DB (avoids false positive mismatch)
+        if (upper.startsWith("BIT(") || "BIT".equals(upper)) {
+            return "BOOLEAN";
+        }
+        return columnType;
+    }
+
+	/**
+     * Extracts length from SQL type (e.g., VARCHAR(255) -> 255)
+     */
+	protected Integer extractLength(String sqlType) {
+		if (sqlType == null || !sqlType.contains("(")) {
+			return null;
+		}
+		try {
+			int start = sqlType.indexOf("(") + 1;
+			int end = sqlType.indexOf(")");
+			if (end > start) {
+				String lengthStr = sqlType.substring(start, end);
+				// Handle cases like DECIMAL(10,2)
+				if (lengthStr.contains(",")) {
+					lengthStr = lengthStr.split(",")[0];
+				}
+				return Integer.parseInt(lengthStr.trim());
+			}
+		} catch (NumberFormatException e) {
+			// Ignore parsing errors
+		}
+		return null;
+	}
 	
 }

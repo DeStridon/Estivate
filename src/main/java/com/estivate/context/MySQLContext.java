@@ -1,12 +1,11 @@
 package com.estivate.context;
 
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +19,10 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.query.CreateQuery;
 import com.estivate.reconciliation.ColumnModel;
+import com.estivate.reconciliation.EntityModel;
+import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
-import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -152,6 +151,58 @@ public class MySQLContext extends Context {
         if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
 		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
 	}
+
+
+	/**
+     * Queries the database to get the actual table structure
+     */
+    @SneakyThrows
+    public EntityModel scanDatabaseTable(String tableName) {
+        EntityModel model = EntityModel.builder()
+            .tableName(tableName)
+            .build();
+
+        try (Connection connection = datasource.getConnection();
+             Statement statement = new Statement(this, connection)) {
+
+            statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(tableName);
+            
+            try (ResultSet resultSet = statement.executeForResultSet()) {
+                while (resultSet.next()) {
+                    String columnName = resultSet.getString("Field");
+                    String columnType = resultSet.getString("Type");
+                    String nullableStr = resultSet.getString("Null");
+                    String defaultValue = resultSet.getString("Default");
+                    // H2 doesn't have "Extra" column, so we need to handle it gracefully
+                    String extra = null;
+                    try {
+                        extra = resultSet.getString("Extra");
+                    } catch (Exception e) {
+                        // H2 doesn't support Extra column, check auto_increment from column type or other means
+                        // For H2, we can check if the column type contains AUTO_INCREMENT or check the default
+                    }
+
+                    // Convert database column name back to entity field name
+
+
+                    TableField tableField = TableField.builder()
+                        .name(columnName)
+                        .type(extractColumnType(columnType))
+                        .nullable("YES".equalsIgnoreCase(nullableStr))
+                        .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
+                        .defaultValue(defaultValue)
+                        .length(extractLength(columnType))
+                        .build();
+
+                    model.getFields().add(tableField);
+                }
+            }
+        }
+
+        return model;
+    }
+
+	
 	
 
 }

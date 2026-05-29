@@ -39,7 +39,7 @@ public class IndexTest {
 		
 		System.out.println(indexes);
 		
-	}
+	} 
 	
 	@Test
 	public void entityIndexTest() {

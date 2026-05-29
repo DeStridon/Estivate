@@ -1,7 +1,6 @@
 package com.estivate.context;
 
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,8 +16,9 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.query.CreateQuery;
 import com.estivate.reconciliation.ColumnModel;
+import com.estivate.reconciliation.EntityModel;
+import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 
 import lombok.SneakyThrows;
@@ -217,5 +217,70 @@ public class H2Context extends Context {
 		if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
 		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
 	}
+
+	@SneakyThrows
+	private List<TableField> fetchInformationSchemaColumns(String tableName) {
+		try (Connection connection = datasource.getConnection();
+				Statement statement = new Statement(this, connection)) {
+
+			statement.appendQuery(
+					"SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, "
+							+ "NUMERIC_PRECISION, NUMERIC_SCALE, IS_IDENTITY, IDENTITY_GENERATION "
+							+ "FROM INFORMATION_SCHEMA.COLUMNS "
+							+ "WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = '" + tableName + "' ORDER BY ORDINAL_POSITION");
+
+			return fetchListAsResults(statement).stream()
+					.map(this::toTableField)
+					.collect(Collectors.toList());
+		}
+	}
+
+	private TableField toTableField(ResultRow row) {
+		String dataType = row.asString("DATA_TYPE");
+		Integer characterMaximumLength = row.asInteger("CHARACTER_MAXIMUM_LENGTH");
+		Integer numericPrecision = row.asInteger("NUMERIC_PRECISION");
+		Integer numericScale = row.asInteger("NUMERIC_SCALE");
+		boolean identity = "YES".equalsIgnoreCase(row.asString("IS_IDENTITY"));
+		String columnType = formatColumnType(dataType, characterMaximumLength, numericPrecision, numericScale);
+
+		return TableField.builder()
+				.name(row.asString("COLUMN_NAME"))
+				.type(extractColumnType(columnType))
+				.nullable("YES".equalsIgnoreCase(row.asString("IS_NULLABLE")))
+				.autoIncrement(identity)
+				.defaultValue(identity ? null : row.asString("COLUMN_DEFAULT"))
+				.length(characterMaximumLength != null ? characterMaximumLength : extractLength(columnType))
+				.build();
+	}
+
+
+	private String formatColumnType(String dataType, Integer characterMaximumLength, Integer numericPrecision, Integer numericScale) {
+		if (dataType == null) {
+			return null;
+		}
+		if (characterMaximumLength != null) {
+			return dataType + "(" + characterMaximumLength + ")";
+		}
+		String upper = dataType.toUpperCase();
+		if ("DECIMAL".equals(upper) || "NUMERIC".equals(upper)) {
+			if (numericPrecision != null && numericScale != null && numericScale > 0) {
+				return dataType + "(" + numericPrecision + "," + numericScale + ")";
+			}
+			if (numericPrecision != null) {
+				return dataType + "(" + numericPrecision + ")";
+			}
+		}
+		return dataType;
+	}
+
+	@SneakyThrows
+    public EntityModel scanDatabaseTable(String tableName) {
+        EntityModel model = EntityModel.builder()
+            .tableName(tableName)
+            .build();
+
+        model.getFields().addAll(fetchInformationSchemaColumns(tableName));
+        return model;
+    }
 
 }

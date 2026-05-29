@@ -125,7 +125,7 @@ public class ReconciliationManager {
             }
 
             databaseTables.remove(tableName);
-            EntityModel databaseModel = scanDatabaseTable(tableName);
+            EntityModel databaseModel = context.scanDatabaseTable(tableName);
 
             List<ReconciliationDelta> entityDiffs = compare(entityClass, databaseModel);
             differences.addAll(entityDiffs);
@@ -158,54 +158,7 @@ public class ReconciliationManager {
     }
     
     
-    /**
-     * Queries the database to get the actual table structure
-     */
-    @SneakyThrows
-    private EntityModel scanDatabaseTable(String tableName) {
-        EntityModel model = EntityModel.builder()
-            .tableName(tableName)
-            .build();
-
-        try (Connection connection = context.datasource.getConnection();
-             Statement statement = new Statement(context, connection)) {
-
-            statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(tableName);
-            
-            try (ResultSet resultSet = statement.executeForResultSet()) {
-                while (resultSet.next()) {
-                    String columnName = resultSet.getString("Field");
-                    String columnType = resultSet.getString("Type");
-                    String nullableStr = resultSet.getString("Null");
-                    String defaultValue = resultSet.getString("Default");
-                    // H2 doesn't have "Extra" column, so we need to handle it gracefully
-                    String extra = null;
-                    try {
-                        extra = resultSet.getString("Extra");
-                    } catch (Exception e) {
-                        // H2 doesn't support Extra column, check auto_increment from column type or other means
-                        // For H2, we can check if the column type contains AUTO_INCREMENT or check the default
-                    }
-
-                    // Convert database column name back to entity field name
-
-
-                    TableField tableField = TableField.builder()
-                        .name(columnName)
-                        .type(extractColumnType(columnType))
-                        .nullable("YES".equalsIgnoreCase(nullableStr))
-                        .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
-                        .defaultValue(defaultValue)
-                        .length(extractLength(columnType))
-                        .build();
-
-                    model.getFields().add(tableField);
-                }
-            }
-        }
-
-        return model;
-    }
+    
     
    
 
@@ -247,6 +200,7 @@ public class ReconciliationManager {
                 diffs.add(addColumn);
             } 
             else {
+                projectedFieldNames.add(dbColumn.getName());
                 // Check for any column definition mismatches
                 boolean hasTypeMismatch = !tableField.typeMatches(dbColumn.getType());
                 boolean hasNullableMismatch = tableField.isNullable() != dbColumn.isNullable();
@@ -541,59 +495,6 @@ public class ReconciliationManager {
     }
 
     // ==================== Helper Methods ====================
-
-    
-
-    
-
-
-
-    
-
-    
-
-
-
-    
-    
-    
-    
-    /**
-     * Extracts length from SQL type (e.g., VARCHAR(255) -> 255)
-     */
-    private Integer extractLength(String sqlType) {
-        if (sqlType == null || !sqlType.contains("(")) {
-            return null;
-        }
-        try {
-            int start = sqlType.indexOf("(") + 1;
-            int end = sqlType.indexOf(")");
-            if (end > start) {
-                String lengthStr = sqlType.substring(start, end);
-                // Handle cases like DECIMAL(10,2)
-                if (lengthStr.contains(",")) {
-                    lengthStr = lengthStr.split(",")[0];
-                }
-                return Integer.parseInt(lengthStr.trim());
-            }
-        } catch (NumberFormatException e) {
-            // Ignore parsing errors
-        }
-        return null;
-    }
-
-    private String extractColumnType(String columnType) {
-        if (columnType == null) return null;
-        String upper = columnType.toUpperCase().trim();
-        if (upper.startsWith("VARCHAR")) {
-            return "VARCHAR";
-        }
-        // Normalize BIT(1) to BOOLEAN so entity boolean matches DB (avoids false positive mismatch)
-        if (upper.startsWith("BIT(") || "BIT".equals(upper)) {
-            return "BOOLEAN";
-        }
-        return columnType;
-    }
 
     
 
