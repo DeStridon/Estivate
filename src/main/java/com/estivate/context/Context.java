@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
-import com.estivate.Entity.InsertDate;
 import com.estivate.Entity.UpdateDate;
 import com.estivate.Estivate;
 import com.estivate.NameMapper;
@@ -41,6 +40,7 @@ import com.estivate.query.Attribute;
 import com.estivate.query.CreateQuery;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
+import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
@@ -156,7 +156,7 @@ public abstract class Context {
 	@SneakyThrows
 	public Boolean execute(Query<?,?> query) {
 		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection, preExecute(query))) {
+			Statement statement = queryAsStatement(preExecute(query), connection)) {
 			return statement.executeForValidation();
 		}
 	}
@@ -169,87 +169,10 @@ public abstract class Context {
 		}
 
 		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, datasource.getConnection())) {
-
-			statement.appendQuery("ALTER TABLE");
-			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
-			
-			for(Iter8<AlterQuery.Operation> operationIterator : Iter8.from(query.getOperations())) {
-
-				AlterQuery.Operation operation = operationIterator.getValue();
-				
-				if(operation instanceof AlterQuery.AddColumn) {
-					AlterQuery.AddColumn addColumnOperation = (AlterQuery.AddColumn) operation;
-					TableField tableField = getTableField(addColumnOperation.getColumnDefinition());
-					statement.appendQuery("ADD COLUMN");
-					statement.appendQuery(nameMapper.mapDatabaseField(addColumnOperation.getColumnName()));
-					statement.appendQuery(tableField.type);
-					if(tableField.getLength() != null) {
-						statement.appendQuery("(" + tableField.getLength() + ")");
-					}
-					if(!tableField.isNullable()) {
-						statement.appendQuery("NOT NULL");
-					}
-					if(tableField.isAutoIncrement()) {
-						statement.appendQuery("AUTO_INCREMENT");
-					}
-				}
-				else if(operation instanceof AlterQuery.DropColumn) {
-					AlterQuery.DropColumn dropColumnOperation = (AlterQuery.DropColumn) operation;
-					statement.appendQuery("DROP COLUMN");
-					statement.appendQuery(nameMapper.mapDatabaseField(dropColumnOperation.getColumnName()));
-				}
-				else if(operation instanceof AlterQuery.ModifyColumn) {
-					AlterQuery.ModifyColumn modifyColumnOperation = (AlterQuery.ModifyColumn) operation;
-					statement.appendQuery("MODIFY COLUMN");
-					TableField tableField = getTableField(modifyColumnOperation.getColumnDefinition());
-					statement.appendQuery(nameMapper.mapDatabaseField(modifyColumnOperation.getColumnName()));
-					statement.appendQuery(tableField.type);
-					if(tableField.getLength() != null) {
-						statement.appendQuery("(" + tableField.getLength() + ")");
-					}
-					if(!tableField.isNullable()) {
-						statement.appendQuery("NOT NULL");
-					}
-					if(tableField.isAutoIncrement()) {
-						statement.appendQuery("AUTO_INCREMENT");
-					}
-				}
-				else if(operation instanceof AlterQuery.RenameColumn) {
-					statement.appendQuery("RENAME COLUMN");
-					AlterQuery.RenameColumn renameColumnOperation = (AlterQuery.RenameColumn) operation;
-					statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getColumnName()));
-					statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getNewColumnName()));
-				}
-				else if(operation instanceof AlterQuery.AddIndex) {
-					statement.appendQuery("ADD INDEX");
-					AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
-					statement.appendQuery(addIndexOperation.getIndexName());
-					statement.appendQuery("(");
-					statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col)).collect(Collectors.joining(", ")));
-					statement.appendQuery(")");
-				}
-				else if(operation instanceof AlterQuery.DropIndex) {
-					statement.appendQuery("DROP INDEX");
-					AlterQuery.DropIndex dropIndexOperation = (AlterQuery.DropIndex) operation;
-					statement.appendQuery(dropIndexOperation.getIndexName());
-				}
-				else if(operation instanceof AlterQuery.RenameTable) {
-					statement.appendQuery("RENAME TABLE");
-					AlterQuery.RenameTable renameTableOperation = (AlterQuery.RenameTable) operation;
-					statement.appendQuery(renameTableOperation.getNewTableName());
-				}
-				else {
-					throw new RuntimeException("Unsupported operation: " + operation.getClass().getName());
-				}
-				if(!operationIterator.isLast()) {
-					statement.appendQuery(",");
-				}
-			}
-			
+			Statement statement = queryAsStatement(query, connection)){
 			return statement.executeForValidation();
-
 		}
+
 	}
 
 	@SneakyThrows
@@ -402,70 +325,7 @@ public abstract class Context {
 			insertQuery.value(object);
 			execute(insertQuery);
 
-			// preInsert(insertQuery);
 			
-			// FieldUtils.invokeLifecycleMethods(object, javax.persistence.PrePersist.class);
-			// FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PrePersist.class);
-
-			// List<String> fieldValueList = new ArrayList<>();
-			
-			// statement.appendQuery("INSERT INTO ")
-			// 		.appendQuery(nameMapper.toTableName(object.getClass()));
-			
-			
-			// for(Field field : FieldUtils.getEntityFields(object.getClass())) {
-			// 	field.setAccessible(true);
-			// 	// Skip Id, will be auto generated by db
-			// 	if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
-			// 		continue;
-			// 	}
-			// 	else if(field.isAnnotationPresent(InsertDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
-			// 		field.set(object, new Date());
-			// 	}
-				
-			// 	try {
-					
-			// 		if(field.get(object) == null) {
-			// 			continue;
-			// 		}
-					
-			// 		fieldValueList.add(nameMapper.mapDatabaseField(field.getName()));
-			// 		statement.appendObjectAsValue(object.getClass(), field.getName(), field.get(object));
-					
-			// 	}
-			// 	catch(Exception e) {
-			// 		log.error("Cannot map field "+field.getName(), e);
-			// 		throw e;
-			// 	}
-				
-			// }
-					
-			// statement.appendQuery("(")
-			// 		.appendQuery(fieldValueList.stream().collect(Collectors.joining(", ")))
-			// 		.appendQuery(") VALUES (")
-			// 		.appendQuery(fieldValueList.stream().map(x -> "?").collect(Collectors.joining(", ")))
-			// 		.appendQuery(")");
-			
-			// try(ResultSet rs = statement.executeForGeneratedKeys()){
-			// 	if (rs.next()) {
-			// 		Field field = FieldUtils.getIdField(object.getClass());
-			// 		field.setAccessible(true);
-			// 		long generatedId = rs.getLong(1);
-					
-			// 		// Handle both primitive long and wrapper Long types
-			// 		if (field.getType() == long.class) {
-			// 			field.setLong(object, generatedId);
-			// 		} else if (field.getType() == Long.class) {
-			// 			field.set(object, generatedId);
-			// 		} else {
-			// 			throw new IllegalStateException("ID field must be of type long or Long, but found: " + field.getType());
-			// 		}
-			// 	}
-				
-			// 	// FieldUtils.invokeLifecycleMethods(object, javax.persistence.PostPersist.class);
-			// 	// FieldUtils.invokeLifecycleMethods(object, jakarta.persistence.PostPersist.class);
-				
-			// }
 		}
 	}
 
@@ -829,29 +689,6 @@ public abstract class Context {
 		query.eq(idField.getName(), idField.get(entity));
 		
 		execute(query);
-				
-//		try(Connection connection = datasource.getConnection();
-//			Statement statement = new Statement(this, connection); ){
-//				
-//				// 1. Create query
-//				statement.appendQuery("UPDATE ")
-//						.appendQuery(nameMapper.toTableName(entity.getClass()))
-//						.appendQuery(" SET ");
-//						
-//				// 2. List updated fields
-//				statement.appendQuery(updatedFields.stream().map(x-> nameMapper.mapDatabaseField(x.getName()) + " = ?").collect(Collectors.joining(", ")));
-//				
-//				for(Field field : updatedFields) {
-//					statement.appendObjectAsValue(entity.getClass(), field.getName(), field.get(entity));
-//				}
-//				
-//				
-//				statement.appendQuery(" WHERE "+nameMapper.mapDatabaseField(idField.getName())+" = ?;");
-//				statement.appendObjectAsValue(entity.getClass(), idField.getName(), idField.getLong(entity));
-//
-//				boolean check = statement.executeForValidation();
-//
-//		}
 
 		FieldUtils.invokeLifecycleMethods(entity, javax.persistence.PostUpdate.class);
 		FieldUtils.invokeLifecycleMethods(entity, jakarta.persistence.PostUpdate.class);
@@ -935,6 +772,13 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> boolean createTableIfNotExists(Class<U> entityClass) {
 
+		List<String> existingTables = showTables();
+		String newTableName = nameMapper.toTableName(entityClass);
+		if(showTables().contains(nameMapper.toTableName(entityClass))) {
+			return false;
+		}
+		
+		
 		CreateQuery<U> query = Estivate.createQuery(entityClass);
 		query.ifNotExists();
 		execute(query);
@@ -1054,16 +898,7 @@ public abstract class Context {
 		}
 	}
 
-	// // TODO : remove
-	// public void addColumn(Class<?> c, String fieldName, String columnType) throws Exception {
-	// 	// TODO : use ColumnDefinition
-	// 	String columnName = nameMapper.mapDatabaseField(fieldName);
-	// 	try(Connection connection = datasource.getConnection();
-	// 		Statement statement = new Statement(this, connection); ){
-	// 		statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" ADD COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
-	// 		statement.executeForValidation();
-	// 	}
-	// }
+
 
 	public void changeColumn(Class<?> c, String fieldName, String columnType) throws Exception {
 		String columnName = nameMapper.mapDatabaseField(fieldName);
@@ -1080,12 +915,222 @@ public abstract class Context {
 	@SneakyThrows
 	public String queryAsString(Query<?,?> query) {
 		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection, preExecute(query));) {
+			Statement statement = queryAsStatement(preExecute(query), connection);) {
 			return statement.query();
 		}
 	}
 
 	
+	public String queryAsString(AlterQuery<?> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = queryAsStatement(preExecute(query), connection);) {
+			return statement.query();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	public Statement queryAsStatement(Query<?,?> query, Connection connection) {
+		Statement statement = new Statement(this, connection);
+	
+		// 1. Comments
+		for(String comment : query.getComments()) {
+			statement.appendQuery("-- "+comment+"\n");
+		}
+			
+			// 2. Select or update or delete or alter table
+		if(query instanceof SelectQuery) {
+			statement.appendQuery("SELECT");
+			
+			if(((SelectQuery<?>) query).isDistinct()) {
+				statement.appendQuery("DISTINCT");
+			}
+			
+			if(((SelectQuery<?>) query).getSelects().isEmpty()) {
+				((SelectQuery<?>) query).selectAll(query.getEntity());
+			}
+			
+			//List<Select> selects = ((SelectQuery<?>) query).getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
+			
+			statement.appendQuery(String.join(", ", ((SelectQuery<?>) query).getSelects().stream().map(x -> statement.selectString(x)).collect(Collectors.toList()))+"\n");
+			
+			statement.appendQuery("FROM");
+
+		}
+		else if(query instanceof UpdateQuery) {
+			statement.appendQuery("UPDATE");
+		}
+		else if(query instanceof DeleteQuery) {
+			statement.appendQuery("DELETE");
+			if(!query.getJoins().isEmpty()){
+				statement.appendEntity(query.getEntity());
+			}
+			statement.appendQuery("FROM");
+		}
+
+		statement.appendEntity(query.getEntity());
+		
+		
+		
+		// 4. Add Hint
+		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getIndexHint() != null && ((SelectQuery<?>) query).getIndexNames() != null && !((SelectQuery<?>) query).getIndexNames().isEmpty()) {
+			statement.appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
+		}
+		
+		// 5. Add Join (not applicable for ALTER TABLE or CREATE TABLE)
+		for(Join join : query.getJoins()) {
+			statement.appendJoin(join);
+			statement.appendQuery("\n");
+		}
+	
+
+		// 6. If update query, add set
+		if(query instanceof UpdateQuery) {
+			statement.appendQuery("SET");
+			
+			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery) query).getUpdates();
+			boolean first = true;
+			for(Map.Entry<Attribute, Object> entry : attributeMap.entrySet()) {
+
+				// if not first, add comma
+				if(first) {
+					first = false;
+				}
+				else {
+					statement.appendQuery(", ");
+				}
+
+				statement.appendAttributeAsParameter(entry.getKey());
+				statement.appendQuery("=");
+					statement.appendQuery(statement.writeParameter(entry.getKey().entity.entity, entry.getKey().attribute, entry.getValue()));
+			}  
+			
+		}
+
+		
+		// 7. Add Where (not applicable for ALTER TABLE or CREATE TABLE)
+		if(!query.getCriterions().isEmpty()) {
+			statement.appendQuery("WHERE");
+			statement.appendNodeToStatement(query, true);
+		}
+		
+		// 8. Add Group by
+		if(query instanceof SelectQuery && !((SelectQuery<?>) query).getGroupBys().isEmpty()) {
+			List<Attribute> groups = ((SelectQuery<?>) query).getGroupBys();
+			statement.appendQuery(groups.stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
+		}
+		
+		// 9. Add Having
+		// Append having (if any)
+		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getHaving() != null) {
+			statement.appendQuery("HAVING");
+			statement.appendNodeToStatement(((SelectQuery<?>) query).getHaving(), true);
+		}
+		
+		// 10. Append order (not applicable for ALTER TABLE or CREATE TABLE)
+		if(!query.getOrders().isEmpty()) {
+			statement.appendQuery(query.getOrders().stream().map(x -> statement.orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
+		}
+		
+		// 11. Append limit & offset (not applicable for ALTER TABLE or CREATE TABLE)
+		if(query.getLimit() != null) {
+			statement.appendQuery("LIMIT "+query.getLimit()+"\n");
+		}
+		if(query.getOffset() != null) {
+			statement.appendQuery("OFFSET "+ query.getOffset() +"\n");
+		}
+		
+
+		return statement;
+	}
+
+	public Statement queryAsStatement(AlterQuery<?> query, Connection connection) {
+	
+		Statement statement = new Statement(this, connection);
+
+		statement.appendQuery("ALTER TABLE");
+		statement.appendQuery(nameMapper.toTableName(query.getEntity()));
+		
+		for(Iter8<AlterQuery.Operation> operationIterator : Iter8.from(query.getOperations())) {
+
+			AlterQuery.Operation operation = operationIterator.getValue();
+			
+			if(operation instanceof AlterQuery.AddColumn) {
+				AlterQuery.AddColumn addColumnOperation = (AlterQuery.AddColumn) operation;
+				TableField tableField = getTableField(addColumnOperation.getColumnDefinition());
+				statement.appendQuery("ADD COLUMN");
+				statement.appendQuery(nameMapper.mapDatabaseField(addColumnOperation.getColumnName()));
+				statement.appendQuery(tableField.type);
+				if(tableField.getLength() != null) {
+					statement.appendQuery("(" + tableField.getLength() + ")");
+				}
+				if(!tableField.isNullable()) {
+					statement.appendQuery("NOT NULL");
+				}
+				if(tableField.isAutoIncrement()) {
+					statement.appendQuery("AUTO_INCREMENT");
+				}
+			}
+			else if(operation instanceof AlterQuery.DropColumn) {
+				AlterQuery.DropColumn dropColumnOperation = (AlterQuery.DropColumn) operation;
+				statement.appendQuery("DROP COLUMN");
+				statement.appendQuery(nameMapper.mapDatabaseField(dropColumnOperation.getColumnName()));
+			}
+			else if(operation instanceof AlterQuery.ModifyColumn) {
+				AlterQuery.ModifyColumn modifyColumnOperation = (AlterQuery.ModifyColumn) operation;
+				statement.appendQuery("MODIFY COLUMN");
+				TableField tableField = getTableField(modifyColumnOperation.getColumnDefinition());
+				statement.appendQuery(nameMapper.mapDatabaseField(modifyColumnOperation.getColumnName()));
+				statement.appendQuery(tableField.type);
+				if(tableField.getLength() != null) {
+					statement.appendQuery("(" + tableField.getLength() + ")");
+				}
+				if(!tableField.isNullable()) {
+					statement.appendQuery("NOT NULL");
+				}
+				if(tableField.isAutoIncrement()) {
+					statement.appendQuery("AUTO_INCREMENT");
+				}
+			}
+			else if(operation instanceof AlterQuery.RenameColumn) {
+				statement.appendQuery("RENAME COLUMN");
+				AlterQuery.RenameColumn renameColumnOperation = (AlterQuery.RenameColumn) operation;
+				statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getColumnName()));
+				statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getNewColumnName()));
+			}
+			else if(operation instanceof AlterQuery.AddIndex) {
+				statement.appendQuery("ADD INDEX");
+				AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
+				statement.appendQuery(addIndexOperation.getIndexName());
+				statement.appendQuery("(");
+				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col)).collect(Collectors.joining(", ")));
+				statement.appendQuery(")");
+			}
+			else if(operation instanceof AlterQuery.DropIndex) {
+				statement.appendQuery("DROP INDEX");
+				AlterQuery.DropIndex dropIndexOperation = (AlterQuery.DropIndex) operation;
+				statement.appendQuery(dropIndexOperation.getIndexName());
+			}
+			else if(operation instanceof AlterQuery.RenameTable) {
+				statement.appendQuery("RENAME TABLE");
+				AlterQuery.RenameTable renameTableOperation = (AlterQuery.RenameTable) operation;
+				statement.appendQuery(renameTableOperation.getNewTableName());
+			}
+			else {
+				throw new RuntimeException("Unsupported operation: " + operation.getClass().getName());
+			}
+			if(!operationIterator.isLast()) {
+				statement.appendQuery(",");
+			}
+		}
+		
+		return statement;
+
+	}
+
 	abstract public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn);
 
 
@@ -1120,12 +1165,13 @@ public abstract class Context {
 		}
 
 		// Handle enums
-		if (entityField.getType().isEnum()) {
+		else if (entityField.getType().isEnum()) {
 			if (FieldUtils.isEnumeratedAsString(entityField)) {
 				String enumValues = Arrays.stream(entityField.getType().getEnumConstants())
 						.map(c -> "'" + ((Enum<?>) c).name() + "'")
 						.collect(Collectors.joining(","));
 				entityColumn.setDesignedType("ENUM(" + enumValues + ")");
+				entityColumn.setDesignedLength(null);
 			}
 			else{
 				entityColumn.setDesignedType("TINYINT");
@@ -1140,10 +1186,11 @@ public abstract class Context {
 	public TableField getTableField(ColumnModel.EntityColumn entityColumn) {
 		if(StringUtils.isEmpty(entityColumn.getDesignedType())) {
 			ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
+			
 			return TableField.builder()
 				.name(nameMapper.mapDatabaseField(entityColumn.getName()))
 				.type(columnFormat.getType())
-				.length(columnFormat.getLength())
+				.length(entityColumn.getDesignedLength() != null ? entityColumn.getDesignedLength() : columnFormat.getLength())
 				.nullable(entityColumn.isNullable())
 				.autoIncrement(entityColumn.isAutoIncrement())
 				.build();

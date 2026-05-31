@@ -135,21 +135,22 @@ public class MySQLContext extends Context {
 
 	@Override
 	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
-		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INT");
-        if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("BIGINT");
-        if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("SMALLINT");
-        if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT");
-        if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT");
-        if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE");
-		if (entityColumn.getType() == java.math.BigDecimal.class) return new ColumnModel.ColumnFormat("DECIMAL");
-        if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN");
-		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("VARCHAR", 255); 
-        if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("DATETIME");
-		if (entityColumn.getType() == java.sql.Timestamp.class) return new ColumnModel.ColumnFormat("DATETIME");
-        if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("DATETIME");
-        if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE");
-        if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
-		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
+		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INT", null, true);
+        if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("BIGINT", null, true);
+        if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("SMALLINT", null, true);
+        if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT", null, true);
+        if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT", null, true);
+        if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE", null, true);
+		if (entityColumn.getType() == java.math.BigDecimal.class) return new ColumnModel.ColumnFormat("DECIMAL", null, true);
+        if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN", null, true);
+        if (entityColumn.getType() == String.class && "TEXT".equalsIgnoreCase(entityColumn.getDesignedType())) return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
+		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("VARCHAR", 255, false); 
+        if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+		if (entityColumn.getType() == java.sql.Timestamp.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+        if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+        if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE", null, true);
+        if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB", null, true);
+		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType()+ " for column: " + entityColumn.getName());
 	}
 
 

@@ -15,9 +15,10 @@ public class ColumnModel {
     @Data
     @AllArgsConstructor
     public static class ColumnFormat{
-        public ColumnFormat(String type){ this.type = type; this.length = null; }
+        public ColumnFormat(String type){ this.type = type; this.length = null; this.noLength = false; }
         String type;
         Integer length;
+        boolean noLength;
     }
 
     @Data

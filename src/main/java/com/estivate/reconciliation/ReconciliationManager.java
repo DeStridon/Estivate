@@ -174,7 +174,7 @@ public class ReconciliationManager {
 
             
             EntityColumn entityColumn = context.getEntityColumn(entityField);
-            ColumnModel.ColumnFormat columnFormat = context.getColumnFormat(entityColumn);
+            //ColumnModel.ColumnFormat columnFormat = context.getColumnFormat(entityColumn);
             TableField tableField = context.getTableField(entityField);
             TableField dbColumn = tableModel.findField(entityField.getName());
 
@@ -219,7 +219,7 @@ public class ReconciliationManager {
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
                         .entityClass(entityClass)
                         .entityField(entityField)
-                        //.tableColumnName(projectedField.getName())
+                        .entityColumnDefinition(entityColumn)
                         .projectedDefinition(tableField)
                         .databaseDefinition(dbColumn)
                         .build();

@@ -1,5 +1,6 @@
 package com.estivate.test;
 
+import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 import javax.naming.InitialContext;
@@ -27,47 +28,58 @@ public class DatabaseGenerator {
 	private static Context context = null;
 
 	
-	@SneakyThrows
+	
 	public static Context getContext() {
 		
 		if(context == null) {
 			
-			context = new H2Context(datasource());
-			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
+			try {
+				context = new H2Context(datasource());
+			} catch (NamingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			context.nameMapper = new TestNameMapper();
-
-			context.createTable(ProductEntity.class);
-			IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
-			productIndexDiff.addUnimplemented();
-
-			context.createTable(OrderLineEntity.class);
-			IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
-			orderLineIndexDiff.addUnimplemented();
-
-			context.createTable(OrderEntity.class);
-			IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
-			orderIndexDiff.addUnimplemented();
-
-			context.createTable(CustomerEntity.class);
-			System.out.println(context.showTables());
-			IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
-			customerIndexDiff.addUnimplemented();
-			
-			context.createTable(UserProductRatingEntity.class);
-			IndexDiff userProductRatingIndexDiff = new IndexDiff(context, UserProductRatingEntity.class);
-			userProductRatingIndexDiff.addUnimplemented();
-
-			
-			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
-			System.out.println();
-			
-			context.selectInterceptor = query -> {};
-			context.updateInterceptor = query -> {};
-			context.deleteInterceptor = query -> {};
-			context.insertInterceptor = object -> {};
-			
 		}
+
+		context.createTableIfNotExists(ProductEntity.class);
+		IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
+		productIndexDiff.addUnimplemented();
+
+		context.createTableIfNotExists(OrderLineEntity.class);
+		IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
+		orderLineIndexDiff.addUnimplemented();
+
+		context.createTableIfNotExists(OrderEntity.class);
+		IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
+		orderIndexDiff.addUnimplemented();
+
+		context.createTableIfNotExists(CustomerEntity.class);
+		System.out.println(context.showTables());
+		IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
+		customerIndexDiff.addUnimplemented();
+		
+		context.createTableIfNotExists(UserProductRatingEntity.class);
+		IndexDiff userProductRatingIndexDiff = new IndexDiff(context, UserProductRatingEntity.class);
+		userProductRatingIndexDiff.addUnimplemented();
+
+		
+		System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
+		System.out.println();
+		
+		context.selectInterceptor = query -> {};
+		context.updateInterceptor = query -> {};
+		context.deleteInterceptor = query -> {};
+		context.insertInterceptor = object -> {};
+		
+	
 		
 		
 		

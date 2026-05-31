@@ -125,7 +125,8 @@ public class EstivateReconciliation {
     public static class ModifyColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
         public Field entityField;
-        //public String tableColumnName;
+        
+        public ColumnModel.EntityColumn entityColumnDefinition;
         public TableField projectedDefinition;
         public TableField databaseDefinition;
 

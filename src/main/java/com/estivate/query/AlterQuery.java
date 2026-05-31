@@ -26,83 +26,9 @@ public class AlterQuery<E> {
     public AlterQuery(Class<E> entity) {
         this.entity = entity;
     }
-    /**
-     * Column definition containing type, constraints, and encoding information
-     */
-    // @Data
-    // @Builder
-    // @NoArgsConstructor
-    // @AllArgsConstructor
-    // public static class ColumnDefinition {
-    //     public @NonNull String columnType; // SQL type (e.g., "VARCHAR", "INT", "BIGINT")
-    //     public Integer length; 
-    //     public Boolean nullable; 
-    //     public String defaultValue;
-    //     public Boolean autoIncrement;
-    //     public String charset;
-    //     public String collation;
-        
-    //     /**
-    //      * Builds the full SQL column type string including length if applicable
-    //      * @return SQL type string (e.g., "VARCHAR(255)", "INT", "BIGINT")
-    //      */
-    //     public String getFullColumnType() {
-    //         if (length != null && needsLength(columnType)) {
-    //             return columnType + "(" + length + ")";
-    //         }
-    //         return columnType;
-    //     }
-        
-    //     /**
-    //      * Checks if a column type typically requires a length specification
-    //      */
-    //     private boolean needsLength(String type) {
-    //         if (type == null) return false;
-    //         String upper = type.toUpperCase();
-    //         return upper.contains("VARCHAR") || 
-    //                upper.contains("CHAR") || 
-    //                upper.contains("DECIMAL") ||
-    //                upper.contains("NUMERIC");
-    //     }
+    
 
-    //     public void appendToStatement(Context context, Statement statement){
-    //         String columnType = getFullColumnType(); 
-    //         if (columnType != null) {
-    //             statement.appendQuery(columnType);
-    //         }
-    //         if (charset != null) {
-    //             statement.appendQuery("CHARACTER SET");
-    //             statement.appendQuery(charset);
-    //         }
-    //         if (collation != null) {
-    //             statement.appendQuery("COLLATE");
-    //             statement.appendQuery(collation);
-    //         }
-    //         if (nullable != null) {
-    //             statement.appendQuery(nullable ? "NULL" : "NOT NULL");
-    //         }
-    //         if (defaultValue != null) {
-    //             statement.appendQuery("DEFAULT");
-    //             statement.appendQuery(defaultValue);
-    //         }
-    //         if (Boolean.TRUE.equals(autoIncrement)) {
-    //             statement.appendQuery("AUTO_INCREMENT");
-    //         }
-
-    //     }
-    // }
-
-    /**
-     * Base interface for ALTER TABLE operations
-     */
-    public interface Operation {
-        // /**
-        //  * Renders the SQL for this operation
-        //  * @param context the database context
-        //  * @param statement the statement builder to append SQL to
-        //  */
-        // void render(Context context, Statement statement);
-    }
+    public interface Operation { }
 
     /**
      * Operation to add a column to a table
@@ -112,19 +38,6 @@ public class AlterQuery<E> {
     public static class AddColumn implements Operation {
         private final String columnName;
         private final EntityColumn columnDefinition;
-
-        // public AddColumn(String columnName, EntityColumn columnDefinition) {
-        //     this.columnName = columnName;
-        //     this.columnDefinition = columnDefinition;
-        // }
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("ADD COLUMN");
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-        //     columnDefinition.appendToStatement(context, statement);
-            
-        // }
     }
 
     /**
@@ -134,12 +47,6 @@ public class AlterQuery<E> {
     @RequiredArgsConstructor
     public static class DropColumn implements Operation {
         private final String columnName;
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("DROP COLUMN");
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-        // }
     }
 
     /**
@@ -150,18 +57,6 @@ public class AlterQuery<E> {
     public static class ModifyColumn implements Operation {
         private final String columnName;
         private final EntityColumn columnDefinition;
-
-        // public ModifyColumn(String columnName, EntityColumn columnDefinition) {
-        //     this.columnName = columnName;
-        //     this.columnDefinition = columnDefinition;
-        // }
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("MODIFY COLUMN");
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-        //     columnDefinition.appendToStatement(context, statement);
-        // }
     }
 
     /**
@@ -173,14 +68,6 @@ public class AlterQuery<E> {
         private final String columnName;
         private final String newColumnName;
         private final String columnType;
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("CHANGE COLUMN");
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(newColumnName));
-        //     statement.appendQuery(columnType);
-        // }
     }
     
 
@@ -192,14 +79,6 @@ public class AlterQuery<E> {
     public static class RenameColumn implements Operation {
         private String columnName;
         private String newColumnName;
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("RENAME COLUMN");
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(columnName));
-        //     statement.appendQuery("TO");
-        //     statement.appendQuery(context.nameMapper.mapDatabaseField(newColumnName));
-        // }
     }
 
     /**
@@ -210,22 +89,6 @@ public class AlterQuery<E> {
     public static class AddIndex implements Operation {
         private String indexName;
         private List<String> columns;
-
-        // public AddIndex(String indexName, List<String> columns) {
-        //     this.indexName = indexName;
-        //     this.columns = columns != null ? new ArrayList<>(columns) : new ArrayList<>();
-        // }
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("ADD INDEX");
-        //     statement.appendQuery(indexName);
-        //     statement.appendQuery("(");
-        //     statement.appendQuery(columns.stream()
-        //         .map(col -> context.nameMapper.mapDatabaseField(col))
-        //         .collect(Collectors.joining(", ")));
-        //     statement.appendQuery(")");
-        // }
     }
 
     /**
@@ -235,16 +98,6 @@ public class AlterQuery<E> {
     @AllArgsConstructor
     public static class DropIndex implements Operation {
         private final String indexName;
-
-        // public DropIndex(String indexName) {
-        //     this.indexName = indexName;
-        // }
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("DROP INDEX");
-        //     statement.appendQuery(indexName);
-        // }
     }
 
     /**
@@ -254,12 +107,6 @@ public class AlterQuery<E> {
     @AllArgsConstructor
     public static class RenameTable implements Operation {
         private String newTableName;
-
-        // @Override
-        // public void render(Context context, Statement statement) {
-        //     statement.appendQuery("RENAME TO");
-        //     statement.appendQuery(newTableName);
-        // }
     }
 
     @Getter

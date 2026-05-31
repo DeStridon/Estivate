@@ -233,7 +233,7 @@ public class Statement implements AutoCloseable{
 		return this;
 	}
 	
-	private String writeParameter(Class<?> entity, String field, Object parameter) {
+	public String writeParameter(Class<?> entity, String field, Object parameter) {
 		
 		if(parameter instanceof Attribute) {
 			Attribute attribute = (Attribute) parameter;

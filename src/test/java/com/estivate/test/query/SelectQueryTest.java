@@ -30,7 +30,6 @@ public class SelectQueryTest {
         }
         catch(Exception e) {
             thrown = true;
-            e.printStackTrace();
         }
 
         Assert.assertTrue(thrown);
