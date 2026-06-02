@@ -101,6 +101,7 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class AddColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
+        public EntityModel entityModel;
         public Field entityField;
         public String tableColumnName;
         public ColumnModel.EntityColumn entityColumnDefinition;
@@ -114,6 +115,7 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class DropColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
+        public EntityModel entityModel;
         public String tableColumnName;
 
     }
@@ -124,6 +126,7 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class ModifyColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
+        public EntityModel entityModel;
         public Field entityField;
         
         public ColumnModel.EntityColumn entityColumnDefinition;

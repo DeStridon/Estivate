@@ -192,6 +192,7 @@ public class ReconciliationManager {
                 
                 EstivateReconciliation.AddColumnDelta addColumn = EstivateReconciliation.AddColumnDelta.builder()
                     .entityClass(entityClass)
+                    .entityModel(tableModel)
                     .entityField(entityField)
                     .tableColumnName(context.nameMapper.mapDatabaseClass(entityClass))
                     .entityColumnDefinition(entityColumn)
@@ -218,6 +219,7 @@ public class ReconciliationManager {
                     
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
                         .entityClass(entityClass)
+                        .entityModel(tableModel)
                         .entityField(entityField)
                         .entityColumnDefinition(entityColumn)
                         .projectedDefinition(tableField)
@@ -240,6 +242,7 @@ public class ReconciliationManager {
             // Column exists in database but not in entity - needs to be removed            
             EstivateReconciliation.DropColumnDelta dropColumn = EstivateReconciliation.DropColumnDelta.builder()
                 .entityClass(entityClass)
+                .entityModel(tableModel)
                 .tableColumnName(dbField.getName())
                 .build();
             diffs.add(dropColumn);
