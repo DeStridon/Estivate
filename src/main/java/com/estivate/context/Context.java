@@ -51,6 +51,7 @@ import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
+import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -154,11 +155,20 @@ public abstract class Context {
 	// ==================== EXECUTE METHODS ====================
 
 	@SneakyThrows
-	public Boolean execute(Query<?,?> query) {
+	public Boolean execute(Query<?,?> query, Chronometer chronometer) {
+		chronometer.step("execute::start");
 		try(Connection connection = datasource.getConnection();
 			Statement statement = queryAsStatement(preExecute(query), connection)) {
-			return statement.executeForValidation();
+			chronometer.step("execute::getconnectionAndStatement");
+			Boolean result = statement.executeForValidation();
+			chronometer.step("execute::result");
+			return result;
+
 		}
+	}
+
+	public Boolean execute(Query<?,?> query) {
+		return execute(query, new Chronometer("execute"));
 	}
 
 	@SneakyThrows
@@ -237,23 +247,25 @@ public abstract class Context {
 	}
 
 	@SneakyThrows
-	public <T> void execute(InsertQuery<T> query) {
+	public <T> void execute(InsertQuery<T> query, Chronometer chronometer) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 	
+			chronometer.step("executeInsert::start");
 			preInsert(query);
-
+			chronometer.step("executeInsert::preInsert");
 			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
-			
+			chronometer.step("executeInsert::appendQuery");
 			query.getFields().stream().forEach(x -> x.setAccessible(true));
 			String columnsString = query.getFields().stream().map(x -> nameMapper.mapDatabaseField(x.getName())).collect(Collectors.joining(", "));
 			String valuesString = query.getFields().stream().map(x -> "?").collect(Collectors.joining(", "));
 			statement.appendQuery("(", columnsString, ") VALUES ");
-
+			chronometer.step("executeInsert::appendQuery::values");
 			for(T value : query.getValues()) {
 				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PrePersist.class);
 				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PrePersist.class);
 			}
+			chronometer.step("executeInsert::invokeLifecycleMethods");
 
 			for(Iter8<T> valueIterator : Iter8.from(query.getValues())) {
 				statement.appendQuery("(", valuesString, ")");
@@ -264,7 +276,8 @@ public abstract class Context {
 					statement.appendQuery(",");
 				}
 			}
-			
+
+			chronometer.step("executeInsert::appendValues");
 			
 			try(ResultSet resultSet = statement.executeForGeneratedKeys()){
 				// TODO : handle other types of generated keys
@@ -298,7 +311,7 @@ public abstract class Context {
 						query.getIdField().set(query.getValues().get(i), generatedKeys.get(i));
 					}
 				}
-
+				chronometer.step("executeInsert::generatedKeys");
 
 			}
 
@@ -308,25 +321,29 @@ public abstract class Context {
 				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PostPersist.class);
 			}
 
+			chronometer.step("executeInsert::postPersist");
+
 		}
 		
+	}
+
+	public <T> void execute(InsertQuery<T> query) {
+		execute(query, new Chronometer("executeInsert"));
 	}
 
 	// ==================== PERSISTENCE METHODS ====================
 		
 	@SneakyThrows
+	public <U> void insert(U object, Chronometer chronometer) {
+
+		InsertQuery<U> insertQuery = Estivate.insertQuery((Class<U>) object.getClass());
+		insertQuery.value(object);
+		execute(insertQuery, chronometer);
+			
+	}
+
 	public <U> void insert(U object) {
-
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){	
-			
-
-			InsertQuery<U> insertQuery = Estivate.insertQuery((Class<U>) object.getClass());
-			insertQuery.value(object);
-			execute(insertQuery);
-
-			
-		}
+		insert(object, new Chronometer("insert"));
 	}
 
 
@@ -597,27 +614,35 @@ public abstract class Context {
 		}
 	}
 		
-	
+	public <U> void updateOrInsert(U object){
+		updateOrInsert(object, new Chronometer("updateOrInsert"));
+	}
 		
 	@SneakyThrows
-	public <U> void updateOrInsert(U object) {
+	public <U> void updateOrInsert(U object, Chronometer chronometer) {
+		chronometer.step("updateOrInsert::start");
 		Field idField = FieldUtils.getIdField(object.getClass());
+		chronometer.step("updateOrInsert::idField");
 		if(idField != null) {
 			idField.setAccessible(true);
-				
+			chronometer.step("updateOrInsert::idField::accessible");
 			if(idField.getLong(object) == 0L) {
-				insert(object);
+				insert(object, chronometer);
+				chronometer.step("updateOrInsert::insert");
 			}
 			else {
-				update(object);
+				update(object, chronometer);
+				chronometer.step("updateOrInsert::update");
 			}
 			
 			if(object instanceof CachedEntity) {
 				((CachedEntity) object).saveState();
+				chronometer.step("updateOrInsert::cachedEntity::saveState");
 			}
 		}
 		else{
-			insert(object);
+			insert(object, chronometer);
+			chronometer.step("updateOrInsert::insert");
 		}
 			
 	}
@@ -632,19 +657,22 @@ public abstract class Context {
 	}
 
 	@SneakyThrows
-	public <U> void update(U entity) {
+	public <U> void update(U entity, Chronometer chronometer) {
 		
 		if(entity == null) {
 			return;
 		}
 
+		chronometer.step("update::start");
 		FieldUtils.invokeLifecycleMethods(entity, javax.persistence.PreUpdate.class);
 		FieldUtils.invokeLifecycleMethods(entity, jakarta.persistence.PreUpdate.class);
-				
+		chronometer.step("update::invokeLifecycleMethods");
+		
 		Long id = null;
 		Field idField = null;
 		
 		Set<Field> updatedFields = new LinkedHashSet<>(FieldUtils.getEntityFields(entity.getClass()));
+		chronometer.step("update::updatedFields");
 		
 		for(Field field : updatedFields) {
 			field.setAccessible(true);
@@ -658,15 +686,18 @@ public abstract class Context {
 			}
 			
 		}
+		chronometer.step("update::updatedFields::set");
 		
 		if(entity instanceof CachedEntity) {
 			updatedFields = new LinkedHashSet<>(((CachedEntity) entity).updatedFields());
 		}
+		chronometer.step("update::updatedFields::cachedEntity");
 		
 		// Remove id field from update set
 		if(idField != null) {
 			updatedFields.remove(idField);
 		}
+		chronometer.step("update::updatedFields::removeIdField");
 		
 		// No change to entity
 		if(updatedFields.isEmpty()) {
@@ -677,22 +708,29 @@ public abstract class Context {
 			log.error("No id with value found, no update possible");
 			return;
 		}
+
 	
-		// TODO : replace by UpdateQuery
+
 		
 		UpdateQuery<U> query = Estivate.updateQuery((Class<U>) entity.getClass());
-		
+
+		chronometer.step("update::query");
 		for(Field field : updatedFields) {
 			query.set(field.getName(), field.get(entity));
 		}
-		
+		chronometer.step("update::query::set");
 		query.eq(idField.getName(), idField.get(entity));
-		
-		execute(query);
+		chronometer.step("update::query::eq");
+		execute(query, chronometer);
+		chronometer.step("update::execute");
 
 		FieldUtils.invokeLifecycleMethods(entity, javax.persistence.PostUpdate.class);
 		FieldUtils.invokeLifecycleMethods(entity, jakarta.persistence.PostUpdate.class);
-		
+		chronometer.step("update::invokeLifecycleMethods::postUpdate");
+	}
+
+	public <U> void update(U entity) {
+		update(entity, new Chronometer("update"));
 	}
 
 	@SneakyThrows
