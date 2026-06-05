@@ -6,18 +6,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.estivate.Entity;
-import com.estivate.context.Context;
-import com.estivate.query.SelectQuery;
+import com.estivate.Estivate;
+import com.estivate.query.Attribute;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.FieldUtils;
+import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -95,7 +93,7 @@ public class ResultRow {
 		}
 		return index;
 	}
-	
+
 	@SneakyThrows
 	public <T> T as(Class<?> c, String attribute) { 
 //		try {
@@ -189,6 +187,12 @@ public class ResultRow {
 //		}
 		return null;
 	}
+
+	public <T, R> R  as(AttributeGetter<T, R> attributeGetter) {
+		Attribute attribute = Estivate.attribute(attributeGetter);
+		return as(attribute.getEntity().getClass(), attribute.getAttribute());
+	}
+	
 
 	public String 			asString		(Class<?> c, String attribute) 	{ return asString(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute)); }
 	public String 			asString		(Entity<?> e, String attribute)	{ return asString(resultTable.context.nameMapper.toEntityNameAttribute(e, attribute)); }

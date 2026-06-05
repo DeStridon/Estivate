@@ -281,10 +281,13 @@ public abstract class Context {
 			
 			try(ResultSet resultSet = statement.executeForGeneratedKeys()){
 				// TODO : handle other types of generated keys
+
+				chronometer.step("executeInsert::executeForGeneratedKeys");
 				List<Long> generatedKeys = new ArrayList<>();
 				while(resultSet.next()) {
 					generatedKeys.add(resultSet.getLong(1));
 				}
+				chronometer.step("executeInsert::resultSetToGeneratedKeys");
 				if(generatedKeys.size() == query.getValues().size() && query.getIdField() != null) {
 					for(int i = 0; i < query.getValues().size(); i++) {
 						if(query.getIdField().getType() == long.class) {
@@ -308,10 +311,9 @@ public abstract class Context {
 						else {
 							throw new IllegalStateException("ID field must be of type long or Long, but found: " + query.getIdField().getType());
 						}
-						query.getIdField().set(query.getValues().get(i), generatedKeys.get(i));
 					}
 				}
-				chronometer.step("executeInsert::generatedKeys");
+				chronometer.step("executeInsert::applyKey");
 
 			}
 
