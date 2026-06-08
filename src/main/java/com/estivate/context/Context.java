@@ -248,6 +248,11 @@ public abstract class Context {
 
 	@SneakyThrows
 	public <T> void execute(InsertQuery<T> query, Chronometer chronometer) {
+
+		if(query.getValues() == null || query.getValues().isEmpty()) {
+			return;
+		}
+		
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
 	

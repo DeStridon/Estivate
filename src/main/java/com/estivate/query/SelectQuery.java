@@ -323,18 +323,12 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 		return queryClone;
 	}
 
-	public SelectQuery<E> groupBy(Entity<?> entity, String field) { groupBys.add(Estivate.attribute(entity, field)); return this; }
-	public SelectQuery<E> groupBy(Class<?> c, String field) {
-		Field groupByfield = FieldUtils.findField(c, field);
-		if(groupByfield == null) {
-			throw new IllegalArgumentException("Field " + field + " not found in entity " + c);
-		}
-		Projection.Attribute attribute = groupByfield.getDeclaredAnnotation(Projection.Attribute.class);
-		if(attribute != null) {		
-			return groupBy(new Entity<>(attribute.entity()), attribute.attribute());
-		}		
-		return groupBy(new Entity<>(c), field); 
-	}
+	public SelectQuery<E> groupBy(Attribute attribute) { groupBys.add(attribute); return this; }
+	public SelectQuery<E> groupBy(Entity<?> entity, String field) { return groupBy(Estivate.attribute(entity, field)); }
+	public SelectQuery<E> groupBy(Class<?> c, String field) { return groupBy(new Entity<>(c), field); }
+	public <T, P> SelectQuery<E> groupBy(AttributeGetter<T, P> getter) { return groupBy(Estivate.attribute(getter)); }
+	
+
 	public SelectQuery<E> groupBy(String attribute) { return groupBy(this.entity, attribute); }
 	public SelectQuery<E> groupByAlias(String alias) { groupBys.add(Estivate.attributeOfAlias(alias, null)); return this; }
 	public SelectQuery<E> clearGroupBys(){ groupBys.clear(); return this; }

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Entity;
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
@@ -25,7 +27,9 @@ import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +43,7 @@ public class EntityMapper<U> {
 	final Set<Method> entityPostLoadMethods;
 
 	List<ColumnMapping> columnMappings = new ArrayList<>();
-	
+	Set<Integer> columnMappingIndexes = new HashSet<>();
 	
 	// Result side
 
@@ -58,7 +62,13 @@ public class EntityMapper<U> {
 		entityConstructor = entity.entity.getConstructor();
 
 		// Get Fields
-		columnMappings = FieldUtils.getColumnMappings(query, entity);
+		columnMappings = getColumnMappings(query, entity);
+		columnMappingIndexes = new HashSet<>();
+		for(int i = 0; i < columnMappings.size(); i++) {
+			if(columnMappings.get(i) != null) {
+				columnMappingIndexes.add(i);
+			}
+		}
 
 		// Get PostLoadMethods
 		this.entityPostLoadMethods = FieldUtils.getPostLoadMethods(entity.entity);
@@ -74,6 +84,12 @@ public class EntityMapper<U> {
 
 	@SneakyThrows
 	public U map(String[] row) {
+
+		// if all row values are null for columnMapping, return null
+		if(columnMappingIndexes.stream().map(x -> row[x]).allMatch(x -> x == null)) {
+			return null;
+		}
+		
 		U obj = entityConstructor.newInstance();
 		
 		for (int i = 0; i < row.length; i++) {
@@ -288,18 +304,86 @@ public class EntityMapper<U> {
 	}
 	
 	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class ColumnMapping {
-
 		Attribute attribute;
-
 		Field field;
+	}
 
 
-		public ColumnMapping(Attribute attribute, Field field){
-			this.attribute = attribute;
-			this.field = field;
+	List<ColumnMapping> getColumnMappings(SelectQuery<?> query, Entity<?> entityClass) {
+		List<ColumnMapping> columnMappings = new ArrayList<>(query.getSelects().size());
+
+		for(int i = 0; i < query.getSelects().size(); i++) {
+			columnMappings.add(null);
 		}
 
+		List<String> unmappedFields = new ArrayList<>();
+
+		for(Field field : FieldUtils.getEntityFields(entityClass.entity)) {
+			ColumnMapping columnMapping = getColumnMapping(entityClass, field);
+
+			int index = FieldUtils.indexOf(query.getSelects(), columnMapping.getAttribute());
+
+			if(index != -1) {
+				columnMappings.set(index, columnMapping);
+			} else {
+				unmappedFields.add(field.getName());
+			}
+
+		}
+
+		if(!unmappedFields.isEmpty()) {
+			log.warn("In following query : " + query.toString()+", trying to map to entity : " + entityClass.toString() + ", fields missing : " + String.join(", ", unmappedFields));
+		}
+		return columnMappings;
+	}
+
+	public static ColumnMapping getColumnMapping(Entity<?> entityClass, Field field) {
+
+		Projection.Attribute attributeAnnotation = field.getDeclaredAnnotation(Projection.Attribute.class);
+
+		if (attributeAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias()), field);
+		}
+
+		Projection.Count countAnnotation = field.getDeclaredAnnotation(Projection.Count.class);
+		if (countAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(countAnnotation.entity(), countAnnotation.attribute(), Estivate.Functions.count, countAnnotation.alias()), field);
+		}
+		
+		Projection.CountDistinct countDistinctAnnotation = field.getDeclaredAnnotation(Projection.CountDistinct.class);
+		if (countDistinctAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(countDistinctAnnotation.entity(), countDistinctAnnotation.attribute(), Estivate.Functions.countDistinct, countDistinctAnnotation.alias()), field);
+		}
+
+		Projection.Sum sumAnnotation = field.getDeclaredAnnotation(Projection.Sum.class);
+		if (sumAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(sumAnnotation.entity(), sumAnnotation.attribute(), Estivate.Functions.sum, sumAnnotation.alias()), field);
+		}
+
+		Projection.Min minAnnotation = field.getDeclaredAnnotation(Projection.Min.class);
+		if (minAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(minAnnotation.entity(), minAnnotation.attribute(), Estivate.Functions.min, minAnnotation.alias()), field);
+		}
+
+		Projection.Max maxAnnotation = field.getDeclaredAnnotation(Projection.Max.class);
+		if (maxAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(maxAnnotation.entity(), maxAnnotation.attribute(), Estivate.Functions.max, maxAnnotation.alias()), field);
+		}
+
+		Projection.Avg avgAnnotation = field.getDeclaredAnnotation(Projection.Avg.class);
+		if (avgAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(avgAnnotation.entity(), avgAnnotation.attribute(), Estivate.Functions.avg, avgAnnotation.alias()), field);
+		}
+
+		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);
+		if (functionAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(functionAnnotation.entity(), functionAnnotation.attribute(), Estivate.function(functionAnnotation.functionPrefix(), functionAnnotation.functionSuffix()), functionAnnotation.alias()), field);
+		}
+
+		return new ColumnMapping(Estivate.attribute(entityClass, field.getName()), field);
 	}
 		
 }

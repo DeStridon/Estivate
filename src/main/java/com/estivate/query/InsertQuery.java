@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.estivate.Entity.InsertDate;
+import com.estivate.context.Context;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -72,6 +73,10 @@ public class InsertQuery<E> {
             }
         }
         return this;
+    }
+
+    public void execute(Context context){
+        context.execute(this);
     }
 
 }

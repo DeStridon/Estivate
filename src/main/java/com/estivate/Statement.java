@@ -33,6 +33,7 @@ import com.estivate.query.Query;
 import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
+import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 
 import lombok.Getter;
@@ -265,11 +266,15 @@ public class Statement implements AutoCloseable{
 	}
 
 
-	public ResultSet executeForGeneratedKeys() throws SQLException{
+	public ResultSet executeForGeneratedKeys(Chronometer chronometer) throws SQLException{
 		if(statement == null) {
-			execute(connection);
+			execute(connection, chronometer);
 		}
 		return statement.getGeneratedKeys();
+	}
+
+	public ResultSet executeForGeneratedKeys() throws SQLException{
+		return executeForGeneratedKeys(new Chronometer("executeForGeneratedKeys"));
 	}
 	
 	public ResultSet executeForResultSet() throws SQLException {
@@ -279,7 +284,9 @@ public class Statement implements AutoCloseable{
 		return statement.getResultSet();
 	}
 	
-	private boolean execute(Connection connection) throws SQLException {
+
+
+	private boolean execute(Connection connection, Chronometer chronometer) throws SQLException {
 		
 		String queryString = query.toString();
 		if(StringUtils.isBlank(queryString)) {
@@ -363,6 +370,10 @@ public class Statement implements AutoCloseable{
 						
 		
 	
+	}
+
+	private boolean execute(Connection connection) throws SQLException {
+		return execute(connection, new Chronometer("execute"));
 	}
 	
 
