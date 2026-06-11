@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -138,7 +139,7 @@ public class H2Context extends Context {
 	@Override
 	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
 		if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
-			if(List.of("TEXT", "MEDIUMTEXT", "LONGTEXT").contains(entityColumn.getDesignedType())) {
+			if(Arrays.asList("TEXT", "MEDIUMTEXT", "LONGTEXT").contains(entityColumn.getDesignedType())) {
 				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
 			}
 			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
