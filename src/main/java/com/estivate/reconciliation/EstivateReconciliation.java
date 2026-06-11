@@ -5,11 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.estivate.context.Context;
-import com.estivate.query.AlterQuery;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -132,48 +130,12 @@ public class EstivateReconciliation {
         public ColumnModel.EntityColumn entityColumnDefinition;
         public TableField projectedDefinition;
         public TableField databaseDefinition;
-
-        public boolean hasTypeMismatch() {
-            if (projectedDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(projectedDefinition.type, databaseDefinition.type);
-        }
         
-        public boolean hasLengthMismatch() {
-            if (projectedDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(projectedDefinition.length, databaseDefinition.length);
-        }
+        List<Mismatch> mismatchs;
         
-        public boolean hasNullableMismatch() {
-            if (projectedDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(projectedDefinition.nullable, databaseDefinition.nullable);
-        }
-        
-        public boolean hasDefaultValueMismatch() {
-            if (projectedDefinition == null || databaseDefinition == null) return false;
-            return !java.util.Objects.equals(projectedDefinition.defaultValue, databaseDefinition.defaultValue);
-        }
-        
-        // public boolean hasCharsetMismatch() {
-        //     if (projectedDefinition == null || databaseDefinition == null) return false;
-        //     return !java.util.Objects.equals(projectedDefinition.charset, databaseDefinition.charset);
-        // }
-        
-        // public boolean hasCollationMismatch() {
-        //     if (projectedDefinition == null || databaseDefinition == null) return false;
-        //     return !java.util.Objects.equals(projectedDefinition.collation, databaseDefinition.collation);
-        // }
-
-        public List<String> getMismatches() {
-            List<String> mismatches = new ArrayList<>();
-            if (hasTypeMismatch()) mismatches.add("Type");
-            if (hasLengthMismatch()) mismatches.add("Length");
-            if (hasNullableMismatch()) mismatches.add("Nullable");
-            if (hasDefaultValueMismatch()) mismatches.add("DefaultValue");
-            // if (hasCharsetMismatch()) mismatches.add("Charset");
-            // if (hasCollationMismatch()) mismatches.add("Collation");
-            return mismatches;
-        }
     }
+    
+    public static enum Mismatch{TYPE, LENGTH, NULLABLE, DEFAULT}
 
 
 

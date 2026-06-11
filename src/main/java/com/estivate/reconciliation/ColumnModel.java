@@ -29,7 +29,7 @@ public class ColumnModel {
         String designedName;
         String designedType;
         Integer designedLength;
-        String defaultValue;
+        Object defaultValue;
         String charset;
         String collation;
         boolean isNullable = true;

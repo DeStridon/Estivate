@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.Statement;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
@@ -23,6 +25,7 @@ import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.EntityModel;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
+import com.estivate.util.Pair;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -135,21 +138,26 @@ public class MySQLContext extends Context {
 
 	@Override
 	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
-		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INT", null, true);
-        if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("BIGINT", null, true);
-        if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("SMALLINT", null, true);
-        if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT", null, true);
-        if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT", null, true);
-        if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE", null, true);
-		if (entityColumn.getType() == java.math.BigDecimal.class) return new ColumnModel.ColumnFormat("DECIMAL", null, true);
-        if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN", null, true);
-        if (entityColumn.getType() == String.class && "TEXT".equalsIgnoreCase(entityColumn.getDesignedType())) return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
-		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("VARCHAR", 255, false); 
-        if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
-		if (entityColumn.getType() == java.sql.Timestamp.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
-        if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
-        if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE", null, true);
-        if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB", null, true);
+		if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
+			if(List.of("TEXT", "MEDIUMTEXT", "LONGTEXT", "LONGBLOB").contains(entityColumn.getDesignedType().toUpperCase())) {
+				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
+			}
+			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
+		}
+		if(entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INT", null, true);
+        if(entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("BIGINT", null, true);
+        if(entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("SMALLINT", null, true);
+        if(entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT", null, true);
+        if(entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT", null, true);
+        if(entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE", null, true);
+		if(entityColumn.getType() == java.math.BigDecimal.class) return new ColumnModel.ColumnFormat("DECIMAL", entityColumn.getDesignedLength() != null ? entityColumn.getDesignedLength() : 19, true);
+        if(entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BIT", 1, true);
+        if(entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("VARCHAR", entityColumn.getDesignedLength() != null ? entityColumn.getDesignedLength() : 255, false); 
+        if(entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+		if(entityColumn.getType() == java.sql.Timestamp.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+        if(entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+        if(entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE", null, true);
+        if(entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB", null, true);
 		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType()+ " for column: " + entityColumn.getName());
 	}
 
@@ -174,6 +182,9 @@ public class MySQLContext extends Context {
                     String columnType = resultSet.getString("Type");
                     String nullableStr = resultSet.getString("Null");
                     String defaultValue = resultSet.getString("Default");
+                    if(defaultValue != null && defaultValue.startsWith("b'") && defaultValue.endsWith("'")) {
+                    	defaultValue = defaultValue.substring(2, defaultValue.length()-1);
+                    }
                     // H2 doesn't have "Extra" column, so we need to handle it gracefully
                     String extra = null;
                     try {
@@ -185,14 +196,15 @@ public class MySQLContext extends Context {
 
                     // Convert database column name back to entity field name
 
-
+                    Pair<String, Integer> parsedColumnType = parseColumnType(columnType);
+                    
                     TableField tableField = TableField.builder()
                         .name(columnName)
-                        .type(extractColumnType(columnType))
+                        .type(parsedColumnType.x)
                         .nullable("YES".equalsIgnoreCase(nullableStr))
                         .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
                         .defaultValue(defaultValue)
-                        .length(extractLength(columnType))
+                        .length(parsedColumnType.y)
                         .build();
 
                     model.getFields().add(tableField);

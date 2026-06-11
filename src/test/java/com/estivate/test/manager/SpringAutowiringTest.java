@@ -57,6 +57,9 @@ public class SpringAutowiringTest {
         
         List<CustomerEntity> byName = customerManager.findByNameAndEmail("John", "john@example.com");
         assertNotNull(byName, "findByNameAndEmail should return a list (possibly empty)");
+
+        boolean exists = customerManager.existsById(1L);
+        assertTrue(exists, "existsById should return true");
         
         // Test passes if all method calls execute without exceptions
         System.out.println("Spring autowiring test passed! Manager was injected and methods executed successfully.");

@@ -17,6 +17,11 @@ public class Projection {
 		public Class<?> entity();
 		public String attribute();
 		public String alias() default "";
+		Class<? extends java.util.function.Function> transformerClass() default IdentityFunction.class;
+	}
+	
+	public static class IdentityFunction implements java.util.function.Function{
+		@Override public Object apply(Object t) { return t; }
 	}
 	
 	@Target( ElementType.FIELD )

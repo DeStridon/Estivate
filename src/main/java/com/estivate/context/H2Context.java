@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.Statement;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
@@ -135,6 +137,12 @@ public class H2Context extends Context {
 
 	@Override
 	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
+		if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
+			if(List.of("TEXT", "MEDIUMTEXT", "LONGTEXT").contains(entityColumn.getDesignedType())) {
+				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
+			}
+			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
+		}
 		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INTEGER");
 		if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("INTEGER");
 		if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("INTEGER");
@@ -178,7 +186,7 @@ public class H2Context extends Context {
 
 		return TableField.builder()
 				.name(row.asString("COLUMN_NAME"))
-				.type(extractColumnType(columnType))
+				.type(columnType)
 				.nullable("YES".equalsIgnoreCase(row.asString("IS_NULLABLE")))
 				.autoIncrement(identity)
 				.defaultValue(identity ? null : row.asString("COLUMN_DEFAULT"))

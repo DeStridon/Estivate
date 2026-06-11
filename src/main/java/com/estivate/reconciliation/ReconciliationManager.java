@@ -1,20 +1,18 @@
 package com.estivate.reconciliation;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.estivate.Statement;
 import com.estivate.context.Context;
-import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
+import com.estivate.reconciliation.EstivateReconciliation.Mismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
@@ -23,7 +21,6 @@ import com.estivate.util.ReflectionUtils;
 
 import lombok.Data;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -165,7 +162,7 @@ public class ReconciliationManager {
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel tableModel) {
+    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel databaseModel) {
         List<ReconciliationDelta> diffs = new ArrayList<>();
         List<String> projectedFieldNames = new ArrayList<>();
 
@@ -176,12 +173,12 @@ public class ReconciliationManager {
             EntityColumn entityColumn = context.getEntityColumn(entityField);
             //ColumnModel.ColumnFormat columnFormat = context.getColumnFormat(entityColumn);
             TableField tableField = context.getTableField(entityField);
-            TableField dbColumn = tableModel.findField(entityField.getName());
+            TableField dbColumn = databaseModel.findField(entityField.getName());
 
             if (dbColumn == null) {
                 // Also check by mapped database column name
                 String dbColumnName = context.nameMapper.mapDatabaseField(entityField.getName());
-                dbColumn = tableModel.getFields().stream()
+                dbColumn = databaseModel.getFields().stream()
                     .filter(f -> dbColumnName.equalsIgnoreCase(context.nameMapper.mapDatabaseField(f.getName())))
                     .findFirst()
                     .orElse(null);
@@ -192,38 +189,33 @@ public class ReconciliationManager {
                 
                 EstivateReconciliation.AddColumnDelta addColumn = EstivateReconciliation.AddColumnDelta.builder()
                     .entityClass(entityClass)
-                    .entityModel(tableModel)
+                    .entityModel(databaseModel)
                     .entityField(entityField)
                     .tableColumnName(context.nameMapper.mapDatabaseClass(entityClass))
                     .entityColumnDefinition(entityColumn)
-                    .tableModel(tableModel)
+                    .tableModel(databaseModel)
                     .build();
                 diffs.add(addColumn);
             } 
             else {
                 projectedFieldNames.add(dbColumn.getName());
                 // Check for any column definition mismatches
-                boolean hasTypeMismatch = !tableField.typeMatches(dbColumn.getType());
-                boolean hasNullableMismatch = tableField.isNullable() != dbColumn.isNullable();
-                boolean hasLengthMismatch = tableField.getLength() != null && dbColumn.getLength() != null 
-                    && !tableField.getLength().equals(dbColumn.getLength());
+                List<Mismatch> mismatches = new ArrayList<>();
+                if(!tableField.typeMatches(dbColumn.getType())) { mismatches.add(Mismatch.TYPE); }
+                if(tableField.isNullable() != dbColumn.isNullable()) { mismatches.add(Mismatch.NULLABLE); }
+                if(!Objects.equals(tableField.getLength(), dbColumn.getLength())) { mismatches.add(Mismatch.LENGTH); }
+                if(!Objects.equals(tableField.getDefaultValue() == null ? "NULL" : tableField.getDefaultValue().toString(), dbColumn.getDefaultValue() == null ? "NULL" : dbColumn.getDefaultValue().toString())) { mismatches.add(Mismatch.DEFAULT); }
                 
-                String entityDefault = tableField.getDefaultValue() == null ? "NULL" : tableField.getDefaultValue();
-                String dbDefault = dbColumn.getDefaultValue() == null ? "NULL" : dbColumn.getDefaultValue();
-                boolean hasDefaultMismatch = !entityDefault.equals(dbDefault);
-                
-                if (hasTypeMismatch || hasNullableMismatch || hasLengthMismatch || hasDefaultMismatch) {
-                    
-                    
-
+                if (!mismatches.isEmpty()) {
                     
                     EstivateReconciliation.ModifyColumnDelta modifyColumn = EstivateReconciliation.ModifyColumnDelta.builder()
                         .entityClass(entityClass)
-                        .entityModel(tableModel)
+                        .entityModel(databaseModel)
                         .entityField(entityField)
                         .entityColumnDefinition(entityColumn)
                         .projectedDefinition(tableField)
                         .databaseDefinition(dbColumn)
+                        .mismatchs(mismatches)
                         .build();
                     diffs.add(modifyColumn);
                 }
@@ -233,7 +225,7 @@ public class ReconciliationManager {
         // Check for columns in database but not in entity
         // We need to check against the actual database column names
         // Since databaseModel stores entity field names (after conversion), we need to map back
-        for (TableField dbField : tableModel.getFields()) {
+        for (TableField dbField : databaseModel.getFields()) {
             // If found in known fields, skip
             if(projectedFieldNames.contains(dbField.getName())) {
                 continue;
@@ -242,7 +234,7 @@ public class ReconciliationManager {
             // Column exists in database but not in entity - needs to be removed            
             EstivateReconciliation.DropColumnDelta dropColumn = EstivateReconciliation.DropColumnDelta.builder()
                 .entityClass(entityClass)
-                .entityModel(tableModel)
+                .entityModel(databaseModel)
                 .tableColumnName(dbField.getName())
                 .build();
             diffs.add(dropColumn);

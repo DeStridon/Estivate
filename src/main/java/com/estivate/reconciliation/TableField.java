@@ -24,7 +24,7 @@ public class TableField {
     public boolean autoIncrement;
 
     /** Default value if any */
-    public String defaultValue;
+    public Object defaultValue;
 
     /** Column length/size (e.g. VARCHAR(255) -> 255) */
     public Integer length;

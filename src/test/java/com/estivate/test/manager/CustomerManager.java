@@ -32,6 +32,8 @@ public abstract class CustomerManager extends EntityManager<CustomerEntity> {
 
     public abstract List<CustomerEntity> findByEmailVerifiedIsTrue();
 
+    public abstract boolean existsById(long id);
+
 
 
 }

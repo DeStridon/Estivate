@@ -145,7 +145,7 @@ public class ManagerQueryWrapper {
             if (name.startsWith("between")) {
                 m.invoke(query, criterion.getY(), args[argCounter], args[argCounter + 1]);
                 argCounter += 2;
-            } else if (name.equals("isNull") || name.equals("isNotNull")) {
+            } else if (name.equals("isNull") || name.equals("isNotNull") || name.equals("isTrue") || name.equals("isFalse")) {
                 m.invoke(query, criterion.getY());
             } else {
                 m.invoke(query, criterion.getY(), args[argCounter]);

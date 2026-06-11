@@ -258,29 +258,6 @@ public class FieldUtils {
     }
 
 	/**
-     * Extracts length from entity field annotations (@Column, @Size, etc.)
-     */
-    public static Integer extractLengthFromField(Field field, String sqlType) {
-        // Check @Column(length = ...)
-        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
-        if (javaxColumn != null && javaxColumn.length() > 0) {
-            return javaxColumn.length();
-        }
-        
-        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
-        if (jakartaColumn != null && jakartaColumn.length() > 0) {
-            return jakartaColumn.length();
-        }
-        
-        // For String fields, default to 255 if no annotation
-        if (field.getType() == String.class && sqlType != null && sqlType.toUpperCase().contains("VARCHAR")) {
-            return 255; // Default VARCHAR length
-        }
-        
-        return null;
-    }
-
-	/**
      * Extracts default value from entity field annotations
      */
     public static String extractDefaultValue(Field field) {

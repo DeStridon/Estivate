@@ -18,11 +18,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
@@ -54,6 +54,7 @@ import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
+import com.estivate.util.Pair;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -223,7 +224,7 @@ public abstract class Context {
 				}
 				if (entityColumn.getDefaultValue() != null) {
 					statement.appendQuery("DEFAULT");
-					statement.appendQuery(entityColumn.getDefaultValue());
+					statement.appendQuery(entityColumn.getDefaultValue().toString());
 				}
 				if (Boolean.TRUE.equals(entityColumn.isAutoIncrement())) {
 					statement.appendQuery("AUTO_INCREMENT");
@@ -1222,6 +1223,10 @@ public abstract class Context {
 				entityColumn.setDesignedType("TINYINT");
 			}
 		}
+		
+		if(!entityColumn.isAutoIncrement() && Arrays.asList(int.class, short.class, long.class).contains(entityField.getType())) {
+			entityColumn.setDefaultValue(0);
+		}
 
 		
 
@@ -1229,24 +1234,18 @@ public abstract class Context {
 	}
 
 	public TableField getTableField(ColumnModel.EntityColumn entityColumn) {
-		if(StringUtils.isEmpty(entityColumn.getDesignedType())) {
-			ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
-			
-			return TableField.builder()
-				.name(nameMapper.mapDatabaseField(entityColumn.getName()))
-				.type(columnFormat.getType())
-				.length(entityColumn.getDesignedLength() != null ? entityColumn.getDesignedLength() : columnFormat.getLength())
-				.nullable(entityColumn.isNullable())
-				.autoIncrement(entityColumn.isAutoIncrement())
-				.build();
-		}
+		
+		ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
+		
 		return TableField.builder()
 			.name(nameMapper.mapDatabaseField(entityColumn.getName()))
-			.type(entityColumn.getDesignedType())
-			.length(entityColumn.getDesignedLength())
+			.type(columnFormat.getType())
+			.length(columnFormat.getLength())
 			.nullable(entityColumn.isNullable())
+			.defaultValue(entityColumn.getDefaultValue())
 			.autoIncrement(entityColumn.isAutoIncrement())
 			.build();
+		
 	}
 
 	public TableField getTableField(Field entityField) {
@@ -1255,19 +1254,6 @@ public abstract class Context {
 
 	public abstract EntityModel scanDatabaseTable(String tableName);
 	
-	protected String extractColumnType(String columnType) {
-        if (columnType == null) return null;
-        String upper = columnType.toUpperCase().trim();
-        if (upper.startsWith("VARCHAR")) {
-            return "VARCHAR";
-        }
-        // Normalize BIT(1) to BOOLEAN so entity boolean matches DB (avoids false positive mismatch)
-        if (upper.startsWith("BIT(") || "BIT".equals(upper)) {
-            return "BOOLEAN";
-        }
-        return columnType;
-    }
-
 	/**
      * Extracts length from SQL type (e.g., VARCHAR(255) -> 255)
      */
@@ -1290,6 +1276,45 @@ public abstract class Context {
 			// Ignore parsing errors
 		}
 		return null;
+	}
+	
+	protected Pair<String, Integer> parseColumnType(String columnType){
+	
+//		RegexBuilder regex = RegexFactory.regexBuilder();
+//		regex
+//			.unique(RegexFactory.sequenceGroup().setGroupType(Group.GroupType.Capturing).setName("type")
+//				.some(CharacterClass.Alphabetic))
+//			.any(CharacterClass.Space)
+//			.optional(RegexFactory.sequenceGroup()
+//				.unique("\\(")
+//				.unique(RegexFactory.sequenceGroup().some(RegexFactory.classMatch(CharacterClass.Numeric)).setGroupType(Group.GroupType.Capturing).setName("length"))
+//				.optional(
+//					RegexFactory.sequenceGroup()
+//						.unique(",")
+//						.unique(RegexFactory.sequenceGroup().some(RegexFactory.classMatch(CharacterClass.Numeric)).setGroupType(Group.GroupType.Capturing))
+//					)
+//				.unique("\\)"));
+//		
+//		RegexMatcher regexMatcher = RegexFactory.regexMatcher(regex, columnType);
+//		regexMatcher.find();
+////		String match1 = regexMatcher.getMatch(0).group;
+////		String match2 = regexMatcher.getMatch(1).group;
+////		String match3 = regexMatcher.getMatch(2).group;
+//		
+//		String type = regexMatcher.getMatch("type").group;
+//		String length = regexMatcher.getMatch("length").group;
+		
+		Pattern reg = Pattern.compile("([a-zA-Z]+)\\s*(\\(([0-9]+)(,([0-9]+))?\\))?");
+		Matcher matcher = reg.matcher(columnType);
+		if(matcher.find()) {
+			return new Pair<String, Integer>(matcher.group(1), matcher.group(3) == null ? null : Integer.parseInt(matcher.group(3)));
+		}
+		return null;
+		
+		
+		
+		
+		
 	}
 	
 }
