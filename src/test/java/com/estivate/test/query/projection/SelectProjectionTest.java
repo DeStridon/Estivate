@@ -134,6 +134,23 @@ public class SelectProjectionTest {
         
     }
 
+    @Data
+    @NoArgsConstructor
+    public static class CustomerWithTransformerProjection {
+        @Projection.Attribute(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
+        Long id;
+
+        @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.name, transformer = UpperCaseNameTransformer.class)
+        String name;
+    }
+
+    public static class UpperCaseNameTransformer implements java.util.function.Function<Object, Object> {
+        @Override
+        public Object apply(Object value) {
+            return value instanceof String ? ((String) value).toUpperCase() : value;
+        }
+    }
+
     // ==================== SETUP AND TEARDOWN ====================
     
     @BeforeEach
@@ -221,6 +238,20 @@ public class SelectProjectionTest {
         assertEquals(testCustomer1.getId(), result.getId(), "ID should match");
         assertEquals(testCustomer1.getName(), result.getName(), "Name should match");
         assertEquals(testCustomer1.getEmail(), result.getEmail(), "Email should match");
+    }
+
+    @Test
+    public void testProject_WithAttributeTransformer() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId())
+            .selectAll(CustomerWithTransformerProjection.class);
+
+        CustomerWithTransformerProjection result = query.fetchAsSingle(context, CustomerWithTransformerProjection.class);
+
+        assertNotNull(result, "Result should not be null");
+        assertEquals(testCustomer1.getId(), result.getId(), "ID should match unchanged");
+        assertEquals("ALICE SMITH", result.getName(), "Transformer should uppercase the name before mapping");
+        assertEquals(testCustomer1.getName().toUpperCase(), result.getName(), "Name should differ from raw DB value");
     }
 
     @Test

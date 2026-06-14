@@ -9,6 +9,9 @@ import java.util.Set;
 
 import com.estivate.util.FieldUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Projection {
 
 	@Target( ElementType.FIELD )
@@ -17,7 +20,7 @@ public class Projection {
 		public Class<?> entity();
 		public String attribute();
 		public String alias() default "";
-		Class<? extends java.util.function.Function> transformerClass() default IdentityFunction.class;
+		Class<? extends java.util.function.Function> transformer() default IdentityFunction.class;
 	}
 	
 	public static class IdentityFunction implements java.util.function.Function{
@@ -115,6 +118,17 @@ public class Projection {
 				}
 				projectionField.setAccessible(true);
 				Object value = projectionField.get(source);
+
+				if(attributeAnnotation.transformer() != IdentityFunction.class){
+					java.util.function.Function<?, ?> transformer = null;
+					try {
+						transformer = attributeAnnotation.transformer().getConstructor().newInstance();
+					} catch (Exception e) {
+						log.error("Impossible to create transformer for field " + projectionField.getName(), e);
+					}
+					value = ((java.util.function.Function<Object, Object>) transformer).apply(value);
+				}
+
 				Field entityField = FieldUtils.findField(targetEntityClass, attributeAnnotation.attribute());
 				if (entityField == null) {
 					continue;
@@ -136,6 +150,15 @@ public class Projection {
 				}
 				sourceField.setAccessible(true);
 				Object value = sourceField.get(source);
+				if(attributeAnnotation.transformer() != IdentityFunction.class){
+					java.util.function.Function<?, ?> transformer = null;
+					try {
+						transformer = attributeAnnotation.transformer().getConstructor().newInstance();
+					} catch (Exception e) {
+						log.error("Impossible to create transformer for field " + sourceField.getName(), e);
+					}
+					value = ((java.util.function.Function<Object, Object>) transformer).apply(value);
+				}
 				targetField.setAccessible(true);
 				targetField.set(target, value);
 			}

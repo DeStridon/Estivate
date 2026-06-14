@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,6 +24,7 @@ import com.estivate.context.Context;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
+import com.estivate.query.Projection.IdentityFunction;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
@@ -96,9 +98,10 @@ public class EntityMapper<U> {
 			if (i >= columnMappings.size() || columnMappings.get(i) == null) {
 				continue;
 			}
-			Field field = columnMappings.get(i).getField();
+			ColumnMapping columnMapping = columnMappings.get(i);
+			Field field = columnMapping.getField();
 			if (field != null) {
-				setGeneratedField(entity, field, obj, row[i]);
+				setGeneratedField(entity, field, obj, row[i], columnMapping.getTransformer());
 			}
 		}
 		for (Method method : entityPostLoadMethods) {
@@ -203,6 +206,10 @@ public class EntityMapper<U> {
 	}
 
 	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value) throws EstivateException {
+		setGeneratedField(entity, field, obj, value, null);
+	}
+
+	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value, Function<?, ?> transformer) throws EstivateException {
         try {
             
             if(value == null) {
@@ -210,6 +217,9 @@ public class EntityMapper<U> {
             }
 
 			Object convertedValue = convertValue(field, value);
+			if(transformer != null && !(transformer instanceof IdentityFunction)) {
+				convertedValue = ((Function<Object, Object>) transformer).apply(convertedValue);
+			}
 			if(convertedValue != null) {
 				field.set(obj, convertedValue);
 				return;
@@ -230,12 +240,12 @@ public class EntityMapper<U> {
 		}
 		Type type = field.getGenericType();
 
-		// @Projection.Attribute
-		if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
-			Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
-			Field mappingField = FieldUtils.findField(annotation.entity(), annotation.attribute());
-			return convertValue(mappingField, value);
-		}
+		// // @Projection.Attribute
+		// if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
+		// 	Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
+		// 	Field mappingField = FieldUtils.findField(annotation.entity(), annotation.attribute());
+		// 	return convertValue(mappingField, value);
+		// }
 
 		// @Convert
 		if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
@@ -309,6 +319,7 @@ public class EntityMapper<U> {
 	public static class ColumnMapping {
 		Attribute attribute;
 		Field field;
+		Function<?, ?> transformer;
 	}
 
 
@@ -345,45 +356,56 @@ public class EntityMapper<U> {
 		Projection.Attribute attributeAnnotation = field.getDeclaredAnnotation(Projection.Attribute.class);
 
 		if (attributeAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias()), field);
+			Function<?, ?> transformer = null;
+			if (attributeAnnotation.transformer() != IdentityFunction.class) {
+				try {
+					transformer = attributeAnnotation.transformer().getConstructor().newInstance();
+				} catch (Exception e) {
+					log.error("Impossible to create transformer for field " + field.getName(), e);
+				}
+			}
+			return new ColumnMapping(
+					Estivate.attribute(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias()),
+					field,
+					transformer);
 		}
 
 		Projection.Count countAnnotation = field.getDeclaredAnnotation(Projection.Count.class);
 		if (countAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(countAnnotation.entity(), countAnnotation.attribute(), Estivate.Functions.count, countAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(countAnnotation.entity(), countAnnotation.attribute(), Estivate.Functions.count, countAnnotation.alias()), field, null);
 		}
 		
 		Projection.CountDistinct countDistinctAnnotation = field.getDeclaredAnnotation(Projection.CountDistinct.class);
 		if (countDistinctAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(countDistinctAnnotation.entity(), countDistinctAnnotation.attribute(), Estivate.Functions.countDistinct, countDistinctAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(countDistinctAnnotation.entity(), countDistinctAnnotation.attribute(), Estivate.Functions.countDistinct, countDistinctAnnotation.alias()), field, null);
 		}
 
 		Projection.Sum sumAnnotation = field.getDeclaredAnnotation(Projection.Sum.class);
 		if (sumAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(sumAnnotation.entity(), sumAnnotation.attribute(), Estivate.Functions.sum, sumAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(sumAnnotation.entity(), sumAnnotation.attribute(), Estivate.Functions.sum, sumAnnotation.alias()), field, null);
 		}
 
 		Projection.Min minAnnotation = field.getDeclaredAnnotation(Projection.Min.class);
 		if (minAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(minAnnotation.entity(), minAnnotation.attribute(), Estivate.Functions.min, minAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(minAnnotation.entity(), minAnnotation.attribute(), Estivate.Functions.min, minAnnotation.alias()), field, null);
 		}
 
 		Projection.Max maxAnnotation = field.getDeclaredAnnotation(Projection.Max.class);
 		if (maxAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(maxAnnotation.entity(), maxAnnotation.attribute(), Estivate.Functions.max, maxAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(maxAnnotation.entity(), maxAnnotation.attribute(), Estivate.Functions.max, maxAnnotation.alias()), field, null);
 		}
 
 		Projection.Avg avgAnnotation = field.getDeclaredAnnotation(Projection.Avg.class);
 		if (avgAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(avgAnnotation.entity(), avgAnnotation.attribute(), Estivate.Functions.avg, avgAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(avgAnnotation.entity(), avgAnnotation.attribute(), Estivate.Functions.avg, avgAnnotation.alias()), field, null);
 		}
 
 		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);
 		if (functionAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(functionAnnotation.entity(), functionAnnotation.attribute(), Estivate.function(functionAnnotation.functionPrefix(), functionAnnotation.functionSuffix()), functionAnnotation.alias()), field);
+			return new ColumnMapping(Estivate.attribute(functionAnnotation.entity(), functionAnnotation.attribute(), Estivate.function(functionAnnotation.functionPrefix(), functionAnnotation.functionSuffix()), functionAnnotation.alias()), field, null);
 		}
 
-		return new ColumnMapping(Estivate.attribute(entityClass, field.getName()), field);
+		return new ColumnMapping(Estivate.attribute(entityClass, field.getName()), field, null);
 	}
 		
 }
