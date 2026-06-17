@@ -73,6 +73,15 @@ public class Annotations {
 		
 		return index;
 	}
+
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.RUNTIME)
+	public static @interface ColumnDefaultValue{
+		String value();
+	}
+
+
+
 	
 
 }

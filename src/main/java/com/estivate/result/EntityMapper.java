@@ -240,12 +240,12 @@ public class EntityMapper<U> {
 		}
 		Type type = field.getGenericType();
 
-		// // @Projection.Attribute
-		// if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
-		// 	Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
-		// 	Field mappingField = FieldUtils.findField(annotation.entity(), annotation.attribute());
-		// 	return convertValue(mappingField, value);
-		// }
+		 // @Projection.Attribute
+		 if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
+		 	Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
+		 	Field mappingField = FieldUtils.findField(annotation.entity(), annotation.attribute());
+		 	return convertValue(mappingField, value);
+		 }
 
 		// @Convert
 		if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {

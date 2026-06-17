@@ -2,6 +2,7 @@ package com.estivate.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,7 +82,7 @@ public class ResultTest {
 	}
 
 	@Test
-	public void testMap() {
+	public void testMap() throws NoSuchFieldException, SecurityException {
 		
 		CustomerEntity customer1 = CustomerEntity.builder()
 				.id(22)
@@ -105,7 +106,7 @@ public class ResultTest {
 		
 		context.insert(customer2);
 		
-		
+		Field myField = CustomerEntity.class.getDeclaredField(CustomerEntity.Fields.country);
 		
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class)
 				.likeStartsWith(CustomerEntity.Fields.name, "map test customer");

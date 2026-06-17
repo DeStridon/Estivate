@@ -1,9 +1,5 @@
 package com.estivate.reconciliation;
 
-import java.lang.reflect.Field;
-
-import com.estivate.context.Context;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -29,7 +25,7 @@ public class ColumnModel {
         String designedName;
         String designedType;
         Integer designedLength;
-        Object defaultValue;
+        String defaultValue;
         String charset;
         String collation;
         boolean isNullable = true;

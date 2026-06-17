@@ -255,7 +255,8 @@ public class ResultRow {
 	// @Enumerated
 	public Enum asEnum(Attribute attribute) {
 		try {
-			Field field = attribute.getEntity().getClass().getDeclaredField(attribute.getAttribute());
+			Class entity = attribute.getEntity().entity;
+			Field field = attribute.getEntity().entity.getDeclaredField(attribute.getAttribute());
 			Type type = field.getGenericType();
 			
 			if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {

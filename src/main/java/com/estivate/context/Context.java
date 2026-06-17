@@ -31,6 +31,7 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
+import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
@@ -1224,8 +1225,9 @@ public abstract class Context {
 			}
 		}
 		
-		if(!entityColumn.isAutoIncrement() && Arrays.asList(int.class, short.class, long.class).contains(entityField.getType())) {
-			entityColumn.setDefaultValue(0);
+		ColumnDefaultValue columnDefaultValue = entityField.getDeclaredAnnotation(ColumnDefaultValue.class);
+		if(columnDefaultValue != null) {
+			entityColumn.setDefaultValue(columnDefaultValue.value());
 		}
 
 		

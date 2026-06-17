@@ -8,6 +8,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
+import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.reconciliation.TableField;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.util.FieldUtils;
@@ -19,6 +20,7 @@ public class ModelingTest {
 	Context context = DatabaseGenerator.getContext();
 	
 	public static class SingleIntegerFieldClass{
+		@ColumnDefaultValue("0")
 		int singleField;
 	}
 	
@@ -27,7 +29,7 @@ public class ModelingTest {
 		Set<Field> fields = FieldUtils.getEntityFields(SingleIntegerFieldClass.class);
 		TableField tableField = context.getTableField(fields.iterator().next());
 		
-		assertEquals(0, tableField.getDefaultValue());
+		assertEquals("0", tableField.getDefaultValue());
 		
 	}
 	
