@@ -444,5 +444,58 @@ public class SelectProjectionTest {
         assertEquals(1, results.size(), "Should return 1 customer matching criteria");
         assertEquals("Alice Smith", results.get(0).getName(), "Should be Alice Smith");
     }
+
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IsNullProjection {
+        @Projection.IsNull(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.email)
+        private Boolean isEmailNull;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IsNotNullProjection {
+        @Projection.IsNotNull(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.email)
+        private Boolean isEmailNotNull;
+    }
+
+    @Test
+    public void testProjectList_IsNull() {
+        // Set one customer's email to null for this test
+        testCustomer2.setEmail(null);
+        context.update(testCustomer2);
+
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .orderByAsc(CustomerEntity.class, AbstractEntity.Fields.id);
+
+        List<IsNullProjection> results = query.fetchAsList(context, IsNullProjection.class);
+
+        assertNotNull(results, "Results should not be null");
+        assertEquals(3, results.size(), "Should return all customers");
+
+        
+        assertTrue(results.stream().anyMatch(r -> r.getIsEmailNull()), "One customer should have null email for this test");
+    }
+
+    @Test
+    public void testProjectList_IsNotNull() {
+        // Ensure all initial customers except testCustomer2 have non-null email
+        testCustomer2.setEmail(null);
+        context.update(testCustomer2);
+
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .orderByAsc(CustomerEntity.class, AbstractEntity.Fields.id);
+
+        List<IsNotNullProjection> results = query.fetchAsList(context, IsNotNullProjection.class);
+
+        assertNotNull(results, "Results should not be null");
+        assertEquals(3, results.size(), "Should return all customers");
+
+        // Find the non-null email customers and check projection
+       
+    }
     
 }

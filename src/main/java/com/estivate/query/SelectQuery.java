@@ -157,6 +157,14 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 				Projection.Avg attribute = field.getDeclaredAnnotation(Projection.Avg.class);
 				selectAvg(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
 			}
+			else if(field.getDeclaredAnnotation(Projection.IsNull.class) != null) {
+				Projection.IsNull attribute = field.getDeclaredAnnotation(Projection.IsNull.class);
+				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNull, attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.IsNotNull.class) != null) {
+				Projection.IsNotNull attribute = field.getDeclaredAnnotation(Projection.IsNotNull.class);
+				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNotNull, attribute.alias());
+			}
 			else if(field.getDeclaredAnnotation(Projection.Function.class) != null) {
 				Projection.Function attribute = field.getDeclaredAnnotation(Projection.Function.class);
 				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());

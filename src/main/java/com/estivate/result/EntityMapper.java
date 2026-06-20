@@ -171,6 +171,15 @@ public class EntityMapper<U> {
 			return getColumnNameFromAnnotation(avgAnnotation.entity(), avgAnnotation.attribute(), avgAnnotation.alias());
 		}
 
+		Projection.IsNull isNullAnnotation = field.getDeclaredAnnotation(Projection.IsNull.class);
+		if (isNullAnnotation != null) {
+			return getColumnNameFromAnnotation(isNullAnnotation.entity(), isNullAnnotation.attribute(), isNullAnnotation.alias());
+		}
+		Projection.IsNotNull isNotNullAnnotation = field.getDeclaredAnnotation(Projection.IsNotNull.class);
+		if (isNotNullAnnotation != null) {
+			return getColumnNameFromAnnotation(isNotNullAnnotation.entity(), isNotNullAnnotation.attribute(), isNotNullAnnotation.alias());
+		}
+
 		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);
 		if (functionAnnotation != null) {
 			return getColumnNameFromAnnotation(functionAnnotation.entity(), functionAnnotation.attribute(), functionAnnotation.alias());
@@ -398,6 +407,15 @@ public class EntityMapper<U> {
 		Projection.Avg avgAnnotation = field.getDeclaredAnnotation(Projection.Avg.class);
 		if (avgAnnotation != null) {
 			return new ColumnMapping(Estivate.attribute(avgAnnotation.entity(), avgAnnotation.attribute(), Estivate.Functions.avg, avgAnnotation.alias()), field, null);
+		}
+
+		Projection.IsNull isNullAnnotation = field.getDeclaredAnnotation(Projection.IsNull.class);
+		if (isNullAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(isNullAnnotation.entity(), isNullAnnotation.attribute(), Estivate.Functions.isNull, isNullAnnotation.alias()), field, null);
+		}
+		Projection.IsNotNull isNotNullAnnotation = field.getDeclaredAnnotation(Projection.IsNotNull.class);
+		if (isNotNullAnnotation != null) {
+			return new ColumnMapping(Estivate.attribute(isNotNullAnnotation.entity(), isNotNullAnnotation.attribute(), Estivate.Functions.isNotNull, isNotNullAnnotation.alias()), field, null);
 		}
 
 		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);

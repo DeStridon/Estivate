@@ -77,10 +77,26 @@ public class Projection {
 
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
+	public @interface IsNull {
+		public Class<?> entity();
+		public String attribute();
+		public String alias() default "";
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface IsNotNull {
+		public Class<?> entity();
+		public String attribute();
+		public String alias() default "";
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Function {
 		public Class<?> entity();
 		public String attribute();
-		public String alias();
+		public String alias() default "";
 		public String functionPrefix();
 		public String functionSuffix();
 	}
