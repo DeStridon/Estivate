@@ -24,7 +24,7 @@ public class TableField {
     public boolean autoIncrement;
 
     /** Default value if any */
-    public Object defaultValue;
+    public String defaultValue;
 
     /** Column length/size (e.g. VARCHAR(255) -> 255) */
     public Integer length;
@@ -52,7 +52,7 @@ public class TableField {
         String upper = sqlType.toUpperCase().trim();
         
         // Remove length specification for comparison
-        if (upper.contains("(")) {
+        if (!upper.startsWith("ENUM") && upper.contains("(")) {
             upper = upper.substring(0, upper.indexOf("("));
         }
         

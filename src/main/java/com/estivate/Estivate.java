@@ -26,6 +26,7 @@ import com.estivate.query.Criterion.NotIn;
 import com.estivate.query.Criterion.NullCheck;
 import com.estivate.query.Criterion.Operator;
 import com.estivate.query.Criterion.Operator.OperatorType;
+import com.estivate.query.Criterion.Regexp;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.InsertQuery;
@@ -250,6 +251,9 @@ public class Estivate {
 	public static Aggregator notMatchAgainstIn			(Attribute attribute, Collection<String> values) { return and(values.stream().map(x -> notMatchAgainst(attribute, x)).collect(Collectors.toList())); }
 	public static Aggregator notMatchAgainstInIfNotEmpty(Attribute attribute, Collection<String> values) { if(values != null && !values.isEmpty()) { return notMatchAgainstIn(attribute, values); } return null; }
 
+	// Regexp
+	public static Criterion regexp(Attribute attribute, String pattern) { return new Regexp(attribute, pattern); }
+	
 	// Like starts
 	public static Criterion likeStartsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.Like, value+"%");	}
 	public static Criterion notLikeStartsWith(Attribute attribute, String value)		{ return new Operator(attribute, OperatorType.NotLike, value+"%");}
@@ -405,6 +409,9 @@ public class Estivate {
 	public static Aggregator notMatchAgainstIn			(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstIn(Estivate.attribute(entity, attribute), values); }
 	public static Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values)	{ return notMatchAgainstInIfNotEmpty(Estivate.attribute(entity, attribute), values); }
 
+	// Regexp
+	public static Criterion regexp(Entity<?> entity, String attribute, String pattern) { return regexp(Estivate.attribute(entity, attribute), pattern); }
+	
 	// Like starts
 	public static Criterion likeStartsWith(Entity<?> entity, String attribute, String value)				{ return likeStartsWith(Estivate.attribute(entity, attribute), value);	}
 	public static Criterion notLikeStartsWith(Entity<?> entity, String attribute, String value)				{ return notLikeStartsWith(Estivate.attribute(entity, attribute), value);}
@@ -591,6 +598,7 @@ public class Estivate {
 	public static Aggregator notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values)			{ return notMatchAgainstIn(new Entity<>(entity), attribute, values); }
 	public static Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
 
+	public static Criterion regexp (Class<?> entity, String attribute, String pattern) { return regexp(new Entity<>(entity), attribute, pattern); }
 
 	public static Criterion nativeCriterion (Class<?> entity, String attribute, String criterion)	{ return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 
@@ -729,6 +737,8 @@ public class Estivate {
 	public static <E> Aggregator matchAgainstInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
 	public static <E> Aggregator notMatchAgainstIn(AttributeGetter<E, String> getter, Collection<String> values)			{ return notMatchAgainstIn(Estivate.attribute(getter), values); }
 	public static <E> Aggregator notMatchAgainstInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
+	
+	public static <E> Criterion regexp(AttributeGetter<E, String> getter, String pattern) { return regexp(Estivate.attribute(getter), pattern); }
 	
 	public static <E> Criterion nativeCriterion (AttributeGetter<E, String> getter, String criterion)	{ return nativeCriterion(Estivate.attribute(getter), criterion); }
 	

@@ -1,7 +1,13 @@
 package com.estivate.reconciliation;
 
+import java.util.Optional;
+
+import com.estivate.util.Nullable;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 public class ColumnModel {
@@ -18,6 +24,9 @@ public class ColumnModel {
     }
 
     @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class EntityColumn{
         //Field field;
         String name;
@@ -28,8 +37,11 @@ public class ColumnModel {
         String defaultValue;
         String charset;
         String collation;
+        @Builder.Default
         boolean isNullable = true;
+        @Builder.Default
         boolean isAutoIncrement = false;
+        @Builder.Default
         boolean isPrimaryKey = false;
         
     }

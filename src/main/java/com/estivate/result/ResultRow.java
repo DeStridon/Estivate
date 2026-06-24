@@ -77,14 +77,7 @@ public class ResultRow {
 	public LocalDate		asLocalDate(String column) { LocalDateTime ldt = asLocalDateTime(column); return ldt == null ? null : ldt.toLocalDate(); }
 	public Date 			asDate(String column) { LocalDateTime ldt = asLocalDateTime(column); return ldt == null ? null : Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant()); } 
 
-	public Boolean 			asBoolean(String column) { 
-		String content = asString(column);
-		if(content == null){ return null; }
-		else if(content.equals("1") || content.equalsIgnoreCase("true")){ return true; }
-		else if(content.equals("0") || content.equalsIgnoreCase("false")){ return false; }
-		return null;
-	}
-	
+	public Boolean 			asBoolean(String column) {  return FieldUtils.parseBoolean(asString(column)); }
 	public Byte 			asByte(String column) { String value = asString(column); return value == null ? null : Byte.valueOf(value); }
 	public Character 		asChar(String column) { String value = asString(column); return value == null ? null : value.charAt(0); }
 	

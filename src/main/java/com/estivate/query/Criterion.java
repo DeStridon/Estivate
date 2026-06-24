@@ -142,6 +142,17 @@ public abstract class Criterion implements EstivateNode{
 		
 	}
 	
+	@ToString(callSuper=true)
+	public static class Regexp extends Criterion{
+		public String pattern;
+		public Regexp(Attribute attribute, String pattern) {
+			this.attribute = attribute;
+			this.pattern = pattern;
+		}
+		
+		public Regexp clone() { return new Regexp(attribute, pattern); }
+	}
+	
 	
 	@ToString(callSuper = true)
 	public static class NativeCriterion extends Criterion{

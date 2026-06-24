@@ -376,6 +376,13 @@ public class FieldUtils {
         }
         return null;
     }
+    
+    public static Boolean parseBoolean(String content) {
+    	if(content == null){ return null; }
+		else if(content.equals("1") || content.equalsIgnoreCase("true")){ return true; }
+		else if(content.equals("0") || content.equalsIgnoreCase("false")){ return false; }
+		return null;
+    }
 
 	
 }

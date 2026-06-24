@@ -552,6 +552,11 @@ public class Statement implements AutoCloseable{
 			appendQuery(")");
 			
 		}
+		else if(node instanceof Criterion.Regexp) {
+			Criterion.Regexp regexp = (Criterion.Regexp) node;
+			appendAttributeAsParameter(regexp.attribute);
+			appendQuery("REGEXP '"+regexp.pattern+"'");
+		}
 		else if(node instanceof Criterion.NativeCriterion) {
 			Criterion.NativeCriterion nativeCriterion = (Criterion.NativeCriterion) node;
 			appendAttributeAsParameter(nativeCriterion.attribute);

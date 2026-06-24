@@ -1120,6 +1120,9 @@ public abstract class Context {
 				if(tableField.isAutoIncrement()) {
 					statement.appendQuery("AUTO_INCREMENT");
 				}
+				if(tableField.getDefaultValue() != null) {
+					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), addColumnOperation.getColumnDefinition().getType()));
+				}
 			}
 			else if(operation instanceof AlterQuery.DropColumn) {
 				AlterQuery.DropColumn dropColumnOperation = (AlterQuery.DropColumn) operation;
@@ -1140,6 +1143,9 @@ public abstract class Context {
 				}
 				if(tableField.isAutoIncrement()) {
 					statement.appendQuery("AUTO_INCREMENT");
+				}
+				if(tableField.getDefaultValue() != null) {
+					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), modifyColumnOperation.getColumnDefinition().getType()));
 				}
 			}
 			else if(operation instanceof AlterQuery.RenameColumn) {
@@ -1176,6 +1182,23 @@ public abstract class Context {
 		
 		return statement;
 
+	}
+	
+	public String defaultValueForType(String defaultValue, Class type) {
+		if(defaultValue == null) {
+			return null;
+		}
+		if(type == Boolean.class || type == boolean.class) {
+			Boolean defaultValueBool = FieldUtils.parseBoolean(defaultValue);
+			if(defaultValueBool == null) {
+				return null;
+			}
+			else {
+				return defaultValueBool.toString().toLowerCase();
+			}
+		}
+		return "'"+defaultValue+"'";
+		
 	}
 
 	abstract public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn);
@@ -1306,6 +1329,10 @@ public abstract class Context {
 //		String type = regexMatcher.getMatch("type").group;
 //		String length = regexMatcher.getMatch("length").group;
 		
+		// For enum, keep all in type
+		if(columnType.toUpperCase().startsWith("ENUM")) {
+			return new Pair<String, Integer>(columnType, null);
+		}
 		Pattern reg = Pattern.compile("([a-zA-Z]+)\\s*(\\(([0-9]+)(,([0-9]+))?\\))?");
 		Matcher matcher = reg.matcher(columnType);
 		if(matcher.find()) {

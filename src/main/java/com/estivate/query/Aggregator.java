@@ -132,6 +132,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notMatchAgainstIn(Attribute attribute, Collection<String> values) { add(Estivate.notMatchAgainstIn(attribute, values)); return this; }
 	public Aggregator notMatchAgainstInIfNotEmpty(Attribute attribute, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(attribute, values)); return this; }
 	
+	public Aggregator regexp(Attribute attribute, String pattern) { add(Estivate.regexp(attribute, pattern)); return this; }
+	
 
 	public Aggregator nativeCriterion(Attribute attribute, String criterion) { add(Estivate.nativeCriterion(attribute, criterion)); return this; }
 
@@ -269,6 +271,8 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notMatchAgainstIn(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.notMatchAgainstIn(entity, attribute, values)); return this; }
 	public Aggregator notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(entity, attribute, values)); return this; }
 
+	public Aggregator regexp(Entity<?> entity, String attribute, String pattern) { add(Estivate.regexp(entity, attribute, pattern)); return this; }
+	
 	public Aggregator nativeCriterion(Entity<?> entity, String attribute, String criterion) { add(Estivate.nativeCriterion(entity, attribute, criterion)); return this; }
 
 	public Aggregator inSubQuery		(Entity<?> entity, String attribute, SelectQuery<?> subQuery)	{ add(Estivate.in(entity, attribute, subQuery)); return this; }
@@ -402,6 +406,7 @@ public class Aggregator implements EstivateNode {
 	public Aggregator notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values) { return notMatchAgainstIn(new Entity<>(entity), attribute, values); }
 	public Aggregator notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { return notMatchAgainstInIfNotEmpty(new Entity<>(entity), attribute, values); }
 	
+	public Aggregator regexp(Class<?> entity, String attribute, String pattern) { return regexp(new Entity<>(entity), attribute, pattern); }
 
 	public Aggregator nativeCriterion(Class<?> entity, String attribute, String criterion) { return nativeCriterion(new Entity<>(entity), attribute, criterion); }
 
@@ -509,6 +514,8 @@ public class Aggregator implements EstivateNode {
 	public <T> Aggregator matchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(function, values)); return this; }
 	public <T> Aggregator notMatchAgainstIn(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.notMatchAgainstIn(function, values)); return this; }
 	public <T> Aggregator notMatchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(function, values)); return this; }
+	
+	public <T> Aggregator regexp(AttributeGetter<T, String> function, String pattern) { add(Estivate.regexp(function, pattern)); return this; }
 	
 	public <T> Aggregator nativeCriterion(AttributeGetter<T, String> function, String criterion) { add(Estivate.nativeCriterion(function, criterion)); return this; }
 

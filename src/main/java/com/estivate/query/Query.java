@@ -220,12 +220,11 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q notLikeContainsIfNotNull 	(Attribute attribute, String value)        	{ super.notLikeContainsIfNotNull (attribute, value);  return self(); }
 
 	public Q matchAgainst(Attribute attribute, String value) { super.matchAgainst(attribute, value); return self(); }
-
 	public Q matchAgainstIfNotNull(Attribute attribute, String value) { super.matchAgainstIfNotNull(attribute, value); return self(); }
-
 	public Q notMatchAgainst(Attribute attribute, String value) { super.notMatchAgainst(attribute, value); return self(); }
-
 	public Q notMatchAgainstIfNotNull(Attribute attribute, String value) { super.notMatchAgainstIfNotNull(attribute, value); return self(); }
+	
+	public Q regexp(Attribute attribute, String pattern) { super.regexp(attribute, pattern); return self(); }
 
 
 	public Q matchAgainstIn(Attribute attribute, Collection<String> values) { super.matchAgainstIn(attribute, values); return self(); }
@@ -334,11 +333,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q notLikeContainsIfNotNull 	(String attribute, String value)        	{ super.notLikeContainsIfNotNull (this.entity, attribute, value);  return self(); }
 
 	public Q matchAgainst(String attribute, String value) { super.matchAgainst(this.entity, attribute, value); return self(); }
-
 	public Q matchAgainstIfNotNull(String attribute, String value) { super.matchAgainstIfNotNull(this.entity, attribute, value); return self(); }
-
 	public Q notMatchAgainst(String attribute, String value) { super.notMatchAgainst(this.entity, attribute, value); return self(); }
-
 	public Q notMatchAgainstIfNotNull(String attribute, String value) { super.notMatchAgainstIfNotNull(this.entity, attribute, value); return self(); }
 
 
@@ -346,6 +342,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q matchAgainstInIfNotEmpty(String attribute, Collection<String> values) { super.matchAgainstInIfNotEmpty(this.entity, attribute, values); return self(); }
 	public Q notMatchAgainstIn(String attribute, Collection<String> values) { super.notMatchAgainstIn(this.entity, attribute, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(this.entity, attribute, values); return self(); }
+	
+	public Q regexp(String attribute, String pattern) { super.regexp(this.entity, attribute, pattern); return self(); }
 	
 	public Q isNotNull	(String attribute) 				{ super.isNotNull(this.entity, attribute); 		return self();}
 	public Q isNull		(String attribute) 				{ super.isNull(this.entity, attribute); 			return self();}
@@ -479,6 +477,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q notMatchAgainstIn(Class<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstIn(entity, attribute, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(Class<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
 	
+	public Q regexp(Class<?> entity, String attribute, String pattern) { super.regexp(entity, attribute, pattern); return self(); }
+	
 	public Q isNotNull	(Class<?> entity, String attribute) 				{ super.isNotNull(entity, attribute); 		return self();}
 	public Q isNull	(Class<?> entity, String attribute) 				{ super.isNull(entity, attribute); 			return self();}
 
@@ -598,6 +598,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q notMatchAgainstIn(Entity<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstIn(entity, attribute, values); return self(); }
 	public Q notMatchAgainstInIfNotEmpty(Entity<?> entity, String attribute, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(entity, attribute, values); return self(); }
 
+	public Q regexp(Entity<?> entity, String attribute, String pattern) { super.regexp(entity, attribute, pattern); return self(); }
 
 	/* Wrappers for Lambda */
 	public <T, P> Q eq   			(AttributeGetter<T, P> function, P value) { super.eq(function, value);  return self(); }
@@ -697,6 +698,9 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public <T> Q matchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { super.matchAgainstInIfNotEmpty(function, values); return self(); }
 	public <T> Q notMatchAgainstIn(AttributeGetter<T, String> function, Collection<String> values) { super.notMatchAgainstIn(function, values); return self(); }
 	public <T> Q notMatchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(function, values); return self(); }
+	
+	public <T> Q regexp(AttributeGetter<T, String> function, String pattern) { super.regexp(function, pattern); return self(); }
+	
 	
 	public <T> Q isNotNull	(AttributeGetter<T, ?> function) 				{ super.isNotNull(function); return self();}
 	public <T> Q isNull		(AttributeGetter<T, ?> function) 				{ super.isNull(function); return self();}

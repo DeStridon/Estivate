@@ -26,6 +26,7 @@ import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.EntityModel;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
+import com.estivate.util.FieldUtils;
 import com.estivate.util.Pair;
 
 import lombok.AllArgsConstructor;
@@ -185,6 +186,9 @@ public class MySQLContext extends Context {
                     String defaultValue = resultSet.getString("Default");
                     if(defaultValue != null && defaultValue.startsWith("b'") && defaultValue.endsWith("'")) {
                     	defaultValue = defaultValue.substring(2, defaultValue.length()-1);
+                    }
+                    if(defaultValue != null && columnType.equalsIgnoreCase("bit(1)")) {
+                    	defaultValue = FieldUtils.parseBoolean(defaultValue).toString();
                     }
                     // H2 doesn't have "Extra" column, so we need to handle it gracefully
                     String extra = null;
