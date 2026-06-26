@@ -1,9 +1,5 @@
 package com.estivate.reconciliation;
 
-import java.util.Optional;
-
-import com.estivate.util.Nullable;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
