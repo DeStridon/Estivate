@@ -100,6 +100,17 @@ public class Projection {
 		public String functionPrefix();
 		public String functionSuffix();
 	}
+
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface Nested { }
+
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface NestedBy{
+		public Class<?> entity();
+		public String attribute();
+	}
 	
 	/**
 	 * Maps a projection object to an entity object based on @Projection.Attribute annotations.

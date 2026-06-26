@@ -1,10 +1,8 @@
 package com.estivate.query;
 
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +20,7 @@ import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
+import com.estivate.util.ReflectionUtils;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -168,6 +167,19 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			else if(field.getDeclaredAnnotation(Projection.Function.class) != null) {
 				Projection.Function attribute = field.getDeclaredAnnotation(Projection.Function.class);
 				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.Nested.class) != null) {
+				if(field.getType().isAssignableFrom(List.class)) {
+					Class<?> listType = ReflectionUtils.getListType(field);
+					if(listType == null) {
+						log.error("List type is not found for field " + field.getName());
+						continue;
+					}
+					selectAll(listType);
+				}
+				else {
+					selectAll(field.getType());
+				}
 			}
 			else{
 				select(entity, field.getName()); 

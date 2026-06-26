@@ -1,5 +1,8 @@
 package com.estivate.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +51,7 @@ public class ReflectionUtils {
         return entities.stream().distinct().collect(Collectors.toList());
     }
 
-     public static List<Class<?>> scanPackagesForAnnotatedClasses(String[] packageNames, Class<? extends java.lang.annotation.Annotation> annotationClass) {
+    public static List<Class<?>> scanPackagesForAnnotatedClasses(String[] packageNames, Class<? extends java.lang.annotation.Annotation> annotationClass) {
         List<Class<?>> classes = new ArrayList<>();
         for (String packageName : packageNames) {
             try {
@@ -66,6 +69,19 @@ public class ReflectionUtils {
             }
         }
         return classes.stream().distinct().collect(Collectors.toList());
-     }
+    }
+
+    public static Class<?> getListType(Field field) {
+        Type genericType = field.getGenericType();
+        if (genericType instanceof ParameterizedType) {
+            Type[] actualTypeArguments = ((ParameterizedType) genericType).getActualTypeArguments();
+            if (actualTypeArguments != null && actualTypeArguments.length > 0) {
+                if (actualTypeArguments[0] instanceof Class<?>) {
+                    return (Class<?>) actualTypeArguments[0];
+                }
+            }
+        }
+        return null;
+    }
 
 }

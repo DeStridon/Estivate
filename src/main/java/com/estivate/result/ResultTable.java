@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,6 +17,7 @@ import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Attribute;
+import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.AttributeMapper;
 import com.estivate.result.IMapper.BooleanMapper;
@@ -29,6 +32,7 @@ import com.estivate.result.IMapper.ShortMapper;
 import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
 import com.estivate.util.FieldUtils.AttributeGetter;
+import com.estivate.util.ReflectionUtils;
 
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -234,13 +238,38 @@ public class ResultTable implements Iterable<ResultRow>{
     // Entity list mapping
     public <T> List<T> asList(Class<T> entity) { return asList(new Entity<>(entity)); }
     public <T> List<T> asList(Entity<T> entity) { 
+
         EntityMapper<T> entityMapper = new EntityMapper<>(context, query, entity);
-        List<T> results = new ArrayList<>();
-        for(ResultRow row : rows) {
-            T result = entityMapper.map(row.getColumnValues());
-            results.add(result);
+
+        // If a key is defined
+        Projection.NestedBy key = entity.entity.getDeclaredAnnotation(Projection.NestedBy.class);
+        if(key == null) {
+            List<T> results = new ArrayList<>();
+            for(ResultRow row : rows) {
+                T result = entityMapper.map(row.getColumnValues());
+                results.add(result);
+            }
+            return results;
         }
-        return results;
+
+        Map<Object, T> resultsMap = new LinkedHashMap<>();
+
+        // TODO : 
+        for(ResultRow row : rows) {
+            Object keyValue = row.as(key.entity(), key.attribute());
+            T object = resultsMap.get(keyValue);
+            if(object == null) {
+                object = entityMapper.map(row.getColumnValues());
+                resultsMap.put(keyValue, object);
+            }
+            else{
+                entityMapper.map(row.getColumnValues(), object);
+            }
+
+        }
+
+        return new ArrayList<>(resultsMap.values());
+
     }
         
 

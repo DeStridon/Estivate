@@ -23,11 +23,12 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
-import com.estivate.query.SelectQuery;
 import com.estivate.query.Projection.IdentityFunction;
+import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
 import com.estivate.util.FieldUtils;
+import com.estivate.util.ReflectionUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,6 +47,8 @@ public class EntityMapper<U> {
 
 	List<ColumnMapping> columnMappings = new ArrayList<>();
 	Set<Integer> columnMappingIndexes = new HashSet<>();
+
+	List<EntityMapping> entityMappings = new ArrayList<>();
 	
 	// Result side
 
@@ -75,6 +78,9 @@ public class EntityMapper<U> {
 		// Get PostLoadMethods
 		this.entityPostLoadMethods = FieldUtils.getPostLoadMethods(entity.entity);
 
+		// Entity Mappings
+		entityMappings = getEntityMappings(query, entity);
+
 		this.context = context;
 		this.query = query;
 
@@ -84,29 +90,53 @@ public class EntityMapper<U> {
 		this(context, query, entity, false);
 	}
 
-	@SneakyThrows
 	public U map(String[] row) {
+		return map(row, null);
+	}
+
+	@SneakyThrows
+	public U map(String[] row, U obj) {
 
 		// if all row values are null for columnMapping, return null
 		if(columnMappingIndexes.stream().map(x -> row[x]).allMatch(x -> x == null)) {
 			return null;
 		}
-		
-		U obj = entityConstructor.newInstance();
-		
-		for (int i = 0; i < row.length; i++) {
-			if (i >= columnMappings.size() || columnMappings.get(i) == null) {
-				continue;
+
+		if(obj == null) {
+			obj = entityConstructor.newInstance();
+			for (int i = 0; i < row.length; i++) {
+				if (i >= columnMappings.size() || columnMappings.get(i) == null) {
+					continue;
+				}
+				ColumnMapping columnMapping = columnMappings.get(i);
+				Field field = columnMapping.getField();
+				if (field != null) {
+					setGeneratedField(entity, field, obj, row[i], columnMapping.getTransformer());
+				}
 			}
-			ColumnMapping columnMapping = columnMappings.get(i);
-			Field field = columnMapping.getField();
-			if (field != null) {
-				setGeneratedField(entity, field, obj, row[i], columnMapping.getTransformer());
+			for (Method method : entityPostLoadMethods) {
+				method.invoke(obj);
+			}	
+		}
+
+		for(EntityMapping entityMapping : entityMappings) {
+			
+			Object subObj = entityMapping.getEntityMapper().map(row, null);
+			if(entityMapping.getField().getType().isAssignableFrom(List.class)) {
+				List<Object> list = (List<Object>) entityMapping.getField().get(obj);
+				if(list == null) {
+					list = new ArrayList<>();
+					entityMapping.getField().set(obj, list);
+				}
+				list.add(subObj);
 			}
+			else {
+				entityMapping.getField().set(obj, subObj);
+			}
+
 		}
-		for (Method method : entityPostLoadMethods) {
-			method.invoke(obj);
-		}
+		
+		
 		return obj;
 	}
 
@@ -331,6 +361,14 @@ public class EntityMapper<U> {
 		Function<?, ?> transformer;
 	}
 
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class EntityMapping {
+		Field field;
+		EntityMapper<?> entityMapper;
+	}
+
 
 	List<ColumnMapping> getColumnMappings(SelectQuery<?> query, Entity<?> entityClass) {
 		List<ColumnMapping> columnMappings = new ArrayList<>(query.getSelects().size());
@@ -358,6 +396,34 @@ public class EntityMapper<U> {
 			log.warn("In following query : " + query.toString()+", trying to map to entity : " + entityClass.toString() + ", fields missing : " + String.join(", ", unmappedFields));
 		}
 		return columnMappings;
+	}
+
+	List<EntityMapping> getEntityMappings(SelectQuery<?> query, Entity<?> entityClass){
+		List<EntityMapping> list = new ArrayList<>();
+		for(Field field : FieldUtils.getEntityFields(entityClass.entity)) {
+
+			if(!field.isAnnotationPresent(Projection.Nested.class)){
+				continue;
+			}
+			EntityMapping entityMapping = new EntityMapping();
+				
+			// Get type in List
+			if(field.getType().isAssignableFrom(List.class)) {
+				Class<?> listType = ReflectionUtils.getListType(field);
+				if(listType == null) {
+					log.error("List type is not found for field " + field.getName());
+					continue;
+				}
+				entityMapping.setEntityMapper(new EntityMapper<>(context, query, new Entity<>(listType)));
+			}
+			else {
+				entityMapping.setEntityMapper(new EntityMapper<>(context, query, new Entity<>(field.getType())));
+			}
+			entityMapping.setField(field);
+			list.add(entityMapping);
+	
+		}
+		return list;
 	}
 
 	public static ColumnMapping getColumnMapping(Entity<?> entityClass, Field field) {
