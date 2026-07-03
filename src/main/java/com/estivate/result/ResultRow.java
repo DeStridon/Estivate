@@ -86,12 +86,14 @@ public class ResultRow {
 	
 
 	private Integer indexOf(String column){
-		int index = resultTable.columnNames.indexOf(column);
-		if(index == -1){
-			log.error("Column not found: "+column + ", available columns: " + resultTable.columnNames);
-			return null;
+
+		for(int i = 0; i < resultTable.columnNames.size(); i++){
+			if(resultTable.columnNames.get(i).equalsIgnoreCase(column)){
+				return i;
+			}
 		}
-		return index;
+		log.error("Column not found: "+column + ", available columns: " + resultTable.columnNames);
+		return null;
 	}
 
 	@SneakyThrows
