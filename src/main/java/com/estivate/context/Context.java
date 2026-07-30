@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
 import com.estivate.Entity.UpdateDate;
@@ -35,10 +37,10 @@ import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.index.IndexDiff;
 import com.estivate.query.AlterQuery;
 import com.estivate.query.Attribute;
 import com.estivate.query.CreateQuery;
+import com.estivate.query.CreateQuery.Index;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.Join;
@@ -72,7 +74,10 @@ public abstract class Context {
 	public Consumer<UpdateQuery<?>> updateInterceptor = null;
 	public Consumer<DeleteQuery<?>> deleteInterceptor = null;
 	public Consumer<InsertQuery<?>> insertInterceptor = null;
+	public Consumer<AlterQuery<?>> alterInterceptor = null;
 	
+	// public Consumer<List<?>> updatePostConsumer = null;
+	// public Consumer<List<?>> insertPostConsumer = null;
 		
 	public Context(DataSource datasource) {
 		this.datasource = datasource;
@@ -138,18 +143,22 @@ public abstract class Context {
 
 	private AlterQuery<?> preExecute(AlterQuery<?> query) {
 		AlterQuery<?> clonedQuery = query.clone();
+		if(alterInterceptor != null){
+			alterInterceptor.accept(clonedQuery);
+		}
 		return clonedQuery;
 	}
 
 	
-	
 	/**
 	 * Pre-processes an object before insert
 	 */
-	private <U> void preInsert(InsertQuery<U> object) {
+	private <U> InsertQuery<U> preInsert(InsertQuery<U> query) {
+		InsertQuery<U> clonedQuery = query.clone();
 		if(insertInterceptor != null) {
-			insertInterceptor.accept(object);
+			insertInterceptor.accept(clonedQuery);
 		}
+		return clonedQuery;
 	}
 
 
@@ -241,6 +250,38 @@ public abstract class Context {
 					statement.appendQuery(",");
 				}
 			}
+			
+			for(Index index : query.getIndexes()) {
+				
+				statement.appendQuery(",");
+
+				switch(index.getType() != null ? index.getType() : IndexType.DEFAULT) {
+					case PRIMARY:
+						statement.appendQuery("PRIMARY KEY");
+						break;
+					case UNIQUE:
+						statement.appendQuery("UNIQUE INDEX");
+						statement.appendQuery(nameMapper.mapIndex(index));
+						break;
+					case FULLTEXT:
+						statement.appendQuery("FULLTEXT INDEX");
+						statement.appendQuery(nameMapper.mapIndex(index));
+						break;
+					case DEFAULT:
+					default:
+						statement.appendQuery("INDEX");
+						statement.appendQuery(nameMapper.mapIndex(index));
+						break;
+				}
+
+				statement.appendQuery("(");
+				statement.appendQuery(index.getColumns().stream()
+						.map(col -> nameMapper.mapDatabaseField(col.getColumnName()) + (col.getLength() != null && col.getLength() != 0 ? "("+col.getLength()+")" : ""))
+						.collect(Collectors.joining(", ")));
+
+				statement.appendQuery(")");
+
+			}
 			statement.appendQuery(")");
 			return statement.executeForValidation();
 		}
@@ -259,7 +300,7 @@ public abstract class Context {
 			Statement statement = new Statement(this, connection); ){
 	
 			chronometer.step("executeInsert::start");
-			preInsert(query);
+			query = preInsert(query);
 			chronometer.step("executeInsert::preInsert");
 			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
 			chronometer.step("executeInsert::appendQuery");
@@ -561,67 +602,67 @@ public abstract class Context {
 
 	
 
-	// Tries to find entity with same id, and if not found, tries to find entity with same unicity constraints
-	// Returns true if entity was merged to existing entity
-	@SneakyThrows
-	public <U> boolean merge(U entity){
-		// First try to find entity with same id
-		Field idField = FieldUtils.getIdField(entity.getClass());
+//	// Tries to find entity with same id, and if not found, tries to find entity with same unicity constraints
+//	// Returns true if entity was merged to existing entity
+//	@SneakyThrows
+//	public <U> boolean merge(U entity){
+//		// First try to find entity with same id
+//		Field idField = FieldUtils.getIdField(entity.getClass());
+//
+//		if(idField != null){
+//			idField.setAccessible(true);
+//			if(idField.getLong(entity) != 0L) {
+//				SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
+//				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
+//				U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
+//				if(duplicatedEntity != null) {
+//					// Copy fields from result into object
+//					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
+//						field.setAccessible(true);
+//						field.set(entity, field.get(duplicatedEntity));
+//					}
+//					return true;
+//				}
+//			}
+//		}
+//	
+//		// Tries to merge with entity having same unicity constraints
+//		IndexDiff indexDiff = new IndexDiff(this, entity.getClass());
+//		for(TableIndex entityIndex : indexDiff.getEntityIndexes()){
+//			if(entityIndex.type() != IndexType.UNIQUE) {
+//				continue;
+//			}
+//
+//			SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
+//			for(IndexColumn columnIndex : entityIndex.columns()) {
+//				Field field = entity.getClass().getDeclaredField(columnIndex.value());
+//				field.setAccessible(true);
+//				Object value = field.get(entity);
+//
+//				query.eq(entity.getClass(), columnIndex.value(), value);
+//			}
+//
+//			U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
+//			
+//			if(duplicatedEntity != null) {
+//				// Copy fields from result into object
+//				for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
+//					field.setAccessible(true);
+//					field.set(entity, field.get(duplicatedEntity));
+//				}
+//				return true;
+//			}
+//		}
+//
+//		return false;
+//	}
 
-		if(idField != null){
-			idField.setAccessible(true);
-			if(idField.getLong(entity) != 0L) {
-				SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
-				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
-				U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
-				if(duplicatedEntity != null) {
-					// Copy fields from result into object
-					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
-						field.setAccessible(true);
-						field.set(entity, field.get(duplicatedEntity));
-					}
-					return true;
-				}
-			}
-		}
-	
-		// Tries to merge with entity having same unicity constraints
-		IndexDiff indexDiff = new IndexDiff(this, entity.getClass());
-		for(TableIndex entityIndex : indexDiff.getEntityIndexes()){
-			if(entityIndex.type() != IndexType.UNIQUE) {
-				continue;
-			}
-
-			SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
-			for(IndexColumn columnIndex : entityIndex.columns()) {
-				Field field = entity.getClass().getDeclaredField(columnIndex.value());
-				field.setAccessible(true);
-				Object value = field.get(entity);
-
-				query.eq(entity.getClass(), columnIndex.value(), value);
-			}
-
-			U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
-			
-			if(duplicatedEntity != null) {
-				// Copy fields from result into object
-				for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
-					field.setAccessible(true);
-					field.set(entity, field.get(duplicatedEntity));
-				}
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	// Try merging if entity has a valid id, otherwise insert
-	public <U> void mergeOrInsert(U entity){
-		if(!merge(entity)){
-			insert(entity);
-		}
-	}
+//	// Try merging if entity has a valid id, otherwise insert
+//	public <U> void mergeOrInsert(U entity){
+//		if(!merge(entity)){
+//			insert(entity);
+//		}
+//	}
 		
 	public <U> void updateOrInsert(U object){
 		updateOrInsert(object, new Chronometer("updateOrInsert"));
@@ -798,55 +839,55 @@ public abstract class Context {
 	}
 
 
-	public <U> boolean createTable(Class<U> entityClass) {
-
-		CreateQuery<U> query = Estivate.createQuery(entityClass);
-		execute(query);
-
-		TableIndex[] compositeIndex = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
-		
-		for(TableIndex index : compositeIndex) {
-			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
-			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-			addIndex(entityClass, name, index.type(), columns);
-		}
-
-		return true;
-
-	}
+//	public <U> boolean createTable(Class<U> entityClass) {
+//
+//		CreateQuery<U> query = Estivate.createQuery(entityClass);
+//		execute(query);
+//
+//		TableIndex[] compositeIndex = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
+//		
+//		for(TableIndex index : compositeIndex) {
+//			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
+//			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
+//			addIndex(entityClass, name, index.type(), columns);
+//		}
+//
+//		return true;
+//
+//	}
 	
 	
-	@SneakyThrows
-	public <U> boolean createTableIfNotExists(Class<U> entityClass) {
-
-		List<String> existingTables = showTables();
-		String newTableName = nameMapper.toTableName(entityClass);
-		if(showTables().contains(nameMapper.toTableName(entityClass))) {
-			return false;
-		}
-		
-		
-		CreateQuery<U> query = Estivate.createQuery(entityClass);
-		query.ifNotExists();
-		execute(query);
-
-		List<TableIndex> tableIndexes = listIndexes(entityClass);
-
-		TableIndex[] entityIndexes = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
-		
-		for(TableIndex index : entityIndexes) {
-			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
-			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-			
-			if(tableIndexes.stream().anyMatch(x -> x.name().equals(name))) {
-				continue;
-			}
-
-			addIndex(entityClass, name, index.type(), columns);
-		}
-
-		return true;
-	}
+//	@SneakyThrows
+//	public <U> boolean createTableIfNotExists(Class<U> entityClass) {
+//
+//		List<String> existingTables = showTables();
+//		String newTableName = nameMapper.toTableName(entityClass);
+//		if(showTables().contains(nameMapper.toTableName(entityClass))) {
+//			return false;
+//		}
+//		
+//		
+//		CreateQuery<U> query = Estivate.createQuery(entityClass);
+//		query.ifNotExists();
+//		execute(query);
+//
+//		List<TableIndex> tableIndexes = listIndexes(entityClass);
+//
+//		TableIndex[] entityIndexes = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
+//		
+//		for(TableIndex index : entityIndexes) {
+//			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
+//			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
+//			
+//			if(tableIndexes.stream().anyMatch(x -> x.name().equals(name))) {
+//				continue;
+//			}
+//
+//			addIndex(entityClass, name, index.type(), columns);
+//		}
+//
+//		return true;
+//	}
 
 	@SneakyThrows
 	public boolean truncateTable(Class<?> entity) {
@@ -1159,7 +1200,7 @@ public abstract class Context {
 				AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
 				statement.appendQuery(addIndexOperation.getIndexName());
 				statement.appendQuery("(");
-				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col)).collect(Collectors.joining(", ")));
+				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col.getColumnName())+ (col.getLength() != null ? "("+col.getLength()+")" : "")).collect(Collectors.joining(", ")));
 				statement.appendQuery(")");
 			}
 			else if(operation instanceof AlterQuery.DropIndex) {

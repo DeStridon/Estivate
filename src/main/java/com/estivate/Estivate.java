@@ -1,5 +1,6 @@
 package com.estivate;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,9 +10,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Entity.SubQueryEntity;
+import com.estivate.context.Context;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Aggregator.GroupType;
 import com.estivate.query.AlterQuery;
+import com.estivate.query.AlterQuery.IndexColumn;
 import com.estivate.query.Attribute;
 import com.estivate.query.Attribute.Function;
 import com.estivate.query.CreateQuery;
@@ -809,6 +813,22 @@ public class Estivate {
 
 		/* Window Functions */
 		public static Attribute.Function rowNumber = new Attribute.Function("row_number()", "", true);
+		
+	}
+	
+	 
+	public static class Tools{
+		
+		public static CreateQuery<?> createTableFullQuery(Class<?> entity){
+			CreateQuery<?> createQuery = Estivate.createQuery(entity);
+			for(Field field : FieldUtils.getEntityFields(entity)) {
+				createQuery.column(Context.getEntityColumn(field));
+			}
+			for(TableIndex index : entity.getDeclaredAnnotationsByType(TableIndex.class)) {
+				createQuery.index(index.name(), index.type(), Arrays.stream(index.columns()).map(IndexColumn::of).collect(Collectors.toList()));
+			}
+			return createQuery;
+		}
 		
 	}
 

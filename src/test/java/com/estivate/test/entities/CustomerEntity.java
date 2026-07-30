@@ -7,11 +7,12 @@ import javax.persistence.Enumerated;
 
 import com.estivate.Entity.InsertDate;
 import com.estivate.Entity.UpdateDate;
-import com.estivate.index.Annotations.TableIndexes;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
+import com.estivate.index.Annotations.TableIndexes;
 
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 @Data
+@Entity
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

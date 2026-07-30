@@ -37,10 +37,11 @@ public class SelectFetchAsTest {
     @BeforeEach
     public void setUp() {
         // Clean up tables
-        context.createTableIfNotExists(OrderLineEntity.class);
-        context.createTableIfNotExists(OrderEntity.class);
-        context.createTableIfNotExists(ProductEntity.class);
-        context.createTableIfNotExists(CustomerEntity.class);
+    	Estivate.Tools.createTableFullQuery(OrderLineEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(OrderEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(ProductEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);
+
         context.truncateTable(OrderLineEntity.class);
         context.truncateTable(OrderEntity.class);
         context.truncateTable(ProductEntity.class);

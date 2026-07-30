@@ -10,18 +10,27 @@ import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
 
+import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.index.IndexDiff;
+import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
+import com.estivate.reconciliation.EstivateReconciliation.AddIndexDelta;
+import com.estivate.reconciliation.EstivateReconciliation.CreateTableDelta;
+import com.estivate.reconciliation.EstivateReconciliation.DropColumnDelta;
+import com.estivate.reconciliation.EstivateReconciliation.DropIndexDelta;
+import com.estivate.reconciliation.EstivateReconciliation.DropTableDelta;
+import com.estivate.reconciliation.EstivateReconciliation.IAddColumnResolver;
+import com.estivate.reconciliation.EstivateReconciliation.IAddIndexResolver;
+import com.estivate.reconciliation.EstivateReconciliation.ICreateTableResolver;
+import com.estivate.reconciliation.EstivateReconciliation.IDropColumnResolver;
+import com.estivate.reconciliation.EstivateReconciliation.IDropIndexResolver;
+import com.estivate.reconciliation.EstivateReconciliation.IDropTableResolver;
+import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
+import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.test.entities.CustomerEntity;
-import com.estivate.test.entities.OrderEntity;
-import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ProductEntity;
-import com.estivate.test.entities.UserProductRatingEntity;
-
-import lombok.SneakyThrows;
 
 public class DatabaseGenerator {
 
@@ -47,28 +56,36 @@ public class DatabaseGenerator {
 			}
 			
 			context.nameMapper = new TestNameMapper();
+			
 		}
-
-		context.createTableIfNotExists(ProductEntity.class);
-		IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
-		productIndexDiff.addUnimplemented();
-
-		context.createTableIfNotExists(OrderLineEntity.class);
-		IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
-		orderLineIndexDiff.addUnimplemented();
-
-		context.createTableIfNotExists(OrderEntity.class);
-		IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
-		orderIndexDiff.addUnimplemented();
-
-		context.createTableIfNotExists(CustomerEntity.class);
-		System.out.println(context.showTables());
-		IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
-		customerIndexDiff.addUnimplemented();
 		
-		context.createTableIfNotExists(UserProductRatingEntity.class);
-		IndexDiff userProductRatingIndexDiff = new IndexDiff(context, UserProductRatingEntity.class);
-		userProductRatingIndexDiff.addUnimplemented();
+		ReconciliationManager reconciliationManager = new ReconciliationManager(context);
+		
+		reconciliationManager.addEntitiesFromPackages("com.estivate.test.entities");
+		reconciliationManager.addResolvers(BasicResolver.class);
+		reconciliationManager.applyResolvers();
+		
+
+//		context.createTableIfNotExists(ProductEntity.class);
+//		IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
+//		productIndexDiff.addUnimplemented();
+//
+//		context.createTableIfNotExists(OrderLineEntity.class);
+//		IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
+//		orderLineIndexDiff.addUnimplemented();
+//
+//		context.createTableIfNotExists(OrderEntity.class);
+//		IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
+//		orderIndexDiff.addUnimplemented();
+//
+//		context.createTableIfNotExists(CustomerEntity.class);
+//		System.out.println(context.showTables());
+//		IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
+//		customerIndexDiff.addUnimplemented();
+//		
+//		context.createTableIfNotExists(UserProductRatingEntity.class);
+//		IndexDiff userProductRatingIndexDiff = new IndexDiff(context, UserProductRatingEntity.class);
+//		userProductRatingIndexDiff.addUnimplemented();
 
 		
 		System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
@@ -147,6 +164,56 @@ public class DatabaseGenerator {
          
         return ds;
 
+	}
+	
+	
+	@ReconciliationScope
+	public static class BasicResolver implements ICreateTableResolver, IDropTableResolver, IAddColumnResolver, IDropColumnResolver, IAddIndexResolver, IDropIndexResolver {
+
+		@Override
+		public void resolve(Context context, CreateTableDelta delta) {
+			Estivate.Tools.createTableFullQuery(delta.entityClass)
+				.execute(context);
+		}
+
+		@Override
+		public void resolve(Context context, DropTableDelta delta) {
+			// TODO : drop table
+		}
+		
+		@Override
+		public void resolve(Context context, AddColumnDelta delta) {
+			Estivate.alterQuery(delta.entityClass)
+				.addColumn(delta.getEntityColumnDefinition())
+				.execute(context);
+		}
+
+		@Override
+		public void resolve(Context context, DropColumnDelta delta) {
+			try {
+				context.dropColumn(delta.entityClass, delta.tableColumnName);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void resolve(Context context, AddIndexDelta delta) {
+			Estivate.alterQuery(delta.getEntityClass())
+				.addIndex(delta.indexName, delta.type, delta.columns)
+				.execute(context);
+		}
+
+		@Override
+		public void resolve(Context context, DropIndexDelta delta) {
+			Estivate.alterQuery(delta.getEntityClass())
+				.dropIndex(delta.indexName)
+				.execute(context);
+		}
+		
+		
+		
 	}
 	
 	

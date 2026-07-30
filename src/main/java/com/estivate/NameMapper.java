@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.index.Annotations.TableIndex;
+import com.estivate.query.CreateQuery.Index;
 
 public abstract class NameMapper {
 
@@ -70,6 +71,13 @@ public abstract class NameMapper {
 			return compositeIndex.name();
 		}
 		return Arrays.asList(compositeIndex.columns()).stream().map(x -> x.value()).collect(Collectors.joining("_"));
+	}
+	
+	public String mapIndex(Index index) {
+		if(StringUtils.isNotBlank(index.getName())) {
+			return index.getName();
+		}
+		return index.getColumns().stream().map(x -> x.getColumnName()).collect(Collectors.joining("_"));
 	}
 
 	

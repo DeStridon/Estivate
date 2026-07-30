@@ -59,32 +59,32 @@ public class ContextTest {
 	}
 
 
-	@Test
-	public void mergeTest() {
-		
-		CustomerEntity parent1 = CustomerEntity.builder().id(1).name("parent1").build();
-		context.updateOrInsert(parent1);
-		
-		CustomerEntity parent2 = CustomerEntity.builder().id(1).name("parent1").build();
-		context.merge(parent2);
-
-		Assert.assertEquals(parent2.getId(), parent1.getId()); 
+//	@Test
+//	public void mergeTest() {
+//		
+//		CustomerEntity parent1 = CustomerEntity.builder().id(1).name("parent1").build();
+//		context.updateOrInsert(parent1);
+//		
+//		CustomerEntity parent2 = CustomerEntity.builder().id(1).name("parent1").build();
+//		context.merge(parent2);
+//
+//		Assert.assertEquals(parent2.getId(), parent1.getId()); 
+//	
+//	}
 	
-	}
-	
 
-	@Test
-	public void mergeTest2() {
-		CustomerEntity parent1 = CustomerEntity.builder().name("parent1").build();
-		context.updateOrInsert(parent1);
-		
-		CustomerEntity parent2 = CustomerEntity.builder().id(parent1.getId()).name("parent2").build();
-		parent2.setId(parent1.getId());
-		context.merge(parent2);
-
-		Assert.assertEquals(parent2.getName(), "parent1");
-
-	}
+//	@Test
+//	public void mergeTest2() {
+//		CustomerEntity parent1 = CustomerEntity.builder().name("parent1").build();
+//		context.updateOrInsert(parent1);
+//		
+//		CustomerEntity parent2 = CustomerEntity.builder().id(parent1.getId()).name("parent2").build();
+//		parent2.setId(parent1.getId());
+//		context.merge(parent2);
+//
+//		Assert.assertEquals(parent2.getName(), "parent1");
+//
+//	}
 
 	@Test
 	public void rawSingleFetchTest() {

@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.estivate.context.Context;
+import com.estivate.index.Annotations.IndexType;
+import com.estivate.query.AlterQuery.IndexColumn;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -146,8 +148,10 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class AddIndexDelta extends ReconciliationDelta {
         public Class<?> entityClass;
+        public EntityModel entityModel;
         public String indexName;
-        public IndexDefinition indexDefinition;
+        public IndexType type;
+        public List<IndexColumn> columns;
     }
 
     /**
@@ -161,24 +165,29 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class DropIndexDelta extends ReconciliationDelta {
     	public Class<?> entityClass;
+        public EntityModel entityModel;
         public String indexName;
-        public IndexDefinition indexDefinition;
+        public IndexType type;
+        public List<IndexColumn> columns;
     }
 
-    /**
-     * Definition of an index including its columns and properties.
-     */
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class IndexDefinition {
-        public String[] columns;
-        public boolean unique;
+    // /**
+    //  * Definition of an index including its columns and properties.
+    //  */
+    // @NoArgsConstructor
+    // @AllArgsConstructor
+    // public static class IndexDefinition {
+    //     public Class<?> entity;
+    //     public IndexType type;
+    //     public List<IndexColumn> columns;
+
         
-        public IndexDefinition(String... columns) {
-            this.columns = columns;
-            this.unique = false;
-        }
-    }
+    //     public IndexDefinition(Class<?> entity, List<IndexColumn> columns) {
+    //         this.entity = entity;
+    //         this.type = IndexType.DEFAULT;
+    //         this.columns = columns;
+    //     }
+    // }
 
     /**
      * Represents a mismatch between entity column definition and database column definition.

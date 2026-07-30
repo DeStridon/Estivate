@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.estivate.context.Context;
+import com.estivate.index.Annotations;
+import com.estivate.index.Annotations.TableIndex;
+import com.estivate.query.AlterQuery.IndexColumn;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
 import com.estivate.reconciliation.EstivateReconciliation.Mismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
@@ -241,13 +244,61 @@ public class ReconciliationManager {
             
         }
 
+
+
+        List<TableIndex> entityIndexes = getEntityIndexes(entityClass);
+        for(TableIndex entityIndex : entityIndexes) {
+            
+            TableIndex databaseIndex = databaseModel.getIndexes().stream()
+                .filter(index -> isIndexMatching(entityIndex, index))
+                .findFirst()
+                .orElse(null);
+
+            if(databaseIndex == null) {
+                EstivateReconciliation.AddIndexDelta addIndex = EstivateReconciliation.AddIndexDelta.builder()
+                    .entityClass(entityClass)
+                    .entityModel(databaseModel)
+                    .type(entityIndex.type())
+                    .columns(Arrays.stream(entityIndex.columns()).map(IndexColumn::of).collect(Collectors.toList()))
+                    .build();
+                diffs.add(addIndex);
+            }
+            
+        }
+
+        for(TableIndex databaseIndex : databaseModel.getIndexes()) {
+        
+        }
+        
+
         return diffs;
+    }
+
+    public boolean isIndexMatching(TableIndex entityIndex, TableIndex databaseIndex) {
+        if(entityIndex.name() != databaseIndex.name()) { return false; }
+        if(entityIndex.type() != databaseIndex.type()) { return false; }
+        if(entityIndex.columns().length != databaseIndex.columns().length) { return false; }
+        for(int i = 0; i < entityIndex.columns().length; i++) {
+            if(!entityIndex.columns()[i].value().equals(databaseIndex.columns()[i].value())) { return false; }
+        }
+        return true;
     }
 
     // ==================== Resolver Discovery ====================
 
 
-
+    public List<TableIndex> getEntityIndexes(Class<?> entity){
+		
+		TableIndex[] compositeIndex = entity.getDeclaredAnnotationsByType(TableIndex.class);
+		
+		List<TableIndex> indexes = new ArrayList<>();
+		for(TableIndex index : compositeIndex) {
+			indexes.add(Annotations.CompositeIndex(context.nameMapper.mapIndex(index), index.type(), Arrays.asList(index.columns())));
+		}
+		
+		return indexes;
+	
+	}
 
 
     /**

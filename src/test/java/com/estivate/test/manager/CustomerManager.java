@@ -5,6 +5,7 @@ import java.util.List;
 import com.estivate.manager.ManagerInterceptor.EntityManager;
 import com.estivate.spring.EstivateManager;
 import com.estivate.test.entities.CustomerEntity;
+import com.estivate.test.entities.projection.CustomerProjection.CustomerCountAliasByCountryProjection;
 
 /**
  * Example manager demonstrating Spring autowiring integration.
@@ -33,7 +34,6 @@ public abstract class CustomerManager extends EntityManager<CustomerEntity> {
     public abstract List<CustomerEntity> findByEmailVerifiedIsTrue();
 
     public abstract boolean existsById(long id);
-
 
 
 }

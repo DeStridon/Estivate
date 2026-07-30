@@ -35,9 +35,8 @@ public class SelectQueryCriterionTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		context.createTableIfNotExists(OrderEntity.class);
-		context.createTableIfNotExists(CustomerEntity.class);
-	
+    	Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(OrderEntity.class).ifNotExists().execute(context);
 	}
 
 	@Test

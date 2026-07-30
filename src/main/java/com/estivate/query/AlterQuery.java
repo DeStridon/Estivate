@@ -1,16 +1,15 @@
 package com.estivate.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.Entity;
-import com.estivate.Statement;
 import com.estivate.context.Context;
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -88,7 +87,21 @@ public class AlterQuery<E> {
     @AllArgsConstructor
     public static class AddIndex implements Operation {
         private String indexName;
-        private List<String> columns;
+        private IndexType type;
+        private List<IndexColumn> columns;
+    }
+
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IndexColumn {
+        private String columnName;
+        private Integer length;
+
+        public static IndexColumn of(com.estivate.index.Annotations.IndexColumn column) {
+            return new IndexColumn(column.value(), column.length());
+        }
     }
 
     /**
@@ -118,7 +131,8 @@ public class AlterQuery<E> {
     public AlterQuery<E> modifyColumn(String columnName, EntityColumn columnDefinition) { return addOperation(new ModifyColumn(columnName, columnDefinition)); }
     public AlterQuery<E> changeColumn(String columnName, String newColumnName, String columnType) { return addOperation(new ChangeColumn(columnName, newColumnName, columnType)); }
     public AlterQuery<E> renameColumn(String columnName, String newColumnName) { return addOperation(new RenameColumn(columnName, newColumnName)); }
-    public AlterQuery<E> addIndex(String indexName, List<String> columns) { return addOperation(new AddIndex(indexName, columns)); }
+    public AlterQuery<E> addIndex(String indexName, List<IndexColumn> columns) { return addOperation(new AddIndex(indexName, IndexType.DEFAULT, columns)); }
+    public AlterQuery<E> addIndex(String indexName, IndexType type, List<IndexColumn> columns) { return addOperation(new AddIndex(indexName, type, columns)); }
     public AlterQuery<E> dropIndex(String indexName) { return addOperation(new DropIndex(indexName)); }
     public AlterQuery<E> renameTable(String newTableName) { return addOperation(new RenameTable(newTableName)); }
 
@@ -143,6 +157,9 @@ public class AlterQuery<E> {
     public Boolean execute(Context context) {
         return context.execute(this);
     }
+
+
+
 }
 
 

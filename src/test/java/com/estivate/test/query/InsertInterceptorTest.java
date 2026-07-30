@@ -6,8 +6,10 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.InsertQuery;
+import com.estivate.reconciliation.ManualReconciliationManager.ManualReconciliationEntity;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 
@@ -19,7 +21,7 @@ public class InsertInterceptorTest {
     @BeforeEach
     public void setUp() {
         // Clear existing products
-        context.createTableIfNotExists(CustomerEntity.class);
+        Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);	
         context.truncateTable(CustomerEntity.class);
     }
     

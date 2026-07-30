@@ -7,6 +7,7 @@ import javax.persistence.Enumerated;
 
 import com.estivate.Entity.VirtualForeignKey;
 
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 @Data
+@Entity
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

@@ -34,8 +34,8 @@ public class PagingStrategyTest {
     @BeforeEach
     public void setUp() {
         // Clear existing products
-        context.createTableIfNotExists(ProductEntity.class);
-        context.truncateTable(ProductEntity.class);
+        Estivate.Tools.createTableFullQuery(ProductEntity.class).ifNotExists().execute(context);
+    	context.truncateTable(ProductEntity.class);
         testProducts.clear();
 
         // Insert 25 test products with sequential IDs and varying prices

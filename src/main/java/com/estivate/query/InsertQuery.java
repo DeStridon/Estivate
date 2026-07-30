@@ -79,4 +79,10 @@ public class InsertQuery<E> {
         context.execute(this);
     }
 
+    public InsertQuery<E> clone(){
+        InsertQuery<E> query = new InsertQuery<>(entity);
+        query.values = new ArrayList<>(values);
+        return query;
+    }
+
 }

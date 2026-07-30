@@ -23,6 +23,7 @@ import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.CustomerEntity.Country;
 import com.estivate.test.entities.ProductEntity;
+import com.estivate.test.entities.projection.CustomerProjection.CustomerCountAliasByCountryProjection;
 
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -96,19 +97,7 @@ public class SelectProjectionTest {
         
     }
 
-    /**
-     * Projection class with country grouping
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CustomerCountAliasByCountryProjection {
-        @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.country)
-        private Country country;
-        
-        @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id, alias = "count")
-        private Long count;
-    }
+
 
     @Data
     @NoArgsConstructor
@@ -156,8 +145,8 @@ public class SelectProjectionTest {
     @BeforeEach
     public void setUp() {
         // Clean up existing test data
-        context.createTableIfNotExists(CustomerEntity.class);
-        context.createTableIfNotExists(ProductEntity.class);
+        Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);	
+        Estivate.Tools.createTableFullQuery(ProductEntity.class).ifNotExists().execute(context);	
         context.truncateTable(CustomerEntity.class);
         context.truncateTable(ProductEntity.class);
         

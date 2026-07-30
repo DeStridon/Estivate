@@ -1,5 +1,6 @@
 package com.estivate.test.query.projection;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -106,6 +107,7 @@ public class ProjectionGroupTest {
         List<MainDto> mainDtos = Estivate.selectQuery(OrderEntity.class)
             .joinInner(OrderEntity.class, OrderLineEntity.class)
             .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .in(OrderEntity::getId, Arrays.asList(order1.getId(), order2.getId()))
             
             .groupBy(OrderEntity::getCustomerId)
             .groupBy(ProductEntity::getCategory)

@@ -5,8 +5,10 @@ import javax.persistence.Table;
 
 import com.estivate.Entity.VirtualForeignKey;
 
+import jakarta.persistence.Entity;
 import lombok.experimental.FieldNameConstants;
 
+@Entity
 @Table(name = "no_use")
 @FieldNameConstants
 public class NoUseEntity {

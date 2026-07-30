@@ -1,6 +1,5 @@
 package com.estivate.query;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,9 +7,10 @@ import java.util.stream.Collectors;
 
 import com.estivate.Statement;
 import com.estivate.context.Context;
+import com.estivate.index.Annotations.IndexType;
+import com.estivate.query.AlterQuery.IndexColumn;
 import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
-import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,9 +55,6 @@ public class CreateQuery<E> {
 
     public CreateQuery(Class<E> entity) { 
         this.entity = entity;
-		for(Field field : FieldUtils.getEntityFields(entity)) {
-			column(Context.getEntityColumn(field));
-		}
     }
 
     public CreateQuery<E> column(ColumnModel.EntityColumn column) {  columns.add(column); return this; }
@@ -68,9 +65,7 @@ public class CreateQuery<E> {
     
     // Index methods
     public CreateQuery<E> index(Index index) { indexes.add(index); return this; }
-    public CreateQuery<E> index(String indexName, String... columns) { indexes.add(new Index(indexName, Arrays.asList(columns), false)); return this; }
-    public CreateQuery<E> index(String indexName, List<String> columns) { indexes.add(new Index(indexName, columns, false)); return this; }
-    public CreateQuery<E> index(String indexName, List<String> columns, boolean unique) { indexes.add(new Index(indexName, columns, unique)); return this; }
+    public CreateQuery<E> index(String indexName, IndexType type, List<IndexColumn> columns) { indexes.add(new Index(indexName, type, columns)); return this; }
     
     // Table options methods
     public CreateQuery<E> tableEngine(String engine) { this.tableEngine = engine; return this; }
@@ -142,9 +137,9 @@ public class CreateQuery<E> {
     @Builder
     @AllArgsConstructor
     public static class Index {
-        private final String indexName;
-        private final List<String> columns;
-        private final boolean unique;
+        private String name;
+        private IndexType type;
+        private List<IndexColumn> columns;
     }
 
     

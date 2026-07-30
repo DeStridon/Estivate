@@ -8,8 +8,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.estivate.Estivate;
 import com.estivate.Entity.InsertDate;
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.reconciliation.EstivateReconciliation.IManualResolver;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
@@ -38,7 +38,7 @@ public class ManualReconciliationManager {
 
         if(!context.showTables().contains(context.nameMapper.toTableName(ManualReconciliationEntity.class))) {
             log.info("Creating reconciliation tracking table: {}", context.nameMapper.toTableName(ManualReconciliationEntity.class));
-            context.createTable(ManualReconciliationEntity.class);
+            Estivate.Tools.createTableFullQuery(ManualReconciliationEntity.class).ifNotExists().execute(context);	
         }
     }
 

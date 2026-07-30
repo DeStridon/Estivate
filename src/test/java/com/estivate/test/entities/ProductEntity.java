@@ -9,6 +9,7 @@ import com.estivate.test.entities.CustomerEntity.Country;
 import com.estivate.test.entities.misc.CountryListConverter;
 import com.estivate.test.entities.misc.StringListConverter;
 
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 @Data
+@Entity
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
