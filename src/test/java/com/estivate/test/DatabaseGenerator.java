@@ -1,6 +1,7 @@
 package com.estivate.test;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import javax.naming.InitialContext;
@@ -15,6 +16,7 @@ import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.index.Annotations.TableIndex;
+import com.estivate.query.AlterQuery.IndexColumn;
 import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
 import com.estivate.reconciliation.EstivateReconciliation.AddIndexDelta;
 import com.estivate.reconciliation.EstivateReconciliation.CreateTableDelta;
@@ -132,7 +134,7 @@ public class DatabaseGenerator {
 		public String mapEntityField(String field) { return toSnakeCase(field).toUpperCase();  }
 		public String mapDatabaseClass(Class<?> c) { return c.getSimpleName().toUpperCase(); }
 		public String mapDatabaseField(String field) { return field.toUpperCase(); }
-		public String mapIndex(TableIndex index) { return super.mapIndex(index).toUpperCase(); }
+		public String mapIndex(TableIndex index) { return super.mapIndex(index.name(), index.type(), Arrays.asList(index.columns()).stream().map(x -> IndexColumn.of(x)).collect(Collectors.toList())).toUpperCase(); }
 	}
 	
 	public static String toSnakeCase(String name) {

@@ -293,7 +293,7 @@ public class ReconciliationManager {
 		
 		List<TableIndex> indexes = new ArrayList<>();
 		for(TableIndex index : compositeIndex) {
-			indexes.add(Annotations.CompositeIndex(context.nameMapper.mapIndex(index), index.type(), Arrays.asList(index.columns())));
+			indexes.add(Annotations.CompositeIndex(context.nameMapper.mapIndex(index.name(), index.type(), Arrays.asList(index.columns()).stream().map(x -> IndexColumn.of(x)).collect(Collectors.toList())) , index.type(), Arrays.asList(index.columns())));
 		}
 		
 		return indexes;

@@ -1,11 +1,14 @@
 package com.estivate;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
+import com.estivate.query.AlterQuery.IndexColumn;
 import com.estivate.query.CreateQuery.Index;
 
 public abstract class NameMapper {
@@ -66,20 +69,26 @@ public abstract class NameMapper {
 
 	
 	
-	public String mapIndex(TableIndex compositeIndex) {
-		if(StringUtils.isNotBlank(compositeIndex.name())) {
-			return compositeIndex.name();
-		}
-		return Arrays.asList(compositeIndex.columns()).stream().map(x -> x.value()).collect(Collectors.joining("_"));
-	}
-	
-	public String mapIndex(Index index) {
-		if(StringUtils.isNotBlank(index.getName())) {
-			return index.getName();
-		}
-		return index.getColumns().stream().map(x -> x.getColumnName()).collect(Collectors.joining("_"));
-	}
+//	public String mapIndex(TableIndex compositeIndex) {
+//		if(StringUtils.isNotBlank(compositeIndex.name())) {
+//			return compositeIndex.name();
+//		}
+//		return Arrays.asList(compositeIndex.columns()).stream().map(x -> x.value()).collect(Collectors.joining("_"));
+//	}
+//	
+//	public String mapIndex(Index index) {
+//		if(StringUtils.isNotBlank(index.getName())) {
+//			return index.getName();
+//		}
+//		return index.getColumns().stream().map(x -> x.getColumnName()).collect(Collectors.joining("_"));
+//	}
 
+	public String mapIndex(String indexName, IndexType type, List<IndexColumn> columns) {
+		if(StringUtils.isNotBlank(indexName)) {
+			return indexName;
+		}
+		return type.name().toLowerCase() + "_" + columns.stream().map(x -> x.getColumnName()).collect(Collectors.joining("_"));
+	}
 	
 	public static class DefaultNameMapper extends NameMapper{
 		public String mapEntityClass(Class<?> c) { return c.getSimpleName(); }

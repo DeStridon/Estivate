@@ -261,16 +261,16 @@ public abstract class Context {
 						break;
 					case UNIQUE:
 						statement.appendQuery("UNIQUE INDEX");
-						statement.appendQuery(nameMapper.mapIndex(index));
+						statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
 						break;
 					case FULLTEXT:
 						statement.appendQuery("FULLTEXT INDEX");
-						statement.appendQuery(nameMapper.mapIndex(index));
+						statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
 						break;
 					case DEFAULT:
 					default:
 						statement.appendQuery("INDEX");
-						statement.appendQuery(nameMapper.mapIndex(index));
+						statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
 						break;
 				}
 
@@ -1198,7 +1198,7 @@ public abstract class Context {
 			else if(operation instanceof AlterQuery.AddIndex) {
 				statement.appendQuery("ADD INDEX");
 				AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
-				statement.appendQuery(addIndexOperation.getIndexName());
+				statement.appendQuery(nameMapper.mapIndex(addIndexOperation.getIndexName(), addIndexOperation.getType(), addIndexOperation.getColumns()));
 				statement.appendQuery("(");
 				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col.getColumnName())+ (col.getLength() != null ? "("+col.getLength()+")" : "")).collect(Collectors.joining(", ")));
 				statement.appendQuery(")");
