@@ -1200,7 +1200,7 @@ public abstract class Context {
 				AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
 				statement.appendQuery(nameMapper.mapIndex(addIndexOperation.getIndexName(), addIndexOperation.getType(), addIndexOperation.getColumns()));
 				statement.appendQuery("(");
-				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col.getColumnName())+ (col.getLength() != null ? "("+col.getLength()+")" : "")).collect(Collectors.joining(", ")));
+				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col.getColumnName())+ ((col.getLength() != null && col.getLength() != 0) ? "("+col.getLength()+")" : "")).collect(Collectors.joining(", ")));
 				statement.appendQuery(")");
 			}
 			else if(operation instanceof AlterQuery.DropIndex) {
