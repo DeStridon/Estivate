@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.context.Context;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.TableIndex;
@@ -125,7 +127,7 @@ public class ReconciliationManager {
             }
 
             databaseTables.remove(tableName);
-            EntityModel databaseModel = context.scanDatabaseTable(tableName);
+            EntityModel databaseModel = context.scanDatabaseTable(entityClass);
 
             List<ReconciliationDelta> entityDiffs = compare(entityClass, databaseModel);
             differences.addAll(entityDiffs);
@@ -258,6 +260,7 @@ public class ReconciliationManager {
                 EstivateReconciliation.AddIndexDelta addIndex = EstivateReconciliation.AddIndexDelta.builder()
                     .entityClass(entityClass)
                     .entityModel(databaseModel)
+                    .indexName(entityIndex.name())
                     .type(entityIndex.type())
                     .columns(Arrays.stream(entityIndex.columns()).map(IndexColumn::of).collect(Collectors.toList()))
                     .build();
@@ -268,6 +271,21 @@ public class ReconciliationManager {
 
         for(TableIndex databaseIndex : databaseModel.getIndexes()) {
         
+        	TableIndex entityIndex = entityIndexes.stream()
+        			.filter(index -> isIndexMatching(databaseIndex, index))
+        			.findFirst()
+        			.orElse(null);
+        	
+        	if(entityIndex == null) {
+                EstivateReconciliation.DropIndexDelta dropIndex = EstivateReconciliation.DropIndexDelta.builder()
+                        .entityClass(entityClass)
+                        .entityModel(databaseModel)
+                        .indexName(databaseIndex.name())
+                        .type(databaseIndex.type())
+                        .columns(Arrays.stream(databaseIndex.columns()).map(IndexColumn::of).collect(Collectors.toList()))
+                        .build();
+                diffs.add(dropIndex);
+        	}
         }
         
 
@@ -275,7 +293,7 @@ public class ReconciliationManager {
     }
 
     public boolean isIndexMatching(TableIndex entityIndex, TableIndex databaseIndex) {
-        if(entityIndex.name() != databaseIndex.name()) { return false; }
+        if(!StringUtils.equals(entityIndex.name(), databaseIndex.name())) { return false; }
         if(entityIndex.type() != databaseIndex.type()) { return false; }
         if(entityIndex.columns().length != databaseIndex.columns().length) { return false; }
         for(int i = 0; i < entityIndex.columns().length; i++) {

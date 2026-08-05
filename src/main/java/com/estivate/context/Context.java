@@ -946,7 +946,7 @@ public abstract class Context {
 	
 	
 	
-	public abstract List<TableIndex> listIndexes(Class<?> c);
+	
 
 
 	public boolean indexEquals(TableIndex left, TableIndex right) {
@@ -1190,14 +1190,24 @@ public abstract class Context {
 				}
 			}
 			else if(operation instanceof AlterQuery.RenameColumn) {
-				statement.appendQuery("RENAME COLUMN");
 				AlterQuery.RenameColumn renameColumnOperation = (AlterQuery.RenameColumn) operation;
+				statement.appendQuery("RENAME COLUMN");
 				statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getColumnName()));
 				statement.appendQuery(nameMapper.mapDatabaseField(renameColumnOperation.getNewColumnName()));
 			}
 			else if(operation instanceof AlterQuery.AddIndex) {
-				statement.appendQuery("ADD INDEX");
 				AlterQuery.AddIndex addIndexOperation = (AlterQuery.AddIndex) operation;
+				statement.appendQuery("ADD");
+				if(addIndexOperation.getType() == IndexType.DEFAULT) {
+					statement.appendQuery("INDEX");
+				}
+				else if(addIndexOperation.getType() == IndexType.FULLTEXT) {
+					statement.appendQuery("FULLTEXT");
+				}
+				else if(addIndexOperation.getType() == IndexType.UNIQUE) {
+					statement.appendQuery("UNIQUE");
+				}
+				
 				statement.appendQuery(nameMapper.mapIndex(addIndexOperation.getIndexName(), addIndexOperation.getType(), addIndexOperation.getColumns()));
 				statement.appendQuery("(");
 				statement.appendQuery(addIndexOperation.getColumns().stream().map(col -> nameMapper.mapDatabaseField(col.getColumnName())+ ((col.getLength() != null && col.getLength() != 0) ? "("+col.getLength()+")" : "")).collect(Collectors.joining(", ")));
@@ -1318,7 +1328,22 @@ public abstract class Context {
 		return getTableField(getEntityColumn(entityField));
 	}
 
-	public abstract EntityModel scanDatabaseTable(String tableName);
+    public EntityModel scanDatabaseTable(Class<?> c) {
+
+        List<TableField> fields = listFields(nameMapper.toTableName(c));
+        List<TableIndex> indexes = listIndexes(c);
+        
+        return EntityModel.builder()
+                .tableName(nameMapper.toTableName(c))
+                .fields(fields)
+                .indexes(indexes)
+                .build();
+        
+    }
+    
+    public abstract List<TableField> listFields(String tableName);
+    public abstract List<TableIndex> listIndexes(Class<?> entity);
+    
 	
 	/**
      * Extracts length from SQL type (e.g., VARCHAR(255) -> 255)

@@ -37,36 +37,7 @@ public class H2Context extends Context {
 		super(datasource);
 	}
 		
-	@SneakyThrows
-	public List<TableIndex> listIndexes(Class<?> c) {
-		
-		List<TableIndex> indexes = new ArrayList<>();
-		
-		try(Connection connection = datasource.getConnection(); 
-			Statement indexQueryStatement = new Statement(this, connection);
-			Statement indexColumnQueryStatement = new Statement(this, connection);
-			Statement fulltextIndexQueryStatement = new Statement(this, connection); ){
-			
-			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
-			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(c)+"'");
-			//fulltextIndexQueryStatement.appendQuery("SELECT * FROM FT.INDEXES;").appendQuery("'"+nameMapper.toTableName(c)+"'");
-
-			List<ResultRow> indexResults = fetchListAsResults(indexQueryStatement);
-			List<ResultRow> columnResults = fetchListAsResults(indexColumnQueryStatement);
-			//List<ResultRow> fulltextIndexResults = fetchListAsResults(fulltextIndexQueryStatement);
-			
-			for(ResultRow indexResult : indexResults) {
-				List<ResultRow> indexColumnResults = columnResults.stream().filter(x -> x.asString("INDEX_NAME").equals(indexResult.asString("INDEX_NAME"))).collect(Collectors.toList());
-
-				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.asString("COLUMN_NAME")), 0)).collect(Collectors.toList());
-
-				TableIndex ci = Annotations.CompositeIndex(indexResult.asString("INDEX_NAME"), getIndexType(indexResult.asString("INDEX_TYPE_NAME")), indexColumns);
-				indexes.add(ci);
-			}
-			
-			return indexes;
-		}
-    }
+	
 
 
 	public IndexType getIndexType(String typeName) {
@@ -160,22 +131,6 @@ public class H2Context extends Context {
 		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
 	}
 
-	@SneakyThrows
-	private List<TableField> fetchInformationSchemaColumns(String tableName) {
-		try (Connection connection = datasource.getConnection();
-				Statement statement = new Statement(this, connection)) {
-
-			statement.appendQuery(
-					"SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, "
-							+ "NUMERIC_PRECISION, NUMERIC_SCALE, IS_IDENTITY, IDENTITY_GENERATION "
-							+ "FROM INFORMATION_SCHEMA.COLUMNS "
-							+ "WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = '" + tableName + "' ORDER BY ORDINAL_POSITION");
-
-			return fetchListAsResults(statement).stream()
-					.map(this::toTableField)
-					.collect(Collectors.toList());
-		}
-	}
 
 	private TableField toTableField(ResultRow row) {
 		String dataType = row.asString("DATA_TYPE");
@@ -215,14 +170,56 @@ public class H2Context extends Context {
 		return dataType;
 	}
 
+	
 	@SneakyThrows
-    public EntityModel scanDatabaseTable(String tableName) {
-        EntityModel model = EntityModel.builder()
-            .tableName(tableName)
-            .build();
+	public List<TableField> listFields(String tableName) {
+		try (Connection connection = datasource.getConnection();
+				Statement statement = new Statement(this, connection)) {
 
-        model.getFields().addAll(fetchInformationSchemaColumns(tableName));
-        return model;
+			statement.appendQuery(
+					"SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, "
+							+ "NUMERIC_PRECISION, NUMERIC_SCALE, IS_IDENTITY, IDENTITY_GENERATION "
+							+ "FROM INFORMATION_SCHEMA.COLUMNS "
+							+ "WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = '" + tableName + "' ORDER BY ORDINAL_POSITION");
+
+			return fetchListAsResults(statement).stream()
+					.map(this::toTableField)
+					.collect(Collectors.toList());
+		}
+	}
+
+	@SneakyThrows
+	public List<TableIndex> listIndexes(Class<?> entity) {
+		
+		List<TableIndex> indexes = new ArrayList<>();
+		
+		try(Connection connection = datasource.getConnection(); 
+			Statement indexQueryStatement = new Statement(this, connection);
+			Statement indexColumnQueryStatement = new Statement(this, connection);
+			Statement fulltextIndexQueryStatement = new Statement(this, connection); ){
+			
+			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(entity)+"'");
+			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(entity)+"'");
+			//fulltextIndexQueryStatement.appendQuery("SELECT * FROM FT.INDEXES;").appendQuery("'"+nameMapper.toTableName(c)+"'");
+
+			List<ResultRow> indexResults = fetchListAsResults(indexQueryStatement);
+			List<ResultRow> columnResults = fetchListAsResults(indexColumnQueryStatement);
+			//List<ResultRow> fulltextIndexResults = fetchListAsResults(fulltextIndexQueryStatement);
+			
+			for(ResultRow indexResult : indexResults) {
+				List<ResultRow> indexColumnResults = columnResults.stream().filter(x -> x.asString("INDEX_NAME").equals(indexResult.asString("INDEX_NAME"))).collect(Collectors.toList());
+
+				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(entity, x.asString("COLUMN_NAME")), 0)).collect(Collectors.toList());
+
+				TableIndex ci = Annotations.CompositeIndex(indexResult.asString("INDEX_NAME"), getIndexType(indexResult.asString("INDEX_TYPE_NAME")), indexColumns);
+				indexes.add(ci);
+			}
+			
+			return indexes;
+		}
     }
+
+
+	
 
 }

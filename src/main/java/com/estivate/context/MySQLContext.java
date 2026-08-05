@@ -48,57 +48,7 @@ public class MySQLContext extends Context {
 		
 	
 	
-	@SneakyThrows
-	public List<TableIndex> listIndexes(Class<?> c) {
-		List<TableIndex> indexes = new ArrayList<>();
-
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
-
-			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.toTableName(c));
-			
-			List<ResultRow> results = this.fetchListAsResults(statement);
-			List<IndexRow> indexRows = new ArrayList<>();
-			for(ResultRow result : results) {
-				String physicalIndexType = null;
-				if(result.getResultTable().getColumnNames().contains("Index_type")) {
-					physicalIndexType = result.asString("Index_type");
-				}
-
-				IndexRow indexRow = IndexRow.builder()
-					.table(result.asString("Table"))
-					.keyName(result.asString("Key_name"))
-					.nonUnique(result.asBoolean("Non_unique"))
-					.seqInIndex(result.asInteger("Seq_in_index"))
-					.columnName(result.asString("Column_name"))
-					.columnLength(result.asInteger("Sub_part"))
-					.physicalIndexType(physicalIndexType)
-					.build();
-			
-				indexRows.add(indexRow);
-				
-			}
-			
-			Map<String, List<IndexRow>> indexRowMap = indexRows.stream().collect(Collectors.groupingBy(IndexRow::getKeyName));
-	        
-			
-			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
-
-				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.getColumnName()), x.getColumnLength() != null ? x.getColumnLength() : 0)).collect(Collectors.toList());
-
-				IndexRow firstRow = indexRowMapEntry.getValue().get(0);
-				IndexType indexType = resolveIndexType(
-						indexRowMapEntry.getKey(),
-						firstRow.getNonUnique(),
-						firstRow.getPhysicalIndexType());
-				
-				TableIndex ci = Annotations.CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
-				indexes.add(ci);
-			}
-			
-		}
-		return indexes;
-    }
+	
 
 	/** Maps {@code SHOW INDEX} metadata to {@link IndexType}. Package-private for unit tests. */
 	static IndexType resolveIndexType(String keyName, boolean nonUnique, String physicalIndexType) {
@@ -164,16 +114,12 @@ public class MySQLContext extends Context {
 	}
 
 
-	/**
-     * Queries the database to get the actual table structure
-     */
-    @SneakyThrows
-    public EntityModel scanDatabaseTable(String tableName) {
-        EntityModel model = EntityModel.builder()
-            .tableName(tableName)
-            .build();
 
-        try (Connection connection = datasource.getConnection();
+
+    @SneakyThrows
+	public List<TableField> listFields(String tableName) {
+		List<TableField> fields = new ArrayList<>(); 
+		try (Connection connection = datasource.getConnection();
              Statement statement = new Statement(this, connection)) {
 
             statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(tableName);
@@ -212,15 +158,64 @@ public class MySQLContext extends Context {
                         .length(parsedColumnType.y)
                         .build();
 
-                    model.getFields().add(tableField);
+                    fields.add(tableField);
                 }
             }
         }
+		return fields;
+	}
+    
+    @SneakyThrows
+	public List<TableIndex> listIndexes(Class<?> c) {
+		List<TableIndex> indexes = new ArrayList<>();
 
-        return model;
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+
+			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.toTableName(c));
+			
+			List<ResultRow> results = this.fetchListAsResults(statement);
+			List<IndexRow> indexRows = new ArrayList<>();
+			for(ResultRow result : results) {
+				String physicalIndexType = null;
+				if(result.getResultTable().getColumnNames().contains("Index_type")) {
+					physicalIndexType = result.asString("Index_type");
+				}
+
+				IndexRow indexRow = IndexRow.builder()
+					.table(result.asString("Table"))
+					.keyName(result.asString("Key_name"))
+					.nonUnique(result.asBoolean("Non_unique"))
+					.seqInIndex(result.asInteger("Seq_in_index"))
+					.columnName(result.asString("Column_name"))
+					.columnLength(result.asInteger("Sub_part"))
+					.physicalIndexType(physicalIndexType)
+					.build();
+			
+				indexRows.add(indexRow);
+				
+			}
+			
+			Map<String, List<IndexRow>> indexRowMap = indexRows.stream().collect(Collectors.groupingBy(IndexRow::getKeyName));
+	        
+			
+			for(Entry<String, List<IndexRow>> indexRowMapEntry : indexRowMap.entrySet()) {
+
+				List<IndexColumn> indexColumns = indexRowMapEntry.getValue().stream().map(x-> Annotations.ColumnIndex(findEntityName(c, x.getColumnName()), x.getColumnLength() != null ? x.getColumnLength() : 0)).collect(Collectors.toList());
+
+				IndexRow firstRow = indexRowMapEntry.getValue().get(0);
+				IndexType indexType = resolveIndexType(
+						indexRowMapEntry.getKey(),
+						firstRow.getNonUnique(),
+						firstRow.getPhysicalIndexType());
+				
+				TableIndex ci = Annotations.CompositeIndex(indexRowMapEntry.getKey(), indexType, indexColumns);
+				indexes.add(ci);
+			}
+			
+		}
+		return indexes;
     }
-
-	
 	
 
 }

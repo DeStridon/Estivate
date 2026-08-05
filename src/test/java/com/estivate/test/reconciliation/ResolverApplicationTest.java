@@ -6,16 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.index.Annotations.IndexColumn;
+import com.estivate.index.Annotations.TableIndex;
 import com.estivate.reconciliation.EstivateReconciliation;
 import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
@@ -47,6 +49,7 @@ public class ResolverApplicationTest {
     @EqualsAndHashCode(callSuper = false)
     @FieldNameConstants
     @Table(name = "RESOLVER_TEST_ENTITY")
+    @TableIndex(columns = {@IndexColumn(ResolverTestEntity.Fields.name), @IndexColumn(ResolverTestEntity.Fields.email)})
     public static class ResolverTestEntity extends AbstractEntity {
         String name;
 
@@ -123,10 +126,6 @@ public class ResolverApplicationTest {
 
     // ==================== Setup ====================
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        dropTableIfExists("RESOLVER_TEST_ENTITY");
-    }
 
     private void dropTableIfExists(String tableName) {
         try (Connection connection = context.datasource.getConnection();
@@ -140,15 +139,15 @@ public class ResolverApplicationTest {
     // ==================== Tests ====================
 
     @Test
-    @Disabled
     public void testApplyResolvers_NoDifferences_ReturnsEmptyResult() throws Exception {
-        // Create table matching entity exactly
-        //context.createTable(ResolverTestEntity.class);
-        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
 
+    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+    	
         ReconciliationManager manager = new ReconciliationManager(context)
         .addEntities( ResolverTestEntity.class)
         .addResolvers( GenericColumnMissingResolver.class);
+        
+        List<?> ilst = manager.getDifferences();
 
         ApplyResolversResult result = manager.applyResolvers();
 
@@ -159,15 +158,12 @@ public class ResolverApplicationTest {
     @Test
     @Disabled
     public void testApplyResolvers_SingleDiff_ResolverSucceeds() throws Exception {
-        // Create table and remove a column
-        //context.createTableIfNotExists(ResolverTestEntity.class);
-        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+
         context.dropColumn(ResolverTestEntity.class, "email");
 
         ReconciliationManager manager = new ReconciliationManager(context)
         .addEntities( ResolverTestEntity.class)
         .addResolvers( GenericColumnMissingResolver.class);
-        
 
         ApplyResolversResult result = manager.applyResolvers();
 
@@ -180,8 +176,7 @@ public class ResolverApplicationTest {
     public void testApplyResolvers_MultipleResolvers() throws Exception {
         // Create table and remove a column
     	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
-        //context.createTableIfNotExists(ResolverTestEntity.class);
-        context.dropColumn(ResolverTestEntity.class, "email");
+        context.dropColumn(ResolverTestEntity.class, ResolverTestEntity.Fields.salary);
 
         GenericColumnMissingResolver genericResolver = new GenericColumnMissingResolver();
         ResolverTestEntityResolver resolverTestEntityResolver = new ResolverTestEntityResolver();
@@ -201,8 +196,7 @@ public class ResolverApplicationTest {
     public void testApplyResolvers_NoMatchingResolvers() throws Exception {
         // Create table and remove a column
         //context.createTable(ResolverTestEntity.class);
-        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
-        context.dropColumn(ResolverTestEntity.class, "email");
+        context.dropColumn(ResolverTestEntity.class, ResolverTestEntity.Fields.salary);
 
         ReconciliationManager manager = new ReconciliationManager(context)
             .addEntities( ResolverTestEntity.class)
@@ -211,6 +205,7 @@ public class ResolverApplicationTest {
         ApplyResolversResult result = manager.applyResolvers();
 
         assertFalse(result.isFullyResolved(), "Should not be fully resolved without matching resolvers");
+        
     }
 
     @Test
