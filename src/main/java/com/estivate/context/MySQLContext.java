@@ -91,8 +91,17 @@ public class MySQLContext extends Context {
 	@Override
 	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
 		if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
-			if(Arrays.asList("TEXT", "MEDIUMTEXT", "LONGTEXT", "LONGBLOB").contains(entityColumn.getDesignedType().toUpperCase())) {
+			if(Arrays.asList("TEXT", "BLOB").contains(entityColumn.getDesignedType().toUpperCase())) {
 				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
+			}
+			if(Arrays.asList("TINYTEXT", "MEDIUMTEXT", "LONGTEXT", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB", "JSON").contains(entityColumn.getDesignedType().toUpperCase())) {
+				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
+			}
+			if(Arrays.asList("TINYINT").contains(entityColumn.getDesignedType().toUpperCase())) {
+				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
+			}
+			if(Arrays.asList("DATETIME").contains(entityColumn.getDesignedType().toUpperCase())) {
+				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
 			}
 			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
 		}

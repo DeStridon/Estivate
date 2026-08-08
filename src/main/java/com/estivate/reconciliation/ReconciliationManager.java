@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.Context;
 import com.estivate.index.Annotations;
+import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.query.AlterQuery.IndexColumn;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
@@ -313,6 +314,18 @@ public class ReconciliationManager {
 		for(TableIndex index : compositeIndex) {
 			indexes.add(Annotations.CompositeIndex(context.nameMapper.mapIndex(index.name(), index.type(), Arrays.asList(index.columns()).stream().map(x -> IndexColumn.of(x)).collect(Collectors.toList())) , index.type(), Arrays.asList(index.columns())));
 		}
+
+        // Scan for primary index from entity fields
+        // Iterate through all declared fields in the entity class
+        List<Field> primaryKeyFields = FieldUtils.getEntityFields(entity).stream().filter(field -> field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)).collect(Collectors.toList());
+
+        if(primaryKeyFields.size() == 1) {
+            String columnName = context.nameMapper.mapDatabaseField(primaryKeyFields.get(0).getName());
+            indexes.add(Annotations.CompositeIndex("PRIMARY", IndexType.PRIMARY, Arrays.asList(Annotations.ColumnIndex(columnName, 0))));
+        }
+        else if(primaryKeyFields.size() > 1) {
+            throw new RuntimeException("Multiple primary key fields found for entity: " + entity.getName());
+        }
 		
 		return indexes;
 	
