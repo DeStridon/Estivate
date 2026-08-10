@@ -97,10 +97,13 @@ public class MySQLContext extends Context {
 			if(Arrays.asList("TINYTEXT", "MEDIUMTEXT", "LONGTEXT", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB", "JSON").contains(entityColumn.getDesignedType().toUpperCase())) {
 				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
 			}
-			if(Arrays.asList("TINYINT").contains(entityColumn.getDesignedType().toUpperCase())) {
+			if(Arrays.asList("TINYINT", "MEDIUMINT", "BIGINT").contains(entityColumn.getDesignedType().toUpperCase())) {
 				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
 			}
-			if(Arrays.asList("DATETIME").contains(entityColumn.getDesignedType().toUpperCase())) {
+			if(Arrays.asList("DATETIME", "DATE").contains(entityColumn.getDesignedType().toUpperCase())) {
+				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
+			}
+			if(Arrays.asList("BOOLEAN").contains(entityColumn.getDesignedType().toUpperCase())) {
 				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
 			}
 			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
