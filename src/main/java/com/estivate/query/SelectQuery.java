@@ -422,18 +422,30 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public Long fetchCountAll(Context context) { return context.fetchCountAll(this); }
 	public Optional<Long> fetchOptionalCountAll(Context context) { return context.fetchOptionalCountAll(this); }
 
+	public Long fetchCountDistinct(Context context, Attribute attribute) { return context.fetchCountDistinct(this, attribute); }
+	public Long fetchCountDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchCountDistinct(this, entity, attributeName); }
+	public Long fetchCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchCountDistinct(this, entity, attributeName); }
+	public <T, P> Long fetchCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchCountDistinct(this, attributeGetter); }
+
+	public Optional<Long> fetchOptionalCountDistinct(Context context, Attribute attribute) { return context.fetchOptionalCountDistinct(this, attribute); }
+	public Optional<Long> fetchOptionalCountDistinct(Context context, Class<?> entity, String attributeName) { return context.fetchOptionalCountDistinct(this, entity, attributeName); }
+	public Optional<Long> fetchOptionalCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.fetchOptionalCountDistinct(this, entity, attributeName); }
+	public <T, P> Optional<Long> fetchOptionalCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.fetchOptionalCountDistinct(this, attributeGetter); }
+
 	
 	
 
 	// ==================== AGGREGATION METHODS ====================
 	
-	public <U, V> Map<U, V> aggregateToMap(Context context, java.util.function.Function<ResultRow,U> uType, java.util.function.Function<ResultRow,V> vType){
-		return context.aggregateToMap(this, uType, vType);
-	}
+	public <A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){ return context.aggregateToMap(this, attributeGetter, valueGetter); }
+	public <AE, AT, C> Map<AT, C> fetchAsMap(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){ return context.aggregateToMap(this, attributeGetter, vClass); }
+	public <C1, C2> Map<C1, C2> fetchAsMap(Context context, Class<C1> uClass, Class<C2> vClass){ return context.aggregateToMap(this, uClass, vClass); }
+	public <C, AE, AT> Map<C, AT> fetchAsMap(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){ return context.aggregateToMap(this, uClass, valueGetter); }
 
-	public <U, V> Map<U, List<V>> aggregateToMapList(Context context, java.util.function.Function<ResultRow,U> uType, java.util.function.Function<ResultRow,V> vType){
-		return context.aggregateToMapList(this, uType, vType);
-	}
+	public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){ return context.aggregateToMapList(this, attributeGetter, valueGetter); }
+	public <AE, AT, C> Map<AT, List<C>> fetchAsMapList(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){ return context.aggregateToMapList(this, attributeGetter, vClass); }
+	public <C1, C2> Map<C1, List<C2>> fetchAsMapList(Context context, Class<C1> uClass, Class<C2> vClass){ return context.aggregateToMapList(this, uClass, vClass); }
+	public <C, AE, AT> Map<C, List<AT>> fetchAsMapList(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){ return context.aggregateToMapList(this, uClass, valueGetter); }
 
 
 	// ==================== MISC METHODS ====================

@@ -2,6 +2,7 @@ package com.estivate.context;
 
 
 import java.sql.Connection;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -126,6 +127,7 @@ public class H2Context extends Context {
 		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("CHARACTER VARYING"); 
 		if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
 		if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
+		if (entityColumn.getType() == Instant.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
 		if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE");
 		if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
 		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());

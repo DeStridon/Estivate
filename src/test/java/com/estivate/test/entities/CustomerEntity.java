@@ -1,5 +1,6 @@
 package com.estivate.test.entities;
 
+import java.time.Instant;
 import java.util.Date;
 
 import javax.persistence.EnumType;
@@ -50,6 +51,8 @@ public class CustomerEntity extends AbstractEntity{
     Date updated;
 
     Date archived;
+
+    Instant lastLogin;
     
     public enum Country{
     	GERMANY,

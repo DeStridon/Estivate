@@ -111,11 +111,10 @@ public class ResultTest {
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class)
 				.likeStartsWith(CustomerEntity.Fields.name, "map test customer");
 		
-		Map<String, CustomerEntity.Country> map = context.aggregateToMap(query, x -> x.asString(CustomerEntity.class, CustomerEntity.Fields.name), x -> (CustomerEntity.Country) x.asEnum(CustomerEntity.class, CustomerEntity.Fields.country));
+		Map<String, CustomerEntity.Country> map = context.fetch(query).asMap(CustomerEntity::getName, CustomerEntity::getCountry);
 		
 		assertEquals(CustomerEntity.Country.GERMANY, map.get("map test customer 1"));
 		assertEquals(CustomerEntity.Country.SPAIN, map.get("map test customer 2"));
-		
 		
 	}
 	

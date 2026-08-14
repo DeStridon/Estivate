@@ -3,6 +3,7 @@ package com.estivate.result;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -75,6 +76,7 @@ public class ResultRow {
 	// Dates
 	public LocalDateTime	asLocalDateTime(String column) { String value = asString(column); return value == null ? null : LocalDateTime.parse(value, DateMapper.formatter); }
 	public LocalDate		asLocalDate(String column) { LocalDateTime ldt = asLocalDateTime(column); return ldt == null ? null : ldt.toLocalDate(); }
+	public Instant			asInstant(String column) { LocalDateTime ldt = asLocalDateTime(column); return ldt == null ? null : ldt.atZone(ZoneOffset.systemDefault()).toInstant(); }
 	public Date 			asDate(String column) { LocalDateTime ldt = asLocalDateTime(column); return ldt == null ? null : Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant()); } 
 
 	public Boolean 			asBoolean(String column) {  return FieldUtils.parseBoolean(asString(column)); }
@@ -134,6 +136,9 @@ public class ResultRow {
 			}
 			else if(type == LocalDateTime.class) {
 				return (T) asLocalDateTime(c, attribute);
+			}
+			else if(type == Instant.class) {
+				return (T) asInstant(c, attribute);
 			}
 			else if(type == LocalDate.class) {
 				return (T) asLocalDate(c, attribute);
@@ -234,6 +239,10 @@ public class ResultRow {
 	public LocalDateTime		asLocalDateTime	(Class<?> c, String attribute)	{ return asLocalDateTime(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute)); }
 	public LocalDateTime 		asLocalDateTime	(Entity<?> e, String attribute) { return asLocalDateTime(resultTable.context.nameMapper.toEntityNameAttribute(e, attribute)); }
 	public <T,R> LocalDateTime 	asLocalDateTime	(AttributeGetter<T, R> attributeGetter) { return asLocalDateTime(Estivate.attribute(attributeGetter)); }
+	public Instant				asInstant		(Attribute attribute) { return asInstant(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
+	public Instant				asInstant		(Class<?> c, String attribute)	{ return asInstant(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute)); }
+	public Instant		 		asInstant		(Entity<?> e, String attribute) { return asInstant(resultTable.context.nameMapper.toEntityNameAttribute(e, attribute)); }
+	public <T,R> Instant 		asInstant		(AttributeGetter<T, R> attributeGetter) { return asInstant(Estivate.attribute(attributeGetter)); }
 	public LocalDate			asLocalDate		(Attribute attribute) { return asLocalDate(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public LocalDate			asLocalDate		(Class<?> c, String attribute)	{ return asLocalDate(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute)); }
 	public LocalDate	 		asLocalDate		(Entity<?> e, String attribute) { return asLocalDate(resultTable.context.nameMapper.toEntityNameAttribute(e, attribute)); }

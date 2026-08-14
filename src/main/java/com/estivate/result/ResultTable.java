@@ -1,5 +1,6 @@
 package com.estivate.result;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.estivate.Entity;
@@ -25,6 +27,7 @@ import com.estivate.result.IMapper.DateMapper;
 import com.estivate.result.IMapper.DoubleMapper;
 import com.estivate.result.IMapper.FloatMapper;
 import com.estivate.result.IMapper.IntegerMapper;
+import com.estivate.result.IMapper.InstantMapper;
 import com.estivate.result.IMapper.LocalDateTimeMapper;
 import com.estivate.result.IMapper.LongMapper;
 import com.estivate.result.IMapper.OrdinalEnumMapper;
@@ -142,6 +145,13 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> LocalDateTime asSingleLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSingleLocalDateTime(Estivate.attribute(attributeGetter)); }
     public LocalDateTime asSingleLocalDateTime(String columnName) { return asSingleMapped(new LocalDateTimeMapper(), columnNames.indexOf(columnName)); }
 
+    public Instant asSingleInstant() { return asSingleMapped(new InstantMapper()); }
+    public Instant asSingleInstant(Attribute attribute) { return asSingleMapped(new InstantMapper(), indexOf(attribute)); }
+    public Instant asSingleInstant(Class<?> entity, String attributeName) { return asSingleInstant(Estivate.attribute(entity, attributeName)); }
+    public Instant asSingleInstant(Entity<?> entity, String attributeName) { return asSingleInstant(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Instant asSingleInstant(AttributeGetter<T, P> attributeGetter) { return asSingleInstant(Estivate.attribute(attributeGetter)); }
+    public Instant asSingleInstant(String columnName) { return asSingleMapped(new InstantMapper(), columnNames.indexOf(columnName)); }
+
     // Enum mapping
     public <E extends Enum<E>> E asSingleStringEnum(Class<E> enumClass) { return asSingleMapped(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> E asSingleOrdinalEnum(Class<E> enumClass) { return asSingleMapped(new OrdinalEnumMapper<>(enumClass)); }
@@ -221,6 +231,13 @@ public class ResultTable implements Iterable<ResultRow>{
     public Optional<LocalDateTime> asOptionalLocalDateTime(Entity<?> entity, String attributeName) { return asOptionalLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public <T, P> Optional<LocalDateTime> asOptionalLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asOptionalLocalDateTime(Estivate.attribute(attributeGetter)); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(String columnName) { return Optional.ofNullable(asSingleLocalDateTime(columnName)); }
+
+    public Optional<Instant> asOptionalInstant() { return Optional.ofNullable(asSingleInstant()); }
+    public Optional<Instant> asOptionalInstant(Attribute attribute) { return Optional.ofNullable(asSingleInstant(attribute)); }
+    public Optional<Instant> asOptionalInstant(Class<?> entity, String attributeName) { return asOptionalInstant(Estivate.attribute(entity, attributeName)); }
+    public Optional<Instant> asOptionalInstant(Entity<?> entity, String attributeName) { return asOptionalInstant(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Optional<Instant> asOptionalInstant(AttributeGetter<T, P> attributeGetter) { return asOptionalInstant(Estivate.attribute(attributeGetter)); }
+    public Optional<Instant> asOptionalInstant(String columnName) { return Optional.ofNullable(asSingleInstant(columnName)); }
 
 
     // ==================== LIST MAPPING ====================
@@ -344,6 +361,13 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> List<LocalDateTime> asListLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asListLocalDateTime(Estivate.attribute(attributeGetter)); }
     public List<LocalDateTime> asListLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new LocalDateTimeMapper(), index); }
 
+    public List<Instant> asListInstant() { return asListMapped(new InstantMapper()); }
+    public List<Instant> asListInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new InstantMapper(), index); }
+    public List<Instant> asListInstant(Class<?> entity, String attributeName) { return asListInstant(Estivate.attribute(entity, attributeName)); }
+    public List<Instant> asListInstant(Entity<?> entity, String attributeName) { return asListInstant(Estivate.attribute(entity, attributeName)); }
+    public <T, P> List<Instant> asListInstant(AttributeGetter<T, P> attributeGetter) { return asListInstant(Estivate.attribute(attributeGetter)); }
+    public List<Instant> asListInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new InstantMapper(), index); }
+
     // Enum list mapping
     public <E extends Enum<E>> List<E> asListStringEnum(Class<E> enumClass) { return asListMapped(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> List<E> asListOrdinalEnum(Class<E> enumClass) { return asListMapped(new OrdinalEnumMapper<>(enumClass)); }
@@ -436,9 +460,104 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> Set<LocalDateTime> asSetLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSetLocalDateTime(Estivate.attribute(attributeGetter)); }
     public Set<LocalDateTime> asSetLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new LocalDateTimeMapper(), index); }
 
+    public Set<Instant> asSetInstant() { return asSetMapped(new InstantMapper()); }
+    public Set<Instant> asSetInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new InstantMapper(), index); }
+    public Set<Instant> asSetInstant(Class<?> entity, String attributeName) { return asSetInstant(Estivate.attribute(entity, attributeName)); }
+    public Set<Instant> asSetInstant(Entity<?> entity, String attributeName) { return asSetInstant(Estivate.attribute(entity, attributeName)); }
+    public <T, P> Set<Instant> asSetInstant(AttributeGetter<T, P> attributeGetter) { return asSetInstant(Estivate.attribute(attributeGetter)); }
+    public Set<Instant> asSetInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new InstantMapper(), index); }
+
     // Enum set mapping
     public <E extends Enum<E>> Set<E> asSetStringEnum(Class<E> enumClass) { return asSetMapped(new StringEnumMapper<>(enumClass)); }
     public <E extends Enum<E>> Set<E> asSetOrdinalEnum(Class<E> enumClass) { return asSetMapped(new OrdinalEnumMapper<>(enumClass)); }
+
+
+    // ==================== AGGREGATION METHODS ====================
+
+    public <T, U, V> Map<U, V> asMapFromFunctions(Function<ResultRow,U> uType, Function<ResultRow,V> vType){
+		Map<U, V> map = new LinkedHashMap<>();
+		for(ResultRow result : rows){
+			map.put(uType.apply(result), vType.apply(result));
+		}
+		return map;
+	}
+
+    public <T, U, V> Map<U, List<V>> asMapListFromFunctions(Function<ResultRow,U> uType, Function<ResultRow,V> vType){
+		Map<U, List<V>> map = new LinkedHashMap<>();
+		for(ResultRow result : rows){
+			map.computeIfAbsent(uType.apply(result), k -> new ArrayList<>()).add(vType.apply(result));
+		}
+		return map;
+	}
+
+    public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
+        Map<A1T, A2T> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.put(result.as(uAttribute), result.as(vAttribute));
+        }
+        return map;
+    }
+
+    public <AE, AT, C> Map<AT, C> asMap(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
+        Map<AT, C> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.put(result.as(uAttribute), result.as(vClass));
+        }
+        return map;
+    }
+
+    public <C1, C2> Map<C1, C2> asMap(Class<C1> uClass, Class<C2> vClass) {
+        Map<C1, C2> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.put(result.as(uClass), result.as(vClass));
+        }
+        return map;
+    }
+
+    public <C, AE, AT> Map<C, AT> asMap(Class<C> uClass, AttributeGetter<AE, AT> vAttribute) {
+        Map<C, AT> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.put(result.as(uClass), result.as(vAttribute));
+        }
+        return map;
+    }
+
+
+    public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
+        Map<A1T, List<A2T>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uAttribute), k -> new ArrayList<>()).add(result.as(vAttribute));
+        }
+        return map;
+    }
+
+    public <AE, AT, C> Map<AT, List<C>> asMapList(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
+        Map<AT, List<C>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uAttribute), k -> new ArrayList<>()).add(result.as(vClass));
+        }
+        return map;
+    }
+
+    public <C, AE, AT> Map<C, List<AT>> asMapList(Class<C> uClass, AttributeGetter<AE, AT> vAttribute) {
+        Map<C, List<AT>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uClass), k -> new ArrayList<>()).add(result.as(vAttribute));
+        }
+        return map;
+    }
+
+    public <C1, C2> Map<C1, List<C2>> asMapList(Class<C1> uClass, Class<C2> vClass) {
+        Map<C1, List<C2>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uClass), k -> new ArrayList<>()).add(result.as(vClass));
+        }
+        return map;
+    }
+    
+
+    
+
 
     // ==================== UTILITY METHODS ====================
 

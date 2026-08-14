@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -346,7 +347,8 @@ public class EntityMapper<U> {
         }
         else if(type == LocalDateTime.class) { return DateMapper.mapDate(value); }
         else if(type == LocalDate.class) { return DateMapper.mapDate(value).toLocalDate(); }
-
+		else if(type == Instant.class) { return DateMapper.mapDate(value).atZone(ZoneOffset.systemDefault()).toInstant(); }
+        
 		log.error("This type is not mapped yet : "+type);
 		return null;
 

@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -344,6 +345,10 @@ public class Statement implements AutoCloseable{
 					LocalDateTime ldt = (LocalDateTime) object;
 					statement.setTimestamp(i+1, Timestamp.valueOf(ldt));
 				}
+				else if(object instanceof Instant) {
+					Instant instant = (Instant) object;
+					statement.setTimestamp(i+1, Timestamp.from(instant));
+				}
 				else if(object instanceof java.time.LocalDate) {
 					java.time.LocalDate ld = (java.time.LocalDate) object;
 					statement.setTimestamp(i+1, Timestamp.valueOf(ld.atStartOfDay()));
@@ -654,6 +659,9 @@ public class Statement implements AutoCloseable{
 		}
 		else if(value instanceof java.util.Date) {
 			return "\"" + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((java.util.Date) value) + "\""; 
+		}
+		else if(value instanceof Instant) {
+			return "\"" + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Timestamp.from((Instant) value)) + "\"";
 		}
 		else if(value instanceof Boolean) {
 			return (boolean) value ? "1":"0";

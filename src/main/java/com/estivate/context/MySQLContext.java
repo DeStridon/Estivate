@@ -3,6 +3,7 @@ package com.estivate.context;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -120,6 +121,7 @@ public class MySQLContext extends Context {
         if(entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
 		if(entityColumn.getType() == java.sql.Timestamp.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
         if(entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
+        if(entityColumn.getType() == Instant.class) return new ColumnModel.ColumnFormat("DATETIME", null, true);
         if(entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE", null, true);
         if(entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB", null, true);
 		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType()+ " for column: " + entityColumn.getName());

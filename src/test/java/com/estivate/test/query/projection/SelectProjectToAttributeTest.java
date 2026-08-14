@@ -276,6 +276,27 @@ public class SelectProjectToAttributeTest {
     }
 
     @Test
+    public void testFetchCountDistinct_Countries() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
+
+        Long count = query.fetchCountDistinct(context, CustomerEntity.class, CustomerEntity.Fields.country);
+
+        assertNotNull(count, "Distinct count should not be null");
+        assertEquals(2L, count, "Should count 2 distinct countries");
+    }
+
+    @Test
+    public void testFetchCountDistinct_WithFilter() {
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA);
+
+        Long count = query.fetchCountDistinct(context, CustomerEntity::getId);
+
+        assertNotNull(count, "Distinct count should not be null");
+        assertEquals(2L, count, "Should count 2 distinct USA customer ids");
+    }
+
+    @Test
     public void testProjectCount_IgnoresGroupByAndOrderBy() {
         // projectCount should clear group by and order by, so the count should be for all records
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)

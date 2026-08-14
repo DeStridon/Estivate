@@ -566,37 +566,97 @@ public abstract class Context {
 	}
 
 	/*
+	 * Clones the query, clears group bys, orders, and selects COUNT(DISTINCT attribute), and returns a single value
+	 */
+	public Long fetchCountDistinct(SelectQuery<?> query, Attribute attribute) {
+		return fetch(query.clone()
+			.clearSelects()
+			.clearGroupBys()
+			.clearOrderBys()
+			.limit(null)
+			.offset(null)
+			.selectCountDistinct(attribute, "count")).asSingleLong();
+	}
+
+	public Long fetchCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		return fetchCountDistinct(query, Estivate.attribute(entity, attributeName));
+	}
+
+	public Long fetchCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) {
+		return fetchCountDistinct(query, Estivate.attribute(entity, attributeName));
+	}
+
+	public <T, P> Long fetchCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) {
+		return fetchCountDistinct(query, Estivate.attribute(attributeGetter));
+	}
+
+	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single optional value
 	 */
 	public Optional<Long> fetchOptionalCountAll(SelectQuery<?> query) {
 		return Optional.ofNullable(fetchCountAll(query));
 	}
 
+	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Attribute attribute) {
+		return Optional.ofNullable(fetchCountDistinct(query, attribute));
+	}
+
+	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		return Optional.ofNullable(fetchCountDistinct(query, entity, attributeName));
+	}
+
+	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) {
+		return Optional.ofNullable(fetchCountDistinct(query, entity, attributeName));
+	}
+
+	public <T, P> Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) {
+		return Optional.ofNullable(fetchCountDistinct(query, attributeGetter));
+	}
+
 	
 	
 	// ==================== AGGREGATION METHODS ====================
 	
-	public <T, U, V> Map<U, V> aggregateToMap(SelectQuery<T> query, Function<ResultRow,U> uType, Function<ResultRow,V> vType){
-		List<ResultRow> results = fetch(query).getRows();
-		Map<U, V> map = new LinkedHashMap<>();
-		
-		for(ResultRow result : results){
-			map.put(uType.apply(result), vType.apply(result));
-		}
 
-		return map;
+
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> aggregateToMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
+		return fetch(query).asMap(attributeGetter, valueGetter);
 	}
 
-	public <T, U, V> Map<U, List<V>> aggregateToMapList(SelectQuery<T> query, Function<ResultRow,U> uType, Function<ResultRow,V> vType){
-		List<ResultRow> results = fetch(query).getRows();
-		Map<U, List<V>> map = new LinkedHashMap<>();
-		
-		for(ResultRow result : results){
-			map.computeIfAbsent(uType.apply(result), k -> new ArrayList<>()).add(vType.apply(result));
-		}
-
-		return map;
+	public <T, AE, AT, C> Map<AT, C> aggregateToMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
+		return fetch(query).asMap(attributeGetter, vClass);
 	}
+
+	public <T, C1, C2> Map<C1, C2> aggregateToMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
+		return fetch(query).asMap(uClass, vClass);
+	}
+
+	public <T, C, AE, AT> Map<C, AT> aggregateToMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
+		return fetch(query).asMap(uClass, valueGetter);
+	}
+
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> aggregateToMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
+		return fetch(query).asMapList(attributeGetter, valueGetter);
+	}
+	public <T, AE, AT, C> Map<AT, List<C>> aggregateToMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
+		return fetch(query).asMapList(attributeGetter, vClass);
+	}
+	public <T, C, AE, AT> Map<C, List<AT>> aggregateToMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
+		return fetch(query).asMapList(uClass, valueGetter);
+	}
+	public <T, C1, C2> Map<C1, List<C2>> aggregateToMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
+		return fetch(query).asMapList(uClass, vClass);
+	}
+
+
 	
 	
 

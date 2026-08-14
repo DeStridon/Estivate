@@ -3,6 +3,7 @@ package com.estivate.result;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -37,6 +38,13 @@ public abstract class IMapper<U> {
 	public static class BooleanMapper extends IMapper<Boolean>{ public Boolean map(String row) { if(row == null) return null; return Boolean.parseBoolean(row); } }
 
 	public static class LocalDateTimeMapper extends IMapper<LocalDateTime> { public LocalDateTime map(String row) { if(row==null) return null; return LocalDateTime.parse(row, DateMapper.formatter); }}
+	public static class InstantMapper extends IMapper<Instant> {
+		public Instant map(String row) {
+			if (row == null) return null;
+			LocalDateTime ldt = DateMapper.mapDate(row);
+			return ldt.atZone(ZoneOffset.systemDefault()).toInstant();
+		}
+	}
 	public static class DateMapper extends IMapper<Date> { 
 
 		static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]");
@@ -184,6 +192,7 @@ public abstract class IMapper<U> {
 			if(type == BigDecimal.class) { return new BigDecimal(row); }
 			if(type == Date.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()); }
 			if(type == LocalDateTime.class) { return LocalDateTime.parse(row, DateMapper.formatter); }
+			if(type == Instant.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return dateTime.atZone(ZoneOffset.systemDefault()).toInstant(); }
 			if(type == LocalDate.class) { return LocalDate.parse(row, DateMapper.formatter);}
 			if(type == Character.class) { return row.charAt(0); }
 			

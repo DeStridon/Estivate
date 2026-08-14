@@ -200,6 +200,8 @@ public class KeysetPagingStrategy implements PagingStrategy {
                             values[i] = lastRow.asDate(columnName);
                         } else if (fieldType == java.time.LocalDateTime.class) {
                             values[i] = lastRow.asLocalDateTime(columnName);
+                        } else if (fieldType == java.time.Instant.class) {
+                            values[i] = lastRow.asInstant(columnName);
                         } else {
                             // Default to string
                             values[i] = stringValue;
