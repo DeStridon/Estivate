@@ -197,7 +197,7 @@ public class ResultRow {
 
 	public <T, R> R  as(AttributeGetter<T, R> attributeGetter) {
 		Attribute attribute = Estivate.attribute(attributeGetter);
-		return as(attribute.getEntity().getClass(), attribute.getAttribute());
+		return as(attribute.getEntity().entity, attribute.getAttribute());
 	}
 	
 
