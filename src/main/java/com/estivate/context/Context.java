@@ -236,7 +236,12 @@ public abstract class Context {
 				}
 				if (entityColumn.getDefaultValue() != null) {
 					statement.appendQuery("DEFAULT");
-					statement.appendQuery(entityColumn.getDefaultValue().toString());
+					if(entityColumn.getDefaultValue().startsWith("'") && entityColumn.getDefaultValue().endsWith("'")) {
+						statement.appendQuery(entityColumn.getDefaultValue());
+					}
+					else {
+						statement.appendQuery("'" + entityColumn.getDefaultValue() + "'");
+					}
 				}
 				if (Boolean.TRUE.equals(entityColumn.isAutoIncrement())) {
 					statement.appendQuery("AUTO_INCREMENT");
