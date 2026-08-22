@@ -195,7 +195,7 @@ public class ProjectionGroupTest {
         Assertions.assertSame(dtos, filledDtos);
         Assertions.assertEquals(2, filledDtos.size());
 
-        MainDto mixedDto1 = filledDtos.stream().filter(d -> d.customerId == 100L).findFirst().orElseThrow();
+        MainDto mixedDto1 = filledDtos.stream().filter(d -> d.customerId == 100L).findFirst().orElse(null);
         Assertions.assertEquals(OrderEntity.OrderStatus.COMPLETED, mixedDto1.status);
         Assertions.assertNotNull(mixedDto1.created);
         Assertions.assertEquals(2, mixedDto1.groupedDtos.size());

@@ -442,7 +442,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public <C1, C2> Map<C1, C2> fetchAsMap(Context context, Class<C1> uClass, Class<C2> vClass){ return context.aggregateToMap(this, uClass, vClass); }
 	public <C, AE, AT> Map<C, AT> fetchAsMap(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){ return context.aggregateToMap(this, uClass, valueGetter); }
 
-	public Map<Object, Object> fetchAsMap(Context context, Attribute attribute, Attribute valueAttribute){ return context.aggregateToMap(this, attribute, valueAttribute); }
+	public Map<Object, Object> fetchAsMap(Context context, Attribute keyAttribute, Attribute valueAttribute){ return context.aggregateToMap(this, keyAttribute, valueAttribute); }
 
 	public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){ return context.aggregateToMapList(this, attributeGetter, valueGetter); }
 	public <AE, AT, C> Map<AT, List<C>> fetchAsMapList(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){ return context.aggregateToMapList(this, attributeGetter, vClass); }

@@ -14,6 +14,7 @@ import java.util.Map;
 import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.query.Attribute;
+import com.estivate.query.Attribute.Function;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
@@ -103,8 +104,14 @@ public class ResultRow {
 		return as(attribute.getEntity().entity, attribute.getAttribute());
 	}
 
+	public <T> T as(Class<?> c, String attribute) {
+		return as(c, attribute, null);
+	}
+
 	@SneakyThrows
-	public <T> T as(Class<?> c, String attribute) { 
+	public <T> T as(Class<?> c, String attribute, Function function) {
+		
+		if(function == null){
 //		try {
 			Field field = FieldUtils.findField(c, attribute);
 			Type type = field.getGenericType();
@@ -193,6 +200,10 @@ public class ResultRow {
 			else {
 				log.error("This type is not mapped yet : "+type);
 			}
+		}
+		else if(function.getPrefix().equalsIgnoreCase("COUNT")){
+			return (T) asLong(c, attribute);
+		}
 //		}
 //		catch(NoSuchFieldException e) {
 //			log.error("Didn't manage to get field", e);
