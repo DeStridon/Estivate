@@ -63,6 +63,7 @@ public class ResultRow {
 	}
 
 	
+	
 	@SneakyThrows
 	public String 			asString(String column) { Integer index = indexOf(column); return index == null ? null : columnValues[index]; }
 	// Numbers
@@ -96,6 +97,10 @@ public class ResultRow {
 		}
 		log.error("Column not found: "+column + ", available columns: " + resultTable.columnNames);
 		return null;
+	}
+
+	public Object as(Attribute attribute) {
+		return as(attribute.getEntity().entity, attribute.getAttribute());
 	}
 
 	@SneakyThrows

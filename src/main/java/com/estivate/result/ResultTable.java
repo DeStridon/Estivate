@@ -1,5 +1,6 @@
 package com.estivate.result;
 
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,10 +35,12 @@ import com.estivate.result.IMapper.OrdinalEnumMapper;
 import com.estivate.result.IMapper.ShortMapper;
 import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
+import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.ReflectionUtils;
 
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.experimental.SuperBuilder;
 
 
@@ -288,7 +291,52 @@ public class ResultTable implements Iterable<ResultRow>{
         return new ArrayList<>(resultsMap.values());
 
     }
-        
+
+    /**
+     * Maps this result into already-fetched projection rows, keyed by {@link Projection.NestedBy}.
+     * Nested {@link Projection.Nested} fields are filled on the existing instances.
+     */
+    @SneakyThrows
+    public <T> List<T> asList(Class<T> entityClass, List<T> existing) {
+        if (existing == null || existing.isEmpty()) {
+            return asList(entityClass);
+        }
+
+        Projection.NestedBy key = entityClass.getDeclaredAnnotation(Projection.NestedBy.class);
+        if (key == null) {
+            throw new IllegalArgumentException("asList with existing objects requires @Projection.NestedBy on " + entityClass.getName());
+        }
+        if(query.getSelects().stream().noneMatch(s -> s.entity.entity.equals(key.entity()) && s.attribute.equals(key.attribute()))) {
+            throw new IllegalArgumentException("@Projection.NestedBy attribute '" + key.entity().getSimpleName() + "." + key.attribute() + "' of entity '" + key.entity().getSimpleName() + "' must be present in selects");
+        }
+
+        Field keyField = FieldUtils.findField(key.entity(), key.attribute());
+        keyField.setAccessible(true);
+
+        Map<Object, T> existingByKey = new LinkedHashMap<>();
+        for (T item : existing) {
+            existingByKey.put(keyField.get(item), item);
+        }
+
+        EntityMapper<T> entityMapper = new EntityMapper<>(context, query, new Entity<>(entityClass));
+        for (ResultRow row : rows) {
+            Object keyValue = row.as(key.entity(), key.attribute());
+            T object = existingByKey.get(keyValue);
+            if (object == null) {
+                object = entityMapper.map(row.getColumnValues());
+                if (object != null) {
+                    existingByKey.put(keyValue, object);
+                }
+            } 
+            else {
+                entityMapper.map(row.getColumnValues(), object);
+            }
+        }
+
+        return existing;
+    }
+
+    
 
     // Attribute list mapping
     public List<?> asList(Attribute attribute) { return asListMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
@@ -494,6 +542,14 @@ public class ResultTable implements Iterable<ResultRow>{
         Map<A1T, A2T> map = new LinkedHashMap<>();
         for(ResultRow result : rows){
             map.put(result.as(uAttribute), result.as(vAttribute));
+        }
+        return map;
+    }
+
+    public Map<Object, Object> asMap(Attribute keyAttribute, Attribute valueAttribute) {
+        Map<Object, Object> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.put(result.as(keyAttribute), result.as(valueAttribute));
         }
         return map;
     }

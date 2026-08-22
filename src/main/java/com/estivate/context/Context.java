@@ -44,6 +44,7 @@ import com.estivate.query.CreateQuery.Index;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.Join;
+import com.estivate.query.Projection;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
@@ -58,6 +59,7 @@ import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.Pair;
+import com.estivate.util.ReflectionUtils;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -618,6 +620,10 @@ public abstract class Context {
 	// ==================== AGGREGATION METHODS ====================
 	
 
+	public <T> Map<Object, Object> aggregateToMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute){
+		query.clone().clearSelects().select(keyAttribute).select(valueAttribute);
+		return fetch(query).asMap(keyAttribute, valueAttribute);
+	}
 
 	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> aggregateToMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
 		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
@@ -1471,5 +1477,8 @@ public abstract class Context {
 		
 		
 	}
-	
+
+
+
+
 }
