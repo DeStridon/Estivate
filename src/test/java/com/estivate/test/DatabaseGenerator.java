@@ -16,7 +16,7 @@ import com.estivate.NameMapper;
 import com.estivate.context.Context;
 import com.estivate.context.H2Context;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.query.AlterQuery.IndexColumn;
+import com.estivate.index.IndexColumn;
 import com.estivate.reconciliation.EstivateReconciliation.AddColumnDelta;
 import com.estivate.reconciliation.EstivateReconciliation.AddIndexDelta;
 import com.estivate.reconciliation.EstivateReconciliation.CreateTableDelta;

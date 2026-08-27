@@ -16,7 +16,7 @@ import com.estivate.context.Context;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.query.AlterQuery.IndexColumn;
+import com.estivate.index.IndexColumn;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
 import com.estivate.reconciliation.EstivateReconciliation.Mismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;

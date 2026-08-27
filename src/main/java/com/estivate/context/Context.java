@@ -17,14 +17,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
@@ -44,7 +41,6 @@ import com.estivate.query.CreateQuery.Index;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.Join;
-import com.estivate.query.Projection;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
@@ -59,7 +55,6 @@ import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.Pair;
-import com.estivate.util.ReflectionUtils;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -448,11 +443,11 @@ public abstract class Context {
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a single value
 	 */
 	public <T> T fetchAsSingle(SelectQuery<?> query, Class<T> entity) 	{ 
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity).limit(1);
 		return fetch(newQuery).asSingle(entity); 
 	}
 	public <T> T fetchAsSingle(SelectQuery<?> query, Entity<T> entity) { 
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity).limit(1);
 		return fetch(newQuery).asSingle(entity); 
 	}
 	
@@ -497,7 +492,7 @@ public abstract class Context {
 	 * Clones the query, selects only the attribute, and returns a single value
 	 */
 	public Object fetchAsSingle(SelectQuery<?> query, Attribute attribute) {
-		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
+		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute).limit(1);
 		return fetch(newQuery).asSingle(attribute);
 	}
 	public Object 	fetchAsSingle(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName)); }
@@ -625,47 +620,66 @@ public abstract class Context {
 	// ==================== AGGREGATION METHODS ====================
 	
 
-	public <T> Map<Object, Object> aggregateToMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute){
+	public <T> Map<Object, Object> fetchAsMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute){
 		query.clone().clearSelects().select(keyAttribute).select(valueAttribute);
 		return fetch(query).asMap(keyAttribute, valueAttribute);
 	}
 
-	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> aggregateToMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
 		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
 		return fetch(query).asMap(attributeGetter, valueGetter);
 	}
 
-	public <T, AE, AT, C> Map<AT, C> aggregateToMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+	public <T, AE, AT, C> Map<AT, C> fetchAsMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
 		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
 		return fetch(query).asMap(attributeGetter, vClass);
 	}
 
-	public <T, C1, C2> Map<C1, C2> aggregateToMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+	public <T, C1, C2> Map<C1, C2> fetchAsMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
 		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
 		return fetch(query).asMap(uClass, vClass);
 	}
 
-	public <T, C, AE, AT> Map<C, AT> aggregateToMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+	public <T, C, AE, AT> Map<C, AT> fetchAsMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
 		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
 		return fetch(query).asMap(uClass, valueGetter);
 	}
 
-	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> aggregateToMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
 		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
 		return fetch(query).asMapList(attributeGetter, valueGetter);
 	}
-	public <T, AE, AT, C> Map<AT, List<C>> aggregateToMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+	public <T, AE, AT, C> Map<AT, List<C>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
 		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
 		return fetch(query).asMapList(attributeGetter, vClass);
 	}
-	public <T, C, AE, AT> Map<C, List<AT>> aggregateToMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+	public <T, C, AE, AT> Map<C, List<AT>> fetchAsMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
 		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
 		return fetch(query).asMapList(uClass, valueGetter);
 	}
-	public <T, C1, C2> Map<C1, List<C2>> aggregateToMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+	public <T, C1, C2> Map<C1, List<C2>> fetchAsMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
 		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
 		return fetch(query).asMapList(uClass, vClass);
 	}
+
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> fetchAsMapSet(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
+		return fetch(query).asMapSet(attributeGetter, valueGetter);
+	}
+	public <T, AE, AT, C> Map<AT, Set<C>> fetchAsMapSet(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
+		return fetch(query).asMapSet(attributeGetter, vClass);
+	}
+	public <T, C, AE, AT> Map<C, Set<AT>> fetchAsMapSet(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
+		return fetch(query).asMapSet(uClass, valueGetter);
+	}
+	public <T, C1, C2> Map<C1, Set<C2>> fetchAsMapSet(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
+		return fetch(query).asMapSet(uClass, vClass);
+	}
+
+	
 
 
 	
@@ -1318,6 +1332,9 @@ public abstract class Context {
 			else {
 				return defaultValueBool.toString().toLowerCase();
 			}
+		}
+		if(defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+			return defaultValue;
 		}
 		return "'"+defaultValue+"'";
 		

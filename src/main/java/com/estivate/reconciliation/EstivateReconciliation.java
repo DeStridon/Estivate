@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.IndexType;
-import com.estivate.query.AlterQuery.IndexColumn;
+import com.estivate.index.IndexColumn;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

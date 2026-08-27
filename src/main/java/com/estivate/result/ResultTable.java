@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -27,8 +28,8 @@ import com.estivate.result.IMapper.BooleanMapper;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.result.IMapper.DoubleMapper;
 import com.estivate.result.IMapper.FloatMapper;
-import com.estivate.result.IMapper.IntegerMapper;
 import com.estivate.result.IMapper.InstantMapper;
+import com.estivate.result.IMapper.IntegerMapper;
 import com.estivate.result.IMapper.LocalDateTimeMapper;
 import com.estivate.result.IMapper.LongMapper;
 import com.estivate.result.IMapper.OrdinalEnumMapper;
@@ -37,7 +38,6 @@ import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
-import com.estivate.util.ReflectionUtils;
 
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -611,8 +611,37 @@ public class ResultTable implements Iterable<ResultRow>{
         return map;
     }
     
+    public <A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> asMapSet(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
+        Map<A1T, Set<A2T>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uAttribute), k -> new HashSet<>()).add(result.as(vAttribute));
+        }
+        return map;
+    }
 
-    
+    public <C, AE, AT> Map<C, Set<AT>> asMapSet(Class<C> uClass, AttributeGetter<AE, AT> vAttribute) {
+        Map<C, Set<AT>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uClass), k -> new HashSet<>()).add(result.as(vAttribute));
+        }
+        return map;
+    }
+
+    public <AE, AT, C> Map<AT, Set<C>> asMapSet(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
+        Map<AT, Set<C>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uAttribute), k -> new HashSet<>()).add(result.as(vClass));
+        }
+        return map;
+    }
+
+    public <C1, C2> Map<C1, Set<C2>> asMapSet(Class<C1> uClass, Class<C2> vClass) {
+        Map<C1, Set<C2>> map = new LinkedHashMap<>();
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(uClass), k -> new HashSet<>()).add(result.as(vClass));
+        }
+        return map;
+    }
 
 
     // ==================== UTILITY METHODS ====================

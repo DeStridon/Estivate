@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.IndexType;
-import com.estivate.query.AlterQuery.IndexColumn;
+import com.estivate.index.IndexColumn;
 import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
 

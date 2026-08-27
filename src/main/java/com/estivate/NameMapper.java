@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.query.AlterQuery.IndexColumn;
+import com.estivate.index.IndexColumn;
 import com.estivate.query.CreateQuery.Index;
 
 public abstract class NameMapper {

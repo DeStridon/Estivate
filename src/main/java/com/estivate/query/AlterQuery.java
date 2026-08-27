@@ -1,18 +1,15 @@
 package com.estivate.query;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.IndexType;
+import com.estivate.index.IndexColumn;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -91,18 +88,6 @@ public class AlterQuery<E> {
         private List<IndexColumn> columns;
     }
 
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class IndexColumn {
-        private String columnName;
-        private Integer length;
-
-        public static IndexColumn of(com.estivate.index.Annotations.IndexColumn column) {
-            return new IndexColumn(column.value(), column.length());
-        }
-    }
 
     /**
      * Operation to drop an index from a table
