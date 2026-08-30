@@ -79,4 +79,17 @@ public class UpdateQueryTest {
         
     }
 
+    @Test
+    public void testUpdateQuerySetWithAttributeGetter() {
+        UpdateQuery<CustomerEntity> updateQuery = new UpdateQuery<>(CustomerEntity.class)
+            .set(CustomerEntity::getName, "John Doe")
+            .set(CustomerEntity::getEmail, "john.doe@example.com")
+            .eq(CustomerEntity::getId, 1);
+
+        String query = context.queryAsString(updateQuery);
+        Assert.assertEquals(
+            "UPDATE CUSTOMERENTITY SET CUSTOMERENTITY.NAME = ? , CUSTOMERENTITY.EMAIL = ? WHERE CUSTOMERENTITY.ID = ?",
+            query);
+    }
+
 }

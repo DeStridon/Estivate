@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.Getter;
 
@@ -30,6 +31,10 @@ public class UpdateQuery<E> extends Query<UpdateQuery<E>, E> {
 
     public UpdateQuery<E> set(String attribute, Object value) {
         return set(Estivate.attribute(entity, attribute), value);
+    }
+
+    public <T, P> UpdateQuery<E> set(AttributeGetter<T, P> getter, P value) {
+        return set(Estivate.attribute(getter), value);
     }
 
 	@SuppressWarnings("unchecked")
