@@ -28,9 +28,11 @@ public class ResultRowTest {
 
 		Attribute nameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
 
-		ResultRow row = fetchFirst(Estivate.selectQuery(CustomerEntity.class)
+		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
-			.select(nameAttr));
+			.select(nameAttr)
+			.fetch(context)
+			.getFirst();
 
 		assertEquals("ResultRow Plain", row.as(nameAttr));
 	}
@@ -41,9 +43,11 @@ public class ResultRowTest {
 
 		Attribute lowerNameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name, Estivate.Functions.lower);
 
-		ResultRow row = fetchFirst(Estivate.selectQuery(CustomerEntity.class)
+		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
-			.select(lowerNameAttr));
+			.select(lowerNameAttr)
+			.fetch(context)
+			.getFirst();
 
 		assertEquals("resultrow lower", row.as(lowerNameAttr));
 	}
@@ -55,10 +59,12 @@ public class ResultRowTest {
 		Attribute nameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name);
 		Attribute lowerNameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name, Estivate.Functions.lower);
 
-		ResultRow row = fetchFirst(Estivate.selectQuery(CustomerEntity.class)
+		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
 			.select(nameAttr)
-			.select(lowerNameAttr));
+			.select(lowerNameAttr)
+			.fetch(context)
+			.getFirst();
 
 		assertEquals("ResultRow Mixed", row.as(nameAttr));
 		assertEquals("resultrow mixed", row.as(lowerNameAttr));
@@ -70,9 +76,11 @@ public class ResultRowTest {
 
 		Attribute upperNameAttr = Estivate.attribute(CustomerEntity.class, CustomerEntity.Fields.name, Estivate.Functions.upper);
 
-		ResultRow row = fetchFirst(Estivate.selectQuery(CustomerEntity.class)
+		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
-			.select(upperNameAttr));
+			.select(upperNameAttr)
+			.fetch(context)
+			.getFirst();
 
 		assertEquals("RESULTROW UPPER", row.asString(upperNameAttr));
 	}
@@ -83,18 +91,17 @@ public class ResultRowTest {
 
 		Attribute countAttr = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id, Estivate.Functions.count);
 
-		ResultRow row = fetchFirst(Estivate.selectQuery(CustomerEntity.class)
+		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
-			.select(countAttr));
+			.select(countAttr)
+			.fetch(context)
+			.getFirst();
 
 		Object count = row.as(countAttr);
 		assertNotNull(count);
 		assertEquals(1L, ((Number) count).longValue());
 	}
 
-	private ResultRow fetchFirst(SelectQuery<CustomerEntity> query) {
-		return query.fetch(context).getFirst();
-	}
 
 	private CustomerEntity insertCustomer(String name) {
 		CustomerEntity customer = CustomerEntity.builder()

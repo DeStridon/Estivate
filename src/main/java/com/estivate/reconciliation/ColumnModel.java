@@ -13,9 +13,13 @@ public class ColumnModel {
     @Data
     @AllArgsConstructor
     public static class ColumnFormat{
-        public ColumnFormat(String type){ this.type = type; this.length = null; this.noLength = false; }
+        public ColumnFormat(String type){ this(type, null, null, false); }
+        public ColumnFormat(String type, Integer dimension, boolean noLength){ this(type, dimension, null, noLength); }
         String type;
-        Integer length;
+        /** Character length or numeric precision. */
+        Integer dimension;
+        /** Numeric scale (DECIMAL/NUMERIC only). */
+        Integer scale;
         boolean noLength;
     }
 
@@ -30,6 +34,8 @@ public class ColumnModel {
         String designedName;
         String designedType;
         Integer designedLength;
+        Integer designedPrecision;
+        Integer designedScale;
         String defaultValue;
         String charset;
         String collation;

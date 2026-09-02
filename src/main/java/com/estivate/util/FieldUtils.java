@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,11 +16,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
+import com.estivate.reconciliation.ColumnTypeParts;
 import com.estivate.result.EntityMapper.ColumnMapping;
 
 import lombok.extern.slf4j.Slf4j;
@@ -350,17 +355,75 @@ public class FieldUtils {
     public static Integer readFieldForLength(Field field) {
         
 		javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
-		if (javaxColumn != null && javaxColumn.length() > 0) {
+		if (javaxColumn != null && javaxColumn.length() > 0 && javaxColumn.length() != 255) {
 			return javaxColumn.length();
 		}
 
 		jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
-		if (jakartaColumn != null && jakartaColumn.length() > 0) {
+		if (jakartaColumn != null && jakartaColumn.length() > 0 && jakartaColumn.length() != 255) {
 			return jakartaColumn.length();
 		}
 
 		return null;
 
+    }
+
+    public static Integer readFieldForPrecision(Field field) {
+        javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
+        if (javaxColumn != null && javaxColumn.precision() > 0) {
+            return javaxColumn.precision();
+        }
+
+        jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
+        if (jakartaColumn != null && jakartaColumn.precision() > 0) {
+            return jakartaColumn.precision();
+        }
+
+        return null;
+    }
+
+    public static Integer readFieldForScale(Field field) {
+        if (field.getDeclaredAnnotation(javax.persistence.Column.class) != null) {
+            return field.getDeclaredAnnotation(javax.persistence.Column.class).scale();
+        }
+        if (field.getDeclaredAnnotation(jakarta.persistence.Column.class) != null) {
+            return field.getDeclaredAnnotation(jakarta.persistence.Column.class).scale();
+        }
+        return null;
+    }
+
+    public static boolean hasColumnAnnotation(Field field) {
+        return field.getDeclaredAnnotation(javax.persistence.Column.class) != null
+                || field.getDeclaredAnnotation(jakarta.persistence.Column.class) != null;
+    }
+
+    public static Integer resolveFieldScale(Field field) {
+        if (field.getType() != BigDecimal.class || !hasColumnAnnotation(field)) {
+            return null;
+        }
+        Integer precision = readFieldForPrecision(field);
+        if (precision != null) {
+            return readFieldForScale(field);
+        }
+        String columnDef = readFieldForExplicitType(field);
+        if (StringUtils.isNotBlank(columnDef)) {
+            ColumnTypeParts parts = ColumnTypeParts.parse(columnDef);
+            if (parts != null && parts.getScale() != null) {
+                return parts.getScale();
+            }
+        }
+        return null;
+    }
+
+    public static BigDecimal scaleBigDecimal(Field field, BigDecimal value) {
+        if (value == null) {
+            return value;
+        }
+        Integer scale = resolveFieldScale(field);
+        if (scale == null) {
+            return value;
+        }
+        return value.setScale(scale, RoundingMode.HALF_UP);
     }
 
 

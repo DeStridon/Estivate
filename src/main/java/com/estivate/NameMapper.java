@@ -1,15 +1,13 @@
 package com.estivate;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.index.Annotations.IndexType;
-import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexColumn;
-import com.estivate.query.CreateQuery.Index;
+import com.estivate.query.Attribute.Function;
 
 public abstract class NameMapper {
 
@@ -65,7 +63,9 @@ public abstract class NameMapper {
 	
 
 	public String toEntityNameAttribute(Class<?> c, String field) 	{ return mapEntityClass(c) + "." + mapEntityField(field); }
+	public String toEntityNameAttribute(Class<?> c, String field, Function function) 	{ if(function == null) return mapEntityClass(c) + "." + mapEntityField(field); return function.render(mapEntityClass(c) + "." + mapEntityField(field)); }
 	public String toEntityNameAttribute(Entity<?> e, String field) { return toEntityName(e) + "." + mapEntityField(field); }
+	public String toEntityNameAttribute(Entity<?> e, String field, Function function) { if(function == null) return toEntityName(e) + "." + mapEntityField(field); return function.render(toEntityName(e) + "." + mapEntityField(field)); }
 
 	
 	

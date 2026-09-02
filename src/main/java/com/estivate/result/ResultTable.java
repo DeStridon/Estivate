@@ -78,9 +78,9 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T> T asSingle(Entity<T> entity) { return rows.isEmpty() ? null : new EntityMapper<>(context, query, entity).map(rows.get(0).getColumnValues()); }
     
     // Attribute mapping
-    public Object asSingle(Attribute attribute) { return asSingleMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute), indexOf(attribute)); }
-    public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
-    public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(entity.entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
+    public Object asSingle(Attribute attribute) { return asSingleMapped(new AttributeMapper(context, attribute.getEntity().entity, attribute.attribute), indexOf(attribute)); }
+    public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(context, entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
+    public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(context, entity.entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
     public <T, P> P asSingle(AttributeGetter<T, P> attributeGetter) { return (P) asSingle(Estivate.attribute(attributeGetter)); }
 
 
@@ -134,12 +134,12 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> Boolean asSingleBoolean(AttributeGetter<T, P> attributeGetter) { return asSingleBoolean(Estivate.attribute(attributeGetter)); }
     public Boolean asSingleBoolean(String columnName) { return asSingleMapped(new BooleanMapper(), columnNames.indexOf(columnName)); }
 
-    public Date asSingleDate() { return asSingleMapped(new DateMapper()); }
-    public Date asSingleDate(Attribute attribute) { return asSingleMapped(new DateMapper(), indexOf(attribute)); }
+    public Date asSingleDate() { return asSingleMapped(new DateMapper(context)); }
+    public Date asSingleDate(Attribute attribute) { return asSingleMapped(new DateMapper(context), indexOf(attribute)); }
     public Date asSingleDate(Class<?> entity, String attributeName) { return asSingleDate(Estivate.attribute(entity, attributeName)); }
     public Date asSingleDate(Entity<?> entity, String attributeName) { return asSingleDate(Estivate.attribute(entity, attributeName)); }
     public <T, P> Date asSingleDate(AttributeGetter<T, P> attributeGetter) { return asSingleDate(Estivate.attribute(attributeGetter)); }
-    public Date asSingleDate(String columnName) { return asSingleMapped(new DateMapper(), columnNames.indexOf(columnName)); }
+    public Date asSingleDate(String columnName) { return asSingleMapped(new DateMapper(context), columnNames.indexOf(columnName)); }
 
     public LocalDateTime asSingleLocalDateTime() { return asSingleMapped(new LocalDateTimeMapper()); }
     public LocalDateTime asSingleLocalDateTime(Attribute attribute) { return asSingleMapped(new LocalDateTimeMapper(), indexOf(attribute)); }
@@ -148,12 +148,12 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> LocalDateTime asSingleLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSingleLocalDateTime(Estivate.attribute(attributeGetter)); }
     public LocalDateTime asSingleLocalDateTime(String columnName) { return asSingleMapped(new LocalDateTimeMapper(), columnNames.indexOf(columnName)); }
 
-    public Instant asSingleInstant() { return asSingleMapped(new InstantMapper()); }
-    public Instant asSingleInstant(Attribute attribute) { return asSingleMapped(new InstantMapper(), indexOf(attribute)); }
+    public Instant asSingleInstant() { return asSingleMapped(new InstantMapper(context)); }
+    public Instant asSingleInstant(Attribute attribute) { return asSingleMapped(new InstantMapper(context), indexOf(attribute)); }
     public Instant asSingleInstant(Class<?> entity, String attributeName) { return asSingleInstant(Estivate.attribute(entity, attributeName)); }
     public Instant asSingleInstant(Entity<?> entity, String attributeName) { return asSingleInstant(Estivate.attribute(entity, attributeName)); }
     public <T, P> Instant asSingleInstant(AttributeGetter<T, P> attributeGetter) { return asSingleInstant(Estivate.attribute(attributeGetter)); }
-    public Instant asSingleInstant(String columnName) { return asSingleMapped(new InstantMapper(), columnNames.indexOf(columnName)); }
+    public Instant asSingleInstant(String columnName) { return asSingleMapped(new InstantMapper(context), columnNames.indexOf(columnName)); }
 
     // Enum mapping
     public <E extends Enum<E>> E asSingleStringEnum(Class<E> enumClass) { return asSingleMapped(new StringEnumMapper<>(enumClass)); }
@@ -310,7 +310,7 @@ public class ResultTable implements Iterable<ResultRow>{
             throw new IllegalArgumentException("@Projection.NestedBy attribute '" + key.entity().getSimpleName() + "." + key.attribute() + "' of entity '" + key.entity().getSimpleName() + "' must be present in selects");
         }
 
-        Field keyField = FieldUtils.findField(key.entity(), key.attribute());
+        Field keyField = resolveNestedByKeyField(entityClass, key);
         keyField.setAccessible(true);
 
         Map<Object, T> existingByKey = new LinkedHashMap<>();
@@ -336,14 +336,36 @@ public class ResultTable implements Iterable<ResultRow>{
         return existing;
     }
 
+    /**
+     * Resolves the field on {@code entityClass} that holds the {@link Projection.NestedBy} key value.
+     */
+    private Field resolveNestedByKeyField(Class<?> entityClass, Projection.NestedBy key) {
+        if (key.entity().equals(entityClass)) {
+            Field tKeyField = FieldUtils.findField(entityClass, key.attribute());
+            if (tKeyField == null) {
+                throw new IllegalArgumentException("Class '" + entityClass.getName() + "' does not have a field named '" + key.attribute() + "' (which is required by @Projection.NestedBy on " + key.entity().getName() + ")");
+            }
+            return tKeyField;
+        }
+
+        // Look for a field in entityClass that has a @Projection.Attribute mapping to the same key attribute in the key entity.
+        for (Field f : entityClass.getDeclaredFields()) {
+            Projection.Attribute projectionAttr = f.getDeclaredAnnotation(Projection.Attribute.class);
+            if (projectionAttr != null && projectionAttr.entity().equals(key.entity()) && projectionAttr.attribute().equals(key.attribute())) {
+                return f;
+            }
+        }
+        throw new IllegalArgumentException("Could not find a field in " + entityClass.getName() + " with @Projection.Attribute(entity=" + key.entity().getSimpleName() + ", attribute=" + key.attribute() + ")");
+    }
+
     
 
     // Attribute list mapping
-    public List<?> asList(Attribute attribute) { return asListMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
-    public List<?> asList(Class<?> entity, String attributeName) { return asListMapped(new AttributeMapper(entity, attributeName)); }
-    public List<?> asList(Entity<?> entity, String attributeName) { return asListMapped(new AttributeMapper(entity.entity, attributeName)); }
+    public List<?> asList(Attribute attribute) { return asListMapped(new AttributeMapper(context, attribute.getEntity().entity, attribute.attribute)); }
+    public List<?> asList(Class<?> entity, String attributeName) { return asListMapped(new AttributeMapper(context, entity, attributeName)); }
+    public List<?> asList(Entity<?> entity, String attributeName) { return asListMapped(new AttributeMapper(context, entity.entity, attributeName)); }
     @SuppressWarnings("unchecked")
-    public <T, P> List<P> asList(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) asListMapped(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
+    public <T, P> List<P> asList(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) asListMapped(new AttributeMapper(context, attribute.entity.entity, attribute.attribute)); }
 
     // Primitive type list mapping
     public List<String> asListString() { return asListMapped(new StringMapper()); }
@@ -395,12 +417,12 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> List<Boolean> asListBoolean(AttributeGetter<T, P> attributeGetter) { return asListBoolean(Estivate.attribute(attributeGetter)); }
     public List<Boolean> asListBoolean(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new BooleanMapper(), index); }
     
-    public List<Date> asListDate() { return asListMapped(new DateMapper()); }
-    public List<Date> asListDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new DateMapper(), index); }
+    public List<Date> asListDate() { return asListMapped(new DateMapper(context)); }
+    public List<Date> asListDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new DateMapper(context), index); }
     public List<Date> asListDate(Class<?> entity, String attributeName) { return asListDate(Estivate.attribute(entity, attributeName)); }
     public List<Date> asListDate(Entity<?> entity, String attributeName) { return asListDate(Estivate.attribute(entity, attributeName)); }
     public <T, P> List<Date> asListDate(AttributeGetter<T, P> attributeGetter) { return asListDate(Estivate.attribute(attributeGetter)); }
-    public List<Date> asListDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new DateMapper(), index); }
+    public List<Date> asListDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new DateMapper(context), index); }
     
     public List<LocalDateTime> asListLocalDateTime() { return asListMapped(new LocalDateTimeMapper()); }
     public List<LocalDateTime> asListLocalDateTime(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new LocalDateTimeMapper(), index); }
@@ -409,12 +431,12 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> List<LocalDateTime> asListLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asListLocalDateTime(Estivate.attribute(attributeGetter)); }
     public List<LocalDateTime> asListLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new LocalDateTimeMapper(), index); }
 
-    public List<Instant> asListInstant() { return asListMapped(new InstantMapper()); }
-    public List<Instant> asListInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new InstantMapper(), index); }
+    public List<Instant> asListInstant() { return asListMapped(new InstantMapper(context)); }
+    public List<Instant> asListInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new InstantMapper(context), index); }
     public List<Instant> asListInstant(Class<?> entity, String attributeName) { return asListInstant(Estivate.attribute(entity, attributeName)); }
     public List<Instant> asListInstant(Entity<?> entity, String attributeName) { return asListInstant(Estivate.attribute(entity, attributeName)); }
     public <T, P> List<Instant> asListInstant(AttributeGetter<T, P> attributeGetter) { return asListInstant(Estivate.attribute(attributeGetter)); }
-    public List<Instant> asListInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new InstantMapper(), index); }
+    public List<Instant> asListInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new InstantMapper(context), index); }
 
     // Enum list mapping
     public <E extends Enum<E>> List<E> asListStringEnum(Class<E> enumClass) { return asListMapped(new StringEnumMapper<>(enumClass)); }
@@ -438,11 +460,11 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     // Attribute set mapping
-    public Set<?> asSetAttribute(Attribute attribute) { return asSetMapped(new AttributeMapper(attribute.getEntity().entity, attribute.attribute)); }
-    public Set<?> asSetAttribute(Class<?> entity, String attributeName) { return asSetMapped(new AttributeMapper(entity, attributeName)); }
-    public Set<?> asSetAttribute(Entity<?> entity, String attributeName) { return asSetMapped(new AttributeMapper(entity.entity, attributeName)); }
+    public Set<?> asSetAttribute(Attribute attribute) { return asSetMapped(new AttributeMapper(context, attribute.getEntity().entity, attribute.attribute)); }
+    public Set<?> asSetAttribute(Class<?> entity, String attributeName) { return asSetMapped(new AttributeMapper(context, entity, attributeName)); }
+    public Set<?> asSetAttribute(Entity<?> entity, String attributeName) { return asSetMapped(new AttributeMapper(context, entity.entity, attributeName)); }
     @SuppressWarnings("unchecked")
-    public <T, P> Set<P> asSetAttribute(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (Set<P>) asSetMapped(new AttributeMapper(attribute.entity.entity, attribute.attribute)); }
+    public <T, P> Set<P> asSetAttribute(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (Set<P>) asSetMapped(new AttributeMapper(context, attribute.entity.entity, attribute.attribute)); }
     
     // Primitive type set mapping
     public Set<String> asSetString() { return asSetMapped(new StringMapper()); }
@@ -494,12 +516,12 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> Set<Boolean> asSetBoolean(AttributeGetter<T, P> attributeGetter) { return asSetBoolean(Estivate.attribute(attributeGetter)); }
     public Set<Boolean> asSetBoolean(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new BooleanMapper(), index); }
 
-    public Set<Date> asSetDate() { return asSetMapped(new DateMapper()); }
-    public Set<Date> asSetDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new DateMapper(), index); }
+    public Set<Date> asSetDate() { return asSetMapped(new DateMapper(context)); }
+    public Set<Date> asSetDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new DateMapper(context), index); }
     public Set<Date> asSetDate(Class<?> entity, String attributeName) { return asSetDate(Estivate.attribute(entity, attributeName)); }
     public Set<Date> asSetDate(Entity<?> entity, String attributeName) { return asSetDate(Estivate.attribute(entity, attributeName)); }
     public <T, P> Set<Date> asSetDate(AttributeGetter<T, P> attributeGetter) { return asSetDate(Estivate.attribute(attributeGetter)); }
-    public Set<Date> asSetDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new DateMapper(), index); }
+    public Set<Date> asSetDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new DateMapper(context), index); }
 
     public Set<LocalDateTime> asSetLocalDateTime() { return asSetMapped(new LocalDateTimeMapper()); }
     public Set<LocalDateTime> asSetLocalDateTime(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new LocalDateTimeMapper(), index); }
@@ -508,12 +530,12 @@ public class ResultTable implements Iterable<ResultRow>{
     public <T, P> Set<LocalDateTime> asSetLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSetLocalDateTime(Estivate.attribute(attributeGetter)); }
     public Set<LocalDateTime> asSetLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new LocalDateTimeMapper(), index); }
 
-    public Set<Instant> asSetInstant() { return asSetMapped(new InstantMapper()); }
-    public Set<Instant> asSetInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new InstantMapper(), index); }
+    public Set<Instant> asSetInstant() { return asSetMapped(new InstantMapper(context)); }
+    public Set<Instant> asSetInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new InstantMapper(context), index); }
     public Set<Instant> asSetInstant(Class<?> entity, String attributeName) { return asSetInstant(Estivate.attribute(entity, attributeName)); }
     public Set<Instant> asSetInstant(Entity<?> entity, String attributeName) { return asSetInstant(Estivate.attribute(entity, attributeName)); }
     public <T, P> Set<Instant> asSetInstant(AttributeGetter<T, P> attributeGetter) { return asSetInstant(Estivate.attribute(attributeGetter)); }
-    public Set<Instant> asSetInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new InstantMapper(), index); }
+    public Set<Instant> asSetInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new InstantMapper(context), index); }
 
     // Enum set mapping
     public <E extends Enum<E>> Set<E> asSetStringEnum(Class<E> enumClass) { return asSetMapped(new StringEnumMapper<>(enumClass)); }

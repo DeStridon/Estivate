@@ -61,6 +61,7 @@ public class Attribute  {
 		final String suffix;
 
 		final boolean emptyParameter;
+		final Class<?> returnType;
 
 		public String render(String attribute){
 			return prefix + (emptyParameter ? "" : attribute) + suffix;
@@ -80,10 +81,15 @@ public class Attribute  {
 			return new Function(sup.prefix + sub.prefix, sub.suffix + sup.suffix, sub.emptyParameter);
 		}
 
-		public Function(String prefix, String suffix, boolean emptyParameter){
+		public Function(String prefix, String suffix, boolean emptyParameter, Class<?> returnType){
 			this.prefix = prefix;
 			this.suffix = suffix;
 			this.emptyParameter = emptyParameter;
+			this.returnType = returnType;
+		}
+
+		public Function(String prefix, String suffix, boolean emptyParameter){
+			this(prefix, suffix, emptyParameter, null);
 		}
 
 		public Function(String prefix, String suffix){

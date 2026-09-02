@@ -2,6 +2,7 @@ package com.estivate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -320,6 +321,9 @@ public class Statement implements AutoCloseable{
 				else if(object instanceof Double) {
 					Double f = (Double) object;
 					statement.setDouble(i+1, f);
+				}
+				else if(object instanceof BigDecimal) {
+					statement.setBigDecimal(i+1, (BigDecimal) object);
 				}
 				else if(object instanceof Boolean) {
 					Boolean b = (Boolean) object;

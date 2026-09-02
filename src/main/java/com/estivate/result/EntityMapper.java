@@ -62,7 +62,9 @@ public class EntityMapper<U> {
 	@SneakyThrows
 	public EntityMapper(Context context, SelectQuery<?> query, Entity<U> entity, boolean tracePerformances) {
 	
+		this.context = context;
 		this.entity = entity;
+		this.query = query;
 
 		// Get constructor
 		entityConstructor = entity.entity.getConstructor();
@@ -82,8 +84,7 @@ public class EntityMapper<U> {
 		// Entity Mappings
 		entityMappings = getEntityMappings(query, entity);
 
-		this.context = context;
-		this.query = query;
+		
 
 	}
 
@@ -273,7 +274,7 @@ public class EntityMapper<U> {
     }
 
 	@SneakyThrows
-	private static Object convertValue(Field field, String value) {
+	private Object convertValue(Field field, String value) {
 		
 		if(field == null || value == null) {
 			return null;
@@ -343,11 +344,11 @@ public class EntityMapper<U> {
 		// Date
 		if(type == Date.class) {
 			LocalDateTime dateTime = DateMapper.mapDate(value);
-            return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant());
+            return Date.from(dateTime.atZone(context.serverZoneId).toInstant());
         }
         else if(type == LocalDateTime.class) { return DateMapper.mapDate(value); }
         else if(type == LocalDate.class) { return DateMapper.mapDate(value).toLocalDate(); }
-		else if(type == Instant.class) { return DateMapper.mapDate(value).atZone(ZoneOffset.systemDefault()).toInstant(); }
+		else if(type == Instant.class) { return DateMapper.mapDate(value).atZone(context.serverZoneId).toInstant(); }
         
 		log.error("This type is not mapped yet : "+type);
 		return null;

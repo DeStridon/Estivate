@@ -137,7 +137,7 @@ public class EstivateReconciliation {
         
     }
     
-    public static enum Mismatch{TYPE, LENGTH, NULLABLE, DEFAULT}
+    public static enum Mismatch{TYPE, DIMENSION, SCALE, NULLABLE, DEFAULT}
 
 
 

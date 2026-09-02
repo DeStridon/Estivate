@@ -111,6 +111,11 @@ public class H2Context extends Context {
 	@Override
 	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
 		if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
+			if ("DECIMAL".equalsIgnoreCase(entityColumn.getDesignedType())
+					|| "NUMERIC".equalsIgnoreCase(entityColumn.getDesignedType())) {
+				return new ColumnModel.ColumnFormat("DECIMAL", entityColumn.getDesignedPrecision(),
+						entityColumn.getDesignedScale(), false);
+			}
 			if(Arrays.asList("TEXT", "MEDIUMTEXT", "LONGTEXT").contains(entityColumn.getDesignedType())) {
 				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
 			}
@@ -122,6 +127,12 @@ public class H2Context extends Context {
 		if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT");
 		if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT");
 		if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE");
+		if (entityColumn.getType() == java.math.BigDecimal.class) {
+			Integer precision = entityColumn.getDesignedPrecision() != null ? entityColumn.getDesignedPrecision()
+					: entityColumn.getDesignedLength();
+			return new ColumnModel.ColumnFormat("DECIMAL", precision, entityColumn.getDesignedScale(),
+					precision == null && entityColumn.getDesignedScale() == null);
+		}
 		if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN");
 		if (entityColumn.getType() == String.class && "TEXT".equalsIgnoreCase(entityColumn.getDesignedType())) return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
 		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("CHARACTER VARYING"); 
@@ -144,11 +155,12 @@ public class H2Context extends Context {
 
 		return TableField.builder()
 				.name(row.asString("COLUMN_NAME"))
-				.type(columnType)
+				.type(dataType)
 				.nullable("YES".equalsIgnoreCase(row.asString("IS_NULLABLE")))
 				.autoIncrement(identity)
 				.defaultValue(identity ? null : row.asString("COLUMN_DEFAULT"))
-				.length(characterMaximumLength != null ? characterMaximumLength : extractLength(columnType))
+				.dimension(characterMaximumLength != null ? characterMaximumLength : extractLength(columnType))
+				.scale(numericScale)
 				.build();
 	}
 

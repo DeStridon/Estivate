@@ -45,7 +45,7 @@ public class ModelingTest {
 		Set<Field> fields = FieldUtils.getEntityFields(LongTextFieldClass.class);
 		TableField tableField = context.getTableField(fields.iterator().next());
 		
-		assertEquals(null, tableField.getLength());
+		assertEquals(null, tableField.getDimension());
 		
 	}
 	

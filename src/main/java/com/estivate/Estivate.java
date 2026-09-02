@@ -778,31 +778,31 @@ public class Estivate {
 		public static Attribute.Function year = new Attribute.Function("year(", ")");
 
 		/* String Functions */
-		public static Attribute.Function lower = new Attribute.Function("lower(", ")"); 
-		public static Attribute.Function upper = new Attribute.Function("upper(", ")"); 
-		public static Attribute.Function length = new Attribute.Function("length(", ")"); 
-		public static Attribute.Function trim = new Attribute.Function("trim(", ")");
-		public static Attribute.Function charLength = new Attribute.Function("char_length(", ")");
+		public static Attribute.Function lower = new Attribute.Function("lower(", ")", false, String.class); 
+		public static Attribute.Function upper = new Attribute.Function("upper(", ")", false, String.class); 
+		public static Attribute.Function length = new Attribute.Function("length(", ")", false, Integer.class); 
+		public static Attribute.Function trim = new Attribute.Function("trim(", ")", false, String.class);
+		public static Attribute.Function charLength = new Attribute.Function("char_length(", ")", false, Integer.class);
 		public static Attribute.Function field(List<String> fields) { return new Attribute.Function("FIELD(", String.join(", ", fields)+")"); }
 		public static Attribute.Function field(String... fields) { return field(Arrays.asList(fields)); }
 		
 		
 
 		/* Aggregate Functions : cannot be used in where clause */
-		public static Attribute.Function count = new Attribute.Function("count(", ")");
-		public static Attribute.Function countDistinct = new Attribute.Function("count(distinct ", ")");
-		public static Attribute.Function sum = new Attribute.Function("sum(", ")");
-		public static Attribute.Function sumDistinct = new Attribute.Function("sum(distinct ", ")");
-		public static Attribute.Function avg = new Attribute.Function("avg(", ")");
-		public static Attribute.Function avgDistinct = new Attribute.Function("avg(distinct ", ")");
-		public static Attribute.Function min = new Attribute.Function("min(", ")");
-		public static Attribute.Function max = new Attribute.Function("max(", ")");
-		public static Attribute.Function groupConcat = new Attribute.Function("group_concat(", ")");
-		public static Attribute.Function groupConcatDistinct = new Attribute.Function("group_concat(distinct ", ")");
+		public static Attribute.Function count = new Attribute.Function("count(", ")", false, Integer.class);
+		public static Attribute.Function countDistinct = new Attribute.Function("count(distinct ", ")", false, Integer.class);
+		public static Attribute.Function sum = new Attribute.Function("sum(", ")", false, Double.class);
+		public static Attribute.Function sumDistinct = new Attribute.Function("sum(distinct ", ")", false, Double.class);
+		public static Attribute.Function avg = new Attribute.Function("avg(", ")", false, Double.class);
+		public static Attribute.Function avgDistinct = new Attribute.Function("avg(distinct ", ")", false, Double.class);
+		public static Attribute.Function min = new Attribute.Function("min(", ")", false, Long.class);
+		public static Attribute.Function max = new Attribute.Function("max(", ")", false, Long.class);
+		public static Attribute.Function groupConcat = new Attribute.Function("group_concat(", ")", false, String.class);
+		public static Attribute.Function groupConcatDistinct = new Attribute.Function("group_concat(distinct ", ")", false, String.class);
 
 		/* Null Handling Functions */
-		public static Attribute.Function isNull = new Attribute.Function("", " IS NULL");
-		public static Attribute.Function isNotNull = new Attribute.Function("", " IS NOT NULL");
+		public static Attribute.Function isNull = new Attribute.Function("", " IS NULL", false, Boolean.class);
+		public static Attribute.Function isNotNull = new Attribute.Function("", " IS NOT NULL", false, Boolean.class);
 		public static Attribute.Function ifNull(String alternative) { return new Attribute.Function("ifnull(", ", "+alternative+")"); }
 
 		/* JSON Functions */

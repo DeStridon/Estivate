@@ -209,7 +209,8 @@ public class ReconciliationManager {
                 List<Mismatch> mismatches = new ArrayList<>();
                 if(!tableField.typeMatches(dbColumn.getType())) { mismatches.add(Mismatch.TYPE); }
                 if(tableField.isNullable() != dbColumn.isNullable()) { mismatches.add(Mismatch.NULLABLE); }
-                if(!Objects.equals(tableField.getLength(), dbColumn.getLength())) { mismatches.add(Mismatch.LENGTH); }
+                if(!Objects.equals(tableField.getDimension(), dbColumn.getDimension())) { mismatches.add(Mismatch.DIMENSION); }
+                if(!Objects.equals(tableField.getScale(), dbColumn.getScale())) { mismatches.add(Mismatch.SCALE); }
                 if(!Objects.equals(tableField.getDefaultValue() == null ? "NULL" : tableField.getDefaultValue().toString(), dbColumn.getDefaultValue() == null ? "NULL" : dbColumn.getDefaultValue().toString())) { mismatches.add(Mismatch.DEFAULT); }
                 
                 if (!mismatches.isEmpty()) {

@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,11 +19,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
@@ -46,6 +48,7 @@ import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
 import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.ColumnModel.EntityColumn;
+import com.estivate.reconciliation.ColumnTypeParts;
 import com.estivate.reconciliation.EntityModel;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
@@ -54,7 +57,6 @@ import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
-import com.estivate.util.Pair;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -66,6 +68,8 @@ public abstract class Context {
 	public final DataSource datasource;
 	public boolean tracePerformances = false;
 	@Getter public NameMapper nameMapper = new DefaultNameMapper();
+	public ZoneId serverZoneId = ZoneOffset.systemDefault();
+	
 	
 	public Consumer<SelectQuery<?>> selectInterceptor = null;
 	public Consumer<UpdateQuery<?>> updateInterceptor = null;
@@ -211,11 +215,7 @@ public abstract class Context {
 			
 				TableField tableField = getTableField(entityColumn);
 				statement.appendQuery(tableField.getName());
-				statement.appendQuery(tableField.getType());
-
-				if(tableField.getLength() != null) {
-					statement.appendQuery("(" + tableField.getLength() + ")");
-				}
+				appendColumnTypeAndSize(statement, tableField);
 
 				//statement.appendQuery(columnDefinition.getFullColumnType(this));
 				// if (tableField.getCharset() != null) {
@@ -1236,10 +1236,7 @@ public abstract class Context {
 				TableField tableField = getTableField(addColumnOperation.getColumnDefinition());
 				statement.appendQuery("ADD COLUMN");
 				statement.appendQuery(nameMapper.mapDatabaseField(addColumnOperation.getColumnName()));
-				statement.appendQuery(tableField.type);
-				if(tableField.getLength() != null) {
-					statement.appendQuery("(" + tableField.getLength() + ")");
-				}
+				appendColumnTypeAndSize(statement, tableField);
 				if(!tableField.isNullable()) {
 					statement.appendQuery("NOT NULL");
 				}
@@ -1260,10 +1257,7 @@ public abstract class Context {
 				statement.appendQuery("MODIFY COLUMN");
 				TableField tableField = getTableField(modifyColumnOperation.getColumnDefinition());
 				statement.appendQuery(nameMapper.mapDatabaseField(modifyColumnOperation.getColumnName()));
-				statement.appendQuery(tableField.type);
-				if(tableField.getLength() != null) {
-					statement.appendQuery("(" + tableField.getLength() + ")");
-				}
+				appendColumnTypeAndSize(statement, tableField);
 				if(!tableField.isNullable()) {
 					statement.appendQuery("NOT NULL");
 				}
@@ -1364,9 +1358,28 @@ public abstract class Context {
 		jakarta.persistence.Column jakartaColumn = entityField.getDeclaredAnnotation(jakarta.persistence.Column.class);
 		if (javaxColumn != null || jakartaColumn != null) {
 			String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
-			Integer columnLength = javaxColumn != null ? javaxColumn.length() : jakartaColumn.length();
-			entityColumn.setDesignedType(columnDef);
-			entityColumn.setDesignedLength(columnLength);
+			if (StringUtils.isNotBlank(columnDef)) {
+				ColumnTypeParts parsed = ColumnTypeParts.parse(columnDef);
+				if (parsed != null && parsed.getType() != null && !columnDef.equalsIgnoreCase(parsed.getType())) {
+					entityColumn.setDesignedType(parsed.getType());
+					applyParsedColumnSize(entityField, entityColumn, parsed);
+				} else {
+					entityColumn.setDesignedType(columnDef);
+				}
+			}
+
+			if (entityField.getType() == java.math.BigDecimal.class && FieldUtils.hasColumnAnnotation(entityField)) {
+				Integer precision = FieldUtils.readFieldForPrecision(entityField);
+				if (precision != null) {
+					entityColumn.setDesignedPrecision(precision);
+					entityColumn.setDesignedScale(FieldUtils.readFieldForScale(entityField));
+				}
+			} else {
+				Integer columnLength = FieldUtils.readFieldForLength(entityField);
+				if (columnLength != null) {
+					entityColumn.setDesignedLength(columnLength);
+				}
+			}
 		}
 
 		if (entityField.getDeclaredAnnotation(javax.persistence.Convert.class) != null || entityField.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
@@ -1397,20 +1410,37 @@ public abstract class Context {
 		return entityColumn;
 	}
 
+	private static void applyParsedColumnSize(Field entityField, ColumnModel.EntityColumn entityColumn, ColumnTypeParts parsed) {
+		if (entityField.getType() == java.math.BigDecimal.class) {
+			if (parsed.getLength() != null) {
+				entityColumn.setDesignedPrecision(parsed.getLength());
+			}
+			if (parsed.getScale() != null) {
+				entityColumn.setDesignedScale(parsed.getScale());
+			}
+		} else if (parsed.getLength() != null) {
+			entityColumn.setDesignedLength(parsed.getLength());
+		}
+	}
+
 	public TableField getTableField(ColumnModel.EntityColumn entityColumn) {
 		
 		ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
-		
+
+		// TODO : decide on type if length or precision should be set
 		return TableField.builder()
 			.name(nameMapper.mapDatabaseField(entityColumn.getName()))
 			.type(columnFormat.getType())
-			.length(columnFormat.getLength())
+			.dimension(columnFormat.getDimension())
+			.scale(columnFormat.getScale())
 			.nullable(entityColumn.isNullable())
 			.defaultValue(entityColumn.getDefaultValue())
 			.autoIncrement(entityColumn.isAutoIncrement())
 			.build();
 		
 	}
+
+	
 
 	public TableField getTableField(Field entityField) {
 		return getTableField(getEntityColumn(entityField));
@@ -1431,8 +1461,23 @@ public abstract class Context {
     
     public abstract List<TableField> listFields(String tableName);
     public abstract List<TableIndex> listIndexes(Class<?> entity);
+
+	protected void appendColumnTypeAndSize(Statement statement, TableField tableField) {
+		statement.appendQuery(formatColumnTypeAndSize(tableField));
+	}
+
+	protected String formatColumnTypeAndSize(TableField tableField) {
+		StringBuilder sqlType = new StringBuilder(tableField.getType());
+		if (tableField.getDimension() != null) {
+			sqlType.append("(").append(tableField.getDimension());
+			if (tableField.getScale() != null) {
+				sqlType.append(",").append(tableField.getScale());
+			}
+			sqlType.append(")");
+		}
+		return sqlType.toString();
+	}
     
-	
 	/**
      * Extracts length from SQL type (e.g., VARCHAR(255) -> 255)
      */
@@ -1457,42 +1502,9 @@ public abstract class Context {
 		return null;
 	}
 	
-	protected Pair<String, Integer> parseColumnType(String columnType){
-	
-//		RegexBuilder regex = RegexFactory.regexBuilder();
-//		regex
-//			.unique(RegexFactory.sequenceGroup().setGroupType(Group.GroupType.Capturing).setName("type")
-//				.some(CharacterClass.Alphabetic))
-//			.any(CharacterClass.Space)
-//			.optional(RegexFactory.sequenceGroup()
-//				.unique("\\(")
-//				.unique(RegexFactory.sequenceGroup().some(RegexFactory.classMatch(CharacterClass.Numeric)).setGroupType(Group.GroupType.Capturing).setName("length"))
-//				.optional(
-//					RegexFactory.sequenceGroup()
-//						.unique(",")
-//						.unique(RegexFactory.sequenceGroup().some(RegexFactory.classMatch(CharacterClass.Numeric)).setGroupType(Group.GroupType.Capturing))
-//					)
-//				.unique("\\)"));
-//		
-//		RegexMatcher regexMatcher = RegexFactory.regexMatcher(regex, columnType);
-//		regexMatcher.find();
-////		String match1 = regexMatcher.getMatch(0).group;
-////		String match2 = regexMatcher.getMatch(1).group;
-////		String match3 = regexMatcher.getMatch(2).group;
-//		
-//		String type = regexMatcher.getMatch("type").group;
-//		String length = regexMatcher.getMatch("length").group;
-		
-		// For enum, keep all in type
-		if(columnType.toUpperCase().startsWith("ENUM")) {
-			return new Pair<String, Integer>(columnType, null);
-		}
-		Pattern reg = Pattern.compile("([a-zA-Z]+)\\s*(\\(([0-9]+)(,([0-9]+))?\\))?");
-		Matcher matcher = reg.matcher(columnType);
-		if(matcher.find()) {
-			return new Pair<String, Integer>(matcher.group(1), matcher.group(3) == null ? null : Integer.parseInt(matcher.group(3)));
-		}
-		return null;
+	// TODO remove wrapper
+	protected ColumnTypeParts parseColumnType(String columnType){
+		return ColumnTypeParts.parse(columnType);
 		
 		
 		

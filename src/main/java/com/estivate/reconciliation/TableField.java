@@ -26,8 +26,11 @@ public class TableField {
     /** Default value if any */
     public String defaultValue;
 
-    /** Column length/size (e.g. VARCHAR(255) -> 255) */
-    public Integer length;
+    /** Character column length (e.g. VARCHAR(255) -> 255, DECIMAL(10,2) -> 10) */
+    public Integer dimension;
+
+    /** Numeric scale (e.g. DECIMAL(10,2) -> 2) */
+    public Integer scale;
 
     public boolean equalsIgnoringNullable(TableField other) {
         if (other == null) return false;

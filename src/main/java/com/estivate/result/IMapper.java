@@ -9,14 +9,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import com.estivate.NameMapper;
 import com.estivate.context.Context;
-import com.estivate.query.Attribute;
-import com.estivate.query.SelectQuery;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -39,13 +34,23 @@ public abstract class IMapper<U> {
 
 	public static class LocalDateTimeMapper extends IMapper<LocalDateTime> { public LocalDateTime map(String row) { if(row==null) return null; return LocalDateTime.parse(row, DateMapper.formatter); }}
 	public static class InstantMapper extends IMapper<Instant> {
+		final Context context;
+		public InstantMapper(Context context) {
+			this.context = context;
+		}
+
 		public Instant map(String row) {
 			if (row == null) return null;
 			LocalDateTime ldt = DateMapper.mapDate(row);
-			return ldt.atZone(ZoneOffset.systemDefault()).toInstant();
+			return ldt.atZone(context.serverZoneId).toInstant();
 		}
 	}
 	public static class DateMapper extends IMapper<Date> { 
+
+		final Context context;
+		public DateMapper(Context context) {
+			this.context = context;
+		}
 
 		static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS][.SS][.S]");
 	
@@ -53,7 +58,7 @@ public abstract class IMapper<U> {
 		public Date map(String row) { 
 			if(row == null) { return null; } 
 			LocalDateTime ldt = LocalDateTime.parse(row, formatter);
-			return Date.from(ldt.atZone(ZoneOffset.systemDefault()).toInstant());
+			return Date.from(ldt.atZone(context.serverZoneId).toInstant());
 		}	
 
 		static LocalDateTime mapDate(String value) {
@@ -137,14 +142,17 @@ public abstract class IMapper<U> {
 	@AllArgsConstructor
 	public static class AttributeMapper extends IMapper<Object>{
 
+		final Context context;
 		final Field field;
 		final Type type;
+		
 		// final Attribute attribute;
 		// final SelectQuery<?> query;
 
-		public AttributeMapper(Class<?> entity, String attributeName) {
-			field = FieldUtils.findField(entity, attributeName);
-			type = field.getGenericType();
+		public AttributeMapper(Context context, Class<?> entity, String attributeName) {
+			this.context = context;
+			this.field = FieldUtils.findField(entity, attributeName);
+			this.type = field.getGenericType();
 		}
 
 		// public AttributeMapper(SelectQuery<?> query, Attribute attribute) {
@@ -189,10 +197,10 @@ public abstract class IMapper<U> {
 			if(type == long.class || type == Long.class) { return Long.parseLong(row); }
 			if(type == float.class || type == Float.class) { return Float.parseFloat(row); }
 			if(type == double.class || type == Double.class) { return Double.parseDouble(row); }
-			if(type == BigDecimal.class) { return new BigDecimal(row); }
-			if(type == Date.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant()); }
+			if(type == BigDecimal.class) { return FieldUtils.scaleBigDecimal(field, new BigDecimal(row)); }
+			if(type == Date.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return Date.from(dateTime.atZone(context.serverZoneId).toInstant()); }
 			if(type == LocalDateTime.class) { return LocalDateTime.parse(row, DateMapper.formatter); }
-			if(type == Instant.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return dateTime.atZone(ZoneOffset.systemDefault()).toInstant(); }
+			if(type == Instant.class) { LocalDateTime dateTime = DateMapper.mapDate(row); return dateTime.atZone(context.serverZoneId).toInstant(); }
 			if(type == LocalDate.class) { return LocalDate.parse(row, DateMapper.formatter);}
 			if(type == Character.class) { return row.charAt(0); }
 			

@@ -3,7 +3,7 @@ package com.estivate.context;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.estivate.util.Pair;
+import com.estivate.reconciliation.ColumnTypeParts;
 
 public class ContextHelperTest {
 	
@@ -11,9 +11,10 @@ public class ContextHelperTest {
 	public void varcharParsingTest() {
 		
 		Context context = new H2Context(null);
-		Pair<String, Integer> pair = context.parseColumnType("VARCHAR(24)");
-		Assert.assertEquals("VARCHAR", pair.x);
-		Assert.assertEquals((Integer) 24, pair.y);
+		ColumnTypeParts parts = context.parseColumnType("VARCHAR(24)");
+		Assert.assertEquals("VARCHAR", parts.getType());
+		Assert.assertEquals((Integer) 24, parts.getLength());
+		Assert.assertNull(parts.getScale());
 		
 	}
 	
@@ -22,9 +23,10 @@ public class ContextHelperTest {
 	public void booleanParsingTest() {
 		
 		Context context = new H2Context(null);
-		Pair<String, Integer> pair = context.parseColumnType("BIT(1)");
-		Assert.assertEquals("BIT", pair.x);
-		Assert.assertEquals((Integer) 1, pair.y);
+		ColumnTypeParts parts = context.parseColumnType("BIT(1)");
+		Assert.assertEquals("BIT", parts.getType());
+		Assert.assertEquals((Integer) 1, parts.getLength());
+		Assert.assertNull(parts.getScale());
 		
 	}
 	
@@ -32,10 +34,29 @@ public class ContextHelperTest {
 	public void textParsingTest() {
 		
 		Context context = new H2Context(null);
-		Pair<String, Integer> pair = context.parseColumnType("TEXT");
-		Assert.assertEquals("TEXT", pair.x);
-		Assert.assertNull(pair.y);
+		ColumnTypeParts parts = context.parseColumnType("TEXT");
+		Assert.assertEquals("TEXT", parts.getType());
+		Assert.assertNull(parts.getLength());
+		Assert.assertNull(parts.getScale());
 		
+	}
+
+	@Test
+	public void decimalParsingTest() {
+		Context context = new H2Context(null);
+		ColumnTypeParts parts = context.parseColumnType("decimal(10,2)");
+		Assert.assertEquals("decimal", parts.getType());
+		Assert.assertEquals((Integer) 10, parts.getLength());
+		Assert.assertEquals((Integer) 2, parts.getScale());
+	}
+
+	@Test
+	public void smallintUnsignedParsingTest() {
+		Context context = new H2Context(null);
+		ColumnTypeParts parts = context.parseColumnType("SMALLINT UNSIGNED");
+		Assert.assertEquals("SMALLINT UNSIGNED", parts.getType());
+		Assert.assertNull(parts.getLength());
+		Assert.assertNull(parts.getScale());
 	}
 
 }
