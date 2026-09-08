@@ -14,6 +14,7 @@ import com.estivate.index.IndexColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -44,6 +45,7 @@ public class EstivateReconciliation {
 
         @Getter
         @ToString.Exclude
+        @EqualsAndHashCode.Exclude
         private List<ReconciliationDelta> currentDeltas;
 
         public void closeSolved(String reason){
@@ -104,7 +106,7 @@ public class EstivateReconciliation {
         public EntityModel entityModel;
         public Field entityField;
         public String tableColumnName;
-        public ColumnModel.EntityColumn entityColumnDefinition;
+        public ProjectedColumn projectedColumn;
         public EntityModel tableModel;
     }
 
@@ -129,7 +131,7 @@ public class EstivateReconciliation {
         public EntityModel entityModel;
         public Field entityField;
         
-        public ColumnModel.EntityColumn entityColumnDefinition;
+        public ProjectedColumn projectedColumn;
         public TableField projectedDefinition;
         public TableField databaseDefinition;
         

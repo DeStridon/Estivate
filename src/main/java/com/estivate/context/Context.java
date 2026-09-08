@@ -32,6 +32,7 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
+//import com.estivate.context.MySQLContext.MainDimension;
 import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
@@ -46,15 +47,15 @@ import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
-import com.estivate.reconciliation.ColumnModel;
-import com.estivate.reconciliation.ColumnModel.EntityColumn;
 import com.estivate.reconciliation.ColumnTypeParts;
 import com.estivate.reconciliation.EntityModel;
+import com.estivate.reconciliation.ProjectedColumn;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
+import com.estivate.util.ColumnAnnotation;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -66,6 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class Context {
 	
 	public final DataSource datasource;
+	public final Dialect dialect;
 	public boolean tracePerformances = false;
 	@Getter public NameMapper nameMapper = new DefaultNameMapper();
 	public ZoneId serverZoneId = ZoneOffset.systemDefault();
@@ -80,8 +82,9 @@ public abstract class Context {
 	// public Consumer<List<?>> updatePostConsumer = null;
 	// public Consumer<List<?>> insertPostConsumer = null;
 		
-	public Context(DataSource datasource) {
+	public Context(DataSource datasource, Dialect dialect) {
 		this.datasource = datasource;
+		this.dialect = dialect;
 	}
 	
 	// ==================== HELPER METHODS ====================
@@ -209,11 +212,11 @@ public abstract class Context {
 			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
 			
 			statement.appendQuery(" (");
-			for(Iter8<EntityColumn> entityColumns : Iter8.from(query.getColumns())) {
+			for(Iter8<ProjectedColumn> projectedColumns : Iter8.from(query.getColumns())) {
 			
-				EntityColumn entityColumn = entityColumns.getValue();
+				ProjectedColumn projectedColumn = projectedColumns.getValue();
 			
-				TableField tableField = getTableField(entityColumn);
+				TableField tableField = projectedColumn.getTableField();
 				statement.appendQuery(tableField.getName());
 				appendColumnTypeAndSize(statement, tableField);
 
@@ -226,29 +229,29 @@ public abstract class Context {
 				// 	statement.appendQuery("COLLATE");
 				// 	statement.appendQuery(tableField.getCollation());
 				// }
-				if (Boolean.FALSE.equals(entityColumn.isNullable())) {
+				if (!projectedColumn.isNullable()) {
 					statement.appendQuery("NOT NULL");
 				}
-				if (entityColumn.getDefaultValue() != null) {
+				if (projectedColumn.getDefaultValue() != null) {
 					statement.appendQuery("DEFAULT");
-					if(entityColumn.getDefaultValue().startsWith("'") && entityColumn.getDefaultValue().endsWith("'")) {
-						statement.appendQuery(entityColumn.getDefaultValue());
+					if(projectedColumn.getDefaultValue().startsWith("'") && projectedColumn.getDefaultValue().endsWith("'")) {
+						statement.appendQuery(projectedColumn.getDefaultValue());
 					}
 					else {
-						statement.appendQuery("'" + entityColumn.getDefaultValue() + "'");
+						statement.appendQuery("'" + projectedColumn.getDefaultValue() + "'");
 					}
 				}
-				if (Boolean.TRUE.equals(entityColumn.isAutoIncrement())) {
+				if (projectedColumn.isAutoIncrement()) {
 					statement.appendQuery("AUTO_INCREMENT");
 				}
-				if (Boolean.TRUE.equals(entityColumn.isPrimaryKey())) {
+				if (Boolean.TRUE.equals(projectedColumn.getPrimaryKey())) {
 					statement.appendQuery("PRIMARY KEY");
 				}
 				// if (entityColumn.getComment() != null) {
 				// 	statement.appendQuery("COMMENT");
 				// 	statement.appendQuery("'" + entityColumn.getComment().replace("'", "''") + "'");
 				// }
-				if(!entityColumns.isLast()){
+				if(!projectedColumns.isLast()){
 					statement.appendQuery(",");
 				}
 			}
@@ -1233,7 +1236,7 @@ public abstract class Context {
 			
 			if(operation instanceof AlterQuery.AddColumn) {
 				AlterQuery.AddColumn addColumnOperation = (AlterQuery.AddColumn) operation;
-				TableField tableField = getTableField(addColumnOperation.getColumnDefinition());
+				TableField tableField = addColumnOperation.getProjectedColumn().getTableField();
 				statement.appendQuery("ADD COLUMN");
 				statement.appendQuery(nameMapper.mapDatabaseField(addColumnOperation.getColumnName()));
 				appendColumnTypeAndSize(statement, tableField);
@@ -1243,8 +1246,8 @@ public abstract class Context {
 				if(tableField.isAutoIncrement()) {
 					statement.appendQuery("AUTO_INCREMENT");
 				}
-				if(tableField.getDefaultValue() != null) {
-					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), addColumnOperation.getColumnDefinition().getType()));
+				if(tableField.getDefaultValue() != null) {					
+					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), addColumnOperation.getProjectedColumn().getJavaType()));
 				}
 			}
 			else if(operation instanceof AlterQuery.DropColumn) {
@@ -1255,7 +1258,7 @@ public abstract class Context {
 			else if(operation instanceof AlterQuery.ModifyColumn) {
 				AlterQuery.ModifyColumn modifyColumnOperation = (AlterQuery.ModifyColumn) operation;
 				statement.appendQuery("MODIFY COLUMN");
-				TableField tableField = getTableField(modifyColumnOperation.getColumnDefinition());
+				TableField tableField = modifyColumnOperation.getProjectedColumn().getTableField();
 				statement.appendQuery(nameMapper.mapDatabaseField(modifyColumnOperation.getColumnName()));
 				appendColumnTypeAndSize(statement, tableField);
 				if(!tableField.isNullable()) {
@@ -1265,7 +1268,7 @@ public abstract class Context {
 					statement.appendQuery("AUTO_INCREMENT");
 				}
 				if(tableField.getDefaultValue() != null) {
-					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), modifyColumnOperation.getColumnDefinition().getType()));
+					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), modifyColumnOperation.getProjectedColumn().getJavaType()));
 				}
 			}
 			else if(operation instanceof AlterQuery.RenameColumn) {
@@ -1334,116 +1337,126 @@ public abstract class Context {
 		
 	}
 
-	abstract public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn);
+	//abstract public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn);
 
 
 
-	public static ColumnModel.EntityColumn getEntityColumn(Field entityField) {
-		ColumnModel.EntityColumn entityColumn = new ColumnModel.EntityColumn();
-		entityColumn.setName(entityField.getName());
-		entityColumn.setType(entityField.getType());
+	// public ColumnModel.EntityColumn getEntityColumn(Field entityField) {
+	// 	ColumnModel.EntityColumn entityColumn = new ColumnModel.EntityColumn();
+	// 	entityColumn.setName(entityField.getName());
+	// 	entityColumn.setType(entityField.getType());
 
-		// Primary key
-		if(entityField.isAnnotationPresent(javax.persistence.Id.class) || entityField.isAnnotationPresent(jakarta.persistence.Id.class)){
-			entityColumn.setPrimaryKey(true);
-		}
+	// 	// Primary key
+	// 	if(entityField.isAnnotationPresent(javax.persistence.Id.class) || entityField.isAnnotationPresent(jakarta.persistence.Id.class)){
+	// 		entityColumn.setPrimaryKey(true);
+	// 	}
 
-		if(FieldUtils.isAutoIncrement(entityField)) {
-			entityColumn.setAutoIncrement(true);
-		}
+	// 	if(FieldUtils.isAutoIncrement(entityField)) {
+	// 		entityColumn.setAutoIncrement(true);
+	// 	}
 
-		entityColumn.setNullable(FieldUtils.isNullable(entityField));
+	// 	entityColumn.setNullable(FieldUtils.isNullable(entityField));
 
-		javax.persistence.Column javaxColumn = entityField.getDeclaredAnnotation(javax.persistence.Column.class);
-		jakarta.persistence.Column jakartaColumn = entityField.getDeclaredAnnotation(jakarta.persistence.Column.class);
-		if (javaxColumn != null || jakartaColumn != null) {
-			String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
-			if (StringUtils.isNotBlank(columnDef)) {
-				ColumnTypeParts parsed = ColumnTypeParts.parse(columnDef);
-				if (parsed != null && parsed.getType() != null && !columnDef.equalsIgnoreCase(parsed.getType())) {
-					entityColumn.setDesignedType(parsed.getType());
-					applyParsedColumnSize(entityField, entityColumn, parsed);
-				} else {
-					entityColumn.setDesignedType(columnDef);
-				}
-			}
+	// 	javax.persistence.Column javaxColumn = entityField.getDeclaredAnnotation(javax.persistence.Column.class);
+	// 	jakarta.persistence.Column jakartaColumn = entityField.getDeclaredAnnotation(jakarta.persistence.Column.class);
+	// 	if (javaxColumn != null || jakartaColumn != null) {
+	// 		String columnDef = javaxColumn != null ? javaxColumn.columnDefinition() : jakartaColumn.columnDefinition();
+	// 		if (StringUtils.isNotBlank(columnDef)) {
+	// 			ColumnTypeParts parsed = ColumnTypeParts.parse(columnDef);
+	// 			if (parsed != null && parsed.getType() != null && !columnDef.equalsIgnoreCase(parsed.getType())) {
+	// 				entityColumn.setDesignedType(parsed.getType());
+	// 				applyParsedColumnSize(entityField, entityColumn, parsed);
+	// 			} else {
+	// 				entityColumn.setDesignedType(columnDef);
+	// 			}
+	// 		}
 
-			if (entityField.getType() == java.math.BigDecimal.class && FieldUtils.hasColumnAnnotation(entityField)) {
-				Integer precision = FieldUtils.readFieldForPrecision(entityField);
-				if (precision != null) {
-					entityColumn.setDesignedPrecision(precision);
-					entityColumn.setDesignedScale(FieldUtils.readFieldForScale(entityField));
-				}
-			} else {
-				Integer columnLength = FieldUtils.readFieldForLength(entityField);
-				if (columnLength != null) {
-					entityColumn.setDesignedLength(columnLength);
-				}
-			}
-		}
 
-		if (entityField.getDeclaredAnnotation(javax.persistence.Convert.class) != null || entityField.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-			entityColumn.setType(String.class);
-		}
+	// 		if (mainDimensionForColumn(entityColumn.getDesignedType()) == MainDimension.PRECISION) {
+	// 			Integer precision = FieldUtils.readFieldForPrecision(entityField);
+	// 			if (precision != null) {
+	// 				entityColumn.setDesignedPrecision(precision);
+	// 				entityColumn.setDesignedScale(FieldUtils.readFieldForScale(entityField));
+	// 			}
+	// 		} 
+	// 		else {
+	// 			Integer columnLength = FieldUtils.readFieldForLength(entityField);
+	// 			if (columnLength != null) {
+	// 				entityColumn.setDesignedLength(columnLength);
+	// 			}
+	// 		}
+	// 	}
 
-		// Handle enums
-		else if (entityField.getType().isEnum()) {
-			if (FieldUtils.isEnumeratedAsString(entityField)) {
-				String enumValues = Arrays.stream(entityField.getType().getEnumConstants())
-						.map(c -> "'" + ((Enum<?>) c).name() + "'")
-						.collect(Collectors.joining(","));
-				entityColumn.setDesignedType("ENUM(" + enumValues + ")");
-				entityColumn.setDesignedLength(null);
-			}
-			else{
-				entityColumn.setDesignedType("TINYINT");
-			}
-		}
+	// 	if (entityField.getDeclaredAnnotation(javax.persistence.Convert.class) != null || entityField.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
+	// 		entityColumn.setType(String.class);
+	// 	}
+
+	// 	// Handle enums
+	// 	else if (entityField.getType().isEnum()) {
+	// 		if (FieldUtils.isEnumeratedAsString(entityField)) {
+	// 			String enumValues = Arrays.stream(entityField.getType().getEnumConstants())
+	// 					.map(c -> "'" + ((Enum<?>) c).name() + "'")
+	// 					.collect(Collectors.joining(","));
+	// 			entityColumn.setDesignedType("ENUM(" + enumValues + ")");
+	// 			entityColumn.setDesignedLength(null);
+	// 		}
+	// 		else{
+	// 			entityColumn.setDesignedType("TINYINT");
+	// 		}
+	// 	}
 		
-		ColumnDefaultValue columnDefaultValue = entityField.getDeclaredAnnotation(ColumnDefaultValue.class);
-		if(columnDefaultValue != null) {
-			entityColumn.setDefaultValue(columnDefaultValue.value());
-		}
+	// 	ColumnDefaultValue columnDefaultValue = entityField.getDeclaredAnnotation(ColumnDefaultValue.class);
+	// 	if(columnDefaultValue != null) {
+	// 		entityColumn.setDefaultValue(columnDefaultValue.value());
+	// 	}
 
+	// 	return entityColumn;
+	// }
+
+	// public abstract MainDimension mainDimensionForColumn(String columnType);
+
+	// private void applyParsedColumnSize(Field entityField, ColumnModel.EntityColumn entityColumn, ColumnTypeParts parsed) {
+	// 	if (parsed.getType() != null && mainDimensionForColumn(parsed.getType()) == MainDimension.PRECISION) {
+	// 		if (parsed.getLength() != null) {
+	// 			entityColumn.setDesignedPrecision(parsed.getLength());
+	// 		}
+	// 		if (parsed.getScale() != null) {
+	// 			entityColumn.setDesignedScale(parsed.getScale());
+	// 		}
+	// 	} else if (parsed.getLength() != null) {
+	// 		entityColumn.setDesignedLength(parsed.getLength());
+	// 	}
+	// }
+
+	// public TableField getTableField(ColumnModel.EntityColumn entityColumn) {
 		
+	// 	ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
 
-		return entityColumn;
-	}
-
-	private static void applyParsedColumnSize(Field entityField, ColumnModel.EntityColumn entityColumn, ColumnTypeParts parsed) {
-		if (entityField.getType() == java.math.BigDecimal.class) {
-			if (parsed.getLength() != null) {
-				entityColumn.setDesignedPrecision(parsed.getLength());
-			}
-			if (parsed.getScale() != null) {
-				entityColumn.setDesignedScale(parsed.getScale());
-			}
-		} else if (parsed.getLength() != null) {
-			entityColumn.setDesignedLength(parsed.getLength());
-		}
-	}
-
-	public TableField getTableField(ColumnModel.EntityColumn entityColumn) {
+	// 	// TODO : decide on type if length or precision should be set
+	// 	return TableField.builder()
+	// 		.name(nameMapper.mapDatabaseField(entityColumn.getName()))
+	// 		.type(columnFormat.getType())
+	// 		.dimension(columnFormat.getDimension())
+	// 		.scale(columnFormat.getScale())
+	// 		.nullable(entityColumn.isNullable())
+	// 		.defaultValue(entityColumn.getDefaultValue())
+	// 		.autoIncrement(entityColumn.isAutoIncrement())
+	// 		.build();
 		
-		ColumnModel.ColumnFormat columnFormat = getColumnFormat(entityColumn);
-
-		// TODO : decide on type if length or precision should be set
-		return TableField.builder()
-			.name(nameMapper.mapDatabaseField(entityColumn.getName()))
-			.type(columnFormat.getType())
-			.dimension(columnFormat.getDimension())
-			.scale(columnFormat.getScale())
-			.nullable(entityColumn.isNullable())
-			.defaultValue(entityColumn.getDefaultValue())
-			.autoIncrement(entityColumn.isAutoIncrement())
-			.build();
-		
-	}
+	// }
 
 	
 
-	public TableField getTableField(Field entityField) {
-		return getTableField(getEntityColumn(entityField));
+	// public TableField getTableField(Field entityField) {
+	// 	return getTableField(getEntityColumn(entityField));
+	// }
+
+	public TableField getTableField(Field entityField){
+		return projectedColumn(entityField).getTableField();
+	}
+
+	public ProjectedColumn projectedColumn(Field entityField) {
+		return new ProjectedColumn(this, entityField);
 	}
 
     public EntityModel scanDatabaseTable(Class<?> c) {
@@ -1467,6 +1480,9 @@ public abstract class Context {
 	}
 
 	protected String formatColumnTypeAndSize(TableField tableField) {
+		if(tableField.getType() == null) {
+			return null;
+		}
 		StringBuilder sqlType = new StringBuilder(tableField.getType());
 		if (tableField.getDimension() != null) {
 			sqlType.append("(").append(tableField.getDimension());
@@ -1505,11 +1521,6 @@ public abstract class Context {
 	// TODO remove wrapper
 	protected ColumnTypeParts parseColumnType(String columnType){
 		return ColumnTypeParts.parse(columnType);
-		
-		
-		
-		
-		
 	}
 
 

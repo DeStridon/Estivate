@@ -28,9 +28,9 @@ public class ProductSearchShowcase {
 
 	@BeforeEach
     public void setUp() {
-		Estivate.Tools.createTableFullQuery(ProductEntity.class).ifNotExists().execute(context);
-		Estivate.Tools.createTableFullQuery(OrderLineEntity.class).ifNotExists().execute(context);
-		Estivate.Tools.createTableFullQuery(UserProductRatingEntity.class).ifNotExists().execute(context);		
+		Estivate.Tools.createTableFullQuery(ProductEntity.class, context).ifNotExists().execute(context);
+		Estivate.Tools.createTableFullQuery(OrderLineEntity.class, context).ifNotExists().execute(context);
+		Estivate.Tools.createTableFullQuery(UserProductRatingEntity.class, context).ifNotExists().execute(context);		
 	}
 	
     @Builder

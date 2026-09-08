@@ -58,50 +58,21 @@ public class DatabaseGenerator {
 			}
 			
 			context.nameMapper = new TestNameMapper();
-			
+
+			ReconciliationManager reconciliationManager = new ReconciliationManager(context);
+			reconciliationManager.addEntitiesFromPackages("com.estivate.test.entities");
+			reconciliationManager.addResolvers(BasicResolver.class);
+			reconciliationManager.applyResolvers();
+
+			System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
+			System.out.println();
+
+			context.selectInterceptor = query -> {};
+			context.updateInterceptor = query -> {};
+			context.deleteInterceptor = query -> {};
+			context.insertInterceptor = object -> {};
 		}
-		
-		ReconciliationManager reconciliationManager = new ReconciliationManager(context);
-		
-		reconciliationManager.addEntitiesFromPackages("com.estivate.test.entities");
-		reconciliationManager.addResolvers(BasicResolver.class);
-		reconciliationManager.applyResolvers();
-		
 
-//		context.createTableIfNotExists(ProductEntity.class);
-//		IndexDiff productIndexDiff = new IndexDiff(context, ProductEntity.class);
-//		productIndexDiff.addUnimplemented();
-//
-//		context.createTableIfNotExists(OrderLineEntity.class);
-//		IndexDiff orderLineIndexDiff = new IndexDiff(context, OrderLineEntity.class);
-//		orderLineIndexDiff.addUnimplemented();
-//
-//		context.createTableIfNotExists(OrderEntity.class);
-//		IndexDiff orderIndexDiff = new IndexDiff(context, OrderEntity.class);
-//		orderIndexDiff.addUnimplemented();
-//
-//		context.createTableIfNotExists(CustomerEntity.class);
-//		System.out.println(context.showTables());
-//		IndexDiff customerIndexDiff = new IndexDiff(context, CustomerEntity.class);
-//		customerIndexDiff.addUnimplemented();
-//		
-//		context.createTableIfNotExists(UserProductRatingEntity.class);
-//		IndexDiff userProductRatingIndexDiff = new IndexDiff(context, UserProductRatingEntity.class);
-//		userProductRatingIndexDiff.addUnimplemented();
-
-		
-		System.out.println(context.showTables().stream().collect(Collectors.joining(", ")));
-		System.out.println();
-		
-		context.selectInterceptor = query -> {};
-		context.updateInterceptor = query -> {};
-		context.deleteInterceptor = query -> {};
-		context.insertInterceptor = object -> {};
-		
-	
-		
-		
-		
 		return context;
 				
 	}
@@ -174,7 +145,7 @@ public class DatabaseGenerator {
 
 		@Override
 		public void resolve(Context context, CreateTableDelta delta) {
-			Estivate.Tools.createTableFullQuery(delta.entityClass)
+			Estivate.Tools.createTableFullQuery(delta.entityClass, context)
 				.execute(context);
 		}
 
@@ -186,7 +157,7 @@ public class DatabaseGenerator {
 		@Override
 		public void resolve(Context context, AddColumnDelta delta) {
 			Estivate.alterQuery(delta.entityClass)
-				.addColumn(delta.getEntityColumnDefinition())
+				.addColumn(delta.projectedColumn)
 				.execute(context);
 		}
 

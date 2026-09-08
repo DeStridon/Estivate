@@ -18,13 +18,14 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.Statement;
+import com.estivate.context.MySQLDialect.MySQLTypes;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.reconciliation.ColumnModel;
 import com.estivate.reconciliation.ColumnTypeParts;
 import com.estivate.reconciliation.EntityModel;
+import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 import com.estivate.util.FieldUtils;
@@ -44,7 +45,7 @@ public class MySQLContext extends Context {
 	public boolean tracePerformances = false;
 	
 	public MySQLContext(DataSource datasource) {
-		super(datasource);
+		super(datasource, new MySQLDialect());
 	}
 		
 	
@@ -83,85 +84,82 @@ public class MySQLContext extends Context {
 
 
 
-	@Override
-	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
-		if (StringUtils.isNotBlank(entityColumn.getDesignedType())) {
-			String designedType = entityColumn.getDesignedType().trim();
-			if (designedType.toUpperCase().startsWith("ENUM")) {
-				return new ColumnModel.ColumnFormat(designedType, null, true);
-			}
+	// @Override
+	// public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
+	// 	if (StringUtils.isNotBlank(entityColumn.getDesignedType())) {
+	// 		String designedType = entityColumn.getDesignedType().trim();
+	// 		if (designedType.toUpperCase().startsWith("ENUM")) {
+	// 			return new ColumnModel.ColumnFormat(designedType, null, true);
+	// 		}
 
-			MySQLTypes mysqlType = resolveMySQLType(designedType);
-			if (mysqlType != null && mysqlType.mainDimension == MainDimension.LENGTH) {
-				if (mysqlType.parameterType == ParameterType.REQUIRED && entityColumn.getDesignedLength() == null) {
-					throw new IllegalArgumentException("Length is required for " + designedType);
-				}
-				boolean noLength = mysqlType.parameterType == ParameterType.OPTIONAL
-						|| mysqlType.parameterType == ParameterType.FORBIDDEN;
-				return new ColumnModel.ColumnFormat(designedType, entityColumn.getDesignedLength(), null, noLength);
-			}
-			if (mysqlType != null && mysqlType.mainDimension == MainDimension.PRECISION) {
-				if (mysqlType.parameterType == ParameterType.REQUIRED && entityColumn.getDesignedPrecision() == null) {
-					throw new IllegalArgumentException("Precision is required for " + designedType);
-				}
-				boolean noLength = mysqlType.parameterType == ParameterType.OPTIONAL || mysqlType.parameterType == ParameterType.FORBIDDEN;
-				return new ColumnModel.ColumnFormat(designedType, entityColumn.getDesignedPrecision(), entityColumn.getDesignedScale(), noLength);
-			}
+	// 		MySQLTypes mysqlType = MySQLDialect.resolveMySQLType(designedType);
+	// 		if (mysqlType == null) {
+	// 			throw new IllegalArgumentException("Unsupported type: " + designedType);
+	// 		}
+	// 		else if (mysqlType.mainDimension == ColumnDimension.LENGTH_OPTIONAL) {
+	// 			return new ColumnModel.ColumnFormat(designedType, entityColumn.getDesignedLength(), null, false);
+	// 		}
+	// 		else if(mysqlType.mainDimension == ColumnDimension.LENGTH_REQUIRED){
+	// 			if (entityColumn.getDesignedLength() == null) {
+	// 				throw new IllegalArgumentException("Length is required for " + designedType);
+	// 			}
+	// 			return new ColumnModel.ColumnFormat(designedType, entityColumn.getDesignedLength(), null, false);
+	// 		}
+	// 		else if (mysqlType.mainDimension == ColumnDimension.PRECISION_OPTIONAL) {
+	// 			return new ColumnModel.ColumnFormat(designedType, entityColumn.getDesignedPrecision(), entityColumn.getDesignedScale(), false);
+	// 		}
 
-			throw new IllegalArgumentException("Unsupported type: " + designedType);
-		}
+	// 		throw new IllegalArgumentException("Unsupported type: " + designedType);
+	// 	}
 
-		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) {
-			return new ColumnModel.ColumnFormat("INT", null, true);
-		}
-		if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) {
-			return new ColumnModel.ColumnFormat("BIGINT", null, true);
-		}
-		if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) {
-			return new ColumnModel.ColumnFormat("SMALLINT", null, true);
-		}
-		if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) {
-			return new ColumnModel.ColumnFormat("TINYINT", null, true);
-		}
-		if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) {
-			return new ColumnModel.ColumnFormat("FLOAT", null, true);
-		}
-		if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) {
-			return new ColumnModel.ColumnFormat("DOUBLE", null, true);
-		}
-		if (entityColumn.getType() == java.math.BigDecimal.class) {
-			Integer precision = entityColumn.getDesignedPrecision() != null ? entityColumn.getDesignedPrecision()
-					: entityColumn.getDesignedLength();
-			return new ColumnModel.ColumnFormat("DECIMAL", precision, entityColumn.getDesignedScale(),
-					precision == null && entityColumn.getDesignedScale() == null);
-		}
-		if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) {
-			return new ColumnModel.ColumnFormat("BIT", 1, true);
-		}
-		if (entityColumn.getType() == String.class) {
-			return new ColumnModel.ColumnFormat("VARCHAR",
-					entityColumn.getDesignedLength() != null ? entityColumn.getDesignedLength() : 255, false);
-		}
-		if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) {
-			return new ColumnModel.ColumnFormat("DATETIME", null, true);
-		}
-		if (entityColumn.getType() == java.sql.Timestamp.class) {
-			return new ColumnModel.ColumnFormat("DATETIME", null, true);
-		}
-		if (entityColumn.getType() == LocalDateTime.class) {
-			return new ColumnModel.ColumnFormat("DATETIME", null, true);
-		}
-		if (entityColumn.getType() == Instant.class) {
-			return new ColumnModel.ColumnFormat("DATETIME", null, true);
-		}
-		if (entityColumn.getType() == LocalDate.class) {
-			return new ColumnModel.ColumnFormat("DATE", null, true);
-		}
-		if (entityColumn.getType() == byte[].class) {
-			return new ColumnModel.ColumnFormat("BLOB", null, true);
-		}
-		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType() + " for column: " + entityColumn.getName());
-	}
+	// 	if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) {
+	// 		return new ColumnModel.ColumnFormat("INT", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) {
+	// 		return new ColumnModel.ColumnFormat("BIGINT", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) {
+	// 		return new ColumnModel.ColumnFormat("SMALLINT", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) {
+	// 		return new ColumnModel.ColumnFormat("TINYINT", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) {
+	// 		return new ColumnModel.ColumnFormat("FLOAT", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) {
+	// 		return new ColumnModel.ColumnFormat("DOUBLE", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == java.math.BigDecimal.class) {
+	// 		Integer precision = entityColumn.getDesignedPrecision() != null ? entityColumn.getDesignedPrecision() : entityColumn.getDesignedLength();
+	// 		return new ColumnModel.ColumnFormat("DECIMAL", precision, entityColumn.getDesignedScale(), precision == null && entityColumn.getDesignedScale() == null);
+	// 	}
+	// 	if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) {
+	// 		return new ColumnModel.ColumnFormat("BIT", 1, true);
+	// 	}
+	// 	if (entityColumn.getType() == String.class) {
+	// 		return new ColumnModel.ColumnFormat("VARCHAR", entityColumn.getDesignedLength() != null ? entityColumn.getDesignedLength() : 255, false);
+	// 	}
+	// 	if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) {
+	// 		return new ColumnModel.ColumnFormat("DATETIME", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == java.sql.Timestamp.class) {
+	// 		return new ColumnModel.ColumnFormat("DATETIME", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == LocalDateTime.class) {
+	// 		return new ColumnModel.ColumnFormat("DATETIME", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == Instant.class) {
+	// 		return new ColumnModel.ColumnFormat("DATETIME", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == LocalDate.class) {
+	// 		return new ColumnModel.ColumnFormat("DATE", null, true);
+	// 	}
+	// 	if (entityColumn.getType() == byte[].class) {
+	// 		return new ColumnModel.ColumnFormat("BLOB", null, true);
+	// 	}
+	// 	throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType() + " for column: " + entityColumn.getName());
+	// }
 
 
 
@@ -283,7 +281,7 @@ public class MySQLContext extends Context {
 
 		ColumnTypeParts parts = ColumnTypeParts.parse(tableField.getType());
 		String typeSource = parts != null ? parts.getType() : tableField.getType();
-		MySQLTypes mysqlType = resolveMySQLType(typeSource);
+		MySQLTypes mysqlType = MySQLDialect.resolveMySQLType(typeSource);
 		if (mysqlType == null) {
 			throw new IllegalArgumentException("Unsupported MySQL type: " + typeSource);
 		}
@@ -299,14 +297,13 @@ public class MySQLContext extends Context {
 			scale = parts.getScale();
 		}
 
-		if (mysqlType.mainDimension == MainDimension.PRECISION && dimension != null) {
+		if (mysqlType.mainDimension == ColumnDimension.PRECISION_OPTIONAL && dimension != null) {
 			sqlType.append("(").append(dimension);
 			if (scale != null) {
 				sqlType.append(",").append(scale);
 			}
 			sqlType.append(")");
-		} else if (mysqlType.mainDimension == MainDimension.LENGTH
-				&& mysqlType.parameterType != ParameterType.FORBIDDEN
+		} else if (mysqlType.mainDimension == ColumnDimension.LENGTH_OPTIONAL
 				&& dimension != null) {
 			sqlType.append("(").append(dimension).append(")");
 		}
@@ -318,115 +315,7 @@ public class MySQLContext extends Context {
 		return sqlType.toString();
 	}
 
-	static MySQLTypes resolveMySQLType(String sqlType) {
-		if (sqlType == null) {
-			return null;
-		}
-		String normalized = sqlType.trim().toUpperCase().replace(' ', '_');
-		try {
-			return MySQLTypes.valueOf(normalized);
-		} catch (IllegalArgumentException ignored) {
-			String base = normalized.replace("_UNSIGNED", "").replace("_SIGNED", "");
-			try {
-				return MySQLTypes.valueOf(base);
-			} catch (IllegalArgumentException ignoredAgain) {
-				return null;
-			}
-		}
-	}
 
 
-	public enum MySQLTypes {
-		// Numeric types
-		DECIMAL(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		DECIMAL_UNSIGNED(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		NUMERIC(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		NUMERIC_UNSIGNED(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		FLOAT(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		FLOAT_UNSIGNED(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		DOUBLE(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		DOUBLE_UNSIGNED(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		TINYINT(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		TINYINT_UNSIGNED(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		SMALLINT(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		SMALLINT_UNSIGNED(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		MEDIUMINT(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		MEDIUMINT_UNSIGNED(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		INT(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		INT_UNSIGNED(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		INTEGER(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		INTEGER_UNSIGNED(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		BIGINT(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		BIGINT_UNSIGNED(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		BIT(MainDimension.LENGTH, ParameterType.OPTIONAL),
-
-		// Date and time types
-		DATE(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		DATETIME(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		TIMESTAMP(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		TIME(MainDimension.PRECISION, ParameterType.OPTIONAL),
-		YEAR(MainDimension.LENGTH, ParameterType.OPTIONAL),
-
-		// String types
-		CHAR(MainDimension.LENGTH, ParameterType.REQUIRED),
-		VARCHAR(MainDimension.LENGTH, ParameterType.REQUIRED),
-		TEXT(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		TINYTEXT(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		MEDIUMTEXT(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		LONGTEXT(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-
-		// Binary types
-		BINARY(MainDimension.LENGTH, ParameterType.OPTIONAL),
-		VARBINARY(MainDimension.LENGTH, ParameterType.REQUIRED),
-		BLOB(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		TINYBLOB(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		MEDIUMBLOB(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		LONGBLOB(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-
-		// Misc types
-		JSON(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		ENUM(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		SET(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		BOOLEAN(MainDimension.LENGTH, ParameterType.FORBIDDEN),
-		BOOL(MainDimension.LENGTH, ParameterType.FORBIDDEN);
-
-		public final MainDimension mainDimension;
-		public final ParameterType parameterType;
-
-		MySQLTypes(MainDimension mainDimension, ParameterType parameterType) {
-			this.mainDimension = mainDimension;
-			this.parameterType = parameterType;
-		}
-
-		/** Base MySQL type name without signedness, e.g. {@code SMALLINT_UNSIGNED} → {@code SMALLINT}. */
-		public String baseType() {
-			String name = name();
-			if (name.endsWith("_UNSIGNED")) {
-				return name.substring(0, name.length() - "_UNSIGNED".length());
-			}
-			if (name.endsWith("_SIGNED")) {
-				return name.substring(0, name.length() - "_SIGNED".length());
-			}
-			return name;
-		}
-
-		/** {@code true} when this enum constant is an unsigned numeric variant. */
-		public boolean isUnsigned() {
-			return name().endsWith("_UNSIGNED");
-		}
-
-	}
-
-	public enum ParameterType {
-		FORBIDDEN,
-		OPTIONAL, 
-		REQUIRED;
-	}
-
-	public enum MainDimension {
-		LENGTH,
-		PRECISION;
-	}
-	
 
 }

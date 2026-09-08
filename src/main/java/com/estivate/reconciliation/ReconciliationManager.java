@@ -17,7 +17,6 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.index.IndexColumn;
-import com.estivate.reconciliation.ColumnModel.EntityColumn;
 import com.estivate.reconciliation.EstivateReconciliation.Mismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
@@ -176,9 +175,9 @@ public class ReconciliationManager {
         for (Field entityField : FieldUtils.getEntityFields(entityClass)) {
 
             
-            EntityColumn entityColumn = context.getEntityColumn(entityField);
+            ProjectedColumn projectedColumn = context.projectedColumn(entityField);
             //ColumnModel.ColumnFormat columnFormat = context.getColumnFormat(entityColumn);
-            TableField tableField = context.getTableField(entityField);
+            TableField tableField = projectedColumn.getTableField();
             TableField dbColumn = databaseModel.findField(entityField.getName());
 
             if (dbColumn == null) {
@@ -198,7 +197,7 @@ public class ReconciliationManager {
                     .entityModel(databaseModel)
                     .entityField(entityField)
                     .tableColumnName(context.nameMapper.mapDatabaseClass(entityClass))
-                    .entityColumnDefinition(entityColumn)
+                    .projectedColumn(projectedColumn)
                     .tableModel(databaseModel)
                     .build();
                 diffs.add(addColumn);
@@ -219,7 +218,7 @@ public class ReconciliationManager {
                         .entityClass(entityClass)
                         .entityModel(databaseModel)
                         .entityField(entityField)
-                        .entityColumnDefinition(entityColumn)
+                        .projectedColumn(projectedColumn)
                         .projectedDefinition(tableField)
                         .databaseDefinition(dbColumn)
                         .mismatchs(mismatches)

@@ -27,8 +27,8 @@ public class InsertQueryTest {
 
     @BeforeEach
     public void setUp() {
-        Estivate.Tools.createTableFullQuery(ProductEntity.class).ifNotExists().execute(context);
-        Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(ProductEntity.class, context).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(CustomerEntity.class, context).ifNotExists().execute(context);
         context.truncateTable(ProductEntity.class);
         context.truncateTable(CustomerEntity.class);
     }

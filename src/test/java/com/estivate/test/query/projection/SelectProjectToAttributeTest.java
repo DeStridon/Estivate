@@ -47,8 +47,8 @@ public class SelectProjectToAttributeTest {
     @BeforeEach
     public void setUp() {
         // Clean up existing test data
-        Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);
-        Estivate.Tools.createTableFullQuery(ProductEntity.class).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(CustomerEntity.class, context).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(ProductEntity.class, context).ifNotExists().execute(context);
         context.truncateTable(CustomerEntity.class);
         context.truncateTable(ProductEntity.class);
         

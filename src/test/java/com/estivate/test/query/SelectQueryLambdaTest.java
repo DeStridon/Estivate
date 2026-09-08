@@ -28,8 +28,8 @@ public class SelectQueryLambdaTest {
 	
 	@BeforeEach
 	public void setUp() {
-    	Estivate.Tools.createTableFullQuery(CustomerEntity.class).ifNotExists().execute(context);
-    	Estivate.Tools.createTableFullQuery(OrderEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(CustomerEntity.class, context).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(OrderEntity.class, context).ifNotExists().execute(context);
 	}
 
 

@@ -6,7 +6,7 @@ import java.util.List;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.IndexColumn;
-import com.estivate.reconciliation.ColumnModel.EntityColumn;
+import com.estivate.reconciliation.ProjectedColumn;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,7 +33,7 @@ public class AlterQuery<E> {
     @AllArgsConstructor
     public static class AddColumn implements Operation {
         private final String columnName;
-        private final EntityColumn columnDefinition;
+        private final ProjectedColumn projectedColumn;
     }
 
     /**
@@ -52,7 +52,7 @@ public class AlterQuery<E> {
     @AllArgsConstructor
     public static class ModifyColumn implements Operation {
         private final String columnName;
-        private final EntityColumn columnDefinition;
+        private final ProjectedColumn projectedColumn;
     }
 
     /**
@@ -111,9 +111,9 @@ public class AlterQuery<E> {
     private List<Operation> operations = new ArrayList<>();
 
 
-    public AlterQuery<E> addColumn(EntityColumn columnDefinition) { return addOperation(new AddColumn(columnDefinition.getName(), columnDefinition)); }
+    public AlterQuery<E> addColumn(ProjectedColumn projectedColumn) { return addOperation(new AddColumn(projectedColumn.getName(), projectedColumn)); }
     public AlterQuery<E> dropColumn(String columnName) { return addOperation(new DropColumn(columnName)); }
-    public AlterQuery<E> modifyColumn(String columnName, EntityColumn columnDefinition) { return addOperation(new ModifyColumn(columnName, columnDefinition)); }
+    public AlterQuery<E> modifyColumn(String columnName, ProjectedColumn projectedColumn) { return addOperation(new ModifyColumn(columnName, projectedColumn)); }
     public AlterQuery<E> changeColumn(String columnName, String newColumnName, String columnType) { return addOperation(new ChangeColumn(columnName, newColumnName, columnType)); }
     public AlterQuery<E> renameColumn(String columnName, String newColumnName) { return addOperation(new RenameColumn(columnName, newColumnName)); }
     public AlterQuery<E> addIndex(String indexName, List<IndexColumn> columns) { return addOperation(new AddIndex(indexName, IndexType.DEFAULT, columns)); }

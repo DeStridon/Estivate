@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.reconciliation.ColumnModel.EntityColumn;
 import com.estivate.reconciliation.ColumnTypeParts;
+import com.estivate.reconciliation.ProjectedColumn;
+import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
 import com.estivate.reconciliation.TableField;
 import com.estivate.util.FieldUtils;
 
@@ -18,6 +19,8 @@ import jakarta.persistence.Column;
  * parsing, entity modeling, and reconciliation type comparison.
  */
 public class UnsignedColumnTypeTest {
+
+	MySQLContext mysqlContext = new MySQLContext(null);
 
 	public static class UnsignedSmallintEntity {
 		@Column(columnDefinition = "SMALLINT UNSIGNED")
@@ -53,22 +56,22 @@ public class UnsignedColumnTypeTest {
 
 	@Test
 	public void entityColumnPreservesUnsignedFromColumnDefinition() {
-		EntityColumn column = Context.getEntityColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
-		assertEquals("SMALLINT UNSIGNED", column.getDesignedType());
+		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
+		assertEquals("SMALLINT UNSIGNED", column.getType());
 	}
 
 	@Test
 	public void entityColumnPreservesUnsignedWithDisplayWidth() {
-		EntityColumn column = Context.getEntityColumn(FieldUtils.findField(UnsignedSmallintWithDisplayWidthEntity.class, "code"));
-		assertEquals("SMALLINT UNSIGNED", column.getDesignedType());
-		assertEquals(5, column.getDesignedLength());
+		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(UnsignedSmallintWithDisplayWidthEntity.class, "code"));
+		assertEquals("SMALLINT UNSIGNED", column.getType());
+		assertEquals(5, column.getDimension());
+		assertEquals(ColumnDimension.LENGTH_OPTIONAL, column.getDimensionType());
 	}
 
 	@Test
 	public void mysqlTableFieldPreservesUnsignedForReconciliation() {
 		MySQLContext context = new MySQLContext(null);
-		TableField projected = context.getTableField(
-				Context.getEntityColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code")));
+		TableField projected = context.getTableField(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
 
 		assertEquals("SMALLINT UNSIGNED", projected.getType());
 
@@ -86,37 +89,32 @@ public class UnsignedColumnTypeTest {
 
 	@Test
 	public void appendColumnTypeAndSize_unsignedSmallint() {
-		MySQLContext context = new MySQLContext(null);
 		TableField field = TableField.builder().type("SMALLINT UNSIGNED").build();
-		assertEquals("SMALLINT UNSIGNED", columnTypeSql(context, field));
+		assertEquals("SMALLINT UNSIGNED", columnTypeSql(mysqlContext, field));
 	}
 
 	@Test
 	public void appendColumnTypeAndSize_unsignedSmallintWithDisplayWidth() {
-		MySQLContext context = new MySQLContext(null);
 		TableField field = TableField.builder().type("SMALLINT UNSIGNED").dimension(5).build();
-		assertEquals("SMALLINT(5) UNSIGNED", columnTypeSql(context, field));
+		assertEquals("SMALLINT(5) UNSIGNED", columnTypeSql(mysqlContext, field));
 	}
 
 	@Test
 	public void appendColumnTypeAndSize_signedDecimal() {
-		MySQLContext context = new MySQLContext(null);
 		TableField field = TableField.builder().type("DECIMAL").dimension(10).scale(2).build();
-		assertEquals("DECIMAL(10,2)", columnTypeSql(context, field));
+		assertEquals("DECIMAL(10,2)", columnTypeSql(mysqlContext, field));
 	}
 
 	@Test
 	public void appendColumnTypeAndSize_unsignedDecimal() {
-		MySQLContext context = new MySQLContext(null);
 		TableField field = TableField.builder().type("DECIMAL UNSIGNED").dimension(10).scale(2).build();
-		assertEquals("DECIMAL(10,2) UNSIGNED", columnTypeSql(context, field));
+		assertEquals("DECIMAL(10,2) UNSIGNED", columnTypeSql(mysqlContext, field));
 	}
 
 	@Test
 	public void appendColumnTypeAndSize_enumTypeUnchanged() {
-		MySQLContext context = new MySQLContext(null);
 		TableField field = TableField.builder().type("ENUM('A','B')").build();
-		assertEquals("ENUM('A','B')", columnTypeSql(context, field));
+		assertEquals("ENUM('A','B')", columnTypeSql(mysqlContext, field));
 	}
 
 	private static String columnTypeSql(MySQLContext context, TableField field) {

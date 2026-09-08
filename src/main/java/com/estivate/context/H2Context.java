@@ -20,8 +20,7 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.reconciliation.ColumnModel;
-import com.estivate.reconciliation.EntityModel;
+import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
 import com.estivate.reconciliation.TableField;
 import com.estivate.result.ResultRow;
 
@@ -35,7 +34,7 @@ public class H2Context extends Context {
 	public boolean tracePerformances = false;
 	
 	public H2Context(DataSource datasource) {
-		super(datasource);
+		super(datasource, new H2Dialect());
 	}
 		
 	
@@ -108,41 +107,41 @@ public class H2Context extends Context {
 
 
 
-	@Override
-	public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
-		if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
-			if ("DECIMAL".equalsIgnoreCase(entityColumn.getDesignedType())
-					|| "NUMERIC".equalsIgnoreCase(entityColumn.getDesignedType())) {
-				return new ColumnModel.ColumnFormat("DECIMAL", entityColumn.getDesignedPrecision(),
-						entityColumn.getDesignedScale(), false);
-			}
-			if(Arrays.asList("TEXT", "MEDIUMTEXT", "LONGTEXT").contains(entityColumn.getDesignedType())) {
-				return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
-			}
-			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
-		}
-		if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INTEGER");
-		if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("INTEGER");
-		if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("INTEGER");
-		if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT");
-		if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT");
-		if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE");
-		if (entityColumn.getType() == java.math.BigDecimal.class) {
-			Integer precision = entityColumn.getDesignedPrecision() != null ? entityColumn.getDesignedPrecision()
-					: entityColumn.getDesignedLength();
-			return new ColumnModel.ColumnFormat("DECIMAL", precision, entityColumn.getDesignedScale(),
-					precision == null && entityColumn.getDesignedScale() == null);
-		}
-		if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN");
-		if (entityColumn.getType() == String.class && "TEXT".equalsIgnoreCase(entityColumn.getDesignedType())) return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
-		if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("CHARACTER VARYING"); 
-		if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
-		if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
-		if (entityColumn.getType() == Instant.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
-		if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE");
-		if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
-		throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
-	}
+	// @Override
+	// public ColumnModel.ColumnFormat getColumnFormat(ColumnModel.EntityColumn entityColumn) {
+	// 	if(StringUtils.isNotBlank(entityColumn.getDesignedType())) {
+	// 		if ("DECIMAL".equalsIgnoreCase(entityColumn.getDesignedType())
+	// 				|| "NUMERIC".equalsIgnoreCase(entityColumn.getDesignedType())) {
+	// 			return new ColumnModel.ColumnFormat("DECIMAL", entityColumn.getDesignedPrecision(),
+	// 					entityColumn.getDesignedScale(), false);
+	// 		}
+	// 		if(Arrays.asList("TEXT", "MEDIUMTEXT", "LONGTEXT").contains(entityColumn.getDesignedType())) {
+	// 			return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, false);
+	// 		}
+	// 		return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), entityColumn.getDesignedLength(), entityColumn.getDesignedLength() == null);
+	// 	}
+	// 	if (entityColumn.getType() == Integer.class || entityColumn.getType() == int.class) return new ColumnModel.ColumnFormat("INTEGER");
+	// 	if (entityColumn.getType() == Long.class || entityColumn.getType() == long.class) return new ColumnModel.ColumnFormat("INTEGER");
+	// 	if (entityColumn.getType() == Short.class || entityColumn.getType() == short.class) return new ColumnModel.ColumnFormat("INTEGER");
+	// 	if (entityColumn.getType() == Byte.class || entityColumn.getType() == byte.class) return new ColumnModel.ColumnFormat("TINYINT");
+	// 	if (entityColumn.getType() == Float.class || entityColumn.getType() == float.class) return new ColumnModel.ColumnFormat("FLOAT");
+	// 	if (entityColumn.getType() == Double.class || entityColumn.getType() == double.class) return new ColumnModel.ColumnFormat("DOUBLE");
+	// 	if (entityColumn.getType() == java.math.BigDecimal.class) {
+	// 		Integer precision = entityColumn.getDesignedPrecision() != null ? entityColumn.getDesignedPrecision()
+	// 				: entityColumn.getDesignedLength();
+	// 		return new ColumnModel.ColumnFormat("DECIMAL", precision, entityColumn.getDesignedScale(),
+	// 				precision == null && entityColumn.getDesignedScale() == null);
+	// 	}
+	// 	if (entityColumn.getType() == Boolean.class || entityColumn.getType() == boolean.class) return new ColumnModel.ColumnFormat("BOOLEAN");
+	// 	if (entityColumn.getType() == String.class && "TEXT".equalsIgnoreCase(entityColumn.getDesignedType())) return new ColumnModel.ColumnFormat(entityColumn.getDesignedType(), null, true);
+	// 	if (entityColumn.getType() == String.class) return new ColumnModel.ColumnFormat("CHARACTER VARYING"); 
+	// 	if (entityColumn.getType() == Date.class || entityColumn.getType() == java.sql.Date.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
+	// 	if (entityColumn.getType() == LocalDateTime.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
+	// 	if (entityColumn.getType() == Instant.class) return new ColumnModel.ColumnFormat("TIMESTAMP");
+	// 	if (entityColumn.getType() == LocalDate.class) return new ColumnModel.ColumnFormat("DATE");
+	// 	if (entityColumn.getType() == byte[].class) return new ColumnModel.ColumnFormat("BLOB");
+	// 	throw new IllegalArgumentException("Unsupported type: " + entityColumn.getType());
+	// }
 
 
 	private TableField toTableField(ResultRow row) {
@@ -231,7 +230,61 @@ public class H2Context extends Context {
 			
 			return indexes;
 		}
-    }
+	}
+
+	// @Override
+	// public ColumnDimension mainDimensionForColumn(String columnType) {
+	// 	H2Types h2Type = resolveH2Type(columnType);
+	// 	return h2Type != null ? h2Type.mainDimension : MainDimension.LENGTH;
+	// }
+
+	static H2Types resolveH2Type(String sqlType) {
+		if (sqlType == null || sqlType.isBlank()) {
+			return null;
+		}
+		String upper = sqlType.trim().toUpperCase();
+		if (upper.startsWith("CHARACTER VARYING") || upper.startsWith("VARCHAR")) {
+			return H2Types.VARCHAR;
+		}
+		if (upper.startsWith("CHARACTER") || upper.startsWith("CHAR")) {
+			return H2Types.CHARACTER;
+		}
+		String normalized = upper.replace(' ', '_');
+		try {
+			return H2Types.valueOf(normalized);
+		} catch (IllegalArgumentException ignored) {
+			return null;
+		}
+	}
+
+	public enum H2Types {
+		DECIMAL(ColumnDimension.PRECISION_OPTIONAL),
+		NUMERIC(ColumnDimension.PRECISION_OPTIONAL),
+		FLOAT(ColumnDimension.PRECISION_OPTIONAL),
+		DOUBLE(ColumnDimension.PRECISION_OPTIONAL),
+		TINYINT(ColumnDimension.LENGTH_OPTIONAL),
+		SMALLINT(ColumnDimension.LENGTH_OPTIONAL),
+		INTEGER(ColumnDimension.LENGTH_OPTIONAL),
+		BIGINT(ColumnDimension.LENGTH_OPTIONAL),
+		BOOLEAN(ColumnDimension.LENGTH_OPTIONAL),
+		DATE(ColumnDimension.NONE),
+		TIMESTAMP(ColumnDimension.PRECISION_OPTIONAL),
+		TIME(ColumnDimension.PRECISION_OPTIONAL),
+		YEAR(ColumnDimension.LENGTH_OPTIONAL),
+		CHARACTER(ColumnDimension.LENGTH_REQUIRED),
+		VARCHAR(ColumnDimension.LENGTH_REQUIRED),
+		TEXT(ColumnDimension.NONE),
+		TINYTEXT(ColumnDimension.NONE),
+		MEDIUMTEXT(ColumnDimension.NONE),
+		LONGTEXT(ColumnDimension.NONE),
+		BLOB(ColumnDimension.NONE);
+
+		public final ColumnDimension mainDimension;
+		
+		H2Types(ColumnDimension mainDimension) {
+			this.mainDimension = mainDimension;
+		}
+	}
 
 
 	

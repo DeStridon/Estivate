@@ -819,10 +819,10 @@ public class Estivate {
 	 
 	public static class Tools{
 		
-		public static CreateQuery<?> createTableFullQuery(Class<?> entity){
+		public static CreateQuery<?> createTableFullQuery(Class<?> entity, Context context){
 			CreateQuery<?> createQuery = Estivate.createQuery(entity);
 			for(Field field : FieldUtils.getEntityFields(entity)) {
-				createQuery.column(Context.getEntityColumn(field));
+				createQuery.column(context.projectedColumn(field));
 			}
 			for(TableIndex index : entity.getDeclaredAnnotationsByType(TableIndex.class)) {
 				createQuery.index(index.name(), index.type(), Arrays.stream(index.columns()).map(IndexColumn::of).collect(Collectors.toList()));

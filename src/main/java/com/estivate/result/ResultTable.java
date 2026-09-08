@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -42,8 +43,11 @@ import com.estivate.util.FieldUtils.AttributeGetter;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 
+
+@Slf4j
 @Data
 @SuperBuilder
 public class ResultTable implements Iterable<ResultRow>{
@@ -674,9 +678,42 @@ public class ResultTable implements Iterable<ResultRow>{
     public ResultRow get(int index) { return rows.get(index); }
     public ResultRow getLast() { return rows.isEmpty() ? null : rows.get(rows.size() - 1); }
 
-    private int indexOf(Attribute attribute) { 
-        return new ArrayList<>(query.getSelects()).indexOf(attribute);
+
+    public Integer indexOf(Attribute attribute) {
+
+        // Look by column matching
+        List<Attribute> attributes = new ArrayList<>(query.getSelects());
+        if(attribute.getEntity() != null && attribute.getAttribute() != null){ 
+            for(int i = 0; i < query.getSelects().size(); i++){
+                if(attributes.get(i).getEntity().equals(attribute.getEntity()) && attributes.get(i).getAttribute().equals(attribute.getAttribute()) && Objects.equals(attributes.get(i).getFunction(), attribute.getFunction())){
+                    return i;
+                }
+            }
+        }
+
+        // Look by alias matching
+        if(attribute.getAlias() != null){
+            Integer indexByName = indexOf(attribute.getAlias());
+            if(indexByName != null){
+                return indexByName;
+            }
+        }
+
+        return null;
+        
     }
+
+
+    public Integer indexOf(String column){
+
+		for(int i = 0; i < columnNames.size(); i++){
+			if(columnNames.get(i).equalsIgnoreCase(column)){
+				return i;
+			}
+		}
+		log.error("Column not found: "+column + ", available columns: " + columnNames);
+		return null;
+	}
 
     @Override
     public Iterator<ResultRow> iterator() { return rows.iterator(); }

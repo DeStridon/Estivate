@@ -80,7 +80,7 @@ public class ResolverApplicationTest {
             try{
                 wasCalled = true;
                 Estivate.alterQuery(diff.entityClass)
-                    .addColumn(diff.entityColumnDefinition)
+                    .addColumn(diff.projectedColumn)
                     .execute(context);
                 diff.closeSolved();
             } catch (Exception e) {
@@ -97,7 +97,7 @@ public class ResolverApplicationTest {
             try{
                 wasCalled = true;
                 Estivate.alterQuery(diff.entityClass)
-                    .addColumn(diff.entityColumnDefinition)
+                    .addColumn(diff.projectedColumn)
                     .execute(context);
                 diff.closeSolved();
             } catch (Exception e) {
@@ -114,7 +114,7 @@ public class ResolverApplicationTest {
         public void resolve(Context context, AddColumnDelta diff) {
             try {
                 Estivate.alterQuery(diff.entityClass)
-                    .addColumn(diff.entityColumnDefinition)
+                    .addColumn(diff.projectedColumn)
                     .execute(context);
                 diff.closeSolved();
             } catch (Exception e) {
@@ -141,7 +141,7 @@ public class ResolverApplicationTest {
     @Test
     public void testApplyResolvers_NoDifferences_ReturnsEmptyResult() throws Exception {
 
-    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class, context).ifNotExists().execute(context);
     	
         ReconciliationManager manager = new ReconciliationManager(context)
         .addEntities( ResolverTestEntity.class)
@@ -175,7 +175,7 @@ public class ResolverApplicationTest {
     @Test
     public void testApplyResolvers_MultipleResolvers() throws Exception {
         // Create table and remove a column
-    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class, context).ifNotExists().execute(context);
         context.dropColumn(ResolverTestEntity.class, ResolverTestEntity.Fields.salary);
 
         GenericColumnMissingResolver genericResolver = new GenericColumnMissingResolver();
@@ -213,7 +213,7 @@ public class ResolverApplicationTest {
     public void testApplyResolvers_EmptyCandidatesList() throws Exception {
         // Create table and remove a column
         //context.createTable(ResolverTestEntity.class);
-        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class, context).ifNotExists().execute(context);
         context.dropColumn(ResolverTestEntity.class, "email");
 
         ReconciliationManager manager = new ReconciliationManager(context).addEntities( ResolverTestEntity.class);
@@ -247,7 +247,7 @@ public class ResolverApplicationTest {
     @Disabled
     public void testApplyResolvers_MultipleDiffs_PartiallyResolved() throws Exception {
         // Create table with multiple differences
-    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+    	Estivate.Tools.createTableFullQuery(ResolverTestEntity.class, context).ifNotExists().execute(context);
     	//context.createTable(ResolverTestEntity.class);
         context.dropColumn(ResolverTestEntity.class, "email");
         context.changeColumn(ResolverTestEntity.class, "age", "BIGINT");
@@ -332,7 +332,7 @@ public class ResolverApplicationTest {
     public void testApplyResolversResult_TotalDiffs() throws Exception {
         // Create table with multiple differences
         //context.createTable(ResolverTestEntity.class);
-        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class, context).ifNotExists().execute(context);
         context.dropColumn(ResolverTestEntity.class, "email");
         context.dropColumn(ResolverTestEntity.class, "name");
         context.changeColumn(ResolverTestEntity.class, "age", "BIGINT");
@@ -354,7 +354,7 @@ public class ResolverApplicationTest {
     public void testApplyResolvers_FirstMatchingResolverWins() throws Exception {
         // Create table and remove a column
         //context.createTable(ResolverTestEntity.class);
-        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class).ifNotExists().execute(context);
+        Estivate.Tools.createTableFullQuery(ResolverTestEntity.class, context).ifNotExists().execute(context);
         context.dropColumn(ResolverTestEntity.class, "email");
 
         ReconciliationManager manager = new ReconciliationManager(context)
