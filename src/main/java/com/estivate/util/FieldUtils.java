@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -261,6 +262,112 @@ public class FieldUtils {
         }
         return false;
     }
+
+	public static boolean hasConvertAnnotation(Field field) {
+		return field.getDeclaredAnnotation(javax.persistence.Convert.class) != null
+				|| field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null;
+	}
+
+	/**
+	 * Reads an annotation attribute preferring the first matching annotation type
+	 * (typically {@code javax.*} then {@code jakarta.*}).
+	 * <pre>{@code
+	 * Class<?> converter = getBestOption(field,
+	 *     javax.persistence.Convert.class, javax.persistence.Convert::converter,
+	 *     jakarta.persistence.Convert.class, jakarta.persistence.Convert::converter);
+	 * }</pre>
+	 */
+	public static <A extends Annotation, B extends Annotation, R> R getBestOption(
+			Field field,
+			Class<A> firstAnnotationType, Function<A, R> firstGetter,
+			Class<B> secondAnnotationType, Function<B, R> secondGetter) {
+		A first = field.getDeclaredAnnotation(firstAnnotationType);
+		if (first != null) {
+			return firstGetter.apply(first);
+		}
+		B second = field.getDeclaredAnnotation(secondAnnotationType);
+		if (second != null) {
+			return secondGetter.apply(second);
+		}
+		return null;
+	}
+
+	/**
+	 * Resolves the database column Java type from {@code @Convert}'s
+	 * {@code AttributeConverter<EntityType, DatabaseType>} second type argument.
+	 * Falls back to {@link String} when it cannot be resolved.
+	 */
+	public static Class<?> resolveConvertDatabaseType(Field field) {
+		Class<?> converterClass = getBestOption(field,
+				javax.persistence.Convert.class, javax.persistence.Convert::converter,
+				jakarta.persistence.Convert.class, jakarta.persistence.Convert::converter);
+		if (converterClass == null) {
+			return String.class;
+		}
+
+		Class<?> current = converterClass;
+		while (current != null && current != Object.class) {
+			for (java.lang.reflect.Type genericInterface : current.getGenericInterfaces()) {
+				Class<?> databaseType = extractAttributeConverterDatabaseType(genericInterface);
+				if (databaseType != null) {
+					return databaseType;
+				}
+			}
+			java.lang.reflect.Type genericSuperclass = current.getGenericSuperclass();
+			Class<?> databaseType = extractAttributeConverterDatabaseType(genericSuperclass);
+			if (databaseType != null) {
+				return databaseType;
+			}
+			current = current.getSuperclass();
+		}
+		return null;
+	}
+
+	
+
+	private static Class<?> extractAttributeConverterDatabaseType(java.lang.reflect.Type type) {
+		if (!(type instanceof java.lang.reflect.ParameterizedType)) {
+			return null;
+		}
+		java.lang.reflect.ParameterizedType parameterized = (java.lang.reflect.ParameterizedType) type;
+		java.lang.reflect.Type raw = parameterized.getRawType();
+		if (!(raw instanceof Class<?>)) {
+			return null;
+		}
+		Class<?> rawClass = (Class<?>) raw;
+		if (!isAttributeConverter(rawClass)) {
+			return null;
+		}
+		java.lang.reflect.Type[] args = parameterized.getActualTypeArguments();
+		if (args.length < 2) {
+			return null;
+		}
+		return eraseToClass(args[1]);
+	}
+
+	private static boolean isAttributeConverter(Class<?> type) {
+		return javax.persistence.AttributeConverter.class.isAssignableFrom(type)
+				|| jakarta.persistence.AttributeConverter.class.isAssignableFrom(type);
+	}
+
+	private static Class<?> eraseToClass(java.lang.reflect.Type type) {
+		if (type instanceof Class<?>) {
+			return (Class<?>) type;
+		}
+		if (type instanceof java.lang.reflect.ParameterizedType) {
+			java.lang.reflect.Type raw = ((java.lang.reflect.ParameterizedType) type).getRawType();
+			if (raw instanceof Class<?>) {
+				return (Class<?>) raw;
+			}
+		}
+		if (type instanceof java.lang.reflect.WildcardType) {
+			java.lang.reflect.Type[] upper = ((java.lang.reflect.WildcardType) type).getUpperBounds();
+			if (upper.length > 0) {
+				return eraseToClass(upper[0]);
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Returns the {@code @Column} attributes Estivate uses, whether javax or jakarta.

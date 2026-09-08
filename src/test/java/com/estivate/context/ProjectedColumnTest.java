@@ -41,6 +41,10 @@ public class ProjectedColumnTest {
 		ACTIVE, INACTIVE
 	}
 
+	public enum ConvertedEnum {
+		ALPHA, BETA
+	}
+
 	public static class StringAsVarcharConverter implements AttributeConverter<Object, String> {
 		@Override
 		public String convertToDatabaseColumn(Object attribute) {
@@ -50,6 +54,18 @@ public class ProjectedColumnTest {
 		@Override
 		public Object convertToEntityAttribute(String dbData) {
 			return dbData;
+		}
+	}
+
+	public static class ConvertedEnumAsStringConverter implements AttributeConverter<ConvertedEnum, String> {
+		@Override
+		public String convertToDatabaseColumn(ConvertedEnum attribute) {
+			return attribute == null ? null : attribute.name();
+		}
+
+		@Override
+		public ConvertedEnum convertToEntityAttribute(String dbData) {
+			return dbData == null ? null : ConvertedEnum.valueOf(dbData);
 		}
 	}
 
@@ -121,6 +137,9 @@ public class ProjectedColumnTest {
 
 		@Convert(converter = StringAsVarcharConverter.class)
 		Object convertedValue;
+
+		@Convert(converter = ConvertedEnumAsStringConverter.class)
+		ConvertedEnum convertedEnum;
 
 		@Column(nullable = false)
 		String notNullableString;
@@ -229,6 +248,13 @@ public class ProjectedColumnTest {
 		ProjectedColumn projected = project(SampleEntity.Fields.convertedValue);
 		assertEquals(String.class, projected.getJavaType());
 		assertTableField(SampleEntity.Fields.convertedValue, "VARCHAR", 255, null, true, false);
+	}
+
+	@Test
+	public void mapsConvertedEnumToVarcharNotTinyint() {
+		ProjectedColumn projected = project(SampleEntity.Fields.convertedEnum);
+		assertEquals(String.class, projected.getJavaType());
+		assertTableField(SampleEntity.Fields.convertedEnum, "VARCHAR", 255, null, true, false);
 	}
 
 	@Test

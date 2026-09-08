@@ -65,12 +65,10 @@ public class ProjectedColumn {
 
 
 		// 1. javaType
-		// 1.1. convert annotation
-		if (field.getDeclaredAnnotation(javax.persistence.Convert.class) != null || field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-			this.javaType = String.class;
-		}
-		// 1.2. default
-		else {
+		boolean converted = FieldUtils.hasConvertAnnotation(field);
+		if (converted) {
+			this.javaType = FieldUtils.resolveConvertDatabaseType(field);
+		} else {
 			this.javaType = field.getType();
 		}
 		this.column = FieldUtils.getColumnAnnotation(field);
@@ -82,8 +80,8 @@ public class ProjectedColumn {
 			this.type = column.getColumnDefinition().getType();
 			this.dimensionType = context.dialect.mainDimensionForColumn(this.type);
 		}
-		// 2.2. enum
-		else if (field.getType().isEnum()) {
+		// 2.2. enum (skipped when @Convert remapped javaType away from the enum)
+		else if (javaType.isEnum()) {
 			if (FieldUtils.isEnumeratedAsString(field)) {
 				String enumValues = Arrays.stream(field.getType().getEnumConstants())
 						.map(c -> "'" + ((Enum<?>) c).name() + "'")
@@ -97,7 +95,7 @@ public class ProjectedColumn {
 				this.dimensionType = ColumnDimension.NONE;
 			}
 		}
-		// 2.4. default
+		// 2.3. default (including @Convert → dialect type for converter DB type)
 		else {
 			ProjectedColumnDefinition projectedColumnDefinition = context.dialect.databaseTypeFor(this.javaType);
 			this.type = projectedColumnDefinition.getType();
