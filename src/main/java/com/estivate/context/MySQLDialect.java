@@ -241,7 +241,7 @@ public class MySQLDialect extends Dialect {
 	}
 
 	static MySQLTypes resolveMySQLType(String sqlType) {
-		if (sqlType == null || sqlType.isBlank()) {
+		if (StringUtils.isBlank(sqlType)) {
 			return null;
 		}
 		String upper = sqlType.trim().toUpperCase();

@@ -239,7 +239,7 @@ public class H2Context extends Context {
 	// }
 
 	static H2Types resolveH2Type(String sqlType) {
-		if (sqlType == null || sqlType.isBlank()) {
+		if (StringUtils.isBlank(sqlType)) {
 			return null;
 		}
 		String upper = sqlType.trim().toUpperCase();
