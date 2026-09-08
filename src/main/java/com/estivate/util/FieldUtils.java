@@ -204,6 +204,8 @@ public class FieldUtils {
 	public static List<ColumnMapping> getColumnMappings(SelectQuery<?> query, Entity<?> entityClass) {
 		List<ColumnMapping> columnMappings = new ArrayList<>(query.getSelects().size());
 
+		List<String> unmappedFields = new ArrayList<>();
+		
 		for(int i = 0; i < query.getSelects().size(); i++) {
 			columnMappings.add(null);
 		}
@@ -217,10 +219,15 @@ public class FieldUtils {
 			if(index != -1) {
 				columnMappings.set(index, columnMapping);
 			} else {
-				log.error("Field {} is not in the query", field.getName());
+				unmappedFields.add(field.getName());
 			}
 
 		}
+		
+		if(!unmappedFields.isEmpty()) {
+			log.warn("Query on "+entityClass.entity.getSimpleName()+", unmappedFields=["+unmappedFields.stream().collect(Collectors.joining(", "))+"]"+"\n"+query.toString());
+		}
+		
 		return columnMappings;
 	}
 
