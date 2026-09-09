@@ -99,7 +99,7 @@ public class EntityColumn {
 		else {
 			projectedColumnDefinition = context.dialect.databaseTypeFor(this.javaType);
 			this.type = projectedColumnDefinition.getType();
-			this.dimension = projectedColumnDefinition.getDefaultDimension();
+			this.dimensionType = projectedColumnDefinition.getColumnDimension();
 		}
 
 
