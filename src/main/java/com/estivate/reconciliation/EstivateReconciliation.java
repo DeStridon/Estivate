@@ -25,9 +25,6 @@ public class EstivateReconciliation {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface ReconciliationScope {
         Class<?> entity() default void.class;
-        // String field() default "";
-        // String table() default "";       // noms des tables visées
-        // String column() default "";      // noms des colonnes visées
     }
 
     public static enum ReconciliationResult {
@@ -103,11 +100,11 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class AddColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public EntityModel entityModel;
+        public EntityTable entityModel;
         public Field entityField;
         public String tableColumnName;
-        public ProjectedColumn projectedColumn;
-        public EntityModel tableModel;
+        public EntityColumn projectedColumn;
+        public EntityTable tableModel;
     }
 
     
@@ -117,7 +114,7 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class DropColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public EntityModel entityModel;
+        public EntityTable entityModel;
         public String tableColumnName;
 
     }
@@ -128,12 +125,12 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class ModifyColumnDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public EntityModel entityModel;
+        public EntityTable entityModel;
         public Field entityField;
         
-        public ProjectedColumn projectedColumn;
-        public TableField projectedDefinition;
-        public TableField databaseDefinition;
+        public EntityColumn projectedColumn;
+        public DatabaseColumn projectedDefinition;
+        public DatabaseColumn databaseDefinition;
         
         List<Mismatch> mismatchs;
         
@@ -150,7 +147,7 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class AddIndexDelta extends ReconciliationDelta {
         public Class<?> entityClass;
-        public EntityModel entityModel;
+        public EntityTable entityModel;
         public String indexName;
         public IndexType type;
         public List<IndexColumn> columns;
@@ -167,29 +164,13 @@ public class EstivateReconciliation {
     @AllArgsConstructor
     public static class DropIndexDelta extends ReconciliationDelta {
     	public Class<?> entityClass;
-        public EntityModel entityModel;
+        public EntityTable entityModel;
         public String indexName;
         public IndexType type;
         public List<IndexColumn> columns;
     }
 
-    // /**
-    //  * Definition of an index including its columns and properties.
-    //  */
-    // @NoArgsConstructor
-    // @AllArgsConstructor
-    // public static class IndexDefinition {
-    //     public Class<?> entity;
-    //     public IndexType type;
-    //     public List<IndexColumn> columns;
 
-        
-    //     public IndexDefinition(Class<?> entity, List<IndexColumn> columns) {
-    //         this.entity = entity;
-    //         this.type = IndexType.DEFAULT;
-    //         this.columns = columns;
-    //     }
-    // }
 
     /**
      * Represents a mismatch between entity column definition and database column definition.

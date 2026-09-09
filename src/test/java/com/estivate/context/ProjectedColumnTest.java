@@ -14,9 +14,9 @@ import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.index.Annotations.ColumnDefaultValue;
-import com.estivate.reconciliation.ProjectedColumn;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.EntityColumn;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.util.FieldUtils;
 
 import jakarta.persistence.AttributeConverter;
@@ -30,7 +30,7 @@ import jakarta.persistence.Id;
 import lombok.experimental.FieldNameConstants;
 
 /**
- * Verifies {@link ProjectedColumn} maps entity fields to dialect-resolved {@link TableField}s.
+ * Verifies {@link EntityColumn} maps entity fields to dialect-resolved {@link DatabaseColumn}s.
  */
 public class ProjectedColumnTest {
 
@@ -148,16 +148,16 @@ public class ProjectedColumnTest {
 		String withDefaultValue;
 	}
 
-	private ProjectedColumn project(String fieldName) {
+	private EntityColumn project(String fieldName) {
 		return mysql.projectedColumn(FieldUtils.findField(SampleEntity.class, fieldName));
 	}
 
-	private TableField tableField(String fieldName) {
-		return project(fieldName).getTableField();
+	private DatabaseColumn tableField(String fieldName) {
+		return project(fieldName).asDatabaseColumn();
 	}
 
 	private void assertTableField(String fieldName, String type, Integer dimension, Integer scale, boolean nullable, boolean autoIncrement) {
-		TableField tf = tableField(fieldName);
+		DatabaseColumn tf = tableField(fieldName);
 		assertEquals(fieldName, tf.getName(), fieldName + " name");
 		assertEquals(type, tf.getType(), fieldName + " type");
 		assertEquals(dimension, tf.getDimension(), fieldName + " dimension");
@@ -194,18 +194,18 @@ public class ProjectedColumnTest {
 
 	@Test
 	public void mapsDecimalFromAnnotationAndDefinition() {
-		ProjectedColumn fromAnnotation = project(SampleEntity.Fields.decimalFromPrecisionScale);
+		EntityColumn fromAnnotation = project(SampleEntity.Fields.decimalFromPrecisionScale);
 		assertEquals(ColumnDimension.PRECISION_OPTIONAL, fromAnnotation.getDimensionType());
 		assertTableField(SampleEntity.Fields.decimalFromPrecisionScale, "DECIMAL", 10, 2, true, false);
 
-		ProjectedColumn fromDefinition = project(SampleEntity.Fields.decimalFromDefinition);
+		EntityColumn fromDefinition = project(SampleEntity.Fields.decimalFromDefinition);
 		assertEquals(ColumnDimension.PRECISION_OPTIONAL, fromDefinition.getDimensionType());
 		assertTableField(SampleEntity.Fields.decimalFromDefinition, "DECIMAL", 8, 4, true, false);
 	}
 
 	@Test
 	public void mapsTemporalTypes() {
-		ProjectedColumn timestamp = project(SampleEntity.Fields.timestampWithFsp);
+		EntityColumn timestamp = project(SampleEntity.Fields.timestampWithFsp);
 		assertEquals(ColumnDimension.PRECISION_OPTIONAL, timestamp.getDimensionType());
 		assertTableField(SampleEntity.Fields.timestampWithFsp, "TIMESTAMP", 6, null, false, false);
 
@@ -232,7 +232,7 @@ public class ProjectedColumnTest {
 
 	@Test
 	public void mapsEnumAsStringToEnumType() {
-		TableField tf = tableField(SampleEntity.Fields.enumAsString);
+		DatabaseColumn tf = tableField(SampleEntity.Fields.enumAsString);
 		assertEquals("ENUM('ACTIVE','INACTIVE')", tf.getType());
 		assertNull(tf.getDimension());
 		assertTrue(tf.isNullable());
@@ -245,21 +245,21 @@ public class ProjectedColumnTest {
 
 	@Test
 	public void mapsConvertToVarchar() {
-		ProjectedColumn projected = project(SampleEntity.Fields.convertedValue);
+		EntityColumn projected = project(SampleEntity.Fields.convertedValue);
 		assertEquals(String.class, projected.getJavaType());
 		assertTableField(SampleEntity.Fields.convertedValue, "VARCHAR", 255, null, true, false);
 	}
 
 	@Test
 	public void mapsConvertedEnumToVarcharNotTinyint() {
-		ProjectedColumn projected = project(SampleEntity.Fields.convertedEnum);
+		EntityColumn projected = project(SampleEntity.Fields.convertedEnum);
 		assertEquals(String.class, projected.getJavaType());
 		assertTableField(SampleEntity.Fields.convertedEnum, "VARCHAR", 255, null, true, false);
 	}
 
 	@Test
 	public void mapsIdentityPrimaryKey() {
-		ProjectedColumn projected = project(SampleEntity.Fields.id);
+		EntityColumn projected = project(SampleEntity.Fields.id);
 		assertTrue(projected.getPrimaryKey());
 		assertTableField(SampleEntity.Fields.id, "BIGINT", null, null, true, true);
 	}
@@ -278,7 +278,7 @@ public class ProjectedColumnTest {
 
 	@Test
 	public void mapsColumnDefaultValue() {
-		TableField tf = tableField(SampleEntity.Fields.withDefaultValue);
+		DatabaseColumn tf = tableField(SampleEntity.Fields.withDefaultValue);
 		assertEquals("hello", tf.getDefaultValue());
 		assertEquals("VARCHAR", tf.getType());
 	}
@@ -287,14 +287,14 @@ public class ProjectedColumnTest {
 
 	@Test
 	public void h2MapsCommonJavaTypes() {
-		assertEquals("INTEGER", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.boxedInteger)).getTableField().getType());
-		assertEquals("INTEGER", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.boxedLong)).getTableField().getType());
-		assertEquals("CHARACTER VARYING", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.plainString)).getTableField().getType());
-		assertEquals("BOOLEAN", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.boxedBoolean)).getTableField().getType());
-		assertEquals("TIMESTAMP", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.plainInstant)).getTableField().getType());
-		assertEquals("DECIMAL", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.decimalFromPrecisionScale)).getTableField().getType());
+		assertEquals("INTEGER", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.boxedInteger)).asDatabaseColumn().getType());
+		assertEquals("INTEGER", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.boxedLong)).asDatabaseColumn().getType());
+		assertEquals("CHARACTER VARYING", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.plainString)).asDatabaseColumn().getType());
+		assertEquals("BOOLEAN", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.boxedBoolean)).asDatabaseColumn().getType());
+		assertEquals("TIMESTAMP", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.plainInstant)).asDatabaseColumn().getType());
+		assertEquals("DECIMAL", h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.decimalFromPrecisionScale)).asDatabaseColumn().getType());
 
-		TableField decimal = h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.decimalFromPrecisionScale)).getTableField();
+		DatabaseColumn decimal = h2.projectedColumn(FieldUtils.findField(SampleEntity.class, SampleEntity.Fields.decimalFromPrecisionScale)).asDatabaseColumn();
 		assertEquals(10, decimal.getDimension());
 		assertEquals(2, decimal.getScale());
 	}

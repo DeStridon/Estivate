@@ -11,10 +11,10 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.reconciliation.ColumnTypeParts;
-import com.estivate.reconciliation.ProjectedColumn;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.DatabaseColumnDefinition;
+import com.estivate.reconciliation.EntityColumn;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.util.FieldUtils;
 
 import jakarta.persistence.Column;
@@ -57,15 +57,15 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void manualTimestampColumnDefinitionParsing() {
-		ColumnTypeParts parts = ColumnTypeParts.parse("TIMESTAMP(6)");
+		DatabaseColumnDefinition parts = DatabaseColumnDefinition.parse("TIMESTAMP(6)");
 		assertEquals("TIMESTAMP", parts.getType());
-		assertEquals(6, parts.getLength());
+		assertEquals(6, parts.getDimension());
 		assertNull(parts.getScale());
 	}
 
 	@Test
 	public void timestampColumnWithDefinitionParsing() {
-		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithDefinition));
+		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithDefinition));
 
 		assertEquals("TIMESTAMP", column.getType());
 		assertEquals(6, column.getDimension());
@@ -76,7 +76,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void timestampColumnWithLengthParsing() {
-		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithPrecision));
+		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithPrecision));
 
 		assertEquals("TIMESTAMP", column.getType());
 		assertEquals(6, column.getDimension());
@@ -86,7 +86,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void decimalColumnWithDefinitionParsing() {
-		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithDefinition));
+		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithDefinition));
 
 		assertEquals("DECIMAL", column.getType());
 		assertEquals(10, column.getDimension());
@@ -96,7 +96,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void decimalColumnWithPrecisionAndScaleParsing() {
-		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithPrecisionAndScale));
+		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithPrecisionAndScale));
 
 		assertEquals("DECIMAL", column.getType());
 		assertEquals(10, column.getDimension());
@@ -107,7 +107,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void smallintUnsignedColumnWithDefinitionParsing() {
-		ProjectedColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testSmallintUnsignedWithDefinition));
+		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testSmallintUnsignedWithDefinition));
 
 		assertEquals("SMALLINT UNSIGNED", column.getType());
 		assertEquals(ColumnDimension.LENGTH_OPTIONAL, column.getDimensionType());
@@ -117,19 +117,19 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void appendColumnTypeAndSize_timestampWithFsp() {
-		TableField field = TableField.builder().type("TIMESTAMP").dimension(6).build();
+		DatabaseColumn field = DatabaseColumn.builder().type("TIMESTAMP").dimension(6).build();
 		assertEquals("TIMESTAMP(6)", MySQLContext.formatMySQLColumnType(field));
 	}
 
 	@Test
 	public void appendColumnTypeAndSize_decimalWithPrecisionAndScale() {
-		TableField field = TableField.builder().type("DECIMAL").dimension(10).scale(3).build();
+		DatabaseColumn field = DatabaseColumn.builder().type("DECIMAL").dimension(10).scale(3).build();
 		assertEquals("DECIMAL(10,3)", MySQLContext.formatMySQLColumnType(field));
 	}
 
 	@Test
 	public void appendColumnTypeAndSize_smallintUnsigned() {
-		TableField field = TableField.builder().type("SMALLINT UNSIGNED").build();
+		DatabaseColumn field = DatabaseColumn.builder().type("SMALLINT UNSIGNED").build();
 		assertEquals("SMALLINT UNSIGNED", MySQLContext.formatMySQLColumnType(field));
 	}
 

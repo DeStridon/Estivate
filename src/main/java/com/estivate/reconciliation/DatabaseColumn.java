@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TableField {
+public class DatabaseColumn {
 
     /** Field/column name (uses entity field name, not database column name) */
     public String name;
@@ -32,7 +32,7 @@ public class TableField {
     /** Numeric scale (e.g. DECIMAL(10,2) -> 2) */
     public Integer scale;
 
-    public boolean equalsIgnoringNullable(TableField other) {
+    public boolean equalsIgnoringNullable(DatabaseColumn other) {
         if (other == null) return false;
         if (!name.equalsIgnoreCase(other.name)) return false;
         if (!typeMatches(other.type)) return false;
@@ -68,5 +68,13 @@ public class TableField {
             default: return upper;
         }
     }
+
+
+
+
+
+    
+
+    
 
 }

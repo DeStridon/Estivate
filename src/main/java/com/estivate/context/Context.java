@@ -47,15 +47,15 @@ import com.estivate.query.Join;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
-import com.estivate.reconciliation.ColumnTypeParts;
-import com.estivate.reconciliation.EntityModel;
-import com.estivate.reconciliation.ProjectedColumn;
-import com.estivate.reconciliation.TableField;
+
+import com.estivate.reconciliation.EntityTable;
+import com.estivate.reconciliation.EntityColumn;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
-import com.estivate.util.ColumnAnnotation;
+import com.estivate.util.DatabaseColumnAnnotation;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -212,11 +212,11 @@ public abstract class Context {
 			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
 			
 			statement.appendQuery(" (");
-			for(Iter8<ProjectedColumn> projectedColumns : Iter8.from(query.getColumns())) {
+			for(Iter8<EntityColumn> projectedColumns : Iter8.from(query.getColumns())) {
 			
-				ProjectedColumn projectedColumn = projectedColumns.getValue();
+				EntityColumn projectedColumn = projectedColumns.getValue();
 			
-				TableField tableField = projectedColumn.getTableField();
+				DatabaseColumn tableField = projectedColumn.asDatabaseColumn();
 				statement.appendQuery(tableField.getName());
 				appendColumnTypeAndSize(statement, tableField);
 
@@ -1236,7 +1236,7 @@ public abstract class Context {
 			
 			if(operation instanceof AlterQuery.AddColumn) {
 				AlterQuery.AddColumn addColumnOperation = (AlterQuery.AddColumn) operation;
-				TableField tableField = addColumnOperation.getProjectedColumn().getTableField();
+				DatabaseColumn tableField = addColumnOperation.getProjectedColumn().asDatabaseColumn();
 				statement.appendQuery("ADD COLUMN");
 				statement.appendQuery(nameMapper.mapDatabaseField(addColumnOperation.getColumnName()));
 				appendColumnTypeAndSize(statement, tableField);
@@ -1258,7 +1258,7 @@ public abstract class Context {
 			else if(operation instanceof AlterQuery.ModifyColumn) {
 				AlterQuery.ModifyColumn modifyColumnOperation = (AlterQuery.ModifyColumn) operation;
 				statement.appendQuery("MODIFY COLUMN");
-				TableField tableField = modifyColumnOperation.getProjectedColumn().getTableField();
+				DatabaseColumn tableField = modifyColumnOperation.getProjectedColumn().asDatabaseColumn();
 				statement.appendQuery(nameMapper.mapDatabaseField(modifyColumnOperation.getColumnName()));
 				appendColumnTypeAndSize(statement, tableField);
 				if(!tableField.isNullable()) {
@@ -1451,20 +1451,20 @@ public abstract class Context {
 	// 	return getTableField(getEntityColumn(entityField));
 	// }
 
-	public TableField getTableField(Field entityField){
-		return projectedColumn(entityField).getTableField();
+	public DatabaseColumn getTableField(Field entityField){
+		return projectedColumn(entityField).asDatabaseColumn();
 	}
 
-	public ProjectedColumn projectedColumn(Field entityField) {
-		return new ProjectedColumn(this, entityField);
+	public EntityColumn projectedColumn(Field entityField) {
+		return new EntityColumn(this, entityField);
 	}
 
-    public EntityModel scanDatabaseTable(Class<?> c) {
+    public EntityTable scanDatabaseTable(Class<?> c) {
 
-        List<TableField> fields = listFields(nameMapper.toTableName(c));
+        List<DatabaseColumn> fields = listFields(nameMapper.toTableName(c));
         List<TableIndex> indexes = listIndexes(c);
         
-        return EntityModel.builder()
+        return EntityTable.builder()
                 .tableName(nameMapper.toTableName(c))
                 .fields(fields)
                 .indexes(indexes)
@@ -1472,14 +1472,14 @@ public abstract class Context {
         
     }
     
-    public abstract List<TableField> listFields(String tableName);
+    public abstract List<DatabaseColumn> listFields(String tableName);
     public abstract List<TableIndex> listIndexes(Class<?> entity);
 
-	protected void appendColumnTypeAndSize(Statement statement, TableField tableField) {
+	protected void appendColumnTypeAndSize(Statement statement, DatabaseColumn tableField) {
 		statement.appendQuery(formatColumnTypeAndSize(tableField));
 	}
 
-	protected String formatColumnTypeAndSize(TableField tableField) {
+	protected String formatColumnTypeAndSize(DatabaseColumn tableField) {
 		if(tableField.getType() == null) {
 			return null;
 		}
@@ -1517,13 +1517,6 @@ public abstract class Context {
 		}
 		return null;
 	}
-	
-	// TODO remove wrapper
-	protected ColumnTypeParts parseColumnType(String columnType){
-		return ColumnTypeParts.parse(columnType);
-	}
-
-
 
 
 }

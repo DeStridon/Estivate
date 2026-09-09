@@ -9,7 +9,7 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.IndexColumn;
-import com.estivate.reconciliation.ProjectedColumn;
+import com.estivate.reconciliation.EntityColumn;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +25,7 @@ public class CreateQuery<E> {
     private List<String> comments = new ArrayList<>();
 
     @Getter
-    private List<ProjectedColumn> columns = new ArrayList<>();
+    private List<EntityColumn> columns = new ArrayList<>();
     
     @Getter
     private PrimaryKey primaryKey;
@@ -56,7 +56,7 @@ public class CreateQuery<E> {
         this.entity = entity;
     }
 
-    public CreateQuery<E> column(ProjectedColumn column) {  columns.add(column); return this; }
+    public CreateQuery<E> column(EntityColumn column) {  columns.add(column); return this; }
     public CreateQuery<E> primaryKey(String... columns) {  this.primaryKey = new PrimaryKey(columns); return this; }
     public CreateQuery<E> primaryKey(List<String> columns) {  this.primaryKey = new PrimaryKey(columns); return this; }
     public CreateQuery<E> primaryKey(PrimaryKey primaryKey) { this.primaryKey = primaryKey; return this; }

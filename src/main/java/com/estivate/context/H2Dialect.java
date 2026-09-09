@@ -9,8 +9,8 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.H2Context.H2Types;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.ProjectedColumn.ProjectedColumnDefinition;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.EntityColumn.ProjectedColumnDefinition;
 
 /**
  * H2 vendor rules (types, dimensions). No connection required.
@@ -45,36 +45,36 @@ public class H2Dialect extends Dialect {
 		if (javaType == Integer.class || javaType == int.class
 				|| javaType == Long.class || javaType == long.class
 				|| javaType == Short.class || javaType == short.class) {
-			return ProjectedColumnDefinition.builder().type("INTEGER").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("INTEGER").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Byte.class || javaType == byte.class) {
-			return ProjectedColumnDefinition.builder().type("TINYINT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("TINYINT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Float.class || javaType == float.class) {
-			return ProjectedColumnDefinition.builder().type("FLOAT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("FLOAT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Double.class || javaType == double.class) {
-			return ProjectedColumnDefinition.builder().type("DOUBLE").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("DOUBLE").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == java.math.BigDecimal.class) {
-			return ProjectedColumnDefinition.builder().type("DECIMAL").mainDimension(ColumnDimension.PRECISION_OPTIONAL).build();
+			return ProjectedColumnDefinition.builder().type("DECIMAL").columnDimension(ColumnDimension.PRECISION_OPTIONAL).build();
 		}
 		if (javaType == Boolean.class || javaType == boolean.class) {
-			return ProjectedColumnDefinition.builder().type("BOOLEAN").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("BOOLEAN").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == String.class) {
-			return ProjectedColumnDefinition.builder().type("CHARACTER VARYING").mainDimension(ColumnDimension.LENGTH_OPTIONAL).build();
+			return ProjectedColumnDefinition.builder().type("CHARACTER VARYING").columnDimension(ColumnDimension.LENGTH_OPTIONAL).build();
 		}
 		if (javaType == Date.class || javaType == java.sql.Date.class
 				|| javaType == LocalDateTime.class
 				|| javaType == Instant.class) {
-			return ProjectedColumnDefinition.builder().type("TIMESTAMP").mainDimension(ColumnDimension.PRECISION_OPTIONAL).build();
+			return ProjectedColumnDefinition.builder().type("TIMESTAMP").columnDimension(ColumnDimension.PRECISION_OPTIONAL).build();
 		}
 		if (javaType == LocalDate.class) {
-			return ProjectedColumnDefinition.builder().type("DATE").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("DATE").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == byte[].class) {
-			return ProjectedColumnDefinition.builder().type("BLOB").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("BLOB").columnDimension(ColumnDimension.NONE).build();
 		}
 		throw new IllegalArgumentException("Unsupported type: " + javaType);
 	}

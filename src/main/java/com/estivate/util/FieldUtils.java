@@ -24,7 +24,7 @@ import com.estivate.Estivate;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
-import com.estivate.reconciliation.ColumnTypeParts;
+import com.estivate.reconciliation.DatabaseColumnDefinition;
 import com.estivate.result.EntityMapper.ColumnMapping;
 
 import lombok.extern.slf4j.Slf4j;
@@ -369,35 +369,7 @@ public class FieldUtils {
 		return null;
 	}
 
-	/**
-	 * Returns the {@code @Column} attributes Estivate uses, whether javax or jakarta.
-	 * {@code null} when the field has neither annotation.
-	 */
-	public static ColumnAnnotation getColumnAnnotation(Field field) {
-        
-		javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
-		if (javaxColumn != null) {
-			return new ColumnAnnotation(
-					javaxColumn.length() != 255 ? javaxColumn.length() : null,
-					javaxColumn.precision(),
-					javaxColumn.scale(),
-					javaxColumn.nullable(),
-					new ColumnAnnotation.ColumnDefinition(javaxColumn.columnDefinition()));
-		}
-
-		jakarta.persistence.Column jakartaColumn = field.getDeclaredAnnotation(jakarta.persistence.Column.class);
-		if (jakartaColumn != null) {
-			return new ColumnAnnotation(
-					jakartaColumn.length() != 255 ? jakartaColumn.length() : null,
-					jakartaColumn.precision(),
-					jakartaColumn.scale(),
-					jakartaColumn.nullable(),
-                    new ColumnAnnotation.ColumnDefinition(jakartaColumn.columnDefinition()));
-		}
-
-		return ColumnAnnotation.builder().build();
-
-	}
+	
 
 	/**
      * Extracts default value from entity field annotations
@@ -544,7 +516,7 @@ public class FieldUtils {
         }
         String columnDef = readFieldForExplicitType(field);
         if (StringUtils.isNotBlank(columnDef)) {
-            ColumnTypeParts parts = ColumnTypeParts.parse(columnDef);
+            DatabaseColumnDefinition parts = DatabaseColumnDefinition.parse(columnDef);
             if (parts != null && parts.getScale() != null) {
                 return parts.getScale();
             }

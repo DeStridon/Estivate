@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.ColumnDefaultValue;
-import com.estivate.util.ColumnAnnotation;
+import com.estivate.util.DatabaseColumnAnnotation;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -20,17 +20,17 @@ import lombok.NonNull;
 
 /**
  * Entity-side column projection built with a live {@link Context}.
- * Holds only entity-design metadata not present on {@link TableField}; the resolved
+ * Holds only entity-design metadata not present on {@link DatabaseColumn}; the resolved
  * DB-comparable column is stored as {@link #tableField}.
  */
 @Getter
 @Builder
 @AllArgsConstructor
-public class ProjectedColumn {
+public class EntityColumn {
 
 	private final Field field;
 	private Class<?> javaType;
-	private ColumnAnnotation column;
+	private DatabaseColumnAnnotation column;
 	private ProjectedColumnDefinition projectedColumnDefinition;
 
 
@@ -55,7 +55,7 @@ public class ProjectedColumn {
 
 	
 
-	public ProjectedColumn(Context context, Field field) {
+	public EntityColumn(Context context, Field field) {
 		
 		this.field = field;
 		this.primaryKey = field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class);
@@ -64,17 +64,17 @@ public class ProjectedColumn {
 		this.name = context.nameMapper.mapDatabaseField(field.getName());
 
 
-		// 1. javaType
+		// 1. javaType & column
 		boolean converted = FieldUtils.hasConvertAnnotation(field);
 		if (converted) {
 			this.javaType = FieldUtils.resolveConvertDatabaseType(field);
 		} else {
 			this.javaType = field.getType();
 		}
-		this.column = FieldUtils.getColumnAnnotation(field);
+		this.column = DatabaseColumnAnnotation.fromField(field);
 
 
-		// 2. designedType
+		// 2. type & dimensionType
 		// 2.1. column definition
 		if(StringUtils.isNotBlank(column.getColumnDefinition().getType())) {
 			this.type = column.getColumnDefinition().getType();
@@ -88,7 +88,7 @@ public class ProjectedColumn {
 						.collect(Collectors.joining(","));
 				this.type = "ENUM(" + enumValues + ")";
 				this.dimensionType = ColumnDimension.NONE;
-				this.dimension = null;
+
 			}
 			else{
 				this.type = "TINYINT";
@@ -97,15 +97,13 @@ public class ProjectedColumn {
 		}
 		// 2.3. default (including @Convert → dialect type for converter DB type)
 		else {
-			ProjectedColumnDefinition projectedColumnDefinition = context.dialect.databaseTypeFor(this.javaType);
+			projectedColumnDefinition = context.dialect.databaseTypeFor(this.javaType);
 			this.type = projectedColumnDefinition.getType();
-			this.dimension = projectedColumnDefinition.getDimension();
-			this.scale = projectedColumnDefinition.getScale();
-			this.dimensionType = projectedColumnDefinition.getMainDimension();
+			this.dimension = projectedColumnDefinition.getDefaultDimension();
 		}
 
-		// 3. dimensions
-		dimensionType = context.dialect.mainDimensionForColumn(this.type);
+
+		// 3. dimension & scale
 		// 3.1. dimension is length
 		if(dimensionType == ColumnDimension.LENGTH_OPTIONAL || dimensionType == ColumnDimension.LENGTH_REQUIRED) {
 			// 3.1.1. length from annotation
@@ -117,7 +115,6 @@ public class ProjectedColumn {
 				this.dimension = column.getColumnDefinition().getDimension();
 			}
 		}
-
 		// 3.2. dimension is precision
 		else if(dimensionType == ColumnDimension.PRECISION_OPTIONAL) {
 			// 3.2.1. precision from annotation
@@ -133,6 +130,17 @@ public class ProjectedColumn {
 				if(column.getColumnDefinition().getScale() != null) {
 					this.scale = column.getColumnDefinition().getScale();
 				}
+			}
+		}
+
+		if(dimensionType == ColumnDimension.LENGTH_REQUIRED && dimension == null) {
+			if(projectedColumnDefinition == null){
+				projectedColumnDefinition = context.dialect.databaseTypeFor(this.javaType);
+			}
+			this.dimension = projectedColumnDefinition.getDefaultDimension();
+			this.scale = projectedColumnDefinition.getDefaultScale();
+			if(this.dimension == null){
+				throw new IllegalArgumentException("Length is required for column " + name);
 			}
 		}
 
@@ -165,29 +173,10 @@ public class ProjectedColumn {
 	}
 
 
-	// private void buildTableField(Context context,boolean nullable, boolean autoIncrement, String defaultValue) {
-	// 	EntityColumn snapshot = EntityColumn.builder()
-	// 			.name(field.getName())
-	// 			.type(javaType)
-	// 			.designedType(designedType)
-	// 			.designedLength(designedLength)
-	// 			.designedPrecision(designedPrecision)
-	// 			.designedScale(designedScale)
-	// 			.defaultValue(defaultValue)
-	// 			.charset(charset)
-	// 			.collation(collation)
-	// 			.isNullable(nullable)
-	// 			.isAutoIncrement(autoIncrement)
-	// 			.isPrimaryKey(primaryKey)
-	// 			.build();
-	// 	ColumnFormat columnFormat = context.getColumnFormat(snapshot);
-	// 	String sqlType = columnFormat.getType() != null ? columnFormat.getType() : designedType;
-	// 	//this.mainDimension = context.mainDimensionForColumn(sqlType);
-				
-	// }
 
-	public TableField getTableField() {
-		TableField tableField = TableField.builder()
+
+	public DatabaseColumn asDatabaseColumn() {
+		DatabaseColumn tableField = DatabaseColumn.builder()
 				.name(name)
 				.type(type)
 				.dimension(dimension)
@@ -206,9 +195,10 @@ public class ProjectedColumn {
 	@Builder
 	public static class ProjectedColumnDefinition {
 		private String type;
-		private Integer dimension;
-		private Integer scale;
-		private ColumnDimension mainDimension;
+		private ColumnDimension columnDimension;
+		private Integer defaultDimension;
+		private Integer defaultScale;
+		
 	}
 
 	public enum ColumnDimension {

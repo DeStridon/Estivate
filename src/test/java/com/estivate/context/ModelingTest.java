@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.ColumnDefaultValue;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.util.FieldUtils;
 
@@ -27,7 +27,7 @@ public class ModelingTest {
 	@Test
 	public void modelingTest1() {
 		Set<Field> fields = FieldUtils.getEntityFields(SingleIntegerFieldClass.class);
-		TableField tableField = context.getTableField(fields.iterator().next());
+		DatabaseColumn tableField = context.getTableField(fields.iterator().next());
 		
 		assertEquals("0", tableField.getDefaultValue());
 		
@@ -43,7 +43,7 @@ public class ModelingTest {
 	@Test
 	public void modelingTest2() {
 		Set<Field> fields = FieldUtils.getEntityFields(LongTextFieldClass.class);
-		TableField tableField = context.getTableField(fields.iterator().next());
+		DatabaseColumn tableField = context.getTableField(fields.iterator().next());
 		
 		assertEquals(null, tableField.getDimension());
 		

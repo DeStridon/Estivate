@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.query.SelectQuery;
-import com.estivate.reconciliation.ColumnTypeParts;
+import com.estivate.reconciliation.DatabaseColumnDefinition;
 import com.estivate.reconciliation.EstivateReconciliation.Mismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ModifyColumnDelta;
-import com.estivate.reconciliation.ProjectedColumn;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
+import com.estivate.reconciliation.EntityColumn;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
 import com.estivate.reconciliation.ReconciliationManager;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.PrecisionScaleEntity;
@@ -31,20 +31,20 @@ public class PrecisionScaleTest {
 
     @Test
     public void parseDecimalColumnType() {
-        ColumnTypeParts parts = context.parseColumnType("DECIMAL(10,2)");
+        DatabaseColumnDefinition parts = DatabaseColumnDefinition.parse("DECIMAL(10,2)");
         assertEquals("DECIMAL", parts.getType());
-        assertEquals(10, parts.getLength());
+        assertEquals(10, parts.getDimension());
         assertEquals(2, parts.getScale());
     }
 
     @Test
     public void entityColumnReadsPrecisionAndScale() {
-        ProjectedColumn amountColumn = context.projectedColumn(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        EntityColumn amountColumn = context.projectedColumn(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
         assertEquals(10, amountColumn.getDimension());
         assertEquals(ColumnDimension.PRECISION_OPTIONAL, amountColumn.getDimensionType());
         assertEquals(2, amountColumn.getScale());
 
-        ProjectedColumn rateColumn = context.projectedColumn(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
+        EntityColumn rateColumn = context.projectedColumn(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
         assertEquals("DECIMAL", rateColumn.getType());
         assertEquals(8, rateColumn.getDimension());
         assertEquals(ColumnDimension.PRECISION_OPTIONAL, rateColumn.getDimensionType());
@@ -53,7 +53,7 @@ public class PrecisionScaleTest {
 
     @Test
     public void tableFieldIncludesPrecisionAndScale() {
-        TableField amountField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        DatabaseColumn amountField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
         assertEquals("DECIMAL", amountField.getType());
         assertEquals(10, amountField.getDimension());
         assertEquals(2, amountField.getScale());
@@ -61,8 +61,8 @@ public class PrecisionScaleTest {
 
     @Test
     public void createTableDeclarationIncludesDecimalPrecisionAndScale() {
-        TableField amountField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
-        TableField rateField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
+        DatabaseColumn amountField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        DatabaseColumn rateField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
         assertEquals(10, amountField.getDimension());
         assertEquals(2, amountField.getScale());
         assertEquals(8, rateField.getDimension());
@@ -112,9 +112,9 @@ public class PrecisionScaleTest {
                 .findFirst()
                 .orElse(null);
 
-        ProjectedColumn entityColumn = context.projectedColumn(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        EntityColumn entityColumn = context.projectedColumn(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
 
-        TableField tableField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        DatabaseColumn tableField = context.getTableField(FieldUtils.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
 
         assertNotNull(delta);
         assertTrue(delta.getMismatchs().contains(Mismatch.SCALE));
@@ -126,8 +126,8 @@ public class PrecisionScaleTest {
 
     }
 
-    private static ProjectedColumn amountColumnWithScale(int scale) {
-        return ProjectedColumn.builder()
+    private static EntityColumn amountColumnWithScale(int scale) {
+        return EntityColumn.builder()
                 .name(PrecisionScaleEntity.Fields.amount)
                 .javaType(BigDecimal.class)
                 .type("DECIMAL")
@@ -144,7 +144,7 @@ public class PrecisionScaleTest {
 
     @Test
     public void columnDefinitionOnlySetsPrecisionAndScale() {
-        ProjectedColumn column = context.projectedColumn(FieldUtils.findField(ColumnDefinitionEntity.class, "value"));
+        EntityColumn column = context.projectedColumn(FieldUtils.findField(ColumnDefinitionEntity.class, "value"));
         assertEquals("NUMERIC", column.getType());
         assertEquals(12, column.getDimension());
         assertEquals(ColumnDimension.PRECISION_OPTIONAL, column.getDimensionType());

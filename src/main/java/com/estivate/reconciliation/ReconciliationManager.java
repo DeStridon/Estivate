@@ -127,7 +127,7 @@ public class ReconciliationManager {
             }
 
             databaseTables.remove(tableName);
-            EntityModel databaseModel = context.scanDatabaseTable(entityClass);
+            EntityTable databaseModel = context.scanDatabaseTable(entityClass);
 
             List<ReconciliationDelta> entityDiffs = compare(entityClass, databaseModel);
             differences.addAll(entityDiffs);
@@ -167,7 +167,7 @@ public class ReconciliationManager {
     /**
      * Compares entity model with database model and returns all differences as ISchemaDiff objects
      */
-    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityModel databaseModel) {
+    private List<ReconciliationDelta> compare(Class<?> entityClass, EntityTable databaseModel) {
         List<ReconciliationDelta> diffs = new ArrayList<>();
         List<String> projectedFieldNames = new ArrayList<>();
 
@@ -175,10 +175,10 @@ public class ReconciliationManager {
         for (Field entityField : FieldUtils.getEntityFields(entityClass)) {
 
             
-            ProjectedColumn projectedColumn = context.projectedColumn(entityField);
+            EntityColumn projectedColumn = context.projectedColumn(entityField);
             //ColumnModel.ColumnFormat columnFormat = context.getColumnFormat(entityColumn);
-            TableField tableField = projectedColumn.getTableField();
-            TableField dbColumn = databaseModel.findField(entityField.getName());
+            DatabaseColumn tableField = projectedColumn.asDatabaseColumn();
+            DatabaseColumn dbColumn = databaseModel.findField(entityField.getName());
 
             if (dbColumn == null) {
                 // Also check by mapped database column name
@@ -231,7 +231,7 @@ public class ReconciliationManager {
         // Check for columns in database but not in entity
         // We need to check against the actual database column names
         // Since databaseModel stores entity field names (after conversion), we need to map back
-        for (TableField dbField : databaseModel.getFields()) {
+        for (DatabaseColumn dbField : databaseModel.getFields()) {
             // If found in known fields, skip
             if(projectedFieldNames.contains(dbField.getName())) {
                 continue;

@@ -20,8 +20,8 @@ import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.result.ResultRow;
 
 import lombok.SneakyThrows;
@@ -144,7 +144,7 @@ public class H2Context extends Context {
 	// }
 
 
-	private TableField toTableField(ResultRow row) {
+	private DatabaseColumn toTableField(ResultRow row) {
 		String dataType = row.asString("DATA_TYPE");
 		Integer characterMaximumLength = row.asInteger("CHARACTER_MAXIMUM_LENGTH");
 		Integer numericPrecision = row.asInteger("NUMERIC_PRECISION");
@@ -152,7 +152,7 @@ public class H2Context extends Context {
 		boolean identity = "YES".equalsIgnoreCase(row.asString("IS_IDENTITY"));
 		String columnType = formatColumnType(dataType, characterMaximumLength, numericPrecision, numericScale);
 
-		return TableField.builder()
+		return DatabaseColumn.builder()
 				.name(row.asString("COLUMN_NAME"))
 				.type(dataType)
 				.nullable("YES".equalsIgnoreCase(row.asString("IS_NULLABLE")))
@@ -185,7 +185,7 @@ public class H2Context extends Context {
 
 	
 	@SneakyThrows
-	public List<TableField> listFields(String tableName) {
+	public List<DatabaseColumn> listFields(String tableName) {
 		try (Connection connection = datasource.getConnection();
 				Statement statement = new Statement(this, connection)) {
 

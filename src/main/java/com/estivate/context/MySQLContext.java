@@ -3,11 +3,7 @@ package com.estivate.context;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,21 +11,17 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.estivate.Statement;
 import com.estivate.context.MySQLDialect.MySQLTypes;
 import com.estivate.index.Annotations;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.reconciliation.ColumnTypeParts;
-import com.estivate.reconciliation.EntityModel;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.DatabaseColumnDefinition;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.result.ResultRow;
 import com.estivate.util.FieldUtils;
-import com.estivate.util.Pair;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -167,8 +159,8 @@ public class MySQLContext extends Context {
 
 
     @SneakyThrows
-	public List<TableField> listFields(String tableName) {
-		List<TableField> fields = new ArrayList<>(); 
+	public List<DatabaseColumn> listFields(String tableName) {
+		List<DatabaseColumn> fields = new ArrayList<>(); 
 		try (Connection connection = datasource.getConnection();
              Statement statement = new Statement(this, connection)) {
 
@@ -198,15 +190,15 @@ public class MySQLContext extends Context {
                     // Convert database column name back to entity field name
 
 					// TODO : decide on type if length or precision should be set
-                    ColumnTypeParts parsedColumnType = parseColumnType(columnType);
+                    DatabaseColumnDefinition parsedColumnType = DatabaseColumnDefinition.parse(columnType);
                     
-                    TableField tableField = TableField.builder()
+                    DatabaseColumn tableField = DatabaseColumn.builder()
                         .name(columnName)
                         .type(parsedColumnType.getType())
                         .nullable("YES".equalsIgnoreCase(nullableStr))
                         .autoIncrement(extra != null && extra.toLowerCase().contains("auto_increment"))
                         .defaultValue(defaultValue)
-                        .dimension(parsedColumnType.getLength())
+                        .dimension(parsedColumnType.getDimension())
                         .scale(parsedColumnType.getScale())
                         .build();
 
@@ -270,16 +262,16 @@ public class MySQLContext extends Context {
     }
 
 	@Override
-	protected void appendColumnTypeAndSize(Statement statement, TableField tableField) {
+	protected void appendColumnTypeAndSize(Statement statement, DatabaseColumn tableField) {
 		statement.appendQuery(formatMySQLColumnType(tableField));
 	}
 
-	static String formatMySQLColumnType(TableField tableField) {
+	static String formatMySQLColumnType(DatabaseColumn tableField) {
 		if (tableField.getType() != null && tableField.getType().toUpperCase().startsWith("ENUM")) {
 			return tableField.getType();
 		}
 
-		ColumnTypeParts parts = ColumnTypeParts.parse(tableField.getType());
+		DatabaseColumnDefinition parts = DatabaseColumnDefinition.parse(tableField.getType());
 		String typeSource = parts != null ? parts.getType() : tableField.getType();
 		MySQLTypes mysqlType = MySQLDialect.resolveMySQLType(typeSource);
 		if (mysqlType == null) {
@@ -290,7 +282,7 @@ public class MySQLContext extends Context {
 
 		Integer dimension = tableField.getDimension();
 		if (dimension == null && parts != null) {
-			dimension = parts.getLength();
+			dimension = parts.getDimension();
 		}
 		Integer scale = tableField.getScale();
 		if (scale == null && parts != null) {
@@ -303,8 +295,8 @@ public class MySQLContext extends Context {
 				sqlType.append(",").append(scale);
 			}
 			sqlType.append(")");
-		} else if (mysqlType.mainDimension == ColumnDimension.LENGTH_OPTIONAL
-				&& dimension != null) {
+		} 
+		else if ((mysqlType.mainDimension == ColumnDimension.LENGTH_OPTIONAL && mysqlType.mainDimension == ColumnDimension.LENGTH_REQUIRED) && dimension != null) {
 			sqlType.append("(").append(dimension).append(")");
 		}
 

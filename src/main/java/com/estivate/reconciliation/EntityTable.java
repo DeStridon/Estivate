@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EntityModel {
+public class EntityTable {
 
     /** The table name in the database */
     public String tableName;
@@ -28,12 +28,12 @@ public class EntityModel {
     
     /** List of table fields/columns */
     @Builder.Default
-    public List<TableField> fields = new ArrayList<>();
+    public List<DatabaseColumn> fields = new ArrayList<>();
 
     /**
      * Finds a field by name (case-insensitive)
      */
-    public TableField findField(String name) {
+    public DatabaseColumn findField(String name) {
         return fields.stream()
             .filter(f -> f.getName().equalsIgnoreCase(name))
             .findFirst()

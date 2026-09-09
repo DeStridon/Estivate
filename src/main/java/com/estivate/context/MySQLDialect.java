@@ -7,10 +7,10 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.estivate.reconciliation.ColumnTypeParts;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.ProjectedColumn.ProjectedColumnDefinition;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.DatabaseColumnDefinition;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.EntityColumn.ProjectedColumnDefinition;
+import com.estivate.reconciliation.DatabaseColumn;
 
 /**
  * MySQL vendor rules (types, dimensions, DDL formatting). No connection required.
@@ -60,43 +60,43 @@ public class MySQLDialect extends Dialect {
 	@Override
 	public ProjectedColumnDefinition databaseTypeFor(Class<?> javaType) {
 		if (javaType == Integer.class || javaType == int.class) {
-			return ProjectedColumnDefinition.builder().type("INT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("INT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Long.class || javaType == long.class) {
-			return ProjectedColumnDefinition.builder().type("BIGINT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("BIGINT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Short.class || javaType == short.class) {
-			return ProjectedColumnDefinition.builder().type("SMALLINT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("SMALLINT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Byte.class || javaType == byte.class) {
-			return ProjectedColumnDefinition.builder().type("TINYINT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("TINYINT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Float.class || javaType == float.class) {
-			return ProjectedColumnDefinition.builder().type("FLOAT").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("FLOAT").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == Double.class || javaType == double.class) {
-			return ProjectedColumnDefinition.builder().type("DOUBLE").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("DOUBLE").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == java.math.BigDecimal.class) {
-			return ProjectedColumnDefinition.builder().type("DECIMAL").mainDimension(ColumnDimension.PRECISION_OPTIONAL).build();
+			return ProjectedColumnDefinition.builder().type("DECIMAL").columnDimension(ColumnDimension.PRECISION_OPTIONAL).build();
 		}
 		if (javaType == Boolean.class || javaType == boolean.class) {
-			return ProjectedColumnDefinition.builder().type("BIT").dimension(1).mainDimension(ColumnDimension.LENGTH_REQUIRED).build();
+			return ProjectedColumnDefinition.builder().type("BIT").defaultDimension(1).columnDimension(ColumnDimension.LENGTH_REQUIRED).build();
 		}
 		if (javaType == String.class) {
-			return ProjectedColumnDefinition.builder().type("VARCHAR").dimension(255).mainDimension(ColumnDimension.LENGTH_REQUIRED).build();
+			return ProjectedColumnDefinition.builder().type("VARCHAR").defaultDimension(255).columnDimension(ColumnDimension.LENGTH_REQUIRED).build();
 		}
 		if (javaType == Date.class || javaType == java.sql.Date.class
 				|| javaType == java.sql.Timestamp.class
 				|| javaType == LocalDateTime.class
 				|| javaType == Instant.class) {
-			return ProjectedColumnDefinition.builder().type("DATETIME").mainDimension(ColumnDimension.PRECISION_OPTIONAL).build();
+			return ProjectedColumnDefinition.builder().type("DATETIME").columnDimension(ColumnDimension.PRECISION_OPTIONAL).build();
 		}
 		if (javaType == LocalDate.class) {
-			return ProjectedColumnDefinition.builder().type("DATE").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("DATE").columnDimension(ColumnDimension.NONE).build();
 		}
 		if (javaType == byte[].class) {
-			return ProjectedColumnDefinition.builder().type("BLOB").mainDimension(ColumnDimension.NONE).build();
+			return ProjectedColumnDefinition.builder().type("BLOB").columnDimension(ColumnDimension.NONE).build();
 		}
 		throw new IllegalArgumentException("Unsupported type: " + javaType);
 	}
@@ -121,12 +121,12 @@ public class MySQLDialect extends Dialect {
 	}
 
 	@Override
-	public String formatColumnTypeAndSize(TableField tableField) {
+	public String formatColumnTypeAndSize(DatabaseColumn tableField) {
 		if (tableField.getType() != null && tableField.getType().toUpperCase().startsWith("ENUM")) {
 			return tableField.getType();
 		}
 
-		ColumnTypeParts parts = ColumnTypeParts.parse(tableField.getType());
+		DatabaseColumnDefinition parts = DatabaseColumnDefinition.parse(tableField.getType());
 		String typeSource = parts != null ? parts.getType() : tableField.getType();
 		MySQLTypes mysqlType = MySQLDialect.resolveMySQLType(typeSource);
 		if (mysqlType == null) {
@@ -137,7 +137,7 @@ public class MySQLDialect extends Dialect {
 
 		Integer dimension = tableField.getDimension();
 		if (dimension == null && parts != null) {
-			dimension = parts.getLength();
+			dimension = parts.getDimension();
 		}
 		Integer scale = tableField.getScale();
 		if (scale == null && parts != null) {

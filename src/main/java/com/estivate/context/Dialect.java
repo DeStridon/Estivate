@@ -1,9 +1,8 @@
 package com.estivate.context;
 
-import com.estivate.reconciliation.ColumnTypeParts;
-import com.estivate.reconciliation.ProjectedColumn.ColumnDimension;
-import com.estivate.reconciliation.ProjectedColumn.ProjectedColumnDefinition;
-import com.estivate.reconciliation.TableField;
+import com.estivate.reconciliation.EntityColumn.ColumnDimension;
+import com.estivate.reconciliation.EntityColumn.ProjectedColumnDefinition;
+import com.estivate.reconciliation.DatabaseColumn;
 
 /**
  * Vendor-specific database rules that do not require a live connection
@@ -23,9 +22,9 @@ public abstract class Dialect {
 	public abstract ColumnDimension mainDimensionForColumn(String columnType);
 
 	/**
-	 * Formats a {@link TableField} type for DDL (e.g. {@code VARCHAR(255)}, {@code DECIMAL(10,2)}).
+	 * Formats a {@link DatabaseColumn} type for DDL (e.g. {@code VARCHAR(255)}, {@code DECIMAL(10,2)}).
 	 */
-	public String formatColumnTypeAndSize(TableField tableField) {
+	public String formatColumnTypeAndSize(DatabaseColumn tableField) {
 		StringBuilder sqlType = new StringBuilder(tableField.getType());
 		if (tableField.getDimension() != null) {
 			sqlType.append("(").append(tableField.getDimension());
@@ -37,7 +36,4 @@ public abstract class Dialect {
 		return sqlType.toString();
 	}
 
-	public ColumnTypeParts parseColumnType(String columnType) {
-		return ColumnTypeParts.parse(columnType);
-	}
 }
