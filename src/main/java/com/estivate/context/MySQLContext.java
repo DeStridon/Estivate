@@ -296,7 +296,7 @@ public class MySQLContext extends Context {
 			}
 			sqlType.append(")");
 		} 
-		else if ((mysqlType.mainDimension == ColumnDimension.LENGTH_OPTIONAL && mysqlType.mainDimension == ColumnDimension.LENGTH_REQUIRED) && dimension != null) {
+		else if ((mysqlType.mainDimension == ColumnDimension.LENGTH_OPTIONAL || mysqlType.mainDimension == ColumnDimension.LENGTH_REQUIRED) && dimension != null) {
 			sqlType.append("(").append(dimension).append(")");
 		}
 
