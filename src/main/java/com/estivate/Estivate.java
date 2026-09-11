@@ -328,6 +328,7 @@ public class Estivate {
 
 	public static Keyword keywordTrue() { return new Keyword(KeywordValue.TRUE); }
 	public static Keyword keywordFalse() { return new Keyword(KeywordValue.FALSE); }
+	public static Attribute countAll() { return attribute(new Entity<>(null), null, Estivate.Functions.count); }
 
 
 	/* Wrapper for Entity */

@@ -294,11 +294,21 @@ public class ReconciliationManager {
     }
 
     public boolean isIndexMatching(TableIndex entityIndex, TableIndex databaseIndex) {
+    	// Assess name is the same
         if(!StringUtils.equals(entityIndex.name(), databaseIndex.name())) { return false; }
+        // Assess type is the same
         if(entityIndex.type() != databaseIndex.type()) { return false; }
+        // Assess columns card is the same
         if(entityIndex.columns().length != databaseIndex.columns().length) { return false; }
         for(int i = 0; i < entityIndex.columns().length; i++) {
-            if(!entityIndex.columns()[i].value().equals(databaseIndex.columns()[i].value())) { return false; }
+        	// Assess column name is the same
+            if(!entityIndex.columns()[i].value().equals(databaseIndex.columns()[i].value())) { 
+            	return false; 
+        	}
+            // Assess column length is the same
+            if(entityIndex.columns()[i].length() != databaseIndex.columns()[i].length()) { 
+            	return false; 
+        	}
         }
         return true;
     }
