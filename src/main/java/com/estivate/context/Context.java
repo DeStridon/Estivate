@@ -212,13 +212,13 @@ public abstract class Context {
 			statement.appendQuery(nameMapper.toTableName(query.getEntity()));
 			
 			statement.appendQuery(" (");
-			for(Iter8<EntityColumn> projectedColumns : Iter8.from(query.getColumns())) {
+			for(Iter8<EntityColumn> columnIterator : Iter8.from(query.getColumns())) {
 			
-				EntityColumn projectedColumn = projectedColumns.getValue();
+				EntityColumn column = columnIterator.getValue();
 			
-				DatabaseColumn tableField = projectedColumn.asDatabaseColumn();
-				statement.appendQuery(tableField.getName());
-				appendColumnTypeAndSize(statement, tableField);
+				DatabaseColumn databaseColumn = column.asDatabaseColumn();
+				statement.appendQuery(databaseColumn.getName());
+				appendColumnTypeAndSize(statement, databaseColumn);
 
 				//statement.appendQuery(columnDefinition.getFullColumnType(this));
 				// if (tableField.getCharset() != null) {
@@ -229,29 +229,29 @@ public abstract class Context {
 				// 	statement.appendQuery("COLLATE");
 				// 	statement.appendQuery(tableField.getCollation());
 				// }
-				if (!projectedColumn.isNullable()) {
+				if (!column.isNullable()) {
 					statement.appendQuery("NOT NULL");
 				}
-				if (projectedColumn.getDefaultValue() != null) {
+				if (column.getDefaultValue() != null) {
 					statement.appendQuery("DEFAULT");
-					if(projectedColumn.getDefaultValue().startsWith("'") && projectedColumn.getDefaultValue().endsWith("'")) {
-						statement.appendQuery(projectedColumn.getDefaultValue());
+					if(column.getDefaultValue().startsWith("'") && column.getDefaultValue().endsWith("'")) {
+						statement.appendQuery(column.getDefaultValue());
 					}
 					else {
-						statement.appendQuery("'" + projectedColumn.getDefaultValue() + "'");
+						statement.appendQuery("'" + column.getDefaultValue() + "'");
 					}
 				}
-				if (projectedColumn.isAutoIncrement()) {
+				if (column.isAutoIncrement()) {
 					statement.appendQuery("AUTO_INCREMENT");
 				}
-				if (Boolean.TRUE.equals(projectedColumn.getPrimaryKey())) {
+				if (Boolean.TRUE.equals(column.getPrimaryKey())) {
 					statement.appendQuery("PRIMARY KEY");
 				}
 				// if (entityColumn.getComment() != null) {
 				// 	statement.appendQuery("COMMENT");
 				// 	statement.appendQuery("'" + entityColumn.getComment().replace("'", "''") + "'");
 				// }
-				if(!projectedColumns.isLast()){
+				if(!columnIterator.isLast()){
 					statement.appendQuery(",");
 				}
 			}
@@ -1317,7 +1317,7 @@ public abstract class Context {
 
 	}
 	
-	public String defaultValueForType(String defaultValue, Class type) {
+	private String defaultValueForType(String defaultValue, Class type) {
 		if(defaultValue == null) {
 			return null;
 		}
@@ -1451,15 +1451,15 @@ public abstract class Context {
 	// 	return getTableField(getEntityColumn(entityField));
 	// }
 
-	public DatabaseColumn getTableField(Field entityField){
-		return projectedColumn(entityField).asDatabaseColumn();
+	public DatabaseColumn databaseColumn(Field entityField){
+		return entityColumn(entityField).asDatabaseColumn();
 	}
 
-	public EntityColumn projectedColumn(Field entityField) {
+	public EntityColumn entityColumn(Field entityField) {
 		return new EntityColumn(this, entityField);
 	}
 
-    public EntityTable scanDatabaseTable(Class<?> c) {
+    public EntityTable entityTable(Class<?> c) {
 
         List<DatabaseColumn> fields = listFields(nameMapper.toTableName(c));
         List<TableIndex> indexes = listIndexes(c);

@@ -65,7 +65,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void timestampColumnWithDefinitionParsing() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithDefinition));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithDefinition));
 
 		assertEquals("TIMESTAMP", column.getType());
 		assertEquals(6, column.getDimension());
@@ -76,7 +76,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void timestampColumnWithLengthParsing() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithPrecision));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testTimestampWithPrecision));
 
 		assertEquals("TIMESTAMP", column.getType());
 		assertEquals(6, column.getDimension());
@@ -86,7 +86,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void decimalColumnWithDefinitionParsing() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithDefinition));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithDefinition));
 
 		assertEquals("DECIMAL", column.getType());
 		assertEquals(10, column.getDimension());
@@ -96,7 +96,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void decimalColumnWithPrecisionAndScaleParsing() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithPrecisionAndScale));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testDecimalWithPrecisionAndScale));
 
 		assertEquals("DECIMAL", column.getType());
 		assertEquals(10, column.getDimension());
@@ -107,7 +107,7 @@ public class TimestampColumnTypeTest {
 
 	@Test
 	public void smallintUnsignedColumnWithDefinitionParsing() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testSmallintUnsignedWithDefinition));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(TestEntity.class, TestEntity.Fields.testSmallintUnsignedWithDefinition));
 
 		assertEquals("SMALLINT UNSIGNED", column.getType());
 		assertEquals(ColumnDimension.LENGTH_OPTIONAL, column.getDimensionType());

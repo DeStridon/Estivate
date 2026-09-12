@@ -27,7 +27,7 @@ public class ModelingTest {
 	@Test
 	public void modelingTest1() {
 		Set<Field> fields = FieldUtils.getEntityFields(SingleIntegerFieldClass.class);
-		DatabaseColumn tableField = context.getTableField(fields.iterator().next());
+		DatabaseColumn tableField = context.databaseColumn(fields.iterator().next());
 		
 		assertEquals("0", tableField.getDefaultValue());
 		
@@ -43,7 +43,7 @@ public class ModelingTest {
 	@Test
 	public void modelingTest2() {
 		Set<Field> fields = FieldUtils.getEntityFields(LongTextFieldClass.class);
-		DatabaseColumn tableField = context.getTableField(fields.iterator().next());
+		DatabaseColumn tableField = context.databaseColumn(fields.iterator().next());
 		
 		assertEquals(null, tableField.getDimension());
 		

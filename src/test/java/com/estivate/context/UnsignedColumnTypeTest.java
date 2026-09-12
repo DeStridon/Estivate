@@ -56,13 +56,13 @@ public class UnsignedColumnTypeTest {
 
 	@Test
 	public void entityColumnPreservesUnsignedFromColumnDefinition() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
 		assertEquals("SMALLINT UNSIGNED", column.getType());
 	}
 
 	@Test
 	public void entityColumnPreservesUnsignedWithDisplayWidth() {
-		EntityColumn column = mysqlContext.projectedColumn(FieldUtils.findField(UnsignedSmallintWithDisplayWidthEntity.class, "code"));
+		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(UnsignedSmallintWithDisplayWidthEntity.class, "code"));
 		assertEquals("SMALLINT UNSIGNED", column.getType());
 		assertEquals(5, column.getDimension());
 		assertEquals(ColumnDimension.LENGTH_OPTIONAL, column.getDimensionType());
@@ -71,20 +71,20 @@ public class UnsignedColumnTypeTest {
 	@Test
 	public void mysqlTableFieldPreservesUnsignedForReconciliation() {
 		MySQLContext context = new MySQLContext(null);
-		DatabaseColumn projected = context.getTableField(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
+		DatabaseColumn databaseColumn = context.databaseColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
 
-		assertEquals("SMALLINT UNSIGNED", projected.getType());
+		assertEquals("SMALLINT UNSIGNED", databaseColumn.getType());
 
 		// MySQL SHOW COLUMNS Type value after parse
 		DatabaseColumnDefinition dbParts = DatabaseColumnDefinition.parse("smallint unsigned");
 		DatabaseColumn database = DatabaseColumn.builder()
-				.name(projected.getName())
+				.name(databaseColumn.getName())
 				.type(dbParts.getType())
 				.nullable(true)
 				.build();
 
-		assertTrue(projected.typeMatches(database.getType()), "Reconciliation should treat entity SMALLINT UNSIGNED as matching DB smallint unsigned");
-		assertFalse(projected.typeMatches("SMALLINT"), "Reconciliation should detect signed vs unsigned as a TYPE mismatch");
+		assertTrue(databaseColumn.typeMatches(database.getType()), "Reconciliation should treat entity SMALLINT UNSIGNED as matching DB smallint unsigned");
+		assertFalse(databaseColumn.typeMatches("SMALLINT"), "Reconciliation should detect signed vs unsigned as a TYPE mismatch");
 	}
 
 	@Test

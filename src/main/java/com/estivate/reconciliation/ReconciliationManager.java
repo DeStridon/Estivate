@@ -127,7 +127,7 @@ public class ReconciliationManager {
             }
 
             databaseTables.remove(tableName);
-            EntityTable databaseModel = context.scanDatabaseTable(entityClass);
+            EntityTable databaseModel = context.entityTable(entityClass);
 
             List<ReconciliationDelta> entityDiffs = compare(entityClass, databaseModel);
             differences.addAll(entityDiffs);
@@ -175,7 +175,7 @@ public class ReconciliationManager {
         for (Field entityField : FieldUtils.getEntityFields(entityClass)) {
 
             
-            EntityColumn projectedColumn = context.projectedColumn(entityField);
+            EntityColumn projectedColumn = context.entityColumn(entityField);
             //ColumnModel.ColumnFormat columnFormat = context.getColumnFormat(entityColumn);
             DatabaseColumn tableField = projectedColumn.asDatabaseColumn();
             DatabaseColumn dbColumn = databaseModel.findField(entityField.getName());
@@ -248,8 +248,31 @@ public class ReconciliationManager {
         }
 
 
+        // Index Management
 
         List<TableIndex> entityIndexes = getEntityIndexes(entityClass);
+
+        // Drop indexes that are in database but not in entity
+        for(TableIndex databaseIndex : databaseModel.getIndexes()) {
+        
+        	TableIndex entityIndex = entityIndexes.stream()
+        			.filter(index -> isIndexMatching(databaseIndex, index))
+        			.findFirst()
+        			.orElse(null);
+        	
+        	if(entityIndex == null) {
+                EstivateReconciliation.DropIndexDelta dropIndex = EstivateReconciliation.DropIndexDelta.builder()
+                        .entityClass(entityClass)
+                        .entityModel(databaseModel)
+                        .indexName(databaseIndex.name())
+                        .type(databaseIndex.type())
+                        .columns(Arrays.stream(databaseIndex.columns()).map(IndexColumn::of).collect(Collectors.toList()))
+                        .build();
+                diffs.add(dropIndex);
+        	}
+        }
+
+        // Add indexes that are in entity but not in database
         for(TableIndex entityIndex : entityIndexes) {
             
             TableIndex databaseIndex = databaseModel.getIndexes().stream()
@@ -270,24 +293,7 @@ public class ReconciliationManager {
             
         }
 
-        for(TableIndex databaseIndex : databaseModel.getIndexes()) {
-        
-        	TableIndex entityIndex = entityIndexes.stream()
-        			.filter(index -> isIndexMatching(databaseIndex, index))
-        			.findFirst()
-        			.orElse(null);
-        	
-        	if(entityIndex == null) {
-                EstivateReconciliation.DropIndexDelta dropIndex = EstivateReconciliation.DropIndexDelta.builder()
-                        .entityClass(entityClass)
-                        .entityModel(databaseModel)
-                        .indexName(databaseIndex.name())
-                        .type(databaseIndex.type())
-                        .columns(Arrays.stream(databaseIndex.columns()).map(IndexColumn::of).collect(Collectors.toList()))
-                        .build();
-                diffs.add(dropIndex);
-        	}
-        }
+
         
 
         return diffs;
