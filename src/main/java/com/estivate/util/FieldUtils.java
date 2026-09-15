@@ -167,7 +167,7 @@ public class FieldUtils {
 
 			String implMethod = sl.getImplMethodName();
 
-            String propertyName = methodToProperty(implMethod);
+            String propertyName = methodToProperty(implMethod, targetClass);
             return new Attribute(Estivate.entity(targetClass), propertyName, function, alias);
 
         } catch (Exception e) {
@@ -194,12 +194,25 @@ public class FieldUtils {
         return (SerializedLambda) m.invoke(lambda);
     }
 
-    private static String methodToProperty(String name) {
+    /**
+     * Maps a getter method name to a Java field/property name.
+     * <p>
+     * For {@code is*} getters, Lombok may generate {@code isActive()} for a field
+     * literally named {@code isActive}. Prefer that field when it exists; otherwise
+     * strip the {@code is} prefix (JavaBeans / field named {@code active}).
+     */
+    private static String methodToProperty(String name, Class<?> targetClass) {
         if (name.startsWith("get") && name.length() > 3) {
+			if (findField(targetClass, name) != null) {
+                return name;
+            }
             String base = name.substring(3);
             return Character.toLowerCase(base.charAt(0)) + base.substring(1);
         }
         if (name.startsWith("is") && name.length() > 2) {
+            if (findField(targetClass, name) != null) {
+                return name;
+            }
             String base = name.substring(2);
             return Character.toLowerCase(base.charAt(0)) + base.substring(1);
         }
