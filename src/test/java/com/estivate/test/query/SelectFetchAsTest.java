@@ -97,7 +97,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - String attributes
+    // extractSingleAsAttribute Tests - String attributes
     // ========================================================================================
     
     @Test
@@ -105,7 +105,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Object result = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -117,7 +117,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.email);
+        Object result = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.email);
         
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -129,7 +129,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.fetchAsSingle(context, ProductEntity.class, ProductEntity.Fields.description);
+        Object result = query.extractSingle(context, ProductEntity.class, ProductEntity.Fields.description);
         
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -137,7 +137,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - Long/long attributes
+    // extractSingleAsAttribute Tests - Long/long attributes
     // ========================================================================================
     
     @Test
@@ -145,7 +145,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, AbstractEntity.Fields.id);
+        Object result = query.extractSingle(context, CustomerEntity.class, AbstractEntity.Fields.id);
         
         assertNotNull(result);
         assertTrue(result instanceof Long);
@@ -157,7 +157,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.fetchAsSingle(context, OrderEntity.class, OrderEntity.Fields.customerId);
+        Object result = query.extractSingle(context, OrderEntity.class, OrderEntity.Fields.customerId);
         
         assertNotNull(result);
         assertTrue(result instanceof Long);
@@ -165,7 +165,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - Integer/int attributes
+    // extractSingleAsAttribute Tests - Integer/int attributes
     // ========================================================================================
     
     @Test
@@ -173,7 +173,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.fetchAsSingle(context, ProductEntity.class, ProductEntity.Fields.stock);
+        Object result = query.extractSingle(context, ProductEntity.class, ProductEntity.Fields.stock);
         
         assertNotNull(result);
         assertTrue(result instanceof Integer);
@@ -185,7 +185,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderLineEntity> query = Estivate.selectQuery(OrderLineEntity.class)
             .eq(OrderLineEntity.class, OrderLineEntity.Fields.id, orderLine.getId());
         
-        Object result = query.fetchAsSingle(context, OrderLineEntity.class, OrderLineEntity.Fields.amount);
+        Object result = query.extractSingle(context, OrderLineEntity.class, OrderLineEntity.Fields.amount);
         
         assertNotNull(result);
         assertTrue(result instanceof Integer);
@@ -193,7 +193,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - Float/float attributes
+    // extractSingleAsAttribute Tests - Float/float attributes
     // ========================================================================================
     
     @Test
@@ -201,7 +201,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.fetchAsSingle(context, ProductEntity.class, ProductEntity.Fields.price);
+        Object result = query.extractSingle(context, ProductEntity.class, ProductEntity.Fields.price);
         
         assertNotNull(result);
         assertTrue(result instanceof Float);
@@ -213,7 +213,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.fetchAsSingle(context, OrderEntity.class, OrderEntity.Fields.totalAmount);
+        Object result = query.extractSingle(context, OrderEntity.class, OrderEntity.Fields.totalAmount);
         
         assertNotNull(result);
         assertTrue(result instanceof Float);
@@ -225,7 +225,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderLineEntity> query = Estivate.selectQuery(OrderLineEntity.class)
             .eq(OrderLineEntity.class, OrderLineEntity.Fields.id, orderLine.getId());
         
-        Object result = query.fetchAsSingle(context, OrderLineEntity.class, OrderLineEntity.Fields.unitPrice);
+        Object result = query.extractSingle(context, OrderLineEntity.class, OrderLineEntity.Fields.unitPrice);
         
         assertNotNull(result);
         assertTrue(result instanceof Float);
@@ -233,7 +233,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - Boolean/boolean attributes
+    // extractSingleAsAttribute Tests - Boolean/boolean attributes
     // ========================================================================================
     
     @Test
@@ -241,7 +241,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        Object result = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         
         assertNotNull(result);
         assertTrue(result instanceof Boolean);
@@ -256,7 +256,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        Object result = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         
         assertNotNull(result);
         assertTrue(result instanceof Boolean);
@@ -264,7 +264,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - Date attributes
+    // extractSingleAsAttribute Tests - Date attributes
     // ========================================================================================
     
     @Test
@@ -272,7 +272,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.created);
+        Object result = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.created);
         
         assertNotNull(result);
         assertTrue(result instanceof Date);
@@ -284,7 +284,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.fetchAsSingle(context, OrderEntity.class, OrderEntity.Fields.updated);
+        Object result = query.extractSingle(context, OrderEntity.class, OrderEntity.Fields.updated);
         
         assertNotNull(result);
         assertTrue(result instanceof Date);
@@ -292,7 +292,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchSingleAsAttribute Tests - Enum attributes (STRING and ORDINAL)
+    // extractSingleAsAttribute Tests - Enum attributes (STRING and ORDINAL)
     // ========================================================================================
     
     @Test
@@ -300,7 +300,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Object result = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.country);
+        Object result = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.country);
         
         assertNotNull(result);
         assertTrue(result instanceof CustomerEntity.Country);
@@ -312,7 +312,7 @@ public class SelectFetchAsTest {
         SelectQuery<OrderEntity> query = Estivate.selectQuery(OrderEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object result = query.fetchAsSingle(context, OrderEntity.class, OrderEntity.Fields.status);
+        Object result = query.extractSingle(context, OrderEntity.class, OrderEntity.Fields.status);
         
         assertNotNull(result);
         assertTrue(result instanceof OrderEntity.OrderStatus);
@@ -324,7 +324,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.fetchAsSingle(context, ProductEntity.class, ProductEntity.Fields.category);
+        Object result = query.extractSingle(context, ProductEntity.class, ProductEntity.Fields.category);
         
         assertNotNull(result);
         assertTrue(result instanceof ProductEntity.ProductCategory);
@@ -340,7 +340,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.fetchAsSingle(context, ProductEntity.class, ProductEntity.Fields.tags);
+        Object result = query.extractSingle(context, ProductEntity.class, ProductEntity.Fields.tags);
         
         assertNotNull(result);
         assertTrue(result instanceof List);
@@ -357,7 +357,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
         
-        Object result = query.fetchAsSingle(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
+        Object result = query.extractSingle(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
         
         assertNotNull(result);
         assertTrue(result instanceof List);
@@ -370,7 +370,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - String attributes
+    // extractListAsAttribute Tests - String attributes
     // ========================================================================================
     
     @Test
@@ -394,7 +394,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()));
         
-        List<?> result = query.fetchAsList(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        List<?> result = query.extractList(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -418,7 +418,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.name);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -427,7 +427,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - Long/long attributes
+    // extractListAsAttribute Tests - Long/long attributes
     // ========================================================================================
     
     @Test
@@ -443,7 +443,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId()));
         
-        List<?> result = query.fetchAsList(context, CustomerEntity.class, AbstractEntity.Fields.id);
+        List<?> result = query.extractList(context, CustomerEntity.class, AbstractEntity.Fields.id);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -453,7 +453,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - Integer/int attributes
+    // extractListAsAttribute Tests - Integer/int attributes
     // ========================================================================================
     
     @Test
@@ -478,7 +478,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId(), product3.getId()));
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.stock);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.stock);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -506,7 +506,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.price);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.price);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -522,7 +522,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - Boolean/boolean attributes
+    // extractListAsAttribute Tests - Boolean/boolean attributes
     // ========================================================================================
     
     @Test
@@ -547,7 +547,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()));
         
-        List<?> result = query.fetchAsList(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
+        List<?> result = query.extractList(context, CustomerEntity.class, CustomerEntity.Fields.emailVerified);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -560,7 +560,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - Date attributes
+    // extractListAsAttribute Tests - Date attributes
     // ========================================================================================
     
     @Test
@@ -577,7 +577,7 @@ public class SelectFetchAsTest {
             .in(OrderEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(order.getId(), order2.getId()));
         
-        List<?> result = query.fetchAsList(context, OrderEntity.class, OrderEntity.Fields.created);
+        List<?> result = query.extractList(context, OrderEntity.class, OrderEntity.Fields.created);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -585,7 +585,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - Enum attributes (STRING and ORDINAL)
+    // extractListAsAttribute Tests - Enum attributes (STRING and ORDINAL)
     // ========================================================================================
     
     @Test
@@ -608,7 +608,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()));
         
-        List<?> result = query.fetchAsList(context, CustomerEntity.class, CustomerEntity.Fields.country);
+        List<?> result = query.extractList(context, CustomerEntity.class, CustomerEntity.Fields.country);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -640,7 +640,7 @@ public class SelectFetchAsTest {
             .in(OrderEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(order.getId(), order2.getId(), order3.getId()));
         
-        List<?> result = query.fetchAsList(context, OrderEntity.class, OrderEntity.Fields.status);
+        List<?> result = query.extractList(context, OrderEntity.class, OrderEntity.Fields.status);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -672,7 +672,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId(), product3.getId()));
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.category);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.category);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -683,7 +683,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchListAsAttribute Tests - Converted attributes
+    // extractListAsAttribute Tests - Converted attributes
     // ========================================================================================
     
     @Test
@@ -701,7 +701,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.tags);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.tags);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -734,7 +734,7 @@ public class SelectFetchAsTest {
             .in(ProductEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(product.getId(), product2.getId()));
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.availableCountries);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -775,7 +775,7 @@ public class SelectFetchAsTest {
                 Arrays.asList(customer.getId(), customer2.getId(), customer3.getId()))
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
         
-        List<?> result = query.fetchAsList(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        List<?> result = query.extractList(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -805,7 +805,7 @@ public class SelectFetchAsTest {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class)
             .gt(ProductEntity.class, ProductEntity.Fields.price, 50f);
         
-        List<?> result = query.fetchAsList(context, ProductEntity.class, ProductEntity.Fields.name);
+        List<?> result = query.extractList(context, ProductEntity.class, ProductEntity.Fields.name);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -820,14 +820,14 @@ public class SelectFetchAsTest {
             .joinInner(OrderEntity.class, CustomerEntity.class)
             .eq(OrderEntity.class, AbstractEntity.Fields.id, order.getId());
         
-        Object customerName = query.fetchAsSingle(context, CustomerEntity.class, CustomerEntity.Fields.name);
+        Object customerName = query.extractSingle(context, CustomerEntity.class, CustomerEntity.Fields.name);
         
         assertNotNull(customerName);
         assertEquals("John Doe", customerName);
     }
 
     // ========================================================================================
-    // fetchAsOptional Tests - basic, AttributeGetter, and with Function
+    // extractOptional Tests - basic, AttributeGetter, and with Function
     // ========================================================================================
     
     @Test
@@ -835,7 +835,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Optional<String> result = query.fetchAsOptional(context, CustomerEntity::getName);
+        Optional<String> result = query.extractOptional(context, CustomerEntity::getName);
         
         assertNotNull(result);
         assertTrue(result.isPresent());
@@ -847,7 +847,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        Optional<String> result = query.fetchAsOptional(context, CustomerEntity::getName, Estivate.Functions.lower);
+        Optional<String> result = query.extractOptional(context, CustomerEntity::getName, Estivate.Functions.lower);
         
         assertNotNull(result);
         assertTrue(result.isPresent());
@@ -858,7 +858,7 @@ public class SelectFetchAsTest {
     public void testFetchAsOptional_CountWithAttributeGetterAndFunction() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
         
-        Optional<Long> result = query.fetchAsOptional(context, CustomerEntity::getId, Estivate.Functions.count);
+        Optional<Long> result = query.extractOptional(context, CustomerEntity::getId, Estivate.Functions.count);
         
         assertNotNull(result);
         assertTrue(result.isPresent());
@@ -870,14 +870,14 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, -99999L);
         
-        Optional<String> result = query.fetchAsOptional(context, CustomerEntity::getName);
+        Optional<String> result = query.extractOptional(context, CustomerEntity::getName);
         
         assertNotNull(result);
         assertFalse(result.isPresent());
     }
 
     // ========================================================================================
-    // fetchAsSingle Tests - AttributeGetter and with Function
+    // extractSingle Tests - AttributeGetter and with Function
     // ========================================================================================
     
     @Test
@@ -885,7 +885,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        String result = query.fetchAsSingle(context, CustomerEntity::getName);
+        String result = query.extractSingle(context, CustomerEntity::getName);
         
         assertNotNull(result);
         assertEquals("John Doe", result);
@@ -896,7 +896,7 @@ public class SelectFetchAsTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId());
         
-        String result = query.fetchAsSingle(context, CustomerEntity::getName, Estivate.Functions.upper);
+        String result = query.extractSingle(context, CustomerEntity::getName, Estivate.Functions.upper);
         
         assertNotNull(result);
         assertEquals("JOHN DOE", result);
@@ -906,7 +906,7 @@ public class SelectFetchAsTest {
     public void testFetchAsSingle_CountWithAttributeGetterAndFunction() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
         
-        Long result = query.fetchAsSingle(context, CustomerEntity::getId, Estivate.Functions.count);
+        Long result = query.extractSingle(context, CustomerEntity::getId, Estivate.Functions.count);
         
         assertNotNull(result);
         assertTrue(result >= 1);
@@ -930,7 +930,7 @@ public class SelectFetchAsTest {
             .select(nameAttr)
             .select(lowerNameAttr);
 
-        ResultTable result = context.fetch(query);
+        ResultTable result = context.fetchResultTable(query);
 
         Object plainName = result.asSingle(nameAttr);
         Object lowerName = result.asSingle(lowerNameAttr);
@@ -943,7 +943,7 @@ public class SelectFetchAsTest {
     }
 
     // ========================================================================================
-    // fetchAsList Tests - AttributeGetter and with Function
+    // extractList Tests - AttributeGetter and with Function
     // ========================================================================================
     
     @Test
@@ -959,7 +959,7 @@ public class SelectFetchAsTest {
             .in(CustomerEntity.class, AbstractEntity.Fields.id, 
                 Arrays.asList(customer.getId(), customer2.getId()));
         
-        List<String> result = query.fetchAsList(context, CustomerEntity::getName);
+        List<String> result = query.extractList(context, CustomerEntity::getName);
         
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -981,7 +981,7 @@ public class SelectFetchAsTest {
                 Arrays.asList(customer.getId(), customer2.getId()))
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
         
-        List<String> result = query.fetchAsList(context, CustomerEntity::getName, Estivate.Functions.lower);
+        List<String> result = query.extractList(context, CustomerEntity::getName, Estivate.Functions.lower);
         
         assertNotNull(result);
         assertEquals(2, result.size());

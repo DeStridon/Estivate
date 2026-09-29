@@ -418,7 +418,7 @@ public abstract class Context {
 	
 	
 	@SneakyThrows
-	public <T> ResultTable fetch(SelectQuery<T> query){
+	public <T> ResultTable fetchResultTable(SelectQuery<T> query){
 		SelectQuery<T> finalQuery = (SelectQuery<T>) preExecute(query);
 		
 		try(Connection connection = datasource.getConnection();
@@ -436,35 +436,35 @@ public abstract class Context {
 		}
 	}
 	
-	public <E> E 			fetchSingle		(SelectQuery<E> query) { return fetchAsSingle(query, query.getEntity()); }
-	public <E> Optional<E> 	fetchOptional	(SelectQuery<E> query) { return Optional.ofNullable(fetchSingle(query)); }
-	public <E> List<E> 		fetchList		(SelectQuery<E> query) { return fetchAsList(query, query.getEntity()); }
+	public <E> E 			extractSingle		(SelectQuery<E> query) { return extractSingle(query, query.getEntity()); }
+	public <E> Optional<E> 	extractOptional	(SelectQuery<E> query) { return Optional.ofNullable(extractSingle(query)); }
+	public <E> List<E> 		extractList		(SelectQuery<E> query) { return extractList(query, query.getEntity()); }
 	
 	
 
 	/*
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a single value
 	 */
-	public <T> T fetchAsSingle(SelectQuery<?> query, Class<T> entity) 	{ 
+	public <T> T extractSingle(SelectQuery<?> query, Class<T> entity) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity).limit(1);
-		return fetch(newQuery).asSingle(entity); 
+		return fetchResultTable(newQuery).asSingle(entity); 
 	}
-	public <T> T fetchAsSingle(SelectQuery<?> query, Entity<T> entity) { 
+	public <T> T extractSingle(SelectQuery<?> query, Entity<T> entity) { 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity).limit(1);
-		return fetch(newQuery).asSingle(entity); 
+		return fetchResultTable(newQuery).asSingle(entity); 
 	}
 	
 
-	public <T> Optional<T> fetchAsOptional(SelectQuery<?> query, Class<T> entity) { return Optional.ofNullable(fetchAsSingle(query, entity)); }
-	public <T> Optional<T> fetchAsOptional(SelectQuery<?> query, Entity<T> entity) { return Optional.ofNullable(fetchAsSingle(query, entity)); }
+	public <T> Optional<T> extractOptional(SelectQuery<?> query, Class<T> entity) { return Optional.ofNullable(extractSingle(query, entity)); }
+	public <T> Optional<T> extractOptional(SelectQuery<?> query, Entity<T> entity) { return Optional.ofNullable(extractSingle(query, entity)); }
 	
-	public <T> List<T> fetchAsList(SelectQuery<?> query, Entity<T> entity) {
+	public <T> List<T> extractList(SelectQuery<?> query, Entity<T> entity) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
-		return fetch(newQuery).asList(entity);
+		return fetchResultTable(newQuery).asList(entity);
 	}
-	public <T> List<T> fetchAsList(SelectQuery<?> query, Class<T> entity) 	{ 
+	public <T> List<T> extractList(SelectQuery<?> query, Class<T> entity) 	{ 
 		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
-		return fetch(newQuery).asList(entity); 
+		return fetchResultTable(newQuery).asList(entity); 
 	}
 
 	
@@ -494,74 +494,74 @@ public abstract class Context {
 	/*
 	 * Clones the query, selects only the attribute, and returns a single value
 	 */
-	public Object fetchAsSingle(SelectQuery<?> query, Attribute attribute) {
+	public Object extractSingle(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute).limit(1);
-		return fetch(newQuery).asSingle(attribute);
+		return fetchResultTable(newQuery).asSingle(attribute);
 	}
-	public Object 	fetchAsSingle(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName)); }
-	public Object 	fetchAsSingle(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName)); }
-	public <T, P> P fetchAsSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (P) fetchAsSingle(query, Estivate.attribute(attributeGetter)); }
-	public Object 	fetchAsSingle(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName, function)); }
-	public Object 	fetchAsSingle(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return fetchAsSingle(query, Estivate.attribute(entity, attributeName, function)); }
-	public <T, P> P fetchAsSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (P) fetchAsSingle(query, Estivate.attribute(attributeGetter, function)); }
+	public Object 	extractSingle(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSingle(query, Estivate.attribute(entity, attributeName)); }
+	public Object 	extractSingle(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSingle(query, Estivate.attribute(entity, attributeName)); }
+	public <T, P> P extractSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (P) extractSingle(query, Estivate.attribute(attributeGetter)); }
+	public Object 	extractSingle(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSingle(query, Estivate.attribute(entity, attributeName, function)); }
+	public Object 	extractSingle(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSingle(query, Estivate.attribute(entity, attributeName, function)); }
+	public <T, P> P extractSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (P) extractSingle(query, Estivate.attribute(attributeGetter, function)); }
 
 	/*
 	 * Clones the query, selects only the attribute, and returns a single optional value
 	 */
-	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(fetchAsSingle(query, attribute)); }
-	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsOptional(query, Estivate.attribute(entity, attributeName)); }
-	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsOptional(query, Estivate.attribute(entity, attributeName)); }
-	public <T, P> 	Optional<P> fetchAsOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) fetchAsOptional(query, Estivate.attribute(attributeGetter)); }
-	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return fetchAsOptional(query, Estivate.attribute(entity, attributeName, function)); }
-	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return fetchAsOptional(query, Estivate.attribute(entity, attributeName, function)); }
-	public <T, P> 	Optional<P> fetchAsOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Optional<P>) fetchAsOptional(query, Estivate.attribute(attributeGetter, function)); }
+	public 			Optional<?> extractOptional(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(extractSingle(query, attribute)); }
+	public 			Optional<?> extractOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractOptional(query, Estivate.attribute(entity, attributeName)); }
+	public 			Optional<?> extractOptional(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractOptional(query, Estivate.attribute(entity, attributeName)); }
+	public <T, P> 	Optional<P> extractOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) extractOptional(query, Estivate.attribute(attributeGetter)); }
+	public 			Optional<?> extractOptional(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractOptional(query, Estivate.attribute(entity, attributeName, function)); }
+	public 			Optional<?> extractOptional(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractOptional(query, Estivate.attribute(entity, attributeName, function)); }
+	public <T, P> 	Optional<P> extractOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Optional<P>) extractOptional(query, Estivate.attribute(attributeGetter, function)); }
 	
 	/* 
 	 * Clones the query, selects only the attribute, and returns a list of the values
 	 */
-	public List<?> fetchAsList(SelectQuery<?> query, Attribute attribute) {
+	public List<?> extractList(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute);
-		return fetch(newQuery).asList(attribute);
+		return fetchResultTable(newQuery).asList(attribute);
 	}
-	public 			List<?> fetchAsList(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsList(query, Estivate.attribute(entity, attributeName)); }
-	public 			List<?> fetchAsList(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsList(query, Estivate.attribute(entity, attributeName)); }
-	public <T, P> 	List<P> fetchAsList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) fetchAsList(query, Estivate.attribute(attributeGetter)); }
-	public 			List<?> fetchAsList(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return fetchAsList(query, Estivate.attribute(entity, attributeName, function)); }
-	public 			List<?> fetchAsList(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return fetchAsList(query, Estivate.attribute(entity, attributeName, function)); }
-	public <T, P> 	List<P> fetchAsList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (List<P>) fetchAsList(query, Estivate.attribute(attributeGetter, function)); }
+	public 			List<?> extractList(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractList(query, Estivate.attribute(entity, attributeName)); }
+	public 			List<?> extractList(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractList(query, Estivate.attribute(entity, attributeName)); }
+	public <T, P> 	List<P> extractList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) extractList(query, Estivate.attribute(attributeGetter)); }
+	public 			List<?> extractList(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractList(query, Estivate.attribute(entity, attributeName, function)); }
+	public 			List<?> extractList(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractList(query, Estivate.attribute(entity, attributeName, function)); }
+	public <T, P> 	List<P> extractList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (List<P>) extractList(query, Estivate.attribute(attributeGetter, function)); }
 	
 
-	public List<?> fetchAsListDistinct(SelectQuery<?> query, Attribute attribute) {
+	public List<?> extractListDistinct(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute).distinct();
-		return fetch(newQuery).asList(attribute);
+		return fetchResultTable(newQuery).asList(attribute);
 	}
-	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsListDistinct(query, Estivate.attribute(entity, attributeName)); }
-	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsListDistinct(query, Estivate.attribute(entity, attributeName)); }
-	public <T, P> 	List<P> fetchAsListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) fetchAsListDistinct(query, Estivate.attribute(attributeGetter)); }
-	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return fetchAsListDistinct(query, Estivate.attribute(entity, attributeName, function)); }
-	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return fetchAsListDistinct(query, Estivate.attribute(entity, attributeName, function)); }
-	public <T, P> 	List<P> fetchAsListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (List<P>) fetchAsListDistinct(query, Estivate.attribute(attributeGetter, function)); }
+	public 			List<?> extractListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractListDistinct(query, Estivate.attribute(entity, attributeName)); }
+	public 			List<?> extractListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractListDistinct(query, Estivate.attribute(entity, attributeName)); }
+	public <T, P> 	List<P> extractListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) extractListDistinct(query, Estivate.attribute(attributeGetter)); }
+	public 			List<?> extractListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(query, Estivate.attribute(entity, attributeName, function)); }
+	public 			List<?> extractListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(query, Estivate.attribute(entity, attributeName, function)); }
+	public <T, P> 	List<P> extractListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (List<P>) extractListDistinct(query, Estivate.attribute(attributeGetter, function)); }
 
 	/*
 	 * Clones the query, selects only the attribute with distinct option, and returns a set of the values
 	 */
-	public Set<?> fetchAsSet(SelectQuery<?> query, Attribute attribute) {
+	public Set<?> extractSet(SelectQuery<?> query, Attribute attribute) {
 		SelectQuery<?> newQuery = query.clone().clearSelects().select(attribute).distinct();
-		return fetch(newQuery).asSetAttribute(attribute);
+		return fetchResultTable(newQuery).asSetAttribute(attribute);
 	}
-	public 			Set<?> fetchAsSet(SelectQuery<?> query, Class<?> entity, String attributeName) { return fetchAsSet(query, Estivate.attribute(entity, attributeName)); }
-	public 			Set<?> fetchAsSet(SelectQuery<?> query, Entity<?> entity, String attributeName) { return fetchAsSet(query, Estivate.attribute(entity, attributeName)); }
-	public <T, P> 	Set<P> fetchAsSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Set<P>) fetchAsSet(query, Estivate.attribute(attributeGetter)); }
-	public 			Set<?> fetchAsSet(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return fetchAsSet(query, Estivate.attribute(entity, attributeName, function)); }
-	public 			Set<?> fetchAsSet(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return fetchAsSet(query, Estivate.attribute(entity, attributeName, function)); }
-	public <T, P> 	Set<P> fetchAsSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Set<P>) fetchAsSet(query, Estivate.attribute(attributeGetter, function)); }
+	public 			Set<?> extractSet(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSet(query, Estivate.attribute(entity, attributeName)); }
+	public 			Set<?> extractSet(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSet(query, Estivate.attribute(entity, attributeName)); }
+	public <T, P> 	Set<P> extractSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Set<P>) extractSet(query, Estivate.attribute(attributeGetter)); }
+	public 			Set<?> extractSet(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, Estivate.attribute(entity, attributeName, function)); }
+	public 			Set<?> extractSet(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, Estivate.attribute(entity, attributeName, function)); }
+	public <T, P> 	Set<P> extractSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Set<P>) extractSet(query, Estivate.attribute(attributeGetter, function)); }
 	
 	
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single value
 	 */
-	public Long fetchCountAll(SelectQuery<?> query) {
-		return fetch(query.clone()
+	public Long extractCountAll(SelectQuery<?> query) {
+		return fetchResultTable(query.clone()
 			.clearSelects()
 			.clearGroupBys()
 			.clearOrderBys()
@@ -573,8 +573,8 @@ public abstract class Context {
 	/*
 	 * Clones the query, clears group bys, orders, and selects COUNT(DISTINCT attribute), and returns a single value
 	 */
-	public Long fetchCountDistinct(SelectQuery<?> query, Attribute attribute) {
-		return fetch(query.clone()
+	public Long extractCountDistinct(SelectQuery<?> query, Attribute attribute) {
+		return fetchResultTable(query.clone()
 			.clearSelects()
 			.clearGroupBys()
 			.clearOrderBys()
@@ -583,39 +583,39 @@ public abstract class Context {
 			.selectCountDistinct(attribute, "count")).asSingleLong();
 	}
 
-	public Long fetchCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
-		return fetchCountDistinct(query, Estivate.attribute(entity, attributeName));
+	public Long extractCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		return extractCountDistinct(query, Estivate.attribute(entity, attributeName));
 	}
 
-	public Long fetchCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) {
-		return fetchCountDistinct(query, Estivate.attribute(entity, attributeName));
+	public Long extractCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) {
+		return extractCountDistinct(query, Estivate.attribute(entity, attributeName));
 	}
 
-	public <T, P> Long fetchCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) {
-		return fetchCountDistinct(query, Estivate.attribute(attributeGetter));
+	public <T, P> Long extractCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) {
+		return extractCountDistinct(query, Estivate.attribute(attributeGetter));
 	}
 
 	/*
 	 * Clones the query, clears group bys, orders, and selects only the count, and returns a single optional value
 	 */
-	public Optional<Long> fetchOptionalCountAll(SelectQuery<?> query) {
-		return Optional.ofNullable(fetchCountAll(query));
+	public Optional<Long> extractOptionalCountAll(SelectQuery<?> query) {
+		return Optional.ofNullable(extractCountAll(query));
 	}
 
-	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Attribute attribute) {
-		return Optional.ofNullable(fetchCountDistinct(query, attribute));
+	public Optional<Long> extractOptionalCountDistinct(SelectQuery<?> query, Attribute attribute) {
+		return Optional.ofNullable(extractCountDistinct(query, attribute));
 	}
 
-	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
-		return Optional.ofNullable(fetchCountDistinct(query, entity, attributeName));
+	public Optional<Long> extractOptionalCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) {
+		return Optional.ofNullable(extractCountDistinct(query, entity, attributeName));
 	}
 
-	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) {
-		return Optional.ofNullable(fetchCountDistinct(query, entity, attributeName));
+	public Optional<Long> extractOptionalCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) {
+		return Optional.ofNullable(extractCountDistinct(query, entity, attributeName));
 	}
 
-	public <T, P> Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) {
-		return Optional.ofNullable(fetchCountDistinct(query, attributeGetter));
+	public <T, P> Optional<Long> extractOptionalCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) {
+		return Optional.ofNullable(extractCountDistinct(query, attributeGetter));
 	}
 
 	
@@ -623,63 +623,63 @@ public abstract class Context {
 	// ==================== AGGREGATION METHODS ====================
 	
 
-	public <T> Map<Object, Object> fetchAsMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute){
+	public <T> Map<Object, Object> extractMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute){
 		query.clone().clearSelects().select(keyAttribute).select(valueAttribute);
-		return fetch(query).asMap(keyAttribute, valueAttribute);
+		return fetchResultTable(query).asMap(keyAttribute, valueAttribute);
 	}
 
-	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> extractMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
 		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
-		return fetch(query).asMap(attributeGetter, valueGetter);
+		return fetchResultTable(query).asMap(attributeGetter, valueGetter);
 	}
 
-	public <T, AE, AT, C> Map<AT, C> fetchAsMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+	public <T, AE, AT, C> Map<AT, C> extractMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
 		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
-		return fetch(query).asMap(attributeGetter, vClass);
+		return fetchResultTable(query).asMap(attributeGetter, vClass);
 	}
 
-	public <T, C1, C2> Map<C1, C2> fetchAsMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+	public <T, C1, C2> Map<C1, C2> extractMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
 		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
-		return fetch(query).asMap(uClass, vClass);
+		return fetchResultTable(query).asMap(uClass, vClass);
 	}
 
-	public <T, C, AE, AT> Map<C, AT> fetchAsMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+	public <T, C, AE, AT> Map<C, AT> extractMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
 		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
-		return fetch(query).asMap(uClass, valueGetter);
+		return fetchResultTable(query).asMap(uClass, valueGetter);
 	}
 
-	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> extractMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
 		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
-		return fetch(query).asMapList(attributeGetter, valueGetter);
+		return fetchResultTable(query).asMapList(attributeGetter, valueGetter);
 	}
-	public <T, AE, AT, C> Map<AT, List<C>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+	public <T, AE, AT, C> Map<AT, List<C>> extractMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
 		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
-		return fetch(query).asMapList(attributeGetter, vClass);
+		return fetchResultTable(query).asMapList(attributeGetter, vClass);
 	}
-	public <T, C, AE, AT> Map<C, List<AT>> fetchAsMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+	public <T, C, AE, AT> Map<C, List<AT>> extractMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
 		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
-		return fetch(query).asMapList(uClass, valueGetter);
+		return fetchResultTable(query).asMapList(uClass, valueGetter);
 	}
-	public <T, C1, C2> Map<C1, List<C2>> fetchAsMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+	public <T, C1, C2> Map<C1, List<C2>> extractMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
 		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
-		return fetch(query).asMapList(uClass, vClass);
+		return fetchResultTable(query).asMapList(uClass, vClass);
 	}
 
-	public <T, A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> fetchAsMapSet(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> extractMapSet(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
 		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
-		return fetch(query).asMapSet(attributeGetter, valueGetter);
+		return fetchResultTable(query).asMapSet(attributeGetter, valueGetter);
 	}
-	public <T, AE, AT, C> Map<AT, Set<C>> fetchAsMapSet(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
+	public <T, AE, AT, C> Map<AT, Set<C>> extractMapSet(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
 		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
-		return fetch(query).asMapSet(attributeGetter, vClass);
+		return fetchResultTable(query).asMapSet(attributeGetter, vClass);
 	}
-	public <T, C, AE, AT> Map<C, Set<AT>> fetchAsMapSet(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
+	public <T, C, AE, AT> Map<C, Set<AT>> extractMapSet(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
 		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
-		return fetch(query).asMapSet(uClass, valueGetter);
+		return fetchResultTable(query).asMapSet(uClass, valueGetter);
 	}
-	public <T, C1, C2> Map<C1, Set<C2>> fetchAsMapSet(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
+	public <T, C1, C2> Map<C1, Set<C2>> extractMapSet(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
 		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
-		return fetch(query).asMapSet(uClass, vClass);
+		return fetchResultTable(query).asMapSet(uClass, vClass);
 	}
 
 	
@@ -702,7 +702,7 @@ public abstract class Context {
 //			if(idField.getLong(entity) != 0L) {
 //				SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
 //				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
-//				U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
+//				U duplicatedEntity = extractSingle(query, (Class<U>) entity.getClass());
 //				if(duplicatedEntity != null) {
 //					// Copy fields from result into object
 //					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
@@ -730,7 +730,7 @@ public abstract class Context {
 //				query.eq(entity.getClass(), columnIndex.value(), value);
 //			}
 //
-//			U duplicatedEntity = fetchAsSingle(query, (Class<U>) entity.getClass());
+//			U duplicatedEntity = extractSingle(query, (Class<U>) entity.getClass());
 //			
 //			if(duplicatedEntity != null) {
 //				// Copy fields from result into object

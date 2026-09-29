@@ -500,7 +500,7 @@ public class PagingStrategyTest {
                 keysetStrategy = (KeysetPagingStrategy) result.getPagingStrategy();
             }
             
-            Long count = context.fetchCountAll(Estivate.selectQuery(ProductEntity.class));
+            Long count = context.extractCountAll(Estivate.selectQuery(ProductEntity.class));
             
 
             assertEquals(offsetTotal, keysetTotal, "Both strategies should return same total items");

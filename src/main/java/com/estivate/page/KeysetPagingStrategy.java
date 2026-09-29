@@ -65,7 +65,7 @@ public class KeysetPagingStrategy implements PagingStrategy {
         pagedQuery.offset(null); // Clear any offset for keyset pagination
         
         // Execute query
-        ResultTable resultTable = context.fetch(pagedQuery);
+        ResultTable resultTable = context.fetchResultTable(pagedQuery);
         
         // Determine if there's a next page (check raw result size)
         boolean hasNext = resultTable.size() > pageSize;

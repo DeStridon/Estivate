@@ -90,7 +90,7 @@ public class ProductSearchShowcase {
         	.selectAll(ProductSearchOutput.class);
         
         // Executing the query
-        List<ProductSearchOutput> results = query.fetchAsList(context, ProductSearchOutput.class);
+        List<ProductSearchOutput> results = query.extractList(context, ProductSearchOutput.class);
 
 		Assert.assertEquals(4, query.getSelects().size());
 

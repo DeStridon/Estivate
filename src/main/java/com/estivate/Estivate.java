@@ -807,10 +807,12 @@ public class Estivate {
 		public static Attribute.Function ifNull(String alternative) { return new Attribute.Function("ifnull(", ", "+alternative+")"); }
 
 		/* JSON Functions */
-		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
 		public static Attribute.Function json_unquote = new Attribute.Function("JSON_UNQUOTE(", ")");
 		public static Attribute.Function json_keys = new Attribute.Function("JSON_KEYS(", ")");
 		public static Attribute.Function json_length = new Attribute.Function("JSON_LENGTH(", ")");
+		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
+		public static Attribute.Function json_value(String path) { return new Attribute.Function("JSON_VALUE(", ", \""+path+"\")"); }
+		public static Attribute.Function json_exists(String path) { return new Attribute.Function("JSON_EXISTS(", ", \""+path+"\")"); }
 
 		/* Window Functions */
 		public static Attribute.Function rowNumber = new Attribute.Function("row_number()", "", true);

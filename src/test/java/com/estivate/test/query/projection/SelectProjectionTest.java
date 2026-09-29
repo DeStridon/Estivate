@@ -206,7 +206,7 @@ public class SelectProjectionTest {
         System.out.println("testCustomer1: id=" + testCustomer1.getId() + ", name=" + testCustomer1.getName() + ", email=" + testCustomer1.getEmail());
         
         // Verify data exists in database
-        CustomerEntity fromDb = context.fetchSingle(
+        CustomerEntity fromDb = context.extractSingle(
             Estivate.selectQuery(CustomerEntity.class)
                 .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId())
         );
@@ -219,7 +219,7 @@ public class SelectProjectionTest {
         // Debug: Print the query before and after
         System.out.println("After importSelectFromResultMapping - Selects: " + query.getSelects());
         
-        CustomerBasicProjection result = query.fetchAsSingle(context, CustomerBasicProjection.class);
+        CustomerBasicProjection result = query.extractSingle(context, CustomerBasicProjection.class);
 
         System.out.println("Result: " + result);
         
@@ -235,7 +235,7 @@ public class SelectProjectionTest {
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId())
             .selectAll(CustomerWithTransformerProjection.class);
 
-        CustomerWithTransformerProjection result = query.fetchAsSingle(context, CustomerWithTransformerProjection.class);
+        CustomerWithTransformerProjection result = query.extractSingle(context, CustomerWithTransformerProjection.class);
 
         assertNotNull(result, "Result should not be null");
         assertEquals(testCustomer1.getId(), result.getId(), "ID should match unchanged");
@@ -247,7 +247,7 @@ public class SelectProjectionTest {
     public void projectionToCount() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        CustomerCountProjection count = query.fetchAsSingle(context, CustomerCountProjection.class);
+        CustomerCountProjection count = query.extractSingle(context, CustomerCountProjection.class);
 
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
@@ -257,7 +257,7 @@ public class SelectProjectionTest {
     public void projectionToCountAlias() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        CustomerCountAliasProjection count = query.fetchAsSingle(context, CustomerCountAliasProjection.class);
+        CustomerCountAliasProjection count = query.extractSingle(context, CustomerCountAliasProjection.class);
 
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
@@ -267,7 +267,7 @@ public class SelectProjectionTest {
     public void projectionToCountDistinct() {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class);
 
-        CustomerCountDistinctProjection count = query.fetchAsSingle(context, CustomerCountDistinctProjection.class);
+        CustomerCountDistinctProjection count = query.extractSingle(context, CustomerCountDistinctProjection.class);
 
         assertNotNull(count, "Result should not be null");
         assertEquals(3L, count.getCustomerCount(), "Should count all 3 customers");
@@ -281,7 +281,7 @@ public class SelectProjectionTest {
     public void testProject_WithMultipleAggregateFunctions() {
         SelectQuery<ProductEntity> query = Estivate.selectQuery(ProductEntity.class);
 
-        ProductStatsProjection result = query.fetchAsSingle(context, ProductStatsProjection.class);
+        ProductStatsProjection result = query.extractSingle(context, ProductStatsProjection.class);
 
         assertNotNull(result, "Result should not be null");
         assertEquals(29.99f, result.getMinPrice(), 0.01f, "Min price should match");
@@ -295,7 +295,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .groupBy(CustomerEntity.class, CustomerEntity.Fields.country);
 
-        List<CustomerCountAliasByCountryProjection> results = query.fetchAsList(context, CustomerCountAliasByCountryProjection.class);
+        List<CustomerCountAliasByCountryProjection> results = query.extractList(context, CustomerCountAliasByCountryProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(2, results.size(), "Should have 2 country groups");
@@ -321,7 +321,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .groupBy(CustomerEntity.class, CustomerEntity.Fields.country);
 
-        List<CustomerCountByCountryProjection> results = query.fetchAsList(context, CustomerCountByCountryProjection.class);
+        List<CustomerCountByCountryProjection> results = query.extractList(context, CustomerCountByCountryProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(2, results.size(), "Should have 2 country groups");
@@ -348,7 +348,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId());
 
-        Optional<CustomerBasicProjection> result = query.fetchAsOptional(context, CustomerBasicProjection.class);
+        Optional<CustomerBasicProjection> result = query.extractOptional(context, CustomerBasicProjection.class);
 
         assertTrue(result.isPresent(), "Result should be present");
         assertEquals(testCustomer1.getId(), result.get().getId(), "ID should match");
@@ -360,7 +360,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, 99999L);
 
-        Optional<CustomerBasicProjection> result = query.fetchAsOptional(context, CustomerBasicProjection.class);
+        Optional<CustomerBasicProjection> result = query.extractOptional(context, CustomerBasicProjection.class);
 
         assertFalse(result.isPresent(), "Result should not be present for non-existing data");
     }
@@ -372,7 +372,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
-        List<CustomerBasicProjection> results = query.fetchAsList(context, CustomerBasicProjection.class);
+        List<CustomerBasicProjection> results = query.extractList(context, CustomerBasicProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(3, results.size(), "Should return all 3 customers");
@@ -387,7 +387,7 @@ public class SelectProjectionTest {
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA)
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
-        List<CustomerBasicProjection> results = query.fetchAsList(context, CustomerBasicProjection.class);
+        List<CustomerBasicProjection> results = query.extractList(context, CustomerBasicProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(2, results.size(), "Should return only USA customers");
@@ -401,7 +401,7 @@ public class SelectProjectionTest {
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name)
             .limit(2);
 
-        List<CustomerBasicProjection> results = query.fetchAsList(context, CustomerBasicProjection.class);
+        List<CustomerBasicProjection> results = query.extractList(context, CustomerBasicProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(2, results.size(), "Should return only 2 customers due to limit");
@@ -412,7 +412,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.JAPAN);
 
-        List<CustomerBasicProjection> results = query.fetchAsList(context, CustomerBasicProjection.class);
+        List<CustomerBasicProjection> results = query.extractList(context, CustomerBasicProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(0, results.size(), "Should return empty list");
@@ -427,7 +427,7 @@ public class SelectProjectionTest {
             .likeContains(CustomerEntity.class, CustomerEntity.Fields.name, "Smith")
             .orderByAsc(CustomerEntity.class, CustomerEntity.Fields.name);
 
-        List<CustomerBasicProjection> results = query.fetchAsList(context, CustomerBasicProjection.class);
+        List<CustomerBasicProjection> results = query.extractList(context, CustomerBasicProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(1, results.size(), "Should return 1 customer matching criteria");
@@ -460,7 +460,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .orderByAsc(CustomerEntity.class, AbstractEntity.Fields.id);
 
-        List<IsNullProjection> results = query.fetchAsList(context, IsNullProjection.class);
+        List<IsNullProjection> results = query.extractList(context, IsNullProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(3, results.size(), "Should return all customers");
@@ -478,7 +478,7 @@ public class SelectProjectionTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .orderByAsc(CustomerEntity.class, AbstractEntity.Fields.id);
 
-        List<IsNotNullProjection> results = query.fetchAsList(context, IsNotNullProjection.class);
+        List<IsNotNullProjection> results = query.extractList(context, IsNotNullProjection.class);
 
         assertNotNull(results, "Results should not be null");
         assertEquals(3, results.size(), "Should return all customers");

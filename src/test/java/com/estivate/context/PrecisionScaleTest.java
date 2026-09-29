@@ -83,7 +83,7 @@ public class PrecisionScaleTest {
 
         SelectQuery<PrecisionScaleEntity> query = new SelectQuery<>(PrecisionScaleEntity.class)
                 .eq(AbstractEntity.Fields.id, entity.getId());
-        PrecisionScaleEntity loaded = context.fetchSingle(query);
+        PrecisionScaleEntity loaded = context.extractSingle(query);
 
         assertEquals(new BigDecimal("123.46"), loaded.getAmount());
         assertEquals(new BigDecimal("1.2346"), loaded.getRate());
@@ -91,7 +91,7 @@ public class PrecisionScaleTest {
         loaded.setAmount(new BigDecimal("99.999"));
         context.update(loaded);
 
-        PrecisionScaleEntity updated = context.fetchSingle(query);
+        PrecisionScaleEntity updated = context.extractSingle(query);
         assertEquals(new BigDecimal("100.00"), updated.getAmount());
     }
 

@@ -7,21 +7,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks an EntityManager subclass for automatic Spring bean registration.
- * 
+ * Marks a {@link com.estivate.repository.Repository} subclass for automatic Spring bean registration.
+ *
  * <p>When used in conjunction with {@link EnableEstivateManagers}, classes annotated
  * with {@code @EstivateManager} will be automatically implemented and registered
  * as Spring beans, making them available for autowiring.</p>
- * 
+ *
  * <p>Example usage:</p>
  * <pre>
  * {@code @EstivateManager}
- * public abstract class CustomerManager extends EntityManager&lt;CustomerEntity&gt; {
+ * public abstract class CustomerManager extends Repository&lt;CustomerEntity&gt; {
  *     public abstract CustomerEntity findById(long id);
  *     public abstract List&lt;CustomerEntity&gt; findByNameAndEmail(String name, String email);
  * }
  * </pre>
- * 
+ *
  * <p>Then in your Spring configuration:</p>
  * <pre>
  * {@code @Configuration}
@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- * 
+ *
  * <p>Now you can autowire the manager:</p>
  * <pre>
  * {@code @Autowired}
@@ -45,4 +45,3 @@ import java.lang.annotation.Target;
 @Documented
 public @interface EstivateManager {
 }
-

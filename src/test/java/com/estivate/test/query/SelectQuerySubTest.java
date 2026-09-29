@@ -92,7 +92,7 @@ public class SelectQuerySubTest {
         
         
         
-        List<ResultRow> results = query.fetch(context).getRows();
+        List<ResultRow> results = query.fetchResultTable(context).getRows();
         
         for(ResultRow result : results) {
         	ProductCategory productCategory = (ProductCategory) result.asEnum(ProductEntity.class, ProductEntity.Fields.category);

@@ -1,4 +1,4 @@
-package com.estivate.test.manager;
+package com.estivate.test.repository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -65,8 +65,55 @@ public class SpringAutowiringTest {
         System.out.println("Spring autowiring test passed! Manager was injected and methods executed successfully.");
     }
 
+    @Test
+    public void testFindDistinctNameByCountry() {
+        CustomerEntity aliceFr = DatabaseGenerator.createRandomCustomer();
+        aliceFr.setName("Alice");
+        aliceFr.setCountry(CustomerEntity.Country.FRANCE);
+        context.insert(aliceFr);
+
+        CustomerEntity aliceFrDup = DatabaseGenerator.createRandomCustomer();
+        aliceFrDup.setName("Alice");
+        aliceFrDup.setCountry(CustomerEntity.Country.FRANCE);
+        context.insert(aliceFrDup);
+
+        CustomerEntity bobFr = DatabaseGenerator.createRandomCustomer();
+        bobFr.setName("Bob");
+        bobFr.setCountry(CustomerEntity.Country.FRANCE);
+        context.insert(bobFr);
+
+        CustomerEntity charlieUs = DatabaseGenerator.createRandomCustomer();
+        charlieUs.setName("Charlie");
+        charlieUs.setCountry(CustomerEntity.Country.USA);
+        context.insert(charlieUs);
+
+        List<String> names = customerManager.findDistinctNameByCountry(CustomerEntity.Country.FRANCE);
+
+        assertNotNull(names);
+        assertEquals(2, names.size());
+        assertTrue(names.contains("Alice"));
+        assertTrue(names.contains("Bob"));
+        assertFalse(names.contains("Charlie"));
+    }
+
+    @Test
+    public void testFindNameById() {
+        CustomerEntity alice = DatabaseGenerator.createRandomCustomer();
+        alice.setName("Alice");
+        context.insert(alice);
+
+        CustomerEntity bob = DatabaseGenerator.createRandomCustomer();
+        bob.setName("Bob");
+        context.insert(bob);
+
+        String name = customerManager.findNameById(alice.getId());
+
+        assertEquals("Alice", name);
+        assertNull(customerManager.findNameById(-1L));
+    }
+
     @Configuration
-    @EnableEstivateManagers(basePackages = "com.estivate.test.manager")
+    @EnableEstivateManagers(basePackages = "com.estivate.test.repository")
     static class TestConfig {
         
         @Bean

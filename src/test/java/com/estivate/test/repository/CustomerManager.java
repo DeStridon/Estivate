@@ -1,21 +1,20 @@
-package com.estivate.test.manager;
+package com.estivate.test.repository;
 
 import java.util.List;
 
-import com.estivate.manager.ManagerInterceptor.EntityManager;
+import com.estivate.repository.Repository;
 import com.estivate.spring.EstivateManager;
 import com.estivate.test.entities.CustomerEntity;
-import com.estivate.test.entities.projection.CustomerProjection.CustomerCountAliasByCountryProjection;
 
 /**
- * Example manager demonstrating Spring autowiring integration.
- * 
+ * Example repository demonstrating Spring autowiring integration.
+ *
  * <p>By annotating with {@code @EstivateManager}, this class will be
  * automatically implemented and registered as a Spring bean when
  * {@code @EnableEstivateManagers} is used.</p>
  */
 @EstivateManager
-public abstract class CustomerManager extends EntityManager<CustomerEntity> {
+public abstract class CustomerManager extends Repository<CustomerEntity> {
     
     public abstract CustomerEntity findById(long id);
 
@@ -34,6 +33,10 @@ public abstract class CustomerManager extends EntityManager<CustomerEntity> {
     public abstract List<CustomerEntity> findByEmailVerifiedIsTrue();
 
     public abstract boolean existsById(long id);
+
+    public abstract List<String> findDistinctNameByCountry(CustomerEntity.Country country);
+
+    public abstract String findNameById(long id);
 
 
 }

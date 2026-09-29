@@ -53,7 +53,7 @@ public class ManualReconciliationManager {
 
         return Estivate.selectQuery(ManualReconciliationEntity.class)
             .eq(ManualReconciliationEntity::getResolverId, resolverId)
-            .fetchSingle(context);
+            .extractSingle(context);
             
     }
 

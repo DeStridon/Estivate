@@ -31,7 +31,7 @@ public class ResultRowTest {
 		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
 			.select(nameAttr)
-			.fetch(context)
+			.fetchResultTable(context)
 			.getFirst();
 
 		assertEquals("ResultRow Plain", row.as(nameAttr));
@@ -46,7 +46,7 @@ public class ResultRowTest {
 		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
 			.select(lowerNameAttr)
-			.fetch(context)
+			.fetchResultTable(context)
 			.getFirst();
 
 		assertEquals("resultrow lower", row.as(lowerNameAttr));
@@ -63,7 +63,7 @@ public class ResultRowTest {
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
 			.select(nameAttr)
 			.select(lowerNameAttr)
-			.fetch(context)
+			.fetchResultTable(context)
 			.getFirst();
 
 		assertEquals("ResultRow Mixed", row.as(nameAttr));
@@ -79,7 +79,7 @@ public class ResultRowTest {
 		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
 			.select(upperNameAttr)
-			.fetch(context)
+			.fetchResultTable(context)
 			.getFirst();
 
 		assertEquals("RESULTROW UPPER", row.asString(upperNameAttr));
@@ -94,7 +94,7 @@ public class ResultRowTest {
 		ResultRow row = Estivate.selectQuery(CustomerEntity.class)
 			.eq(CustomerEntity.class, AbstractEntity.Fields.id, customer.getId())
 			.select(countAttr)
-			.fetch(context)
+			.fetchResultTable(context)
 			.getFirst();
 
 		Object count = row.as(countAttr);

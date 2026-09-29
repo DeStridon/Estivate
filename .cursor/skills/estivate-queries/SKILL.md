@@ -1,52 +1,52 @@
 ---
 name: estivate-queries
 description: >-
-  Prefer Estivate fetch helpers over verbose select + fetch + map chains when
-  writing or reviewing Estivate SelectQuery code. Use when building queries,
-  counts, distinct counts, single-row fetches (fetchSingle not
-  fetchOptional.orElse(null); fetchAsSingle not fetchAsOptional.orElse(null)),
+  Prefer Estivate extract helpers over verbose select + fetchResultTable + map
+  chains when writing or reviewing Estivate SelectQuery code. Use when building
+  queries, counts, distinct counts, single-row extracts (extractSingle not
+  extractOptional.orElse(null); extractSingle not extractOptional.orElse(null)),
   single-column projections, formatting fluent query chains (one method per
   line), preferring AttributeGetter (Entity::getX) on joined queries instead of
   Entity.class + Fields.x, optional filters (eqIfNotBlank not if-isBlank-then-eq),
-  or optimizing selectCountDistinct/fetch/asSingleLong patterns in Estivate or
+  or optimizing selectCountDistinct/extractCountDistinct patterns in Estivate or
   Sapience.
 ---
 
 # Estivate queries
 
-Prefer the dedicated `fetch*` helpers on `SelectQuery` / `Context`. Avoid building a select clause then manually unpacking a `ResultTable` when a helper already returns the typed value.
+Prefer the dedicated `extract*` helpers on `SelectQuery` / `Context`. Avoid building a select clause then manually unpacking a `ResultTable` when a helper already returns the typed value.
 
 ## Single entity / nullable row
 
-`fetchSingle` maps the **first** result row (or `null` if none). Do **not** unwrap `Optional` with `.orElse(null)` — that is exactly what `fetchSingle` returns.
+`extractSingle` maps the **first** result row (or `null` if none). Do **not** unwrap `Optional` with `.orElse(null)` — that is exactly what `extractSingle` returns.
 
 | Need | Prefer | Avoid |
 |------|--------|--------|
-| Nullable entity | `fetchSingle(context)` | `.fetchOptional(context).orElse(null)` (with or without `.limit(1)`) |
-| `Optional` entity | `fetchOptional(context)` | `.limit(1).fetchOptional(context)` |
-| Typed / projected nullable | `fetchAsSingle(context, X.class)` | `.fetchAsOptional(context, X.class).orElse(null)` |
+| Nullable entity | `extractSingle(context)` | `.extractOptional(context).orElse(null)` (with or without `.limit(1)`) |
+| `Optional` entity | `extractOptional(context)` | `.limit(1).extractOptional(context)` |
+| Typed / projected nullable | `extractSingle(context, X.class)` | `.extractOptional(context, X.class).orElse(null)` |
 
 ```java
 // Prefer
 CourseEntity course = Estivate.selectQuery(CourseEntity.class)
     .eq(BaseEntity.Fields.id, link.getCourseId())
-    .fetchSingle(context);
+    .extractSingle(context);
 
 // Avoid — same result, needless Optional unwrap
 CourseEntity course = Estivate.selectQuery(CourseEntity.class)
     .eq(BaseEntity.Fields.id, link.getCourseId())
-    .fetchOptional(context)
+    .extractOptional(context)
     .orElse(null);
 ```
 
-Use `fetchOptional` / `fetchAsOptional` only when you actually need Optional API (`orElseThrow`, `isPresent`, `map`, …) — still without a redundant `.limit(1)`.
+Use `extractOptional` / `extractOptional` only when you actually need Optional API (`orElseThrow`, `isPresent`, `map`, …) — still without a redundant `.limit(1)`.
 
 ## Counts
 
 | Need | Prefer | Avoid |
 |------|--------|--------|
-| Row count | `fetchCountAll(context)` | `selectCountAll(...).fetch(context).asSingleLong()` |
-| Distinct count | `fetchCountDistinct(context, Entity.class, Fields.x)` or `fetchCountDistinct(context, Entity::getX)` | `selectCountDistinct(...).fetch(context).asSingleLong()` |
+| Row count | `extractCountAll(context)` | `selectCountAll(...).fetchResultTable(context).asSingleLong()` |
+| Distinct count | `extractCountDistinct(context, Entity.class, Fields.x)` or `extractCountDistinct(context, Entity::getX)` | `selectCountDistinct(...).fetchResultTable(context).asSingleLong()` |
 
 Example — prefer:
 
@@ -55,7 +55,7 @@ long memberCount = Estivate.selectQuery(UserCourseEntity.class)
     .eq(UserCourseEntity.Fields.courseId, courseId)
     .isNotNull(UserCourseEntity.Fields.userApprovalDate)
     .isNotNull(UserCourseEntity.Fields.courseApprovalDate)
-    .fetchCountDistinct(context, UserCourseEntity.class, UserCourseEntity.Fields.userId);
+    .extractCountDistinct(context, UserCourseEntity.class, UserCourseEntity.Fields.userId);
 ```
 
 Not:
@@ -64,22 +64,22 @@ Not:
 long memberCount = Estivate.selectQuery(UserCourseEntity.class)
     .eq(...)
     .selectCountDistinct(UserCourseEntity.class, UserCourseEntity.Fields.userId)
-    .fetch(context)
+    .fetchResultTable(context)
     .asSingleLong();
 ```
 
-Optional variants: `fetchOptionalCountAll`, `fetchOptionalCountDistinct`.
+Optional variants: `extractOptionalCountAll`, `extractOptionalCountDistinct`.
 
 ## Single column / collections
 
 | Need | Prefer |
 |------|--------|
-| One scalar | `fetchAsOptional` / `fetchAsSingle` with attribute or getter |
-| List of values | `fetchAsList(context, Entity::getX)` |
-| Distinct list | `fetchAsListDistinct(...)` |
-| Unique values | `fetchAsSet(context, Entity::getX)` |
+| One scalar | `extractOptional` / `extractSingle` with attribute or getter |
+| List of values | `extractList(context, Entity::getX)` |
+| Distinct list | `extractListDistinct(...)` |
+| Unique values | `extractSet(context, Entity::getX)` |
 
-Do not `fetchList` full entities then map/count/distinct in Java when only one column or a count is needed.
+Do not `extractList` full entities then map/count/distinct in Java when only one column or a count is needed.
 
 ## Filters & empty collections
 
@@ -102,8 +102,8 @@ if (courseUuid != null && !courseUuid.isBlank()) query.eq(CourseEntity::getUuid,
 ## Style
 
 - Prefer `AttributeGetter` (`Entity::getField`) or `Fields.x` over bare string column names.
-- Keep predicates on the query; let `fetchCount*` clone and clear selects / group by / order by / limit / offset.
-- **Fluent chains: one method per line.** Never pack `.join*` / `.eq` / `.orderBy*` / `.fetch*` on a single long line. Put each piped call on its own indented line (including trailing `.map` / `.orElse` on the result).
+- Keep predicates on the query; let `extractCount*` clone and clear selects / group by / order by / limit / offset.
+- **Fluent chains: one method per line.** Never pack `.join*` / `.eq` / `.orderBy*` / `.extract*` / `.fetchResultTable` on a single long line. Put each piped call on its own indented line (including trailing `.map` / `.orElse` on the result).
 - **Joins: prefer `AttributeGetter`.** After `.join*` / when the query has more than one entity, prefer `Entity::getField` over `.eq(Entity.class, Entity.Fields.x, …)` / `.orderBy*(Entity.class, Entity.Fields.x)` / `.select(Entity.class, …)`. Method references bind the owning class, so criteria and selects are less likely to target the wrong table. Same for `isNull` / `isNotNull` / `in*` / `lte` / `orderBy*` / projections on joined queries.
 
 Prefer (joined query):
@@ -114,7 +114,7 @@ UserEntity student = ChannelAccessService.requireAccepted(Estivate.selectQuery(U
         .eq(UserEntity::getUuid, input.getStudentUuid())
         .eq(UserCourseEntity::getCourseId, course.getId())
         .eq(UserCourseEntity::getType, UserCourseEntity.Role.STUDENT))
-    .fetchOptional(context)
+    .extractOptional(context)
     .orElseThrow(() -> new SapienceUnauthorizedException(ResourceEnum.User, input.getStudentUuid()));
 ```
 
@@ -127,7 +127,7 @@ return Estivate.selectQuery(InvitationLinkUsageEntity.class)
     .eq(InvitationLinkEntity::getType, InvitationLinkType.TARGETED)
     .orderByDesc(InvitationLinkUsageEntity::getUsedAt)
     .orderByDesc(InvitationLinkUsageEntity::getId)
-    .fetchAsOptional(context, ConsumedInvitationDraftRow.class)
+    .extractOptional(context, ConsumedInvitationDraftRow.class)
     .map(ConsumedInvitationDraftRow::getTimelineDraft)
     .orElse(null);
 ```
@@ -143,11 +143,11 @@ On **single-entity** queries (no join), `Fields.x` or `Entity::getField` are bot
 
 ## Checklist
 
-- [ ] Nullable single row? → `fetchSingle` (not `.fetchOptional(...).orElse(null)`, with or without `.limit(1)`)
-- [ ] Typed nullable single? → `fetchAsSingle` (not `.fetchAsOptional(...).orElse(null)`)
-- [ ] Count? → `fetchCountAll` / `fetchCountDistinct`
-- [ ] One column? → `fetchAsList` / `fetchAsSet` / `fetchAsOptional`
-- [ ] No full-entity fetch for aggregate-only work
+- [ ] Nullable single row? → `extractSingle` (not `.extractOptional(...).orElse(null)`, with or without `.limit(1)`)
+- [ ] Typed nullable single? → `extractSingle` (not `.extractOptional(...).orElse(null)`)
+- [ ] Count? → `extractCountAll` / `extractCountDistinct`
+- [ ] One column? → `extractList` / `extractSet` / `extractOptional`
+- [ ] No full-entity extractList for aggregate-only work
 - [ ] Empty `IN` lists handled with `*OrFalseIfEmpty` / `*IfNotEmpty`
 - [ ] Optional string filter? → `eqIfNotBlank` (not `if (…isBlank()) query.eq(...)`)
 - [ ] Fluent query chains broken one method per line (not a single packed line)

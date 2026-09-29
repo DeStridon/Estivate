@@ -49,7 +49,7 @@ public class ResultTest {
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class);
 		query.eq(CustomerEntity.class, CustomerEntity.Fields.name, "parallel test customer");
 		
-		List<CustomerEntity> customers = context.fetchList(query);
+		List<CustomerEntity> customers = context.extractList(query);
 		
 		
 	}
@@ -69,7 +69,7 @@ public class ResultTest {
 		SelectQuery<ProductEntity> query = new SelectQuery<>(ProductEntity.class)
 			.eq(ProductEntity.class, AbstractEntity.Fields.id, product.getId());
 
-		ResultRow result = query.fetch(context).getFirst();
+		ResultRow result = query.fetchResultTable(context).getFirst();
 		
 		ProductCategory category = (ProductCategory) result.asEnum(ProductEntity.class, ProductEntity.Fields.category);
 		assertEquals(ProductCategory.Electronics, category);
@@ -111,7 +111,7 @@ public class ResultTest {
 		SelectQuery<CustomerEntity> query = new SelectQuery<>(CustomerEntity.class)
 				.likeStartsWith(CustomerEntity.Fields.name, "map test customer");
 		
-		Map<String, CustomerEntity.Country> map = context.fetch(query).asMap(CustomerEntity::getName, CustomerEntity::getCountry);
+		Map<String, CustomerEntity.Country> map = context.fetchResultTable(query).asMap(CustomerEntity::getName, CustomerEntity::getCountry);
 		
 		assertEquals(CustomerEntity.Country.GERMANY, map.get("map test customer 1"));
 		assertEquals(CustomerEntity.Country.SPAIN, map.get("map test customer 2"));

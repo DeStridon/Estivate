@@ -169,7 +169,7 @@ public class InsertQueryTest {
 
         context.execute(insertQuery);
 
-        Long rowCount = context.fetchCountAll(Estivate.selectQuery(ProductEntity.class));
+        Long rowCount = context.extractCountAll(Estivate.selectQuery(ProductEntity.class));
         Assert.assertEquals("Three rows should be inserted", Long.valueOf(3L), rowCount);
     }
 
@@ -182,11 +182,11 @@ public class InsertQueryTest {
 
         SelectQuery<ProductEntity> q1 = Estivate.selectQuery(ProductEntity.class)
                 .eq(ProductEntity.class, ProductEntity.Fields.name, "FetchMe-1");
-        ProductEntity loaded1 = context.fetchSingle(q1);
+        ProductEntity loaded1 = context.extractSingle(q1);
 
         SelectQuery<ProductEntity> q2 = Estivate.selectQuery(ProductEntity.class)
                 .eq(ProductEntity.class, ProductEntity.Fields.name, "FetchMe-2");
-        ProductEntity loaded2 = context.fetchSingle(q2);
+        ProductEntity loaded2 = context.extractSingle(q2);
 
         Assert.assertNotNull("Row 'FetchMe-1' should be fetched back", loaded1);
         Assert.assertEquals(Float.valueOf(11.5f), loaded1.getPrice());
@@ -214,7 +214,7 @@ public class InsertQueryTest {
         Assert.assertFalse("c1.created should not be earlier than 'before'", c1.getCreated().before(before));
         Assert.assertFalse("c1.created should not be later than 'after'", c1.getCreated().after(after));
 
-        Long rowCount = context.fetchCountAll(Estivate.selectQuery(CustomerEntity.class));
+        Long rowCount = context.extractCountAll(Estivate.selectQuery(CustomerEntity.class));
         Assert.assertEquals("Two customer rows should be inserted", Long.valueOf(2L), rowCount);
     }
 
@@ -224,7 +224,7 @@ public class InsertQueryTest {
 
         context.execute(new InsertQuery<>(ProductEntity.class).value(single));
 
-        Long rowCount = context.fetchCountAll(Estivate.selectQuery(ProductEntity.class));
+        Long rowCount = context.extractCountAll(Estivate.selectQuery(ProductEntity.class));
         Assert.assertEquals("Single value insert should produce one row", Long.valueOf(1L), rowCount);
     }
 

@@ -81,7 +81,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue(queryString.contains("DISTINCT"));
 		
-		ResultTable results = query.fetch(context);
+		ResultTable results = query.fetchResultTable(context);
 		
 		assertEquals(1, results.size());
 		
@@ -127,7 +127,7 @@ public class SelectQueryCriterionTest {
 				.betweenIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, testTask.getId()-2, testTask.getId()+2)
 				.notEqIfNotNull(CustomerEntity.class, CustomerEntity.Fields.name, "external Name 2");
 		
-		List<CustomerEntity> tasks = query.fetchAsList(context, CustomerEntity.class);
+		List<CustomerEntity> tasks = query.extractList(context, CustomerEntity.class);
 		
 		Assert.assertEquals(1, tasks.size());
 	
@@ -140,7 +140,7 @@ public class SelectQueryCriterionTest {
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(1, 2, 3, 4))
 			.in(CustomerEntity.class, CustomerEntity.Fields.country, Arrays.asList(CustomerEntity.Country.USA, CustomerEntity.Country.UK));
 		
-		query.fetchList(context);
+		query.extractList(context);
 		
 		System.out.println(context.queryAsString(query));
 	
@@ -157,10 +157,10 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()));
 		
-		assertEquals(2, context.fetchList(query).size());
+		assertEquals(2, context.extractList(query).size());
 
 		query.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer2.getId()));
-		assertEquals(1, context.fetchList(query).size());
+		assertEquals(1, context.extractList(query).size());
 		
 	}
 	
@@ -177,13 +177,13 @@ public class SelectQueryCriterionTest {
 		Entity<CustomerEntity> taskEntity = new Entity<>(CustomerEntity.class);
 		
 		query.in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()));
-		assertEquals(2, context.fetchList(query).size());
+		assertEquals(2, context.extractList(query).size());
 		
 		query.in(taskEntity, AbstractEntity.Fields.id, Arrays.asList(customer2.getId()));
-		assertEquals(1, context.fetchList(query).size());
+		assertEquals(1, context.extractList(query).size());
 		
 		query.notIn(taskEntity, AbstractEntity.Fields.id, Arrays.asList(customer2.getId()));
-		assertEquals(0, context.fetchList(query).size());
+		assertEquals(0, context.extractList(query).size());
 		
 	}
 
@@ -198,7 +198,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class).in(CustomerEntity.class, AbstractEntity.Fields.id, taskIds);
 
 		String queryString = context.queryAsString(query);
-		context.fetchList(query);
+		context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" IN (?, ?, ?, ?)"));
 		
@@ -210,21 +210,21 @@ public class SelectQueryCriterionTest {
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class).isNull(CustomerEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
-		query1.fetchList(context);
+		query1.extractList(context);
 		Assert.assertTrue(queryString1.contains(" IS NULL"));
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class).isNull(customer, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
-		query2.fetchList(context);
+		query2.extractList(context);
 		Assert.assertTrue(queryString2.contains(" IS NULL"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class).isNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
-		query3.fetchList(context);
+		query3.extractList(context);
 		Assert.assertTrue(queryString3.contains(" IS NULL"));
 	}
 	
@@ -234,21 +234,21 @@ public class SelectQueryCriterionTest {
 		// Test 1: Class-based method signature
 		SelectQuery<CustomerEntity> query1 = Estivate.selectQuery(CustomerEntity.class).isNotNull(CustomerEntity.class, AbstractEntity.Fields.id);
 		String queryString1 = context.queryAsString(query1);
-		query1.fetchList(context);
+		query1.extractList(context);
 		Assert.assertTrue(queryString1.contains(" IS NOT NULL"));
 		
 		// Test 2: Entity-based method signature
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
 		SelectQuery<CustomerEntity> query2 = Estivate.selectQuery(CustomerEntity.class).isNotNull(customer, AbstractEntity.Fields.id);
 		String queryString2 = context.queryAsString(query2);
-		query2.fetchList(context);
+		query2.extractList(context);
 		Assert.assertTrue(queryString2.contains(" IS NOT NULL"));
 		
 		// Test 3: Attribute-based method signature
 		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
 		SelectQuery<CustomerEntity> query3 = Estivate.selectQuery(CustomerEntity.class).isNotNull(idAttribute);
 		String queryString3 = context.queryAsString(query3);
-		query3.fetchList(context);
+		query3.extractList(context);
 		Assert.assertTrue(queryString3.contains(" IS NOT NULL"));
 	}
 	
@@ -258,7 +258,7 @@ public class SelectQueryCriterionTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class).like(CustomerEntity.class, CustomerEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
-		query.fetchList(context);
+		query.extractList(context);
 
 		Assert.assertTrue(queryString.contains(" LIKE ?"));
 		
@@ -271,7 +271,7 @@ public class SelectQueryCriterionTest {
 				.notLike(CustomerEntity.class, CustomerEntity.Fields.name, "task%");
 		
 		String queryString = context.queryAsString(query);
-		query.fetchList(context);
+		query.extractList(context);
 
 		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		
@@ -321,7 +321,7 @@ public class SelectQueryCriterionTest {
 			.notIn(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer3.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains("NOT IN (?, ?)"));
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -337,7 +337,7 @@ public class SelectQueryCriterionTest {
 			.notIn(customer, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer3.getId()));
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains("NOT IN (?, ?)"));
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -353,7 +353,7 @@ public class SelectQueryCriterionTest {
 			.notIn(homeIdAttribute, Arrays.asList(customer1.getId(), customer3.getId()));
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains("NOT IN (?, ?)"));
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -377,7 +377,7 @@ public class SelectQueryCriterionTest {
 			.notInIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains("NOT IN (?)"));
 		boolean foundCustomer2_1 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -391,7 +391,7 @@ public class SelectQueryCriterionTest {
 			.notInIfNotEmpty(customer, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains("NOT IN (?)"));
 		boolean foundCustomer2_2 = results2.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -405,7 +405,7 @@ public class SelectQueryCriterionTest {
 			.notInIfNotEmpty(homeIdAttribute, Arrays.asList(customer1.getId()));
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains("NOT IN (?)"));
 		boolean foundCustomer2_3 = results3.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -418,7 +418,7 @@ public class SelectQueryCriterionTest {
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.notInIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
-		List<CustomerEntity> resultsEmpty = context.fetchList(queryEmpty);
+		List<CustomerEntity> resultsEmpty = context.extractList(queryEmpty);
 		assertEquals(2, resultsEmpty.size());
 	}
 	
@@ -435,7 +435,7 @@ public class SelectQueryCriterionTest {
 			.notInOrTrueIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains("NOT IN (?)"));
 		
@@ -451,7 +451,7 @@ public class SelectQueryCriterionTest {
 			.notInOrTrueIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains("true"));
 		assertEquals(2, results2.size());
@@ -470,7 +470,7 @@ public class SelectQueryCriterionTest {
 			.likeContains(CustomerEntity.class, CustomerEntity.Fields.name, "search");
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" LIKE ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -484,7 +484,7 @@ public class SelectQueryCriterionTest {
 			.likeContains(customer, CustomerEntity.Fields.name, "search");
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" LIKE ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -498,7 +498,7 @@ public class SelectQueryCriterionTest {
 			.likeContains(nameAttribute, "search");
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 			
 		Assert.assertTrue(queryString3.contains(" LIKE ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -520,7 +520,7 @@ public class SelectQueryCriterionTest {
 			.notLikeContains(CustomerEntity.class, CustomerEntity.Fields.name, "exclude");
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		
@@ -571,7 +571,7 @@ public class SelectQueryCriterionTest {
 			.notEq(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" != ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -586,7 +586,7 @@ public class SelectQueryCriterionTest {
 			.notEq(customer, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" != ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -601,7 +601,7 @@ public class SelectQueryCriterionTest {
 			.notEq(homeIdAttribute, customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" != ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -623,7 +623,7 @@ public class SelectQueryCriterionTest {
 			.eqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" = ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -635,7 +635,7 @@ public class SelectQueryCriterionTest {
 			.eqIfNotNull(customer, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" = ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -647,7 +647,7 @@ public class SelectQueryCriterionTest {
 			.eqIfNotNull(homeIdAttribute, customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" = ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -658,7 +658,7 @@ public class SelectQueryCriterionTest {
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.eqIfNotNull(CustomerEntity.class, AbstractEntity.Fields.id, null);
 		
-		List<CustomerEntity> resultsNull = context.fetchList(queryNull);
+		List<CustomerEntity> resultsNull = context.extractList(queryNull);
 		assertEquals(2, resultsNull.size());
 	}
 	
@@ -676,7 +676,7 @@ public class SelectQueryCriterionTest {
 			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.email, "external");
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" = ?"));
 		boolean foundCustomer2 = results1.stream().anyMatch(t -> t.getId() == customer2.getId());
@@ -688,7 +688,7 @@ public class SelectQueryCriterionTest {
 			.eqNullable(CustomerEntity.class, CustomerEntity.Fields.name, null);
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" IS NULL"));
 		boolean foundTask1 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -711,7 +711,7 @@ public class SelectQueryCriterionTest {
 			.lt(CustomerEntity.class, AbstractEntity.Fields.id, customer3.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" < ?"));
 		boolean foundTask1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -728,7 +728,7 @@ public class SelectQueryCriterionTest {
 			.lt(customer, AbstractEntity.Fields.id, customer3.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" < ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -745,7 +745,7 @@ public class SelectQueryCriterionTest {
 			.lt(homeIdAttribute, customer3.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" < ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -772,7 +772,7 @@ public class SelectQueryCriterionTest {
 			.lte(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" <= ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -789,7 +789,7 @@ public class SelectQueryCriterionTest {
 			.lte(customer, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" <= ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -806,7 +806,7 @@ public class SelectQueryCriterionTest {
 			.lte(homeIdAttribute, customer2.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" <= ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -833,7 +833,7 @@ public class SelectQueryCriterionTest {
 			.gt(CustomerEntity.class, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" > ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -850,7 +850,7 @@ public class SelectQueryCriterionTest {
 			.gt(customer, AbstractEntity.Fields.id, customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" > ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -867,7 +867,7 @@ public class SelectQueryCriterionTest {
 			.gt(homeIdAttribute, customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" > ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -894,7 +894,7 @@ public class SelectQueryCriterionTest {
 			.gte(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" >= ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -911,7 +911,7 @@ public class SelectQueryCriterionTest {
 			.gte(customer, AbstractEntity.Fields.id, customer2.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" >= ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -928,7 +928,7 @@ public class SelectQueryCriterionTest {
 			.gte(homeIdAttribute, customer2.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" >= ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -957,7 +957,7 @@ public class SelectQueryCriterionTest {
 			.between(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId(), customer3.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" BETWEEN ? AND ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -976,7 +976,7 @@ public class SelectQueryCriterionTest {
 			.between(customer, AbstractEntity.Fields.id, customer2.getId(), customer3.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" BETWEEN ? AND ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -995,7 +995,7 @@ public class SelectQueryCriterionTest {
 			.between(homeIdAttribute, customer2.getId(), customer3.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" BETWEEN ? AND ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1021,7 +1021,7 @@ public class SelectQueryCriterionTest {
 			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" IN (?)"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1033,7 +1033,7 @@ public class SelectQueryCriterionTest {
 			.inIfNotEmpty(customer, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" IN (?)"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1045,7 +1045,7 @@ public class SelectQueryCriterionTest {
 			.inIfNotEmpty(homeIdAttribute, Arrays.asList(customer1.getId()));
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" IN (?)"));
 		boolean foundTask1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1056,7 +1056,7 @@ public class SelectQueryCriterionTest {
 			.in(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId(), customer2.getId()))
 			.inIfNotEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
-		List<CustomerEntity> resultsEmpty = context.fetchList(queryEmpty);
+		List<CustomerEntity> resultsEmpty = context.extractList(queryEmpty);
 		assertEquals(2, resultsEmpty.size());
 	}
 	
@@ -1073,7 +1073,7 @@ public class SelectQueryCriterionTest {
 			.inOrNull(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("inOrNull test customer 1"));
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" IN (?)"));
 		Assert.assertTrue(queryString.contains(" IS NULL"));
@@ -1097,7 +1097,7 @@ public class SelectQueryCriterionTest {
 			.likeStartsWith(CustomerEntity.class, CustomerEntity.Fields.name, "prefix");
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" LIKE ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1112,7 +1112,7 @@ public class SelectQueryCriterionTest {
 			.likeStartsWith(customer, CustomerEntity.Fields.name, "prefix");
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" LIKE ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1128,7 +1128,7 @@ public class SelectQueryCriterionTest {
 			.likeStartsWith(nameAttribute, "prefix");
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" LIKE ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1151,7 +1151,7 @@ public class SelectQueryCriterionTest {
 			.likeEndsWith(CustomerEntity.class, CustomerEntity.Fields.name, "suffix");
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" LIKE ?"));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1166,7 +1166,7 @@ public class SelectQueryCriterionTest {
 			.likeEndsWith(customer, CustomerEntity.Fields.name, "suffix");
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains(" LIKE ?"));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1182,7 +1182,7 @@ public class SelectQueryCriterionTest {
 			.likeEndsWith(nameAttribute, "suffix");
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains(" LIKE ?"));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1206,7 +1206,7 @@ public class SelectQueryCriterionTest {
 			.likeIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("pattern1%", "pattern2%"));
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" LIKE ?"));
 		
@@ -1234,7 +1234,7 @@ public class SelectQueryCriterionTest {
 			.notLikeIn(CustomerEntity.class, CustomerEntity.Fields.name, Arrays.asList("pattern1%", "pattern2%"));
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" NOT LIKE ?"));
 		
@@ -1260,7 +1260,7 @@ public class SelectQueryCriterionTest {
 			.inOrFalseIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, Arrays.asList(customer1.getId()));
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains(" IN (?)"));
 		boolean foundCustomer1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1272,7 +1272,7 @@ public class SelectQueryCriterionTest {
 			.inOrFalseIfEmpty(CustomerEntity.class, AbstractEntity.Fields.id, new ArrayList<>());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains("false"));
 		assertEquals(0, results2.size());
@@ -1292,7 +1292,7 @@ public class SelectQueryCriterionTest {
 			.nativeCriterion(CustomerEntity.class, AbstractEntity.Fields.id, "> "+customer1.getId());
 		
 		String queryString1 = context.queryAsString(query1);
-		List<CustomerEntity> results1 = context.fetchList(query1);
+		List<CustomerEntity> results1 = context.extractList(query1);
 		
 		Assert.assertTrue(queryString1.contains("> "+customer1.getId()));
 		boolean foundCustomer1_1 = results1.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1307,7 +1307,7 @@ public class SelectQueryCriterionTest {
 			.nativeCriterion(customer, AbstractEntity.Fields.id, "> "+customer1.getId());
 		
 		String queryString2 = context.queryAsString(query2);
-		List<CustomerEntity> results2 = context.fetchList(query2);
+		List<CustomerEntity> results2 = context.extractList(query2);
 		
 		Assert.assertTrue(queryString2.contains("> "+customer1.getId()));
 		boolean foundCustomer1_2 = results2.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1322,7 +1322,7 @@ public class SelectQueryCriterionTest {
 			.nativeCriterion(homeIdAttribute, "> "+customer1.getId());
 		
 		String queryString3 = context.queryAsString(query3);
-		List<CustomerEntity> results3 = context.fetchList(query3);
+		List<CustomerEntity> results3 = context.extractList(query3);
 		
 		Assert.assertTrue(queryString3.contains("> "+customer1.getId()));
 		boolean foundCustomer1_3 = results3.stream().anyMatch(t -> t.getId() == customer1.getId());
@@ -1351,7 +1351,7 @@ public class SelectQueryCriterionTest {
 			.inSubQuery(CustomerEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" IN (SELECT"));
 		
@@ -1384,7 +1384,7 @@ public class SelectQueryCriterionTest {
 			.notInSubQuery(CustomerEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains(" NOT IN (SELECT"));
 		
@@ -1418,7 +1418,7 @@ public class SelectQueryCriterionTest {
 			.exists(subQuery);
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains("EXISTS"));
 		
@@ -1450,7 +1450,7 @@ public class SelectQueryCriterionTest {
 			.notExists(subQuery);
 		
 		String queryString = context.queryAsString(query);
-		List<CustomerEntity> results = context.fetchList(query);
+		List<CustomerEntity> results = context.extractList(query);
 		
 		Assert.assertTrue(queryString.contains("NOT EXISTS"));
 		
