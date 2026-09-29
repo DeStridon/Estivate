@@ -81,7 +81,7 @@ public class SelectQueryCriterionTest {
 		String queryString = context.queryAsString(query);
 		Assert.assertTrue(queryString.contains("DISTINCT"));
 		
-		ResultTable results = query.fetchResultTable(context);
+		ResultTable results = query.fetch(context);
 		
 		assertEquals(1, results.size());
 		

@@ -930,7 +930,7 @@ public class SelectFetchAsTest {
             .select(nameAttr)
             .select(lowerNameAttr);
 
-        ResultTable result = context.fetchResultTable(query);
+        ResultTable result = context.fetch(query);
 
         Object plainName = result.asSingle(nameAttr);
         Object lowerName = result.asSingle(lowerNameAttr);

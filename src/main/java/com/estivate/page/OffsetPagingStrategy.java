@@ -51,7 +51,7 @@ public class OffsetPagingStrategy implements PagingStrategy {
         pagedQuery.offset(offset);
         
         // Execute query
-        ResultTable resultTable = context.fetchResultTable(pagedQuery);
+        ResultTable resultTable = context.fetch(pagedQuery);
 
         // Determine if there's a next page
         boolean hasNext = resultTable.size() > pageSize;

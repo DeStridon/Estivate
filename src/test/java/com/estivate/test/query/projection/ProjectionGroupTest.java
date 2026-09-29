@@ -163,7 +163,7 @@ public class ProjectionGroupTest {
         // 1st QUERY: base MainDto rows (order attributes only — nested fields stay empty)
         ResultTable ordersTable = Estivate.selectQuery(OrderEntity.class)
             .in(OrderEntity::getId, Arrays.asList(order1.getId(), order2.getId()))
-            .fetchResultTable(context);
+            .fetch(context);
 
         List<MainDto> dtos = ordersTable.asList(MainDto.class);
 
@@ -188,7 +188,7 @@ public class ProjectionGroupTest {
             .selectSum(ProductEntity::getPrice)
             .groupBy(OrderEntity::getCustomerId)
             .groupBy(ProductEntity::getCategory)
-            .fetchResultTable(context);
+            .fetch(context);
 
         List<MainDto> filledDtos = nestedTable.asList(MainDto.class, dtos);
 

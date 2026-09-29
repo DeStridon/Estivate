@@ -1,7 +1,7 @@
 ---
 name: estivate-queries
 description: >-
-  Prefer Estivate extract helpers over verbose select + fetchResultTable + map
+  Prefer Estivate extract helpers over verbose select + fetch + map
   chains when writing or reviewing Estivate SelectQuery code. Use when building
   queries, counts, distinct counts, single-row extracts (extractSingle not
   extractOptional.orElse(null); extractSingle not extractOptional.orElse(null)),
@@ -45,8 +45,8 @@ Use `extractOptional` / `extractOptional` only when you actually need Optional A
 
 | Need | Prefer | Avoid |
 |------|--------|--------|
-| Row count | `extractCountAll(context)` | `selectCountAll(...).fetchResultTable(context).asSingleLong()` |
-| Distinct count | `extractCountDistinct(context, Entity.class, Fields.x)` or `extractCountDistinct(context, Entity::getX)` | `selectCountDistinct(...).fetchResultTable(context).asSingleLong()` |
+| Row count | `extractCountAll(context)` | `selectCountAll(...).fetch(context).asSingleLong()` |
+| Distinct count | `extractCountDistinct(context, Entity.class, Fields.x)` or `extractCountDistinct(context, Entity::getX)` | `selectCountDistinct(...).fetch(context).asSingleLong()` |
 
 Example — prefer:
 
@@ -64,7 +64,7 @@ Not:
 long memberCount = Estivate.selectQuery(UserCourseEntity.class)
     .eq(...)
     .selectCountDistinct(UserCourseEntity.class, UserCourseEntity.Fields.userId)
-    .fetchResultTable(context)
+    .fetch(context)
     .asSingleLong();
 ```
 
@@ -103,7 +103,7 @@ if (courseUuid != null && !courseUuid.isBlank()) query.eq(CourseEntity::getUuid,
 
 - Prefer `AttributeGetter` (`Entity::getField`) or `Fields.x` over bare string column names.
 - Keep predicates on the query; let `extractCount*` clone and clear selects / group by / order by / limit / offset.
-- **Fluent chains: one method per line.** Never pack `.join*` / `.eq` / `.orderBy*` / `.extract*` / `.fetchResultTable` on a single long line. Put each piped call on its own indented line (including trailing `.map` / `.orElse` on the result).
+- **Fluent chains: one method per line.** Never pack `.join*` / `.eq` / `.orderBy*` / `.extract*` / `.fetch` on a single long line. Put each piped call on its own indented line (including trailing `.map` / `.orElse` on the result).
 - **Joins: prefer `AttributeGetter`.** After `.join*` / when the query has more than one entity, prefer `Entity::getField` over `.eq(Entity.class, Entity.Fields.x, …)` / `.orderBy*(Entity.class, Entity.Fields.x)` / `.select(Entity.class, …)`. Method references bind the owning class, so criteria and selects are less likely to target the wrong table. Same for `isNull` / `isNotNull` / `in*` / `lte` / `orderBy*` / projections on joined queries.
 
 Prefer (joined query):

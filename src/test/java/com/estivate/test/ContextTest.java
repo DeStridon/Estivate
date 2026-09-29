@@ -97,7 +97,7 @@ public class ContextTest {
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
 			.selectCountAll();
 
-		Long count = context.fetchResultTable(query).asSingleLong();
+		Long count = context.fetch(query).asSingleLong();
 		Assert.assertNotNull(count);
 		Assert.assertTrue(count > 0);
 	}

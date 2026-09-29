@@ -363,7 +363,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	// ==================== FETCH METHODS ====================
 
-	public ResultTable fetchResultTable(Context context) { return context.fetchResultTable(this); }
+	public ResultTable fetch(Context context) { return context.fetch(this); }
 
 	// Base entity shortcuts (uses the query's type parameter E)
 	@SuppressWarnings("unchecked")
@@ -432,8 +432,44 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public Optional<Long> extractOptionalCountDistinct(Context context, Entity<?> entity, String attributeName) { return context.extractOptionalCountDistinct(this, entity, attributeName); }
 	public <T, P> Optional<Long> extractOptionalCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return context.extractOptionalCountDistinct(this, attributeGetter); }
 
-	
-	
+
+	// ==================== WRAPPERS ====================
+
+	public 		E 	fetchSingle(Context context) { return extractSingle(context); }
+	public <T> 	T 	fetchAsSingle(Context context, Class<T> clazz) { return extractSingle(context, clazz); }
+	public <T> 	T 	fetchAsSingle(Context context, Entity<T> entity) { return extractSingle(context, entity); }
+	public 	Object 	fetchAsSingle(Context context, Attribute attribute) { return extractSingle(context, attribute); }
+	public 	Object 	fetchAsSingle(Context context, Class<?> entity, String attributeName) { return extractSingle(context, entity, attributeName); }
+	public 	Object 	fetchAsSingle(Context context, Entity<?> entity, String attributeName) { return extractSingle(context, entity, attributeName); }
+	public <T, P> P fetchAsSingle(Context context, AttributeGetter<T, P> getter) { return extractSingle(context, getter); }
+	public Object 	fetchAsSingle(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractSingle(context, entity, attributeName, function); }
+	public Object 	fetchAsSingle(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSingle(context, entity, attributeName, function); }
+	public <T, P> P fetchAsSingle(Context context, AttributeGetter<T, P> getter, Attribute.Function function) { return extractSingle(context, getter, function); }
+
+	public 			Optional<E> fetchOptional(Context context) { return extractOptional(context); }
+	public <T> 		Optional<T> fetchAsOptional(Context context, Class<T> clazz) { return extractOptional(context, clazz); }
+	public <T> 		Optional<T> fetchAsOptional(Context context, Entity<T> entity) { return extractOptional(context, entity); }
+	public 			Optional<?> fetchAsOptional(Context context, Attribute attribute) { return extractOptional(context, attribute); }
+	public 			Optional<?> fetchAsOptional(Context context, Entity<?> entity, String attributeName) { return extractOptional(context, entity, attributeName); }
+	public 			Optional<?> fetchAsOptional(Context context, Class<?> entity, String attributeName) { return extractOptional(context, entity, attributeName); }
+	public <T, P> 	Optional<P> fetchAsOptional(Context context, AttributeGetter<T, P> attributeGetter) { return extractOptional(context, attributeGetter); }
+	public 			Optional<?> fetchAsOptional(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractOptional(context, entity, attributeName, function); }
+	public 			Optional<?> fetchAsOptional(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractOptional(context, entity, attributeName, function); }
+	public <T, P> 	Optional<P> fetchAsOptional(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractOptional(context, attributeGetter, function); }
+
+	public 			List<E> fetchList(Context context) { return extractList(context); }
+	public <T> 		List<T> fetchAsList(Context context, Class<T> entity) { return extractList(context, entity); }
+	public <T> 		List<T> fetchAsList(Context context, Entity<T> entity) { return extractList(context, entity); }
+	public 			List<?> fetchAsList(Context context, Attribute attribute) { return extractList(context, attribute); }
+	public 			List<?> fetchAsList(Context context, Class<?> entity, String attributeName) { return extractList(context, entity, attributeName); }
+	public 			List<?> fetchAsList(Context context, Entity<?> entity, String attributeName) { return extractList(context, entity, attributeName); }
+	public <T, P> 	List<P> fetchAsList(Context context, AttributeGetter<T, P> attributeGetter) { return extractList(context, attributeGetter); }
+	public 			List<?> fetchAsList(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractList(context, entity, attributeName, function); }
+	public 			List<?> fetchAsList(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractList(context, entity, attributeName, function); }
+	public <T, P> 	List<P> fetchAsList(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractList(context, attributeGetter, function); }
+
+	public Long fetchCountAll(Context context) { return extractCountAll(context); }
+
 
 	// ==================== AGGREGATION METHODS ====================
 	

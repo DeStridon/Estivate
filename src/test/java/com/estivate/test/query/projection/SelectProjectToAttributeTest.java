@@ -248,7 +248,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, CustomerEntity.Fields.country, CustomerEntity.Country.USA);
 
-        assertEquals(2L, query.fetchResultTable(context).size(), "Should count 2 USA customers");
+        assertEquals(2L, query.fetch(context).size(), "Should count 2 USA customers");
         assertEquals(2L, query.extractCountAll(context), "Should count 2 USA customers");
         
     }
