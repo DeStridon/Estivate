@@ -565,7 +565,10 @@ public class ResultTable implements Iterable<ResultRow>{
 	}
 
     public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
-        Map<A1T, A2T> map = new LinkedHashMap<>();
+        return asMap(uAttribute, vAttribute, new LinkedHashMap<>());
+    }
+
+    public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute, Map<A1T, A2T> map) {
         for(ResultRow result : rows){
             map.put(result.as(uAttribute), result.as(vAttribute));
         }
@@ -573,7 +576,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public Map<Object, Object> asMap(Attribute keyAttribute, Attribute valueAttribute) {
-        Map<Object, Object> map = new LinkedHashMap<>();
+        return asMap(keyAttribute, valueAttribute, new LinkedHashMap<>());
+    }
+
+    public Map<Object, Object> asMap(Attribute keyAttribute, Attribute valueAttribute, Map<Object, Object> map) {
         for(ResultRow result : rows){
             map.put(result.as(keyAttribute), result.as(valueAttribute));
         }
@@ -581,7 +587,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public <AE, AT, C> Map<AT, C> asMap(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
-        Map<AT, C> map = new LinkedHashMap<>();
+        return asMap(uAttribute, vClass, new LinkedHashMap<>());
+    }
+
+    public <AE, AT, C> Map<AT, C> asMap(AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, C> map) {
         for(ResultRow result : rows){
             map.put(result.as(uAttribute), result.as(vClass));
         }
@@ -589,7 +598,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public <C1, C2> Map<C1, C2> asMap(Class<C1> uClass, Class<C2> vClass) {
-        Map<C1, C2> map = new LinkedHashMap<>();
+        return asMap(uClass, vClass, new LinkedHashMap<>());
+    }
+
+    public <C1, C2> Map<C1, C2> asMap(Class<C1> uClass, Class<C2> vClass, Map<C1, C2> map) {
         for(ResultRow result : rows){
             map.put(result.as(uClass), result.as(vClass));
         }
@@ -597,7 +609,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public <C, AE, AT> Map<C, AT> asMap(Class<C> uClass, AttributeGetter<AE, AT> vAttribute) {
-        Map<C, AT> map = new LinkedHashMap<>();
+        return asMap(uClass, vAttribute, new LinkedHashMap<>());
+    }
+
+    public <C, AE, AT> Map<C, AT> asMap(Class<C> uClass, AttributeGetter<AE, AT> vAttribute, Map<C, AT> map) {
         for(ResultRow result : rows){
             map.put(result.as(uClass), result.as(vAttribute));
         }
@@ -606,7 +621,10 @@ public class ResultTable implements Iterable<ResultRow>{
 
 
     public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
-        Map<A1T, List<A2T>> map = new LinkedHashMap<>();
+        return asMapList(uAttribute, vAttribute, new LinkedHashMap<>());
+    }
+
+    public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute, Map<A1T, List<A2T>> map) {
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uAttribute), k -> new ArrayList<>()).add(result.as(vAttribute));
         }
@@ -614,7 +632,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public <AE, AT, C> Map<AT, List<C>> asMapList(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
-        Map<AT, List<C>> map = new LinkedHashMap<>();
+        return asMapList(uAttribute, vClass, new LinkedHashMap<>());
+    }
+
+    public <AE, AT, C> Map<AT, List<C>> asMapList(AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, List<C>> map) {
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uAttribute), k -> new ArrayList<>()).add(result.as(vClass));
         }
@@ -622,7 +643,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public <C, AE, AT> Map<C, List<AT>> asMapList(Class<C> uClass, AttributeGetter<AE, AT> vAttribute) {
-        Map<C, List<AT>> map = new LinkedHashMap<>();
+        return asMapList(uClass, vAttribute, new LinkedHashMap<>());
+    }
+
+    public <C, AE, AT> Map<C, List<AT>> asMapList(Class<C> uClass, AttributeGetter<AE, AT> vAttribute, Map<C, List<AT>> map) {
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uClass), k -> new ArrayList<>()).add(result.as(vAttribute));
         }
@@ -630,7 +654,10 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     public <C1, C2> Map<C1, List<C2>> asMapList(Class<C1> uClass, Class<C2> vClass) {
-        Map<C1, List<C2>> map = new LinkedHashMap<>();
+        return asMapList(uClass, vClass, new LinkedHashMap<>());
+    }
+
+    public <C1, C2> Map<C1, List<C2>> asMapList(Class<C1> uClass, Class<C2> vClass, Map<C1, List<C2>> map) {
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uClass), k -> new ArrayList<>()).add(result.as(vClass));
         }

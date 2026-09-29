@@ -470,20 +470,48 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	public Long fetchCountAll(Context context) { return extractCountAll(context); }
 
+	public 			Set<?> fetchAsSet(Context context, Attribute attribute) { return extractSet(context, attribute); }
+	public 			Set<?> fetchAsSet(Context context, Class<?> entity, String attributeName) { return extractSet(context, entity, attributeName); }
+	public 			Set<?> fetchAsSet(Context context, Entity<?> entity, String attributeName) { return extractSet(context, entity, attributeName); }
+	public <T, P> 	Set<P> fetchAsSet(Context context, AttributeGetter<T, P> attributeGetter) { return extractSet(context, attributeGetter); }
+	public 			Set<?> fetchAsSet(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractSet(context, entity, attributeName, function); }
+	public 			Set<?> fetchAsSet(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSet(context, entity, attributeName, function); }
+	public <T, P> 	Set<P> fetchAsSet(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractSet(context, attributeGetter, function); }
+
+	public <A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(Context context, AttributeGetter<A1E, A1T> keyAttributeGetter, AttributeGetter<A2E, A2T> valueAttributeGetter) { return extractMap(context, keyAttributeGetter, valueAttributeGetter); }
+	public <AE, AT, C> Map<AT, C> fetchAsMap(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMap(context, attributeGetter, vClass); }
+	public <C1, C2> Map<C1, C2> fetchAsMap(Context context, Class<C1> uClass, Class<C2> vClass) { return extractMap(context, uClass, vClass); }
+	public <C, AE, AT> Map<C, AT> fetchAsMap(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMap(context, uClass, valueGetter); }
+	public Map<Object, Object> fetchAsMap(Context context, Attribute keyAttribute, Attribute valueAttribute) { return extractMap(context, keyAttribute, valueAttribute); }
+
+	public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMapList(context, attributeGetter, valueGetter); }
+	public <AE, AT, C> Map<AT, List<C>> fetchAsMapList(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMapList(context, attributeGetter, vClass); }
+	public <C1, C2> Map<C1, List<C2>> fetchAsMapList(Context context, Class<C1> uClass, Class<C2> vClass) { return extractMapList(context, uClass, vClass); }
+	public <C, AE, AT> Map<C, List<AT>> fetchAsMapList(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapList(context, uClass, valueGetter); }
+
 
 	// ==================== AGGREGATION METHODS ====================
 	
 	public <A1E, A1T, A2E, A2T> Map<A1T, A2T> extractMap(Context context, AttributeGetter<A1E, A1T> keyAttributeGetter, AttributeGetter<A2E, A2T> valueAttributeGetter){ return context.extractMap(this, keyAttributeGetter, valueAttributeGetter); }
+	public <A1E, A1T, A2E, A2T> Map<A1T, A2T> extractMap(Context context, AttributeGetter<A1E, A1T> keyAttributeGetter, AttributeGetter<A2E, A2T> valueAttributeGetter, Map<A1T, A2T> map){ return context.extractMap(this, keyAttributeGetter, valueAttributeGetter, map); }
 	public <AE, AT, C> Map<AT, C> extractMap(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){ return context.extractMap(this, attributeGetter, vClass); }
+	public <AE, AT, C> Map<AT, C> extractMap(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass, Map<AT, C> map){ return context.extractMap(this, attributeGetter, vClass, map); }
 	public <C1, C2> Map<C1, C2> extractMap(Context context, Class<C1> uClass, Class<C2> vClass){ return context.extractMap(this, uClass, vClass); }
+	public <C1, C2> Map<C1, C2> extractMap(Context context, Class<C1> uClass, Class<C2> vClass, Map<C1, C2> map){ return context.extractMap(this, uClass, vClass, map); }
 	public <C, AE, AT> Map<C, AT> extractMap(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){ return context.extractMap(this, uClass, valueGetter); }
+	public <C, AE, AT> Map<C, AT> extractMap(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter, Map<C, AT> map){ return context.extractMap(this, uClass, valueGetter, map); }
 
 	public Map<Object, Object> extractMap(Context context, Attribute keyAttribute, Attribute valueAttribute){ return context.extractMap(this, keyAttribute, valueAttribute); }
+	public Map<Object, Object> extractMap(Context context, Attribute keyAttribute, Attribute valueAttribute, Map<Object, Object> map){ return context.extractMap(this, keyAttribute, valueAttribute, map); }
 
 	public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> extractMapList(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){ return context.extractMapList(this, attributeGetter, valueGetter); }
+	public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> extractMapList(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter, Map<A1T, List<A2T>> map){ return context.extractMapList(this, attributeGetter, valueGetter, map); }
 	public <AE, AT, C> Map<AT, List<C>> extractMapList(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){ return context.extractMapList(this, attributeGetter, vClass); }
+	public <AE, AT, C> Map<AT, List<C>> extractMapList(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass, Map<AT, List<C>> map){ return context.extractMapList(this, attributeGetter, vClass, map); }
 	public <C1, C2> Map<C1, List<C2>> extractMapList(Context context, Class<C1> uClass, Class<C2> vClass){ return context.extractMapList(this, uClass, vClass); }
+	public <C1, C2> Map<C1, List<C2>> extractMapList(Context context, Class<C1> uClass, Class<C2> vClass, Map<C1, List<C2>> map){ return context.extractMapList(this, uClass, vClass, map); }
 	public <C, AE, AT> Map<C, List<AT>> extractMapList(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){ return context.extractMapList(this, uClass, valueGetter); }
+	public <C, AE, AT> Map<C, List<AT>> extractMapList(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter, Map<C, List<AT>> map){ return context.extractMapList(this, uClass, valueGetter, map); }
 
 	public <A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> extractMapSet(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){ return context.extractMapSet(this, attributeGetter, valueGetter); }
 	public <AE, AT, C> Map<AT, Set<C>> extractMapSet(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){ return context.extractMapSet(this, attributeGetter, vClass); }

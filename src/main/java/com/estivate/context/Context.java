@@ -657,50 +657,108 @@ public abstract class Context {
 
 	public Long fetchCountAll(SelectQuery<?> query) { return extractCountAll(query); }
 
+	public 			Set<?> fetchAsSet(SelectQuery<?> query, Attribute attribute) { return extractSet(query, attribute); }
+	public 			Set<?> fetchAsSet(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSet(query, entity, attributeName); }
+	public 			Set<?> fetchAsSet(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSet(query, entity, attributeName); }
+	public <T, P> 	Set<P> fetchAsSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractSet(query, attributeGetter); }
+	public 			Set<?> fetchAsSet(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, entity, attributeName, function); }
+	public 			Set<?> fetchAsSet(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, entity, attributeName, function); }
+	public <T, P> 	Set<P> fetchAsSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractSet(query, attributeGetter, function); }
+
+	public <T> Map<Object, Object> fetchAsMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute) { return extractMap(query, keyAttribute, valueAttribute); }
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMap(query, attributeGetter, valueGetter); }
+	public <T, AE, AT, C> Map<AT, C> fetchAsMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMap(query, attributeGetter, vClass); }
+	public <T, C1, C2> Map<C1, C2> fetchAsMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass) { return extractMap(query, uClass, vClass); }
+	public <T, C, AE, AT> Map<C, AT> fetchAsMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMap(query, uClass, valueGetter); }
+
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMapList(query, attributeGetter, valueGetter); }
+	public <T, AE, AT, C> Map<AT, List<C>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMapList(query, attributeGetter, vClass); }
+	public <T, C, AE, AT> Map<C, List<AT>> fetchAsMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapList(query, uClass, valueGetter); }
+	public <T, C1, C2> Map<C1, List<C2>> fetchAsMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass) { return extractMapList(query, uClass, vClass); }
+
 
 	// ==================== AGGREGATION METHODS ====================
 	
 
 	public <T> Map<Object, Object> extractMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute){
-		query.clone().clearSelects().select(keyAttribute).select(valueAttribute);
-		return fetch(query).asMap(keyAttribute, valueAttribute);
+		return extractMap(query, keyAttribute, valueAttribute, new LinkedHashMap<>());
+	}
+
+	public <T> Map<Object, Object> extractMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute, Map<Object, Object> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().select(keyAttribute).select(valueAttribute);
+		return fetch(newQuery).asMap(keyAttribute, valueAttribute, map);
 	}
 
 	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> extractMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
-		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
-		return fetch(query).asMap(attributeGetter, valueGetter);
+		return extractMap(query, attributeGetter, valueGetter, new LinkedHashMap<>());
+	}
+
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> extractMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter, Map<A1T, A2T> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().select(attributeGetter).select(valueGetter);
+		return fetch(newQuery).asMap(attributeGetter, valueGetter, map);
 	}
 
 	public <T, AE, AT, C> Map<AT, C> extractMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
-		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
-		return fetch(query).asMap(attributeGetter, vClass);
+		return extractMap(query, attributeGetter, vClass, new LinkedHashMap<>());
+	}
+
+	public <T, AE, AT, C> Map<AT, C> extractMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass, Map<AT, C> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
+		return fetch(newQuery).asMap(attributeGetter, vClass, map);
 	}
 
 	public <T, C1, C2> Map<C1, C2> extractMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
-		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
-		return fetch(query).asMap(uClass, vClass);
+		return extractMap(query, uClass, vClass, new LinkedHashMap<>());
+	}
+
+	public <T, C1, C2> Map<C1, C2> extractMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass, Map<C1, C2> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
+		return fetch(newQuery).asMap(uClass, vClass, map);
 	}
 
 	public <T, C, AE, AT> Map<C, AT> extractMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
-		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
-		return fetch(query).asMap(uClass, valueGetter);
+		return extractMap(query, uClass, valueGetter, new LinkedHashMap<>());
+	}
+
+	public <T, C, AE, AT> Map<C, AT> extractMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter, Map<C, AT> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(uClass).select(valueGetter);
+		return fetch(newQuery).asMap(uClass, valueGetter, map);
 	}
 
 	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> extractMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
-		query.clone().clearSelects().select(attributeGetter).select(valueGetter);
-		return fetch(query).asMapList(attributeGetter, valueGetter);
+		return extractMapList(query, attributeGetter, valueGetter, new LinkedHashMap<>());
 	}
+
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> extractMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter, Map<A1T, List<A2T>> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().select(attributeGetter).select(valueGetter);
+		return fetch(newQuery).asMapList(attributeGetter, valueGetter, map);
+	}
+
 	public <T, AE, AT, C> Map<AT, List<C>> extractMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass){
-		query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
-		return fetch(query).asMapList(attributeGetter, vClass);
+		return extractMapList(query, attributeGetter, vClass, new LinkedHashMap<>());
 	}
+
+	public <T, AE, AT, C> Map<AT, List<C>> extractMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass, Map<AT, List<C>> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().select(attributeGetter).selectAll(vClass);
+		return fetch(newQuery).asMapList(attributeGetter, vClass, map);
+	}
+
 	public <T, C, AE, AT> Map<C, List<AT>> extractMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter){
-		query.clone().clearSelects().selectAll(uClass).select(valueGetter);
-		return fetch(query).asMapList(uClass, valueGetter);
+		return extractMapList(query, uClass, valueGetter, new LinkedHashMap<>());
 	}
+
+	public <T, C, AE, AT> Map<C, List<AT>> extractMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter, Map<C, List<AT>> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(uClass).select(valueGetter);
+		return fetch(newQuery).asMapList(uClass, valueGetter, map);
+	}
+
 	public <T, C1, C2> Map<C1, List<C2>> extractMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass){
-		query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
-		return fetch(query).asMapList(uClass, vClass);
+		return extractMapList(query, uClass, vClass, new LinkedHashMap<>());
+	}
+
+	public <T, C1, C2> Map<C1, List<C2>> extractMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass, Map<C1, List<C2>> map){
+		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(uClass).selectAll(vClass);
+		return fetch(newQuery).asMapList(uClass, vClass, map);
 	}
 
 	public <T, A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> extractMapSet(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter){
