@@ -435,58 +435,204 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	// ==================== WRAPPERS ====================
 
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public 		E 	fetchSingle(Context context) { return extractSingle(context); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T> 	T 	fetchAsSingle(Context context, Class<T> clazz) { return extractSingle(context, clazz); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T> 	T 	fetchAsSingle(Context context, Entity<T> entity) { return extractSingle(context, entity); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public 	Object 	fetchAsSingle(Context context, Attribute attribute) { return extractSingle(context, attribute); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public 	Object 	fetchAsSingle(Context context, Class<?> entity, String attributeName) { return extractSingle(context, entity, attributeName); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public 	Object 	fetchAsSingle(Context context, Entity<?> entity, String attributeName) { return extractSingle(context, entity, attributeName); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T, P> P fetchAsSingle(Context context, AttributeGetter<T, P> getter) { return extractSingle(context, getter); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractSingle(context, entity, attributeName, function); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSingle(context, entity, attributeName, function); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T, P> P fetchAsSingle(Context context, AttributeGetter<T, P> getter, Attribute.Function function) { return extractSingle(context, getter, function); }
 
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<E> fetchOptional(Context context) { return extractOptional(context); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T> 		Optional<T> fetchAsOptional(Context context, Class<T> clazz) { return extractOptional(context, clazz); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T> 		Optional<T> fetchAsOptional(Context context, Entity<T> entity) { return extractOptional(context, entity); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(Context context, Attribute attribute) { return extractOptional(context, attribute); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(Context context, Entity<?> entity, String attributeName) { return extractOptional(context, entity, attributeName); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(Context context, Class<?> entity, String attributeName) { return extractOptional(context, entity, attributeName); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T, P> 	Optional<P> fetchAsOptional(Context context, AttributeGetter<T, P> attributeGetter) { return extractOptional(context, attributeGetter); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractOptional(context, entity, attributeName, function); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractOptional(context, entity, attributeName, function); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T, P> 	Optional<P> fetchAsOptional(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractOptional(context, attributeGetter, function); }
 
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<E> fetchList(Context context) { return extractList(context); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T> 		List<T> fetchAsList(Context context, Class<T> entity) { return extractList(context, entity); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T> 		List<T> fetchAsList(Context context, Entity<T> entity) { return extractList(context, entity); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(Context context, Attribute attribute) { return extractList(context, attribute); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(Context context, Class<?> entity, String attributeName) { return extractList(context, entity, attributeName); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(Context context, Entity<?> entity, String attributeName) { return extractList(context, entity, attributeName); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T, P> 	List<P> fetchAsList(Context context, AttributeGetter<T, P> attributeGetter) { return extractList(context, attributeGetter); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractList(context, entity, attributeName, function); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractList(context, entity, attributeName, function); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T, P> 	List<P> fetchAsList(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractList(context, attributeGetter, function); }
 
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(Context context, Attribute attribute) { return extractListDistinct(context, attribute); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(Context context, Class<?> entity, String attributeName) { return extractListDistinct(context, entity, attributeName); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(Context context, Entity<?> entity, String attributeName) { return extractListDistinct(context, entity, attributeName); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> 	List<P> fetchAsListDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return extractListDistinct(context, attributeGetter); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(context, entity, attributeName, function); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(context, entity, attributeName, function); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> 	List<P> fetchAsListDistinct(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractListDistinct(context, attributeGetter, function); }
+
+	/** @deprecated Use extractCountAll with the same arguments. */
+	@Deprecated
 	public Long fetchCountAll(Context context) { return extractCountAll(context); }
 
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public Long fetchCountDistinct(Context context, Attribute attribute) { return extractCountDistinct(context, attribute); }
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public Long fetchCountDistinct(Context context, Class<?> entity, String attributeName) { return extractCountDistinct(context, entity, attributeName); }
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public Long fetchCountDistinct(Context context, Entity<?> entity, String attributeName) { return extractCountDistinct(context, entity, attributeName); }
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> Long fetchCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return extractCountDistinct(context, attributeGetter); }
+
+	/** @deprecated Use extractOptionalCountAll with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountAll(Context context) { return extractOptionalCountAll(context); }
+
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountDistinct(Context context, Attribute attribute) { return extractOptionalCountDistinct(context, attribute); }
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountDistinct(Context context, Class<?> entity, String attributeName) { return extractOptionalCountDistinct(context, entity, attributeName); }
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountDistinct(Context context, Entity<?> entity, String attributeName) { return extractOptionalCountDistinct(context, entity, attributeName); }
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> Optional<Long> fetchOptionalCountDistinct(Context context, AttributeGetter<T, P> attributeGetter) { return extractOptionalCountDistinct(context, attributeGetter); }
+
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(Context context, Attribute attribute) { return extractSet(context, attribute); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(Context context, Class<?> entity, String attributeName) { return extractSet(context, entity, attributeName); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(Context context, Entity<?> entity, String attributeName) { return extractSet(context, entity, attributeName); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public <T, P> 	Set<P> fetchAsSet(Context context, AttributeGetter<T, P> attributeGetter) { return extractSet(context, attributeGetter); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return extractSet(context, entity, attributeName, function); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSet(context, entity, attributeName, function); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public <T, P> 	Set<P> fetchAsSet(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractSet(context, attributeGetter, function); }
 
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(Context context, AttributeGetter<A1E, A1T> keyAttributeGetter, AttributeGetter<A2E, A2T> valueAttributeGetter) { return extractMap(context, keyAttributeGetter, valueAttributeGetter); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <AE, AT, C> Map<AT, C> fetchAsMap(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMap(context, attributeGetter, vClass); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <C1, C2> Map<C1, C2> fetchAsMap(Context context, Class<C1> uClass, Class<C2> vClass) { return extractMap(context, uClass, vClass); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <C, AE, AT> Map<C, AT> fetchAsMap(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMap(context, uClass, valueGetter); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public Map<Object, Object> fetchAsMap(Context context, Attribute keyAttribute, Attribute valueAttribute) { return extractMap(context, keyAttribute, valueAttribute); }
 
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMapList(context, attributeGetter, valueGetter); }
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <AE, AT, C> Map<AT, List<C>> fetchAsMapList(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMapList(context, attributeGetter, vClass); }
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <C1, C2> Map<C1, List<C2>> fetchAsMapList(Context context, Class<C1> uClass, Class<C2> vClass) { return extractMapList(context, uClass, vClass); }
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <C, AE, AT> Map<C, List<AT>> fetchAsMapList(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapList(context, uClass, valueGetter); }
 
 

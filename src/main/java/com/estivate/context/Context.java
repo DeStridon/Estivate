@@ -621,59 +621,205 @@ public abstract class Context {
 
 	// ==================== WRAPPERS ====================
 
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <E> E 			fetchSingle		(SelectQuery<E> query) { return extractSingle(query); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <E> Optional<E> 	fetchOptional	(SelectQuery<E> query) { return extractOptional(query); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <E> List<E> 		fetchList		(SelectQuery<E> query) { return extractList(query); }
 
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T> T 	fetchAsSingle(SelectQuery<?> query, Class<T> entity) { return extractSingle(query, entity); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T> T 	fetchAsSingle(SelectQuery<?> query, Entity<T> entity) { return extractSingle(query, entity); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(SelectQuery<?> query, Attribute attribute) { return extractSingle(query, attribute); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSingle(query, entity, attributeName); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSingle(query, entity, attributeName); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T, P> P fetchAsSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractSingle(query, attributeGetter); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSingle(query, entity, attributeName, function); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public Object 	fetchAsSingle(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSingle(query, entity, attributeName, function); }
+	/** @deprecated Use extractSingle with the same arguments. */
+	@Deprecated
 	public <T, P> P fetchAsSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractSingle(query, attributeGetter, function); }
 
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T> 		Optional<T> fetchAsOptional(SelectQuery<?> query, Class<T> entity) { return extractOptional(query, entity); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T> 		Optional<T> fetchAsOptional(SelectQuery<?> query, Entity<T> entity) { return extractOptional(query, entity); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Attribute attribute) { return extractOptional(query, attribute); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractOptional(query, entity, attributeName); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractOptional(query, entity, attributeName); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T, P> 	Optional<P> fetchAsOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractOptional(query, attributeGetter); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractOptional(query, entity, attributeName, function); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public 			Optional<?> fetchAsOptional(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractOptional(query, entity, attributeName, function); }
+	/** @deprecated Use extractOptional with the same arguments. */
+	@Deprecated
 	public <T, P> 	Optional<P> fetchAsOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractOptional(query, attributeGetter, function); }
 
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T> 		List<T> fetchAsList(SelectQuery<?> query, Entity<T> entity) { return extractList(query, entity); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T> 		List<T> fetchAsList(SelectQuery<?> query, Class<T> entity) { return extractList(query, entity); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(SelectQuery<?> query, Attribute attribute) { return extractList(query, attribute); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractList(query, entity, attributeName); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractList(query, entity, attributeName); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T, P> 	List<P> fetchAsList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractList(query, attributeGetter); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractList(query, entity, attributeName, function); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public 			List<?> fetchAsList(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractList(query, entity, attributeName, function); }
+	/** @deprecated Use extractList with the same arguments. */
+	@Deprecated
 	public <T, P> 	List<P> fetchAsList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractList(query, attributeGetter, function); }
 
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Attribute attribute) { return extractListDistinct(query, attribute); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractListDistinct(query, entity, attributeName); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractListDistinct(query, entity, attributeName); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> 	List<P> fetchAsListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractListDistinct(query, attributeGetter); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(query, entity, attributeName, function); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public 			List<?> fetchAsListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(query, entity, attributeName, function); }
+	/** @deprecated Use extractListDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> 	List<P> fetchAsListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractListDistinct(query, attributeGetter, function); }
+
+	/** @deprecated Use extractCountAll with the same arguments. */
+	@Deprecated
 	public Long fetchCountAll(SelectQuery<?> query) { return extractCountAll(query); }
 
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public Long fetchCountDistinct(SelectQuery<?> query, Attribute attribute) { return extractCountDistinct(query, attribute); }
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public Long fetchCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractCountDistinct(query, entity, attributeName); }
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public Long fetchCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractCountDistinct(query, entity, attributeName); }
+	/** @deprecated Use extractCountDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> Long fetchCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractCountDistinct(query, attributeGetter); }
+
+	/** @deprecated Use extractOptionalCountAll with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountAll(SelectQuery<?> query) { return extractOptionalCountAll(query); }
+
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Attribute attribute) { return extractOptionalCountDistinct(query, attribute); }
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractOptionalCountDistinct(query, entity, attributeName); }
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractOptionalCountDistinct(query, entity, attributeName); }
+	/** @deprecated Use extractOptionalCountDistinct with the same arguments. */
+	@Deprecated
+	public <T, P> Optional<Long> fetchOptionalCountDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractOptionalCountDistinct(query, attributeGetter); }
+
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(SelectQuery<?> query, Attribute attribute) { return extractSet(query, attribute); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSet(query, entity, attributeName); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSet(query, entity, attributeName); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public <T, P> 	Set<P> fetchAsSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return extractSet(query, attributeGetter); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, entity, attributeName, function); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public 			Set<?> fetchAsSet(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, entity, attributeName, function); }
+	/** @deprecated Use extractSet with the same arguments. */
+	@Deprecated
 	public <T, P> 	Set<P> fetchAsSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return extractSet(query, attributeGetter, function); }
 
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <T> Map<Object, Object> fetchAsMap(SelectQuery<T> query, Attribute keyAttribute, Attribute valueAttribute) { return extractMap(query, keyAttribute, valueAttribute); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <T, A1E, A1T, A2E, A2T> Map<A1T, A2T> fetchAsMap(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMap(query, attributeGetter, valueGetter); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <T, AE, AT, C> Map<AT, C> fetchAsMap(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMap(query, attributeGetter, vClass); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <T, C1, C2> Map<C1, C2> fetchAsMap(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass) { return extractMap(query, uClass, vClass); }
+	/** @deprecated Use extractMap with the same arguments. */
+	@Deprecated
 	public <T, C, AE, AT> Map<C, AT> fetchAsMap(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMap(query, uClass, valueGetter); }
 
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <T, A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMapList(query, attributeGetter, valueGetter); }
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <T, AE, AT, C> Map<AT, List<C>> fetchAsMapList(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMapList(query, attributeGetter, vClass); }
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <T, C, AE, AT> Map<C, List<AT>> fetchAsMapList(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapList(query, uClass, valueGetter); }
+	/** @deprecated Use extractMapList with the same arguments. */
+	@Deprecated
 	public <T, C1, C2> Map<C1, List<C2>> fetchAsMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass) { return extractMapList(query, uClass, vClass); }
 
 
