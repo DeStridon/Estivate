@@ -635,6 +635,19 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	@Deprecated
 	public <C, AE, AT> Map<C, List<AT>> fetchAsMapList(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapList(context, uClass, valueGetter); }
 
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> fetchAsMapSet(Context context, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMapSet(context, attributeGetter, valueGetter); }
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <AE, AT, C> Map<AT, Set<C>> fetchAsMapSet(Context context, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMapSet(context, attributeGetter, vClass); }
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <C1, C2> Map<C1, Set<C2>> fetchAsMapSet(Context context, Class<C1> uClass, Class<C2> vClass) { return extractMapSet(context, uClass, vClass); }
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <C, AE, AT> Map<C, Set<AT>> fetchAsMapSet(Context context, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapSet(context, uClass, valueGetter); }
+
 
 	// ==================== AGGREGATION METHODS ====================
 	

@@ -34,11 +34,11 @@ public class ReflectionUtils {
                 
                 // Find classes with javax.persistence.Entity
                 Set<Class<?>> javaxEntities = reflections.getTypesAnnotatedWith(javax.persistence.Entity.class);
-                entities.addAll(javaxEntities);
+                entities.addAll(filterByPackage(javaxEntities, packageName));
                 
                 // Find classes with jakarta.persistence.Entity
                 Set<Class<?>> jakartaEntities = reflections.getTypesAnnotatedWith(jakarta.persistence.Entity.class);
-                entities.addAll(jakartaEntities);
+                entities.addAll(filterByPackage(jakartaEntities, packageName));
                 
                 log.debug("Package '{}': found {} javax entities, {} jakarta entities", packageName, javaxEntities.size(), jakartaEntities.size());
                 
@@ -62,13 +62,32 @@ public class ReflectionUtils {
                 );
 
                 Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(annotationClass);
-                classes.addAll(annotatedClasses);
-                log.debug("Package '{}': found {} classes annotated with {}", packageName, annotatedClasses.size(), annotationClass.getSimpleName());
+                List<Class<?>> packageClasses = filterByPackage(annotatedClasses, packageName);
+                classes.addAll(packageClasses);
+                log.debug("Package '{}': found {} classes annotated with {}", packageName, packageClasses.size(), annotationClass.getSimpleName());
             } catch (Exception e) {
                 log.warn("Failed to scan package '{}': {}", packageName, e.getMessage());
             }
         }
         return classes.stream().distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * Reflections' forPackage() may index an entire classpath URL, so results must be
+     * restricted to the requested package (and its subpackages).
+     */
+    static List<Class<?>> filterByPackage(Set<Class<?>> classes, String packageName) {
+        String packagePrefix = packageName + ".";
+        return classes.stream()
+            .filter(clazz -> {
+                Package clazzPackage = clazz.getPackage();
+                if (clazzPackage == null) {
+                    return false;
+                }
+                String name = clazzPackage.getName();
+                return name.equals(packageName) || name.startsWith(packagePrefix);
+            })
+            .collect(Collectors.toList());
     }
 
     public static Class<?> getListType(Field field) {

@@ -822,6 +822,19 @@ public abstract class Context {
 	@Deprecated
 	public <T, C1, C2> Map<C1, List<C2>> fetchAsMapList(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass) { return extractMapList(query, uClass, vClass); }
 
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <T, A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> fetchAsMapSet(SelectQuery<T> query, AttributeGetter<A1E, A1T> attributeGetter, AttributeGetter<A2E, A2T> valueGetter) { return extractMapSet(query, attributeGetter, valueGetter); }
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <T, AE, AT, C> Map<AT, Set<C>> fetchAsMapSet(SelectQuery<T> query, AttributeGetter<AE, AT> attributeGetter, Class<C> vClass) { return extractMapSet(query, attributeGetter, vClass); }
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <T, C, AE, AT> Map<C, Set<AT>> fetchAsMapSet(SelectQuery<T> query, Class<C> uClass, AttributeGetter<AE, AT> valueGetter) { return extractMapSet(query, uClass, valueGetter); }
+	/** @deprecated Use extractMapSet with the same arguments. */
+	@Deprecated
+	public <T, C1, C2> Map<C1, Set<C2>> fetchAsMapSet(SelectQuery<T> query, Class<C1> uClass, Class<C2> vClass) { return extractMapSet(query, uClass, vClass); }
+
 
 	// ==================== AGGREGATION METHODS ====================
 	

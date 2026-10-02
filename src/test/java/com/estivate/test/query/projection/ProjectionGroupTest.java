@@ -65,6 +65,26 @@ public class ProjectionGroupTest {
 
     }
 
+    /** Same nested shape as {@link MainDto}, but without {@link Projection.NestedBy} — one DTO per result row. */
+    public static class FlatNestedDto {
+
+        @Projection.Attribute(entity = OrderEntity.class, attribute = OrderEntity.Fields.customerId)
+        long customerId;
+
+        @Projection.Attribute(entity = OrderEntity.class, attribute = OrderEntity.Fields.status)
+        OrderEntity.OrderStatus status;
+
+        @Projection.Attribute(entity = OrderEntity.class, attribute = OrderEntity.Fields.created)
+        Date created;
+
+        @Projection.Nested
+        List<NestedListDto> groupedDtos;
+
+        @Projection.Nested
+        NestedSingleDto orderDetails;
+
+    }
+
 
     @Test
     public void testGroupBy() {
@@ -131,6 +151,71 @@ public class ProjectionGroupTest {
 
 
 
+    }
+
+    @Test
+    public void testNestedWithoutNestedBy() {
+
+        ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
+        ProductEntity product2 = ProductEntity.builder().name("Daycream").category(ProductCategory.Beauty).price(1.5f).build();
+        ProductEntity product3 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
+        ProductEntity product4 = ProductEntity.builder().name("Shirt").category(ProductCategory.Clothing).price(2.5f).build();
+
+        context.insert(product1);
+        context.insert(product2);
+        context.insert(product3);
+        context.insert(product4);
+
+        OrderEntity order1 = OrderEntity.builder().customerId(100L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+        OrderEntity order2 = OrderEntity.builder().customerId(200L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+
+        context.insert(order1);
+        context.insert(order2);
+
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product1.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product3.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product3.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product4.getId()).build());
+
+        // Without @NestedBy: one FlatNestedDto per grouped row (not merged by customerId)
+        List<FlatNestedDto> dtos = Estivate.selectQuery(OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .in(OrderEntity::getId, Arrays.asList(order1.getId(), order2.getId()))
+            .groupBy(OrderEntity::getCustomerId)
+            .groupBy(ProductEntity::getCategory)
+            .extractList(context, FlatNestedDto.class);
+
+        Assertions.assertEquals(4, dtos.size());
+
+        for (FlatNestedDto dto : dtos) {
+            Assertions.assertEquals(OrderEntity.OrderStatus.COMPLETED, dto.status);
+            Assertions.assertNotNull(dto.created);
+            Assertions.assertNotNull(dto.orderDetails);
+            Assertions.assertEquals(OrderEntity.OrderStatus.COMPLETED, dto.orderDetails.status);
+            Assertions.assertNotNull(dto.orderDetails.created);
+            Assertions.assertEquals(1, dto.groupedDtos.size());
+            Assertions.assertNotNull(dto.groupedDtos.get(0).category);
+            Assertions.assertTrue(dto.groupedDtos.get(0).productCount > 0);
+        }
+
+        FlatNestedDto beauty100 = dtos.stream()
+            .filter(d -> d.customerId == 100L && d.groupedDtos.get(0).category == ProductCategory.Beauty)
+            .findFirst()
+            .orElse(null);
+        Assertions.assertNotNull(beauty100);
+        Assertions.assertEquals(2, beauty100.groupedDtos.get(0).productCount);
+        Assertions.assertEquals(3.5f, beauty100.groupedDtos.get(0).totalPrice);
+
+        FlatNestedDto clothing100 = dtos.stream()
+            .filter(d -> d.customerId == 100L && d.groupedDtos.get(0).category == ProductCategory.Clothing)
+            .findFirst()
+            .orElse(null);
+        Assertions.assertNotNull(clothing100);
+        Assertions.assertEquals(1, clothing100.groupedDtos.get(0).productCount);
+        Assertions.assertEquals(3.0f, clothing100.groupedDtos.get(0).totalPrice);
     }
 
 
