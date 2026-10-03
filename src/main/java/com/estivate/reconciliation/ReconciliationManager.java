@@ -519,7 +519,7 @@ public class ReconciliationManager {
                 tryApplyResolver(bestResolver, diff);
             }
             catch (Exception e) {
-                log.warn("Resolver {} failed for diff {}: {}", e.getMessage());
+                log.warn("Failed finding resolver for diff {}\nerrorMessage:\n {}stackTrace:\n {}", diff, e.getMessage(), e.getStackTrace());
             }
         }
         return result;
@@ -565,7 +565,7 @@ public class ReconciliationManager {
                 return true;
             }
         } catch (Exception e) {
-            log.warn("Resolver {} failed for diff {}: {}", resolver.getClass().getSimpleName(), diff, e.getMessage());
+            log.warn("Resolver {} failed\ndiff: {}errorMessage:\n {}stackTrace:\n {}", resolver.getClass().getSimpleName(), diff, e.getMessage(), e.getStackTrace());
         }
         return false;
     }
