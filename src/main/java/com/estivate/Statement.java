@@ -205,7 +205,12 @@ public class Statement implements AutoCloseable{
 		
 		//TODO : handle alias ?
 
-		if(attribute.function != null) {
+		if(attribute.function != null && attribute.function.equals(Estivate.Functions.count)
+				&& (attribute.entity == null || attribute.entity.entity == null)
+				&& attribute.attribute == null) {
+			appendQuery("COUNT(*)");
+		}
+		else if(attribute.function != null) {
 			appendQuery(attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)));
 		}
 		else {
@@ -232,7 +237,8 @@ public class Statement implements AutoCloseable{
 	// }
 
 	private Statement appendParameterAsValue(Attribute attribute, Object parameter) {
-		appendQuery(writeParameter(attribute.entity.entity, attribute.attribute, parameter));
+		Class<?> entityClass = attribute.entity != null ? attribute.entity.entity : null;
+		appendQuery(writeParameter(entityClass, attribute.attribute, parameter));
 		return this;
 	}
 	
@@ -597,9 +603,16 @@ public class Statement implements AutoCloseable{
 	
 	
 	Object compileObject(Class<?> entity, String attribute, Object value) {
+		if(entity == null || attribute == null) {
+			return value;
+		}
+
 		try {
 			Field field = FieldUtils.findField(entity, attribute);
-			
+			if(field == null) {
+				return value;
+			}
+
 			Type fieldType = field.getType();
 			
 			// Convert annotation takes priority

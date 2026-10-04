@@ -151,7 +151,7 @@ public class DatabaseGenerator {
 
 		@Override
 		public void resolve(Context context, DropTableDelta delta) {
-			// TODO : drop table
+			context.dropTableIfExists(delta.tableName);
 		}
 		
 		@Override

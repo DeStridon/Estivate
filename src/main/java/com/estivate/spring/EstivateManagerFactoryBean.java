@@ -66,16 +66,18 @@ public class EstivateManagerFactoryBean<T extends Repository<?>> implements Fact
     }
 
     private void validateAbstractMethods() {
-        Class<?> entityClass = getEntityClass();
         List<String> errors = new ArrayList<>();
 
         for (Method method : managerClass.getDeclaredMethods()) {
             if (!Modifier.isAbstract(method.getModifiers())) {
                 continue;
             }
+            if (method.isBridge() || method.isSynthetic()) {
+                continue;
+            }
 
             try {
-                validateMethod(method, entityClass);
+                RepositoryQuery.parse(method);
             } catch (Exception e) {
                 errors.add(String.format("Method '%s': %s", method.getName(), e.getMessage()));
             }
@@ -90,6 +92,7 @@ public class EstivateManagerFactoryBean<T extends Repository<?>> implements Fact
         }
     }
 
+    @SuppressWarnings("unused")
     private Class<?> getEntityClass() {
         Type genericSuperclass = managerClass.getGenericSuperclass();
         if (genericSuperclass instanceof ParameterizedType) {
@@ -102,37 +105,6 @@ public class EstivateManagerFactoryBean<T extends Repository<?>> implements Fact
             "Cannot determine entity class for manager '%s'. Ensure it extends Repository<T> with a concrete type.",
             managerClass.getSimpleName()
         ));
-    }
-
-    private void validateMethod(Method method, Class<?> entityClass) throws Exception {
-        String methodName = method.getName();
-
-        if (methodName.equals("findAll")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("findAllBy")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("findOneBy")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("findDistinct")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("countBy")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("existsBy")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("findBy")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else if (methodName.startsWith("find")) {
-            new RepositoryQuery(method.getDeclaringClass(), method.getName());
-        } else {
-            throw new Exception(String.format("Unsupported method name pattern. Method must start with one of: findAll, findAllBy, findOneBy, findDistinct, find<Field>By, findBy, countBy, existsBy"));
-        }
-    }
-
-    private boolean isNumericType(Class<?> type) {
-        return type == int.class || type == Integer.class ||
-               type == long.class || type == Long.class ||
-               type == short.class || type == Short.class ||
-               type == byte.class || type == Byte.class;
     }
 
     @Override

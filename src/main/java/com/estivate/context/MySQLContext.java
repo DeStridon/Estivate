@@ -39,6 +39,11 @@ public class MySQLContext extends Context {
 	public MySQLContext(DataSource datasource) {
 		super(datasource, new MySQLDialect());
 	}
+
+	@Override
+	protected String runningQueriesSql() {
+		return "SHOW FULL PROCESSLIST";
+	}
 		
 	
 	

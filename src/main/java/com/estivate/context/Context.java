@@ -1240,6 +1240,91 @@ public abstract class Context {
 			return statement.executeForValidation();
 		}
 	}
+
+	public boolean dropTable(Class<?> entity) {
+		return dropTable(nameMapper.toTableName(entity), false);
+	}
+
+	public boolean dropTableIfExists(Class<?> entity) {
+		return dropTable(nameMapper.toTableName(entity), true);
+	}
+
+	public boolean dropTable(String tableName) {
+		return dropTable(tableName, false);
+	}
+
+	public boolean dropTableIfExists(String tableName) {
+		return dropTable(tableName, true);
+	}
+
+	@SneakyThrows
+	public boolean dropTable(String tableName, boolean ifExists) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			statement.appendQuery("DROP TABLE");
+			if(ifExists) {
+				statement.appendQuery("IF EXISTS");
+			}
+			statement.appendQuery(tableName);
+			statement.executeForValidation();
+			return true;
+		}
+	}
+
+	/**
+	 * Sessions / processes currently active on the database server.
+	 */
+	@SneakyThrows
+	public List<RunningQuery> listRunningQueries() {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = new Statement(this, connection); ){
+			statement.appendQuery(runningQueriesSql());
+			return fetchListAsResults(statement).stream()
+				.map(this::toRunningQuery)
+				.collect(Collectors.toList());
+		}
+	}
+
+	protected abstract String runningQueriesSql();
+
+	protected RunningQuery toRunningQuery(ResultRow row) {
+		return RunningQuery.builder()
+			.id(firstLong(row, "ID", "SESSION_ID"))
+			.user(firstString(row, "USER", "USER_NAME"))
+			.host(firstString(row, "HOST", "CLIENT_ADDR", "SERVER"))
+			.database(firstString(row, "DB", "DATABASE", "SCHEMA_NAME"))
+			.command(firstString(row, "COMMAND", "CURRENT_COMMAND"))
+			.timeSeconds(firstLong(row, "TIME"))
+			.state(firstString(row, "STATE", "STATUS", "ISOLATION_LEVEL"))
+			.sql(firstString(row, "INFO", "STATEMENT", "SQL", "CURRENT_STATEMENT", "EXECUTING_STATEMENT"))
+			.build();
+	}
+
+	// TODO : move these methods to ResultRow
+	protected String firstString(ResultRow row, String... columns) {
+		for(String column : columns) {
+			if(hasColumn(row, column)) {
+				return row.asString(column);
+			}
+		}
+		return null;
+	}
+
+	protected Long firstLong(ResultRow row, String... columns) {
+		String value = firstString(row, columns);
+		if(value == null) {
+			return null;
+		}
+		try {
+			return Long.valueOf(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	protected boolean hasColumn(ResultRow row, String column) {
+		return row.getResultTable().getColumnNames().stream().anyMatch(name -> name.equalsIgnoreCase(column));
+	}
 		
 	// ==================== INDEX MANAGEMENT ====================
 	

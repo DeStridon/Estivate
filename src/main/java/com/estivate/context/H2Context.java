@@ -36,6 +36,11 @@ public class H2Context extends Context {
 	public H2Context(DataSource datasource) {
 		super(datasource, new H2Dialect());
 	}
+
+	@Override
+	protected String runningQueriesSql() {
+		return "SELECT * FROM INFORMATION_SCHEMA.SESSIONS";
+	}
 		
 	
 

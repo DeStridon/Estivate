@@ -10,9 +10,16 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
+import com.estivate.context.RunningQuery;
 import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 public class ContextTest {
 
@@ -135,6 +142,39 @@ public class ContextTest {
 		Assert.assertTrue(updatedCustomers.stream().anyMatch(c -> c.getName().equals("customer2-updated")));
 		Assert.assertTrue(updatedCustomers.stream().anyMatch(c -> c.getName().equals("customer3-updated")));
 	}
-	
-	
+
+	@Test
+	public void dropTableTest() {
+		Estivate.Tools.createTableFullQuery(DisposableTableEntity.class, context).ifNotExists().execute(context);
+		String tableName = context.nameMapper.toTableName(DisposableTableEntity.class);
+		Assert.assertTrue(context.showTables().contains(tableName));
+
+		context.dropTable(DisposableTableEntity.class);
+		Assert.assertFalse(context.showTables().contains(tableName));
+
+		context.dropTableIfExists(DisposableTableEntity.class);
+		Estivate.Tools.createTableFullQuery(DisposableTableEntity.class, context).execute(context);
+		Assert.assertTrue(context.showTables().contains(tableName));
+		context.dropTableIfExists(tableName);
+		Assert.assertFalse(context.showTables().contains(tableName));
+	}
+
+	@Test
+	public void listRunningQueriesTest() {
+		List<RunningQuery> runningQueries = context.listRunningQueries();
+		Assert.assertNotNull(runningQueries);
+		Assert.assertFalse(runningQueries.isEmpty());
+		Assert.assertTrue(runningQueries.stream().anyMatch(query -> query.getId() != null));
+	}
+
+	@Data
+	@jakarta.persistence.Entity
+	@SuperBuilder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@EqualsAndHashCode(callSuper = false)
+	public static class DisposableTableEntity extends AbstractEntity {
+		String label;
+	}
+
 }

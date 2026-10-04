@@ -208,7 +208,7 @@ class RepositoryQueryTest {
     @Test
     void getQuery_appliesEqAndOrders() throws Exception {
         RepositoryQuery w = new RepositoryQuery(ProductManager.class, "findAllByNameOrderByPriceDesc");
-        SelectQuery<?> q = w.getQuery(new Object[] { "p1" });
+        SelectQuery<?> q = w.toSelectQuery("p1");
         assertEquals(1, q.getCriterions().size());
         assertEquals(1, q.getOrders().size());
         assertEquals(Order.Direction.Desc, q.getOrders().get(0).getDirection());
@@ -217,14 +217,14 @@ class RepositoryQueryTest {
     @Test
     void getQuery_between_usesTwoArgs() throws Exception {
         RepositoryQuery w = new RepositoryQuery(ProductManager.class, "findAllByPriceBetween");
-        SelectQuery<?> q = w.getQuery(new Object[] { 1f, 9f });
+        SelectQuery<?> q = w.toSelectQuery(1f, 9f);
         assertEquals(1, q.getCriterions().size());
     }
 
     @Test
     void getQuery_isNull_noArgs() throws Exception {
         RepositoryQuery w = new RepositoryQuery(ProductManager.class, "findAllByDescriptionIsNull");
-        SelectQuery<?> q = w.getQuery(new Object[] {});
+        SelectQuery<?> q = w.toSelectQuery();
         assertEquals(1, q.getCriterions().size());
     }
 }

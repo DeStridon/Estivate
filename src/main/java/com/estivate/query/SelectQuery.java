@@ -336,6 +336,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 		queryClone.orders = new ArrayList<>(this.orders);
 		queryClone.groupBys = new ArrayList<>(this.groupBys);
+		queryClone.having = this.having != null ? this.having.clone() : null;
 
 		queryClone.limit = this.limit;
 		queryClone.offset = this.offset;
