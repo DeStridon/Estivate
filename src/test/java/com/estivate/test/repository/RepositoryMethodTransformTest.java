@@ -3,7 +3,7 @@ package com.estivate.test.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.List;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -86,8 +86,7 @@ class RepositoryMethodTransformTest {
 	@Test
 	void findByIdInIfNotEmpty() {
 		SelectQuery<?> query = RepositoryQuery.getQueryFromMethod(
-			CustomerManager::findByIdInIfNotEmpty,
-			List.of(1L));
+			CustomerManager::findByIdInIfNotEmpty, Arrays.asList(1L));
 
 		assertEquals(1, query.getCriterions().size());
 	}
