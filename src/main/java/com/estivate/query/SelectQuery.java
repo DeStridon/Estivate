@@ -116,9 +116,13 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	
 	public SelectQuery<E> select(Attribute.AttributeWindow attributeWindow) { select(attributeWindow.entity, attributeWindow.attribute, attributeWindow.function, attributeWindow.alias); return this; }
 
-	public SelectQuery<E> selectAll(Class<?> entity, String...fieldNames) { 
+	public SelectQuery<E> selectAll(Class<?> entity, String...fieldNames) {
+		return selectAll(new Entity<>(entity), fieldNames);
+	}
+
+	public SelectQuery<E> selectAll(Entity<?> c, String... fieldNames) {
 		
-		Set<Field> fields = FieldUtils.getEntityFields(entity);
+		Set<Field> fields = FieldUtils.getEntityFields(c.entity);
 
 		for(Field field : fields){
 
@@ -130,43 +134,43 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			
 			if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
 				Projection.Attribute attribute = field.getDeclaredAnnotation(Projection.Attribute.class);
-				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute());
+				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Count.class) != null) {
 				Projection.Count attribute = field.getDeclaredAnnotation(Projection.Count.class);
-				selectCount(Estivate.attribute(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), null, attribute.alias()));
+				selectCount(Estivate.attribute(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), null, attribute.alias()));
 			}
 			else if(field.getDeclaredAnnotation(Projection.CountDistinct.class) != null) {
 				Projection.CountDistinct attribute = field.getDeclaredAnnotation(Projection.CountDistinct.class);
-				selectCountDistinct(Estivate.attribute(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), null, attribute.alias()));
+				selectCountDistinct(Estivate.attribute(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), null, attribute.alias()));
 			}
 			else if(field.getDeclaredAnnotation(Projection.Sum.class) != null) {
 				Projection.Sum attribute = field.getDeclaredAnnotation(Projection.Sum.class);
-				selectSum(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				selectSum(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Min.class) != null) {
 				Projection.Min attribute = field.getDeclaredAnnotation(Projection.Min.class);
-				selectMin(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				selectMin(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Max.class) != null) {
 				Projection.Max attribute = field.getDeclaredAnnotation(Projection.Max.class);
-				selectMax(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				selectMax(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Avg.class) != null) {
 				Projection.Avg attribute = field.getDeclaredAnnotation(Projection.Avg.class);
-				selectAvg(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				selectAvg(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.IsNull.class) != null) {
 				Projection.IsNull attribute = field.getDeclaredAnnotation(Projection.IsNull.class);
-				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNull, attribute.alias());
+				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNull, attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.IsNotNull.class) != null) {
 				Projection.IsNotNull attribute = field.getDeclaredAnnotation(Projection.IsNotNull.class);
-				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNotNull, attribute.alias());
+				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNotNull, attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Function.class) != null) {
 				Projection.Function attribute = field.getDeclaredAnnotation(Projection.Function.class);
-				select(attribute.entity() == null ? this.entity : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
+				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Nested.class) != null) {
 				if(field.getType().isAssignableFrom(List.class)) {
@@ -182,27 +186,11 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 				}
 			}
 			else{
-				select(entity, field.getName()); 
+				select(c, field.getName());
 			}
 		
 		}
 
-		return this;
-		
-	}	
-	public SelectQuery<E> selectAll(Entity<?> c, String... fieldNames) {
-		
-		Set<Field> fields = FieldUtils.getEntityFields(c.entity);
-		
-		for(Field field : fields){
-			if(fieldNames.length != 0 && ArrayUtils.indexOf(fieldNames, field.getName()) == -1){
-				continue;
-			}
-			
-			select(c, field.getName());
-			
-		}
-		
 		return this;
 		
 	}

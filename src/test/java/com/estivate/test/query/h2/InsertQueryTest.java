@@ -1,4 +1,4 @@
-package com.estivate.test.query;
+package com.estivate.test.query.h2;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package com.estivate.test.query;
+package com.estivate.test.query.h2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -265,6 +265,77 @@ public class SelectQueryLambdaTest {
 		assertTrue(results.size() >= 2);
 	}
 	
+	@Test
+	public void testEqOrFalseIfNullLambda() {
+		CustomerEntity customer1 = CustomerEntity.builder()
+				.name("Customer EqOrFalseIfNull 1")
+				.build();
+		CustomerEntity customer2 = CustomerEntity.builder()
+				.name("Customer EqOrFalseIfNull 2")
+				.build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+
+		SelectQuery<CustomerEntity> match = Estivate.selectQuery(CustomerEntity.class)
+				.eqOrFalseIfNull(CustomerEntity::getId, customer1.getId());
+
+		List<CustomerEntity> matched = match.extractList(context);
+		assertEquals(1, matched.size());
+		assertEquals(customer1.getId(), matched.get(0).getId());
+
+		SelectQuery<CustomerEntity> none = Estivate.selectQuery(CustomerEntity.class)
+				.eqOrFalseIfNull(CustomerEntity::getId, null);
+
+		assertTrue(context.queryAsString(none).contains("false"));
+		assertEquals(0, none.extractList(context).size());
+	}
+
+	@Test
+	public void testComparisonOrFalseIfNullLambda() {
+		CustomerEntity customer1 = CustomerEntity.builder()
+				.name("Customer ComparisonOrFalseIfNull 1")
+				.build();
+		CustomerEntity customer2 = CustomerEntity.builder()
+				.name("Customer ComparisonOrFalseIfNull 2")
+				.build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+
+		assertTrue(Estivate.selectQuery(CustomerEntity.class)
+				.ltOrFalseIfNull(CustomerEntity::getId, customer2.getId())
+				.extractList(context)
+				.stream()
+				.anyMatch(c -> c.getId() == customer1.getId()));
+
+		assertEquals(0, Estivate.selectQuery(CustomerEntity.class)
+				.ltOrFalseIfNull(CustomerEntity::getId, null)
+				.extractList(context)
+				.size());
+
+		assertTrue(Estivate.selectQuery(CustomerEntity.class)
+				.lteOrFalseIfNull(CustomerEntity::getId, customer1.getId())
+				.extractList(context)
+				.stream()
+				.anyMatch(c -> c.getId() == customer1.getId()));
+
+		assertTrue(Estivate.selectQuery(CustomerEntity.class)
+				.gtOrFalseIfNull(CustomerEntity::getId, customer1.getId())
+				.extractList(context)
+				.stream()
+				.anyMatch(c -> c.getId() == customer2.getId()));
+
+		assertTrue(Estivate.selectQuery(CustomerEntity.class)
+				.gteOrFalseIfNull(CustomerEntity::getId, customer2.getId())
+				.extractList(context)
+				.stream()
+				.anyMatch(c -> c.getId() == customer2.getId()));
+
+		assertEquals(0, Estivate.selectQuery(CustomerEntity.class)
+				.gteOrFalseIfNull(CustomerEntity::getId, null)
+				.extractList(context)
+				.size());
+	}
+
 	@Test
 	public void testLtIfNotNullLambda() {
 		CustomerEntity customer1 = CustomerEntity.builder()

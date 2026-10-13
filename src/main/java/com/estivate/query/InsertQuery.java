@@ -30,7 +30,7 @@ public class InsertQuery<E> {
         this.entity = entity;
         this.fields = new LinkedHashSet<>();
 
-        for(Field field : FieldUtils.getEntityFields(entity)) {
+        for(Field field : FieldUtils.getPersistableFields(entity)) {
             if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
                 if(idField != null) {
                     throw new IllegalArgumentException("Multiple id fields found for entity: " + entity.getName());

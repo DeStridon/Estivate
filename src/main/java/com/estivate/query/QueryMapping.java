@@ -31,6 +31,13 @@ public class QueryMapping {
 
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
+	public @interface EqOrFalseIfNull{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
 	public @interface EqNullable{
 		public Class<?> entity() default void.class;
 		public String attribute() default "";
@@ -70,6 +77,13 @@ public class QueryMapping {
 		public Class<?> entity() default void.class;
 		public String attribute() default "";
 	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface LtOrFalseIfNull{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
 	
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
@@ -81,6 +95,13 @@ public class QueryMapping {
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface LteIfNotNull{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface LteOrFalseIfNull{
 		public Class<?> entity() default void.class;
 		public String attribute() default "";
 	}
@@ -99,6 +120,13 @@ public class QueryMapping {
 		public String attribute() default "";
 	}
 
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface GtOrFalseIfNull{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
+
 	
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
@@ -110,6 +138,13 @@ public class QueryMapping {
 	@Target( ElementType.FIELD )
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface GteIfNotNull{
+		public Class<?> entity() default void.class;
+		public String attribute() default "";
+	}
+
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface GteOrFalseIfNull{
 		public Class<?> entity() default void.class;
 		public String attribute() default "";
 	}

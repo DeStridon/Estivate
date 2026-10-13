@@ -1,4 +1,4 @@
-package com.estivate.test.query.projection;
+package com.estivate.test.query.h2.projection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

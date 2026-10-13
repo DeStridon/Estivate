@@ -1,4 +1,4 @@
-package com.estivate.test.query;
+package com.estivate.test.query.h2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -660,6 +660,108 @@ public class SelectQueryCriterionTest {
 		
 		List<CustomerEntity> resultsNull = context.extractList(queryNull);
 		assertEquals(2, resultsNull.size());
+	}
+
+	@Test
+	public void orFalseIfNullTest() throws SQLException {
+
+		CustomerEntity customer1 = CustomerEntity.builder().name("orFalseIfNull customer 1").build();
+		CustomerEntity customer2 = CustomerEntity.builder().name("orFalseIfNull customer 2").build();
+		CustomerEntity customer3 = CustomerEntity.builder().name("orFalseIfNull customer 3").build();
+		context.updateOrInsert(customer1);
+		context.updateOrInsert(customer2);
+		context.updateOrInsert(customer3);
+
+		List<Long> ids = Arrays.asList(customer1.getId(), customer2.getId(), customer3.getId());
+		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class);
+		Attribute idAttribute = Estivate.attribute(CustomerEntity.class, AbstractEntity.Fields.id);
+
+		SelectQuery<CustomerEntity> eqClass = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.eqOrFalseIfNull(CustomerEntity.class, AbstractEntity.Fields.id, customer2.getId());
+		Assert.assertTrue(context.queryAsString(eqClass).contains("ID = ?"));
+		assertEquals(1, context.extractList(eqClass).size());
+		Assert.assertTrue(context.extractList(eqClass).stream().anyMatch(t -> t.getId() == customer2.getId()));
+
+		SelectQuery<CustomerEntity> eqEntity = Estivate.selectQuery(CustomerEntity.class)
+			.in(customer, AbstractEntity.Fields.id, ids)
+			.eqOrFalseIfNull(customer, AbstractEntity.Fields.id, customer2.getId());
+		assertEquals(1, context.extractList(eqEntity).size());
+
+		SelectQuery<CustomerEntity> eqAttribute = Estivate.selectQuery(CustomerEntity.class)
+			.in(idAttribute, ids)
+			.eqOrFalseIfNull(idAttribute, customer2.getId());
+		assertEquals(1, context.extractList(eqAttribute).size());
+
+		SelectQuery<CustomerEntity> eqString = Estivate.selectQuery(CustomerEntity.class)
+			.in(AbstractEntity.Fields.id, ids)
+			.eqOrFalseIfNull(AbstractEntity.Fields.id, customer2.getId());
+		assertEquals(1, context.extractList(eqString).size());
+
+		SelectQuery<CustomerEntity> eqLambda = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity::getId, ids)
+			.eqOrFalseIfNull(CustomerEntity::getId, customer2.getId());
+		assertEquals(1, context.extractList(eqLambda).size());
+
+		SelectQuery<CustomerEntity> eqNull = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.eqOrFalseIfNull(CustomerEntity.class, AbstractEntity.Fields.id, null);
+		Assert.assertTrue(context.queryAsString(eqNull).contains("false"));
+		assertEquals(0, context.extractList(eqNull).size());
+
+		SelectQuery<CustomerEntity> lt = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.ltOrFalseIfNull(CustomerEntity.class, AbstractEntity.Fields.id, customer3.getId());
+		Assert.assertTrue(context.queryAsString(lt).contains("ID < ?"));
+		List<CustomerEntity> ltResults = context.extractList(lt);
+		Assert.assertTrue(ltResults.stream().anyMatch(t -> t.getId() == customer1.getId()));
+		Assert.assertTrue(ltResults.stream().anyMatch(t -> t.getId() == customer2.getId()));
+		Assert.assertFalse(ltResults.stream().anyMatch(t -> t.getId() == customer3.getId()));
+
+		SelectQuery<CustomerEntity> ltNull = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.ltOrFalseIfNull(idAttribute, null);
+		Assert.assertTrue(context.queryAsString(ltNull).contains("false"));
+		assertEquals(0, context.extractList(ltNull).size());
+
+		SelectQuery<CustomerEntity> lte = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.lteOrFalseIfNull(customer, AbstractEntity.Fields.id, customer1.getId());
+		Assert.assertTrue(context.queryAsString(lte).contains("ID <= ?"));
+		assertEquals(1, context.extractList(lte).size());
+		Assert.assertTrue(context.extractList(lte).stream().anyMatch(t -> t.getId() == customer1.getId()));
+
+		SelectQuery<CustomerEntity> lteNull = Estivate.selectQuery(CustomerEntity.class)
+			.in(AbstractEntity.Fields.id, ids)
+			.lteOrFalseIfNull(AbstractEntity.Fields.id, null);
+		assertEquals(0, context.extractList(lteNull).size());
+
+		SelectQuery<CustomerEntity> gt = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.gtOrFalseIfNull(CustomerEntity::getId, customer1.getId());
+		Assert.assertTrue(context.queryAsString(gt).contains("ID > ?"));
+		List<CustomerEntity> gtResults = context.extractList(gt);
+		Assert.assertFalse(gtResults.stream().anyMatch(t -> t.getId() == customer1.getId()));
+		Assert.assertTrue(gtResults.stream().anyMatch(t -> t.getId() == customer2.getId()));
+		Assert.assertTrue(gtResults.stream().anyMatch(t -> t.getId() == customer3.getId()));
+
+		SelectQuery<CustomerEntity> gtNull = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.gtOrFalseIfNull(CustomerEntity.class, AbstractEntity.Fields.id, null);
+		assertEquals(0, context.extractList(gtNull).size());
+
+		SelectQuery<CustomerEntity> gte = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity.class, AbstractEntity.Fields.id, ids)
+			.gteOrFalseIfNull(CustomerEntity.class, AbstractEntity.Fields.id, customer3.getId());
+		Assert.assertTrue(context.queryAsString(gte).contains("ID >= ?"));
+		assertEquals(1, context.extractList(gte).size());
+		Assert.assertTrue(context.extractList(gte).stream().anyMatch(t -> t.getId() == customer3.getId()));
+
+		SelectQuery<CustomerEntity> gteNull = Estivate.selectQuery(CustomerEntity.class)
+			.in(CustomerEntity::getId, ids)
+			.gteOrFalseIfNull(CustomerEntity::getId, null);
+		Assert.assertTrue(context.queryAsString(gteNull).contains("false"));
+		assertEquals(0, context.extractList(gteNull).size());
 	}
 	
 	@Test

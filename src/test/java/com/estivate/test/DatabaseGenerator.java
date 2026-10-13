@@ -46,9 +46,12 @@ public class DatabaseGenerator {
 			
 			try {
 				context = new H2Context(datasource());
+				H2MySqlJsonFunctions.registerAliases(context.datasource);
 			} catch (NamingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (SQLException e) {
+				throw new IllegalStateException("Failed to register H2 MySQL JSON aliases", e);
 			}
 			try {
 				Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();

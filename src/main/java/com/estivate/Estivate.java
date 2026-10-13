@@ -177,6 +177,7 @@ public class Estivate {
 	// Eq methods
 	public static Criterion eq   			(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.Eq, value); }
 	public static Criterion eqIfNotNull		(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return null; }
+	public static EstivateNode eqOrFalseIfNull	(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return keywordFalse(); }
 	public static Criterion eqIfNotBlank	(Attribute attribute, String value) { if(StringUtils.isNotBlank(value)) { return eq(attribute, value); } return null; }
 	public static Criterion eqNullable		(Attribute attribute, Object value) { if(value != null) {return eq(attribute, value);} return isNull(attribute); }
 	public static Aggregator eqOrNull		(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).eq(attribute, value).isNull(attribute); }
@@ -189,21 +190,25 @@ public class Estivate {
 	// Lt 
 	public static Criterion lt   		(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.Lt, value); }
 	public static Criterion ltIfNotNull (Attribute attribute, Object value) { if(value != null) {return lt(attribute, value);} return null; }
+	public static EstivateNode ltOrFalseIfNull(Attribute attribute, Object value) { if(value != null) {return lt(attribute, value);} return keywordFalse(); }
 	public static Aggregator ltOrNull	(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).lt(attribute, value).isNull(attribute); }
 	
 	// Lte
 	public static Criterion lte  		(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.Lte, value); }
 	public static Criterion lteIfNotNull(Attribute attribute, Object value) { if(value != null) {return lte(attribute, value);} return null; }
+	public static EstivateNode lteOrFalseIfNull(Attribute attribute, Object value) { if(value != null) {return lte(attribute, value);} return keywordFalse(); }
 	public static Aggregator lteOrNull	(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).lte(attribute, value).isNull(attribute); }
 	
 	// Gt 
 	public static Criterion gt   		(Attribute attribute, Object value) { return new Operator(attribute, OperatorType.Gt, value); }
 	public static Criterion gtIfNotNull (Attribute attribute, Object value) { if(value != null) {return gt(attribute, value);} return null; }
+	public static EstivateNode gtOrFalseIfNull(Attribute attribute, Object value) { if(value != null) {return gt(attribute, value);} return keywordFalse(); }
 	public static Aggregator gtOrNull	(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).gt(attribute, value).isNull(attribute); }
 	
 	// Gte
 	public static Criterion gte  		(Attribute attribute, Object value)        		{ return new Operator(attribute, OperatorType.Gte, value); }
 	public static Criterion gteIfNotNull(Attribute attribute, Object value) { if(value != null) {return gte(attribute, value);} return null; }
+	public static EstivateNode gteOrFalseIfNull(Attribute attribute, Object value) { if(value != null) {return gte(attribute, value);} return keywordFalse(); }
 	public static Aggregator gteOrNull	(Attribute attribute, Object value) { return new Aggregator(GroupType.OR).gte(attribute, value).isNull(attribute); }
 	
 	
@@ -336,6 +341,7 @@ public class Estivate {
 	// Eq methods
 	public static Criterion eq   			(Entity<?> entity, String attribute, Object value) { return eq(Estivate.attribute(entity, attribute), value); }
 	public static Criterion eqIfNotNull		(Entity<?> entity, String attribute, Object value) { return eqIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static EstivateNode eqOrFalseIfNull	(Entity<?> entity, String attribute, Object value) { return eqOrFalseIfNull(Estivate.attribute(entity, attribute), value); }
 	public static Criterion eqIfNotBlank	(Entity<?> entity, String attribute, String value) { return eqIfNotBlank(Estivate.attribute(entity, attribute), value); }
 	public static Criterion eqNullable		(Entity<?> entity, String attribute, Object value) { return eqNullable(Estivate.attribute(entity, attribute), value); }
 	public static Aggregator eqOrNull		(Entity<?> entity, String attribute, Object value) { return eqOrNull(Estivate.attribute(entity, attribute), value); }
@@ -348,22 +354,26 @@ public class Estivate {
 	// Lt 
 	public static Criterion lt   	(Entity<?> entity, String attribute, Object value)        	{ return lt(Estivate.attribute(entity, attribute), value); }
 	public static Criterion ltIfNotNull   	(Entity<?> entity, String attribute, Object value) 	{ return ltIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static EstivateNode ltOrFalseIfNull	(Entity<?> entity, String attribute, Object value) 	{ return ltOrFalseIfNull(Estivate.attribute(entity, attribute), value); }
 	public static Aggregator ltOrNull(Entity<?> entity, String attribute, Object value) 		{ return ltOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	// Lte
 	public static Criterion lte  	(Entity<?> entity, String attribute, Object value)        	{ return lte(Estivate.attribute(entity, attribute), value); }
 	public static Criterion lteIfNotNull  	(Entity<?> entity, String attribute, Object value) 	{ return lteIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static EstivateNode lteOrFalseIfNull	(Entity<?> entity, String attribute, Object value) 	{ return lteOrFalseIfNull(Estivate.attribute(entity, attribute), value); }
 	public static Aggregator lteOrNull(Entity<?> entity, String attribute, Object value) 		{ return lteOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	
 	// Gt 
 	public static Criterion gt   	(Entity<?> entity, String attribute, Object value)        	{ return gt(Estivate.attribute(entity, attribute), value); }
 	public static Criterion gtIfNotNull   	(Entity<?> entity, String attribute, Object value) 	{ return gtIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static EstivateNode gtOrFalseIfNull	(Entity<?> entity, String attribute, Object value) 	{ return gtOrFalseIfNull(Estivate.attribute(entity, attribute), value); }
 	public static Aggregator gtOrNull(Entity<?> entity, String attribute, Object value) 		{ return gtOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	// Gte
 	public static Criterion gte  	(Entity<?> entity, String attribute, Object value)        	{ return gte(Estivate.attribute(entity, attribute), value); }
 	public static Criterion gteIfNotNull  	(Entity<?> entity, String attribute, Object value) 	{ return gteIfNotNull(Estivate.attribute(entity, attribute), value); }
+	public static EstivateNode gteOrFalseIfNull	(Entity<?> entity, String attribute, Object value) 	{ return gteOrFalseIfNull(Estivate.attribute(entity, attribute), value); }
 	public static Aggregator gteOrNull(Entity<?> entity, String attribute, Object value) 		{ return gteOrNull(Estivate.attribute(entity, attribute), value); }
 	
 	
@@ -488,6 +498,7 @@ public class Estivate {
 	
 	public static Criterion eq    			(Class<?> entity, String attribute, Object value) { return eq(new Entity<>(entity), attribute, value); }
 	public static Criterion eqIfNotNull		(Class<?> entity, String attribute, Object value) { return eqIfNotNull(new Entity<>(entity), attribute, value); }
+	public static EstivateNode eqOrFalseIfNull	(Class<?> entity, String attribute, Object value) { return eqOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public static Criterion eqIfNotBlank	(Class<?> entity, String attribute, String value) { return eqIfNotBlank(new Entity<>(entity), attribute, value); }
 	public static Criterion eqNullable		(Class<?> entity, String attribute, Object value) { return eqNullable(new Entity<>(entity), attribute, value); }
 	public static Aggregator eqOrNull		(Class<?> entity, String attribute, Object value) { return eqOrNull(new Entity<>(entity), attribute, value); }
@@ -501,18 +512,22 @@ public class Estivate {
 	
 	public static Criterion lt    	(Class<?> entity, String attribute, Object value)        { return lt(new Entity<>(entity), attribute, value); }
 	public static Criterion ltIfNotNull   	(Class<?> entity, String attribute, Object value) { return ltIfNotNull(new Entity<>(entity), attribute, value); }
+	public static EstivateNode ltOrFalseIfNull	(Class<?> entity, String attribute, Object value) { return ltOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public static Aggregator ltOrNull(Class<?> entity, String attribute, Object value) { return ltOrNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion lte   	(Class<?> entity, String attribute, Object value)        { return lte(new Entity<>(entity), attribute, value); }
 	public static Criterion lteIfNotNull   	(Class<?> entity, String attribute, Object value) { return lteIfNotNull(new Entity<>(entity), attribute, value); }
+	public static EstivateNode lteOrFalseIfNull	(Class<?> entity, String attribute, Object value) { return lteOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public static Aggregator lteOrNull(Class<?> entity, String attribute, Object value) { return lteOrNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion gt    	(Class<?> entity, String attribute, Object value)        { return gt(new Entity<>(entity), attribute, value); }
 	public static Aggregator gtOrNull(Class<?> entity, String attribute, Object value) { return gtOrNull(new Entity<>(entity), attribute, value); }
 	public static Criterion gtIfNotNull   	(Class<?> entity, String attribute, Object value) { return gtIfNotNull(new Entity<>(entity), attribute, value); }
+	public static EstivateNode gtOrFalseIfNull	(Class<?> entity, String attribute, Object value) { return gtOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion gte   	(Class<?> entity, String attribute, Object value)        { return gte(new Entity<>(entity), attribute, value); }
 	public static Criterion gteIfNotNull  	(Class<?> entity, String attribute, Object value) { return gteIfNotNull(new Entity<>(entity), attribute, value); }
+	public static EstivateNode gteOrFalseIfNull	(Class<?> entity, String attribute, Object value) { return gteOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public static Aggregator gteOrNull(Class<?> entity, String attribute, Object value) { return gteOrNull(new Entity<>(entity), attribute, value); }
 	
 	public static Criterion between	(Class<?> entity, String attribute, Object left, Object right) { return between(new Entity<>(entity), attribute, left, right); }
@@ -617,6 +632,7 @@ public class Estivate {
 	
 	public static <E, P> Criterion eq    			(AttributeGetter<E, P> getter, P value) { return eq(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion eqIfNotNull		(AttributeGetter<E, P> getter, P value) { return eqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode eqOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return eqOrFalseIfNull(Estivate.attribute(getter), value); }
 	public static <E> 	 Criterion eqIfNotBlank		(AttributeGetter<E, String> getter, String value) { return eqIfNotBlank(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion eqNullable		(AttributeGetter<E, P> getter, P value) { return eqNullable(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator eqOrNull		(AttributeGetter<E, P> getter, P value) { return eqOrNull(Estivate.attribute(getter), value); }
@@ -631,20 +647,24 @@ public class Estivate {
 	public static <E, P> Criterion lt    		(AttributeGetter<E, P> getter, P value)        { return lt(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator ltOrNull(AttributeGetter<E, P> getter, P value) { return ltOrNull(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion ltIfNotNull   	(AttributeGetter<E, P> getter, P value) { return ltIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode ltOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return ltOrFalseIfNull(Estivate.attribute(getter), value); }
 	
 	
 	public static <E, P> Criterion lte   	(AttributeGetter<E, P> getter, P value)        { return lte(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator lteOrNull(AttributeGetter<E, P> getter, P value) { return lteOrNull(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion lteIfNotNull  	(AttributeGetter<E, P> getter, P value) { return lteIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode lteOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return lteOrFalseIfNull(Estivate.attribute(getter), value); }
 	
 	
 	public static <E, P> Criterion gt    	(AttributeGetter<E, P> getter, P value)        { return gt(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator gtOrNull(AttributeGetter<E, P> getter, P value) { return gtOrNull(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion gtIfNotNull   	(AttributeGetter<E, P> getter, P value) { return gtIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode gtOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return gtOrFalseIfNull(Estivate.attribute(getter), value); }
 	
 	public static <E, P> Criterion gte   	(AttributeGetter<E, P> getter, P value)        { return gte(Estivate.attribute(getter), value); }
 	public static <E, P> Aggregator gteOrNull(AttributeGetter<E, P> getter, P value) { return gteOrNull(Estivate.attribute(getter), value); }
 	public static <E, P> Criterion gteIfNotNull  	(AttributeGetter<E, P> getter, P value) { return gteIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode gteOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return gteOrFalseIfNull(Estivate.attribute(getter), value); }
 	
 	
 	public static <E, P> Criterion between	(AttributeGetter<E, P> getter, P left, P right) { return between(Estivate.attribute(getter), left, right); }
@@ -810,9 +830,9 @@ public class Estivate {
 		public static Attribute.Function json_unquote = new Attribute.Function("JSON_UNQUOTE(", ")");
 		public static Attribute.Function json_keys = new Attribute.Function("JSON_KEYS(", ")");
 		public static Attribute.Function json_length = new Attribute.Function("JSON_LENGTH(", ")");
-		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", \""+path+"\")"); }
-		public static Attribute.Function json_value(String path) { return new Attribute.Function("JSON_VALUE(", ", \""+path+"\")"); }
-		public static Attribute.Function json_exists(String path) { return new Attribute.Function("JSON_EXISTS(", ", \""+path+"\")"); }
+		public static Attribute.Function json_extract(String path){ return new Attribute.Function("JSON_EXTRACT(", ", '"+path+"')"); }
+		public static Attribute.Function json_value(String path) { return new Attribute.Function("JSON_VALUE(", ", '"+path+"')"); }
+		public static Attribute.Function json_exists(String path) { return new Attribute.Function("JSON_EXISTS(", ", '"+path+"')"); }
 
 		/* Window Functions */
 		public static Attribute.Function rowNumber = new Attribute.Function("row_number()", "", true);
@@ -824,7 +844,7 @@ public class Estivate {
 		
 		public static CreateQuery<?> createTableFullQuery(Class<?> entity, Context context){
 			CreateQuery<?> createQuery = Estivate.createQuery(entity);
-			for(Field field : FieldUtils.getEntityFields(entity)) {
+			for(Field field : FieldUtils.getPersistableFields(entity)) {
 				createQuery.column(context.entityColumn(field));
 			}
 			for(TableIndex index : entity.getDeclaredAnnotationsByType(TableIndex.class)) {

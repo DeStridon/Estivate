@@ -1064,7 +1064,7 @@ public abstract class Context {
 		Long id = null;
 		Field idField = null;
 		
-		Set<Field> updatedFields = new LinkedHashSet<>(FieldUtils.getEntityFields(entity.getClass()));
+		Set<Field> updatedFields = new LinkedHashSet<>(FieldUtils.getPersistableFields(entity.getClass()));
 		chronometer.step("update::updatedFields");
 		
 		for(Field field : updatedFields) {
@@ -1082,7 +1082,9 @@ public abstract class Context {
 		chronometer.step("update::updatedFields::set");
 		
 		if(entity instanceof CachedEntity) {
-			updatedFields = new LinkedHashSet<>(((CachedEntity) entity).updatedFields());
+			updatedFields = ((CachedEntity) entity).updatedFields().stream()
+				.filter(FieldUtils::isPersistable)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
 		chronometer.step("update::updatedFields::cachedEntity");
 		

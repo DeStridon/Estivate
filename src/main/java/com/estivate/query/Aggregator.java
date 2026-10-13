@@ -33,6 +33,7 @@ public class Aggregator implements EstivateNode {
 
 	public Aggregator eq    		(Attribute attribute, Object value) { add(Estivate.eq(attribute, value)); return this; }
 	public Aggregator eqIfNotNull   (Attribute attribute, Object value) { add(Estivate.eqIfNotNull(attribute, value)); return this; }
+	public Aggregator eqOrFalseIfNull(Attribute attribute, Object value) { add(Estivate.eqOrFalseIfNull(attribute, value)); return this; }
 	public Aggregator eqIfNotBlank  (Attribute attribute, String value) { add(Estivate.eqIfNotBlank(attribute, value)); return this; }
 	public Aggregator eqNullable    (Attribute attribute, Object value) { add(Estivate.eqNullable(attribute, value)); return this; }
 	public Aggregator eqOrNull		(Attribute attribute, Object value) { add(Estivate.eqOrNull(attribute, value)); return this; }
@@ -45,18 +46,22 @@ public class Aggregator implements EstivateNode {
 	
 	public Aggregator lt    		(Attribute attribute, Object value)     		{ add(Estivate.lt(attribute, value)); return this; }
 	public Aggregator ltIfNotNull   (Attribute attribute, Object value) 	{ add(Estivate.ltIfNotNull(attribute, value)); return this; }
+	public Aggregator ltOrFalseIfNull(Attribute attribute, Object value) 	{ add(Estivate.ltOrFalseIfNull(attribute, value)); return this; }
 	public Aggregator ltOrNull		(Attribute attribute, Object value) 			{ add(Estivate.ltOrNull(attribute, value)); return this; }
 
 	public Aggregator lte   		(Attribute attribute, Object value)     		{ add(Estivate.lte(attribute, value)); return this; }
 	public Aggregator lteIfNotNull  (Attribute attribute, Object value) 	{ add(Estivate.lteIfNotNull(attribute, value)); return this; }
+	public Aggregator lteOrFalseIfNull(Attribute attribute, Object value) 	{ add(Estivate.lteOrFalseIfNull(attribute, value)); return this; }
 	public Aggregator lteOrNull		(Attribute attribute, Object value) 			{ add(Estivate.lteOrNull(attribute, value)); return this; }
 	
 	public Aggregator gt    		(Attribute attribute, Object value)     		{ add(Estivate.gt(attribute, value)); return this; }
 	public Aggregator gtIfNotNull   (Attribute attribute, Object value) 	{ add(Estivate.gtIfNotNull(attribute, value)); return this; }
+	public Aggregator gtOrFalseIfNull(Attribute attribute, Object value) 	{ add(Estivate.gtOrFalseIfNull(attribute, value)); return this; }
 	public Aggregator gtOrNull		(Attribute attribute, Object value) 			{ add(Estivate.gtOrNull(attribute, value)); return this; }
 	
 	public Aggregator gte   		(Attribute attribute, Object value)     		{ add(Estivate.gte(attribute, value)); return this; }
 	public Aggregator gteIfNotNull  (Attribute attribute, Object value) 	{ add(Estivate.gteIfNotNull(attribute, value)); return this; }
+	public Aggregator gteOrFalseIfNull(Attribute attribute, Object value) 	{ add(Estivate.gteOrFalseIfNull(attribute, value)); return this; }
 	public Aggregator gteOrNull		(Attribute attribute, Object value) 			{ add(Estivate.gteOrNull(attribute, value)); return this; }
 
 	public Aggregator between 		(Attribute attribute, Object min, Object max)		{ add(Estivate.between(attribute, min, max)); return this; }
@@ -149,6 +154,7 @@ public class Aggregator implements EstivateNode {
 		
 	public Aggregator eq    		(Entity<?> entity, String attribute, Object value) { add(Estivate.eq(entity, attribute, value)); return this; }
 	public Aggregator eqIfNotNull   (Entity<?> entity, String attribute, Object value) { add(Estivate.eqIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator eqOrFalseIfNull(Entity<?> entity, String attribute, Object value) { add(Estivate.eqOrFalseIfNull(entity, attribute, value)); return this; }
 	public Aggregator eqIfNotBlank  (Entity<?> entity, String attribute, String value) { add(Estivate.eqIfNotBlank(entity, attribute, value)); return this; } 
 	public Aggregator eqNullable    (Entity<?> entity, String attribute, Object value) { add(Estivate.eqNullable(entity, attribute, value)); return this; }
 	public Aggregator eqOrNull		(Entity<?> entity, String attribute, Object value) { add(Estivate.eqOrNull(entity, attribute, value)); return this; }
@@ -161,18 +167,22 @@ public class Aggregator implements EstivateNode {
 	
 	public Aggregator lt    		(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.lt(entity, attribute, value)); return this; }
 	public Aggregator ltIfNotNull   (Entity<?> entity, String attribute, Object value) 	{ add(Estivate.ltIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator ltOrFalseIfNull(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.ltOrFalseIfNull(entity, attribute, value)); return this; }
 	public Aggregator ltOrNull		(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.ltOrNull(entity, attribute, value)); return this; }
 
 	public Aggregator lte   		(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.lte(entity, attribute, value)); return this; }
 	public Aggregator lteIfNotNull  (Entity<?> entity, String attribute, Object value) 	{ add(Estivate.lteIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator lteOrFalseIfNull(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.lteOrFalseIfNull(entity, attribute, value)); return this; }
 	public Aggregator lteOrNull		(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.lteOrNull(entity, attribute, value)); return this; }
 	
 	public Aggregator gt    		(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.gt(entity, attribute, value)); return this; }
 	public Aggregator gtIfNotNull   (Entity<?> entity, String attribute, Object value) 	{ add(Estivate.gtIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator gtOrFalseIfNull(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.gtOrFalseIfNull(entity, attribute, value)); return this; }
 	public Aggregator gtOrNull		(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.gtOrNull(entity, attribute, value)); return this; }
 	
 	public Aggregator gte   		(Entity<?> entity, String attribute, Object value)     		{ add(Estivate.gte(entity, attribute, value)); return this; }
 	public Aggregator gteIfNotNull  (Entity<?> entity, String attribute, Object value) 	{ add(Estivate.gteIfNotNull(entity, attribute, value)); return this; }
+	public Aggregator gteOrFalseIfNull(Entity<?> entity, String attribute, Object value) 	{ add(Estivate.gteOrFalseIfNull(entity, attribute, value)); return this; }
 	public Aggregator gteOrNull		(Entity<?> entity, String attribute, Object value) 			{ add(Estivate.gteOrNull(entity, attribute, value)); return this; }
 
 	public Aggregator between 		(Entity<?> entity, String attribute, Object min, Object max)		{ add(Estivate.between(entity, attribute, min, max)); return this; }
@@ -282,6 +292,7 @@ public class Aggregator implements EstivateNode {
 	/* Wrappers for Class */
 	public Aggregator eq    	(Class<?> entity, String attribute, Object value)        { return eq(new Entity<>(entity), attribute, value); }
 	public Aggregator eqIfNotNull    	(Class<?> entity, String attribute, Object value){ return eqIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator eqOrFalseIfNull	(Class<?> entity, String attribute, Object value){ return eqOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public Aggregator eqIfNotBlank    	(Class<?> entity, String attribute, String value){ return eqIfNotBlank(new Entity<>(entity), attribute, value); }
 	public Aggregator eqNullable(Class<?> entity, String attribute, Object value)		 { return eqNullable(new Entity<>(entity), attribute, value); }
 	public Aggregator eqOrNull(Class<?> entity, String attribute, Object value) 		 { return eqOrNull(new Entity<>(entity), attribute, value); }
@@ -294,15 +305,19 @@ public class Aggregator implements EstivateNode {
 	
 	public Aggregator lt    		(Class<?> entity, String attribute, Object value) { return lt(new Entity<>(entity), attribute, value); }
 	public Aggregator ltIfNotNull   (Class<?> entity, String attribute, Object value) { return ltIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator ltOrFalseIfNull(Class<?> entity, String attribute, Object value) { return ltOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public Aggregator ltOrNull		(Class<?> entity, String attribute, Object value) { return ltOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator lte   		(Class<?> entity, String attribute, Object value) { return lte(new Entity<>(entity), attribute, value); }
 	public Aggregator lteOrNull		(Class<?> entity, String attribute, Object value) { return lteOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator lteIfNotNull	(Class<?> entity, String attribute, Object value) { return lteIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator lteOrFalseIfNull(Class<?> entity, String attribute, Object value) { return lteOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gt    		(Class<?> entity, String attribute, Object value) { return gt(new Entity<>(entity), attribute, value); }
 	public Aggregator gtIfNotNull   (Class<?> entity, String attribute, Object value) { return gtIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator gtOrFalseIfNull(Class<?> entity, String attribute, Object value) { return gtOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gtOrNull		(Class<?> entity, String attribute, Object value) { return gtOrNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gte   		(Class<?> entity, String attribute, Object value) { return gte(new Entity<>(entity), attribute, value); }
 	public Aggregator gteIfNotNull  (Class<?> entity, String attribute, Object value) { return gteIfNotNull(new Entity<>(entity), attribute, value); }
+	public Aggregator gteOrFalseIfNull(Class<?> entity, String attribute, Object value) { return gteOrFalseIfNull(new Entity<>(entity), attribute, value); }
 	public Aggregator gteOrNull		(Class<?> entity, String attribute, Object value) { return gteOrNull(new Entity<>(entity), attribute, value); }
 
 	
@@ -415,6 +430,7 @@ public class Aggregator implements EstivateNode {
 
 	public <T, P> Aggregator eq    		(AttributeGetter<T, P> function, P value) { add(Estivate.eq(function, value)); return this; }
 	public <T, P> Aggregator eqIfNotNull   (AttributeGetter<T, P> function, P value) { add(Estivate.eqIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator eqOrFalseIfNull(AttributeGetter<T, P> function, P value) { add(Estivate.eqOrFalseIfNull(function, value)); return this; }
 	public <T> 	  Aggregator eqIfNotBlank  (AttributeGetter<T, String> function, String value) { add(Estivate.eqIfNotBlank(function, value)); return this; }
 	public <T, P> Aggregator eqNullable    (AttributeGetter<T, P> function, P value) { add(Estivate.eqNullable(function, value)); return this; }
 	public <T, P> Aggregator eqOrNull		(AttributeGetter<T, P> function, P value) { add(Estivate.eqOrNull(function, value)); return this; }
@@ -427,17 +443,21 @@ public class Aggregator implements EstivateNode {
 	
 	public <T, P> Aggregator lt    	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.lt(function, value)); return this; }
 	public <T, P> Aggregator ltIfNotNull   	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.ltIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator ltOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.ltOrFalseIfNull(function, value)); return this; }
 	public <T, P> Aggregator ltOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.ltOrNull(function, value)); return this; }
 	public <T, P> Aggregator lte   	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.lte(function, value)); return this; }
 	public <T, P> Aggregator lteIfNotNull  	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.lteIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator lteOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.lteOrFalseIfNull(function, value)); return this; }
 	public <T, P> Aggregator lteOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.lteOrNull(function, value)); return this; }
 	
 	public <T, P> Aggregator gt    	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.gt(function, value)); return this; }
 	public <T, P> Aggregator gtIfNotNull   	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gtIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator gtOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gtOrFalseIfNull(function, value)); return this; }
 	public <T, P> Aggregator gtOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.gtOrNull(function, value)); return this; }
 	
 	public <T, P> Aggregator gte   	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.gte(function, value)); return this; }
 	public <T, P> Aggregator gteIfNotNull  	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gteIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator gteOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gteOrFalseIfNull(function, value)); return this; }
 	public <T, P> Aggregator gteOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.gteOrNull(function, value)); return this; }
 
 	public <T, P> Aggregator between 	(AttributeGetter<T, P> function, P min, P max)		{ add(Estivate.between(function, min, max)); return this; }

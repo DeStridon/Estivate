@@ -162,6 +162,46 @@ public class SelectQueryJoinTest {
 
 	
 	}
+
+	/**
+	 * OrderLineEntity.productName is {@code @Transient} + {@code @Projection.Attribute} to ProductEntity.name.
+	 * Fetching with a join should populate that field from the joined product.
+	 */
+	@Test
+	public void transientProjectionAttributeFilledFromJoin() {
+		ProductEntity product = ProductEntity.builder()
+			.name("Joined Product")
+			.category(ProductEntity.ProductCategory.Electronics)
+			.price(9.99f)
+			.stock(1)
+			.build();
+		context.insert(product);
+
+		OrderEntity order = OrderEntity.builder()
+			.customerId(1L)
+			.status(OrderEntity.OrderStatus.PENDING)
+			.build();
+		context.insert(order);
+
+		OrderLineEntity line = OrderLineEntity.builder()
+			.orderId(order.getId())
+			.productId(product.getId())
+			.amount(2)
+			.unitPrice(9.99f)
+			.totalPrice(19.98f)
+			.build();
+		context.insert(line);
+
+		OrderLineEntity fetched = Estivate.selectQuery(OrderLineEntity.class)
+			.joinInner(OrderLineEntity.class, ProductEntity.class)
+			.eq(OrderLineEntity::getOrderId, order.getId())
+			.eq(OrderLineEntity::getProductId, product.getId())
+			.extractSingle(context);
+
+		Assert.assertNotNull(fetched);
+		Assert.assertEquals(product.getId(), fetched.getProductId());
+		Assert.assertEquals("Joined Product", fetched.getProductName());
+	}
 	
 	
 }

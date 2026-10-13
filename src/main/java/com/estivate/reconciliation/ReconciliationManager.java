@@ -172,7 +172,7 @@ public class ReconciliationManager {
         List<String> projectedFieldNames = new ArrayList<>();
 
         // Check for fields in entity but not in database
-        for (Field entityField : FieldUtils.getEntityFields(entityClass)) {
+        for (Field entityField : FieldUtils.getPersistableFields(entityClass)) {
 
             
             EntityColumn projectedColumn = context.entityColumn(entityField);

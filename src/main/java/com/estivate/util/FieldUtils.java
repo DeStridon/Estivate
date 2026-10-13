@@ -57,7 +57,8 @@ public class FieldUtils {
 				if(field.isSynthetic()) {
 					continue;
 				}
-				if(field.isAnnotationPresent(javax.persistence.Transient.class) || field.isAnnotationPresent(jakarta.persistence.Transient.class)) {
+				// Skip @Transient unless it also carries a @Projection.* mapping (joined / computed fetch field)
+				if(isTransient(field) && !hasProjectionAnnotation(field)) {
 					continue;
 				}
 				if(field.getType() == org.slf4j.Logger.class) {
@@ -76,6 +77,41 @@ public class FieldUtils {
 		
 		return fields;
 		
+	}
+
+	public static boolean isTransient(Field field) {
+		return field != null && (
+			field.isAnnotationPresent(javax.persistence.Transient.class)
+			|| field.isAnnotationPresent(jakarta.persistence.Transient.class));
+	}
+
+	/** Persistable fields are written to / read as table columns (not @Transient). */
+	public static boolean isPersistable(Field field) {
+		return field != null && !isTransient(field);
+	}
+
+	public static boolean hasProjectionAnnotation(Field field) {
+		if(field == null) {
+			return false;
+		}
+		return field.getDeclaredAnnotation(Projection.Attribute.class) != null
+			|| field.getDeclaredAnnotation(Projection.Count.class) != null
+			|| field.getDeclaredAnnotation(Projection.CountDistinct.class) != null
+			|| field.getDeclaredAnnotation(Projection.Sum.class) != null
+			|| field.getDeclaredAnnotation(Projection.Min.class) != null
+			|| field.getDeclaredAnnotation(Projection.Max.class) != null
+			|| field.getDeclaredAnnotation(Projection.Avg.class) != null
+			|| field.getDeclaredAnnotation(Projection.IsNull.class) != null
+			|| field.getDeclaredAnnotation(Projection.IsNotNull.class) != null
+			|| field.getDeclaredAnnotation(Projection.Function.class) != null
+			|| field.getDeclaredAnnotation(Projection.Nested.class) != null;
+	}
+
+	/** Persistable entity fields only (excludes @Transient projection mappings). */
+	public static Set<Field> getPersistableFields(Class<?> objectClass) {
+		return getEntityFields(objectClass).stream()
+			.filter(FieldUtils::isPersistable)
+			.collect(Collectors.toSet());
 	}
 	
 	

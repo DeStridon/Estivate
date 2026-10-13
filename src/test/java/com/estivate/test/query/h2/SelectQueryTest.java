@@ -1,4 +1,4 @@
-package com.estivate.test.query;
+package com.estivate.test.query.h2;
 
 import java.util.ArrayList;
 import java.util.List;

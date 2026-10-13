@@ -84,19 +84,23 @@ Do not `extractList` full entities then map/count/distinct in Java when only one
 ## Filters & empty collections
 
 - Optional string filters: `eqIfNotBlank(attribute, value)` — do **not** wrap `.eq(...)` in `if (value != null && !value.isBlank())` / `if (StringUtils.isNotBlank(value))`.
-- Optional non-string filters: `eqIfNotNull`, `inIfNotEmpty`, etc.
+- Optional non-string filters: `eqIfNotNull`, `inIfNotEmpty`, `ltIfNotNull`, `gtIfNotNull`, `lteIfNotNull`, `gteIfNotNull`, etc.
+- Do **not** wrap a single comparison in `addIf(value != null, Estivate.eq(...))` / `if (value != null) query.eq(...)`. Use the matching `*IfNotNull` / `*IfNotBlank` / `*IfNotEmpty` helper on the query.
+- `addIf` remains appropriate for compound predicates (e.g. an `or(...)` of several likes) or conditions that are not a single optional comparison.
 - `IN` that must stay valid when empty: `inOrFalseIfEmpty` / `inOrNull` — never pass an empty collection to a raw `in`.
 
 Prefer:
 
 ```java
 .eqIfNotBlank(CourseEntity::getUuid, courseUuid);
+query.eqIfNotNull(WorkspaceContactEntity.class, WorkspaceContactEntity.Fields.lifecycleStage, lifecycle);
 ```
 
 Avoid:
 
 ```java
 if (courseUuid != null && !courseUuid.isBlank()) query.eq(CourseEntity::getUuid, courseUuid);
+query.addIf(lifecycle != null, Estivate.eq(WorkspaceContactEntity.class, WorkspaceContactEntity.Fields.lifecycleStage, lifecycle));
 ```
 
 ## Style
@@ -150,5 +154,6 @@ On **single-entity** queries (no join), `Fields.x` or `Entity::getField` are bot
 - [ ] No full-entity extractList for aggregate-only work
 - [ ] Empty `IN` lists handled with `*OrFalseIfEmpty` / `*IfNotEmpty`
 - [ ] Optional string filter? → `eqIfNotBlank` (not `if (…isBlank()) query.eq(...)`)
+- [ ] Optional scalar filter? → `eqIfNotNull` / `*IfNotNull` (not `addIf(value != null, Estivate.eq(...))`)
 - [ ] Fluent query chains broken one method per line (not a single packed line)
 - [ ] Joined queries use `Entity::getField` for criteria / order / select (not `Entity.class, Fields.x`)

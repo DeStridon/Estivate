@@ -1,8 +1,10 @@
 package com.estivate.test.entities;
 
 import com.estivate.Entity.VirtualForeignKey;
+import com.estivate.query.Projection;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,5 +32,10 @@ public class OrderLineEntity {
     float unitPrice;
 
     float totalPrice;
+
+    /** Filled on fetch when ProductEntity is joined; not persisted. */
+    @Transient
+    @Projection.Attribute(entity = ProductEntity.class, attribute = "name")
+    String productName;
 
 }

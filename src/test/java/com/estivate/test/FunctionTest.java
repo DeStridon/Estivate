@@ -13,7 +13,7 @@ public class FunctionTest {
 		
 		Attribute.Function function = Estivate.function(Estivate.Functions.charLength, Estivate.Functions.json_extract("path"));
 
-		Assert.assertEquals("char_length(JSON_EXTRACT(attribute, \"path\"))", function.render("attribute"));
+		Assert.assertEquals("char_length(JSON_EXTRACT(attribute, 'path'))", function.render("attribute"));
 		
 	}
 

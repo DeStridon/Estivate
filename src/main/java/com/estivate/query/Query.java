@@ -137,6 +137,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q eq   			(Attribute attribute, Object value)	{ super.eq(attribute, value);  return self(); }
 	public Q eqIfNotNull   	(Attribute attribute, Object value) { super.eqIfNotNull(attribute, value);  return self(); }
+	public Q eqOrFalseIfNull	(Attribute attribute, Object value) { super.eqOrFalseIfNull(attribute, value); return self(); }
 	public Q eqIfNotBlank  	(Attribute attribute, String value) { super.eqIfNotBlank(attribute, value);  return self(); }
 	public Q eqNullable		(Attribute attribute, Object value) { super.eqNullable(attribute, value); return self(); }
 	public Q notEq			(Attribute attribute, Object value) { super.notEq(attribute, value);  return self(); }
@@ -146,15 +147,19 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q lt   			(Attribute attribute, Object value) { super.lt(attribute, value);  return self(); }
 	public Q ltIfNotNull	(Attribute attribute, Object value) { super.ltIfNotNull(attribute, value);  return self(); }
+	public Q ltOrFalseIfNull	(Attribute attribute, Object value) { super.ltOrFalseIfNull(attribute, value); return self(); }
 	
 	public Q lte  			(Attribute attribute, Object value) { super.lte(attribute, value);  return self(); }
 	public Q lteIfNotNull  	(Attribute attribute, Object value) { super.lteIfNotNull(attribute, value);  return self(); }
+	public Q lteOrFalseIfNull	(Attribute attribute, Object value) { super.lteOrFalseIfNull(attribute, value); return self(); }
 	
 	
 	public Q gt   	(Attribute attribute, Object value)        		{ super.gt(attribute, value);  return self(); }
 	public Q gtIfNotNull   		(Attribute attribute, Object value)   { super.gtIfNotNull(attribute, value);  return self(); }
+	public Q gtOrFalseIfNull	(Attribute attribute, Object value)   { super.gtOrFalseIfNull(attribute, value); return self(); }
 	public Q gte  	(Attribute attribute, Object value)        		{ super.gte(attribute, value);  return self(); }
 	public Q gteIfNotNull  		(Attribute attribute, Object value)   { super.gteIfNotNull(attribute, value);  return self(); }
+	public Q gteOrFalseIfNull	(Attribute attribute, Object value)   { super.gteOrFalseIfNull(attribute, value); return self(); }
 	
 	public Q between(Attribute attribute, Object min, Object max) 	{ super.between(attribute, min, max); return self(); }
 	public Q betweenIfNotNull	(Attribute attribute, Object min, Object max) { super.betweenIfNotNull(attribute, min, max); return self(); }
@@ -248,6 +253,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 
 	public Q eq   			(String attribute, Object value) { super.eq(this.entity, attribute, value);  return self(); }
 	public Q eqIfNotNull   	(String attribute, Object value) { super.eqIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q eqOrFalseIfNull	(String attribute, Object value) { super.eqOrFalseIfNull(this.entity, attribute, value); return self(); }
 	public Q eqIfNotBlank   (String attribute, String value) { super.eqIfNotBlank(this.entity, attribute, value); return self(); }
 	public Q eqNullable		(String attribute, Object value) { super.eqNullable(this.entity, attribute, value); return self(); }
 	public Q notEq			(String attribute, Object value) { super.notEq(this.entity, attribute, value);  return self(); }
@@ -257,15 +263,19 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q lt   			(String attribute, Object value) { super.lt(this.entity, attribute, value);  return self(); }
 	public Q ltIfNotNull	(String attribute, Object value) { super.ltIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q ltOrFalseIfNull	(String attribute, Object value) { super.ltOrFalseIfNull(this.entity, attribute, value); return self(); }
 	
 	public Q lte  			(String attribute, Object value) { super.lte(this.entity, attribute, value);  return self(); }
 	public Q lteIfNotNull  	(String attribute, Object value) { super.lteIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q lteOrFalseIfNull	(String attribute, Object value) { super.lteOrFalseIfNull(this.entity, attribute, value); return self(); }
 	
 	
 	public Q gt   			(String attribute, Object value) { super.gt(this.entity, attribute, value);  return self(); }
 	public Q gtIfNotNull   	(String attribute, Object value) { super.gtIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q gtOrFalseIfNull	(String attribute, Object value) { super.gtOrFalseIfNull(this.entity, attribute, value); return self(); }
 	public Q gte  			(String attribute, Object value) { super.gte(this.entity, attribute, value);  return self(); }
 	public Q gteIfNotNull  	(String attribute, Object value) { super.gteIfNotNull(this.entity, attribute, value);  return self(); }
+	public Q gteOrFalseIfNull	(String attribute, Object value) { super.gteOrFalseIfNull(this.entity, attribute, value); return self(); }
 	
 	public Q between(String attribute, Object min, Object max) { super.between(this.entity, attribute, min, max); return self(); }
 	public Q betweenIfNotNull	(String attribute, Object min, Object max) { super.betweenIfNotNull(this.entity, attribute, min, max); return self(); }
@@ -360,6 +370,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	// Class wrappers
 	public Q eq   			(Class<?> entity, String attribute, Object value)	{ super.eq(entity, attribute, value);  return self(); }
 	public Q eqIfNotNull   (Class<?> entity, String attribute, Object value)   { super.eqIfNotNull(entity, attribute, value);  return self(); }
+	public Q eqOrFalseIfNull(Class<?> entity, String attribute, Object value)   { super.eqOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q eqIfNotBlank  (Class<?> entity, String attribute, String value)   { super.eqIfNotBlank(entity, attribute, value); return self(); }
 	public Q eqNullable	(Class<?> entity, String attribute, Object value)   { super.eqNullable(entity, attribute, value); return self(); }
 	public Q notEq			(Class<?> entity, String attribute, Object value)   { super.notEq(entity, attribute, value);  return self(); }
@@ -369,15 +380,19 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	
 	public Q lt   			(Class<?> entity, String attribute, Object value)   { super.lt(entity, attribute, value);  return self(); }
 	public Q ltIfNotNull	(Class<?> entity, String attribute, Object value)   { super.ltIfNotNull(entity, attribute, value);  return self(); }
+	public Q ltOrFalseIfNull	(Class<?> entity, String attribute, Object value)   { super.ltOrFalseIfNull(entity, attribute, value); return self(); }
 	
 	public Q lte  			(Class<?> entity, String attribute, Object value)   { super.lte   (entity, attribute, value);  return self(); }
 	public Q lteIfNotNull  (Class<?> entity, String attribute, Object value)   { super.lteIfNotNull  (entity, attribute, value);  return self(); }
+	public Q lteOrFalseIfNull(Class<?> entity, String attribute, Object value)   { super.lteOrFalseIfNull(entity, attribute, value); return self(); }
 	
 	
 	public Q gt   			(Class<?> entity, String attribute, Object value)   { super.gt    (entity, attribute, value);  return self(); }
 	public Q gtIfNotNull 	(Class<?> entity, String attribute, Object value)   { super.gtIfNotNull   (entity, attribute, value);  return self(); }
+	public Q gtOrFalseIfNull	(Class<?> entity, String attribute, Object value)   { super.gtOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q gte  			(Class<?> entity, String attribute, Object value)   { super.gte   (entity, attribute, value);  return self(); }
 	public Q gteIfNotNull	(Class<?> entity, String attribute, Object value)   { super.gteIfNotNull  (entity, attribute, value);  return self(); }
+	public Q gteOrFalseIfNull	(Class<?> entity, String attribute, Object value)   { super.gteOrFalseIfNull(entity, attribute, value); return self(); }
 	
 	public Q between			(Class<?> entity, String attribute, Object min, Object max) 	{ super.between(entity, attribute, min, max); return self(); }
 	public Q betweenIfNotNull	(Class<?> entity, String attribute, Object min, Object max) { super.betweenIfNotNull(entity, attribute, min, max); return self(); }
@@ -535,10 +550,15 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q notLikeContainsIn(Entity<?> entity, String attribute, Collection<String> values)	{ super.notLikeContainsIn(entity, attribute, values);	return self(); }
 
 	public Q eqIfNotNull   		(Entity<?> entity, String attribute, Object value)        	{ super.eqIfNotNull   (entity, attribute, value);  return self(); }
+	public Q eqOrFalseIfNull	(Entity<?> entity, String attribute, Object value)        	{ super.eqOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q ltIfNotNull   		(Entity<?> entity, String attribute, Object value)        	{ super.ltIfNotNull   (entity, attribute, value);  return self(); }
+	public Q ltOrFalseIfNull	(Entity<?> entity, String attribute, Object value)        	{ super.ltOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q gtIfNotNull   		(Entity<?> entity, String attribute, Object value)        	{ super.gtIfNotNull   (entity, attribute, value);  return self(); }
+	public Q gtOrFalseIfNull	(Entity<?> entity, String attribute, Object value)        	{ super.gtOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q lteIfNotNull  		(Entity<?> entity, String attribute, Object value)        	{ super.lteIfNotNull  (entity, attribute, value);  return self(); }
+	public Q lteOrFalseIfNull	(Entity<?> entity, String attribute, Object value)        	{ super.lteOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q gteIfNotNull  		(Entity<?> entity, String attribute, Object value)        	{ super.gteIfNotNull  (entity, attribute, value);  return self(); }
+	public Q gteOrFalseIfNull	(Entity<?> entity, String attribute, Object value)        	{ super.gteOrFalseIfNull(entity, attribute, value); return self(); }
 	public Q betweenIfNotNull	(Entity<?> entity, String attribute, Object min, Object max){ super.betweenIfNotNull (entity, attribute, min, max); return self(); }
 	
 	public Q notInIfNotEmpty   	(Entity<?> entity, String attribute, Collection<?> values) 	{ super.notInIfNotEmpty   (entity, attribute, values); return self(); }
@@ -603,6 +623,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	/* Wrappers for Lambda */
 	public <T, P> Q eq   			(AttributeGetter<T, P> function, P value) { super.eq(function, value);  return self(); }
 	public <T, P> Q eqIfNotNull   	(AttributeGetter<T, P> function, P value) { super.eqIfNotNull(function, value);  return self(); }
+	public <T, P> Q eqOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.eqOrFalseIfNull(function, value); return self(); }
 	public <T>    Q eqIfNotBlank    (AttributeGetter<T, String> function, String value) { super.eqIfNotBlank(function, value); return self(); }
 	public <T, P> Q eqNullable		(AttributeGetter<T, P> function, P value) { super.eqNullable(function, value); return self(); }
 	public <T, P> Q eqOrNull		(AttributeGetter<T, P> function, P value) { super.eqOrNull(function, value); return self(); }
@@ -614,17 +635,21 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 
 	public <T, P> Q lt   			(AttributeGetter<T, P> function, P value) { super.lt(function, value);  return self(); }
 	public <T, P> Q ltIfNotNull		(AttributeGetter<T, P> function, P value) { super.ltIfNotNull(function, value);  return self(); }
+	public <T, P> Q ltOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.ltOrFalseIfNull(function, value); return self(); }
 	public <T, P> Q ltOrNull		(AttributeGetter<T, P> function, P value) { super.ltOrNull(function, value); return self(); }
 
 	public <T, P> Q lte  		(AttributeGetter<T, P> function, P value) { super.lte(function, value);  return self(); }
 	public <T, P> Q lteIfNotNull  	(AttributeGetter<T, P> function, P value) { super.lteIfNotNull(function, value);  return self(); }
+	public <T, P> Q lteOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.lteOrFalseIfNull(function, value); return self(); }
 	public <T, P> Q lteOrNull		(AttributeGetter<T, P> function, P value) { super.lteOrNull(function, value); return self(); }
 	
 	public <T, P> Q gt   			(AttributeGetter<T, P> function, P value) { super.gt(function, value);  return self(); }
 	public <T, P> Q gtIfNotNull   	(AttributeGetter<T, P> function, P value) { super.gtIfNotNull(function, value);  return self(); }
+	public <T, P> Q gtOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.gtOrFalseIfNull(function, value); return self(); }
 	public <T, P> Q gtOrNull		(AttributeGetter<T, P> function, P value) { super.gtOrNull(function, value); return self(); }
 	public <T, P> Q gte  			(AttributeGetter<T, P> function, P value) { super.gte(function, value);  return self(); }
 	public <T, P> Q gteIfNotNull  	(AttributeGetter<T, P> function, P value) { super.gteIfNotNull(function, value);  return self(); }
+	public <T, P> Q gteOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.gteOrFalseIfNull(function, value); return self(); }
 	public <T, P> Q gteOrNull		(AttributeGetter<T, P> function, P value) { super.gteOrNull(function, value); return self(); }
 	
 	public <T, P> Q between			(AttributeGetter<T, P> function, P min, P max) { super.between(function, min, max); return self(); }
@@ -749,6 +774,13 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 			String attribute = (eqIfNotNull.attribute() != null) ? eqIfNotNull.attribute() : field.getName();
 			return this.eqIfNotNull(eqIfNotNull.entity() == void.class ? this.entity.entity : eqIfNotNull.entity(), attribute, value);
 		}
+
+		// Handle @EqOrFalseIfNull annotation
+		QueryMapping.EqOrFalseIfNull eqOrFalseIfNull = field.getAnnotation(QueryMapping.EqOrFalseIfNull.class);
+		if (eqOrFalseIfNull != null) {
+			String attribute = (eqOrFalseIfNull.attribute() != null) ? eqOrFalseIfNull.attribute() : field.getName();
+			return this.eqOrFalseIfNull(eqOrFalseIfNull.entity() == void.class ? this.entity.entity : eqOrFalseIfNull.entity(), attribute, value);
+		}
 		
 		// Handle @EqNullable annotation
 		QueryMapping.EqNullable eqNullable = field.getAnnotation(QueryMapping.EqNullable.class);
@@ -791,6 +823,13 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 			String attribute = (ltIfNotNull.attribute() != null) ? ltIfNotNull.attribute() : field.getName();
 			return this.ltIfNotNull(ltIfNotNull.entity() == void.class ? this.entity.entity : ltIfNotNull.entity(), attribute, value);
 		}
+
+		// Handle @LtOrFalseIfNull annotation
+		QueryMapping.LtOrFalseIfNull ltOrFalseIfNull = field.getAnnotation(QueryMapping.LtOrFalseIfNull.class);
+		if (ltOrFalseIfNull != null) {
+			String attribute = (ltOrFalseIfNull.attribute() != null) ? ltOrFalseIfNull.attribute() : field.getName();
+			return this.ltOrFalseIfNull(ltOrFalseIfNull.entity() == void.class ? this.entity.entity : ltOrFalseIfNull.entity(), attribute, value);
+		}
 		
 		// Handle @Lte annotation
 		QueryMapping.Lte lte = field.getAnnotation(QueryMapping.Lte.class);
@@ -804,6 +843,13 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 		if (lteIfNotNull != null) {
 			String attribute = (lteIfNotNull.attribute() != null) ? lteIfNotNull.attribute() : field.getName();
 			return this.lteIfNotNull(lteIfNotNull.entity() == void.class ? this.entity.entity : lteIfNotNull.entity(), attribute, value);
+		}
+
+		// Handle @LteOrFalseIfNull annotation
+		QueryMapping.LteOrFalseIfNull lteOrFalseIfNull = field.getAnnotation(QueryMapping.LteOrFalseIfNull.class);
+		if (lteOrFalseIfNull != null) {
+			String attribute = (lteOrFalseIfNull.attribute() != null) ? lteOrFalseIfNull.attribute() : field.getName();
+			return this.lteOrFalseIfNull(lteOrFalseIfNull.entity() == void.class ? this.entity.entity : lteOrFalseIfNull.entity(), attribute, value);
 		}
 		
 		// Handle @Gte annotation
@@ -819,6 +865,13 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 			String attribute = (gtIfNotNull.attribute() != null) ? gtIfNotNull.attribute() : field.getName();
 			return this.gtIfNotNull(gtIfNotNull.entity() == void.class ? this.entity.entity : gtIfNotNull.entity(), attribute, value);
 		}
+
+		// Handle @GtOrFalseIfNull annotation
+		QueryMapping.GtOrFalseIfNull gtOrFalseIfNull = field.getAnnotation(QueryMapping.GtOrFalseIfNull.class);
+		if (gtOrFalseIfNull != null) {
+			String attribute = (gtOrFalseIfNull.attribute() != null) ? gtOrFalseIfNull.attribute() : field.getName();
+			return this.gtOrFalseIfNull(gtOrFalseIfNull.entity() == void.class ? this.entity.entity : gtOrFalseIfNull.entity(), attribute, value);
+		}
 		
 		// Handle @Gte annotation
 		QueryMapping.Gte gte = field.getAnnotation(QueryMapping.Gte.class);
@@ -832,6 +885,13 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 		if (gteIfNotNull != null) {
 			String attribute = (gteIfNotNull.attribute() != null) ? gteIfNotNull.attribute() : field.getName();
 			return this.gteIfNotNull(gteIfNotNull.entity() == void.class ? this.entity.entity : gteIfNotNull.entity(), attribute, value);
+		}
+
+		// Handle @GteOrFalseIfNull annotation
+		QueryMapping.GteOrFalseIfNull gteOrFalseIfNull = field.getAnnotation(QueryMapping.GteOrFalseIfNull.class);
+		if (gteOrFalseIfNull != null) {
+			String attribute = (gteOrFalseIfNull.attribute() != null) ? gteOrFalseIfNull.attribute() : field.getName();
+			return this.gteOrFalseIfNull(gteOrFalseIfNull.entity() == void.class ? this.entity.entity : gteOrFalseIfNull.entity(), attribute, value);
 		}
 	
 		// Handle @Like annotation

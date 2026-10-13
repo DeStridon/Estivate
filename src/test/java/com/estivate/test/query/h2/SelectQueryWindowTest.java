@@ -1,4 +1,4 @@
-package com.estivate.test.query;
+package com.estivate.test.query.h2;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Disabled;
