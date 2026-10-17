@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -32,7 +34,11 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
-//import com.estivate.context.MySQLContext.MainDimension;
+import com.estivate.context.Filter.AlterFilter;
+import com.estivate.context.Filter.DeleteFilter;
+import com.estivate.context.Filter.InsertFilter;
+import com.estivate.context.Filter.SelectFilter;
+import com.estivate.context.Filter.UpdateFilter;
 import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
@@ -73,18 +79,55 @@ public abstract class Context {
 	public ZoneId serverZoneId = ZoneOffset.systemDefault();
 	
 	
+	/**
+	 * Legacy pre-processor hooks, applied via {@code preExecute}/{@code preInsert} before filters.
+	 * Prefer {@link #selectFilters} / {@link #addSelectFilter(SelectFilter)} for new chainable filters;
+	 * both systems coexist.
+	 */
 	public Consumer<SelectQuery<?>> selectInterceptor = null;
+	/** @see #selectInterceptor */
 	public Consumer<UpdateQuery<?>> updateInterceptor = null;
+	/** @see #selectInterceptor */
 	public Consumer<DeleteQuery<?>> deleteInterceptor = null;
+	/** @see #selectInterceptor */
 	public Consumer<InsertQuery<?>> insertInterceptor = null;
+	/** @see #selectInterceptor */
 	public Consumer<AlterQuery<?>> alterInterceptor = null;
-	
-	// public Consumer<List<?>> updatePostConsumer = null;
-	// public Consumer<List<?>> insertPostConsumer = null;
-		
+
+	public final List<SelectFilter> selectFilters = new ArrayList<>();
+	public final List<UpdateFilter> updateFilters = new ArrayList<>();
+	public final List<DeleteFilter> deleteFilters = new ArrayList<>();
+	public final List<InsertFilter> insertFilters = new ArrayList<>();
+	public final List<AlterFilter> alterFilters = new ArrayList<>();
+
 	public Context(DataSource datasource, Dialect dialect) {
 		this.datasource = datasource;
 		this.dialect = dialect;
+	}
+
+	public Context addSelectFilter(SelectFilter filter) {
+		selectFilters.add(filter);
+		return this;
+	}
+
+	public Context addUpdateFilter(UpdateFilter filter) {
+		updateFilters.add(filter);
+		return this;
+	}
+
+	public Context addDeleteFilter(DeleteFilter filter) {
+		deleteFilters.add(filter);
+		return this;
+	}
+
+	public Context addInsertFilter(InsertFilter filter) {
+		insertFilters.add(filter);
+		return this;
+	}
+
+	public Context addAlterFilter(AlterFilter filter) {
+		alterFilters.add(filter);
+		return this;
 	}
 	
 	// ==================== HELPER METHODS ====================
@@ -126,12 +169,12 @@ public abstract class Context {
 	
 	
 	/**
-	 * Pre-processes a query before execution
+	 * Legacy interceptor pre-processing: clone the query then run the matching interceptor.
+	 * Filters are applied separately afterwards via {@code apply*Filters}.
 	 */
 	private Query<?,?> preExecute(Query<?,?> query) {
 		Query<?,?> clonedQuery = query.clone();
-		
-		// Route to specific preprocessors based on query type
+
 		if(query instanceof SelectQuery && selectInterceptor != null) {
 			selectInterceptor.accept((SelectQuery<?>) clonedQuery);
 		}
@@ -141,22 +184,18 @@ public abstract class Context {
 		else if(query instanceof DeleteQuery && deleteInterceptor != null) {
 			deleteInterceptor.accept((DeleteQuery<?>) clonedQuery);
 		}
-		
+
 		return clonedQuery;
 	}
 
 	private AlterQuery<?> preExecute(AlterQuery<?> query) {
 		AlterQuery<?> clonedQuery = query.clone();
-		if(alterInterceptor != null){
+		if(alterInterceptor != null) {
 			alterInterceptor.accept(clonedQuery);
 		}
 		return clonedQuery;
 	}
 
-	
-	/**
-	 * Pre-processes an object before insert
-	 */
 	private <U> InsertQuery<U> preInsert(InsertQuery<U> query) {
 		InsertQuery<U> clonedQuery = query.clone();
 		if(insertInterceptor != null) {
@@ -165,39 +204,132 @@ public abstract class Context {
 		return clonedQuery;
 	}
 
+	private ResultTable applySelectFilters(SelectQuery<?> query, Function<SelectQuery<?>, ResultTable> terminal) {
+		Function<SelectQuery<?>, ResultTable> proceed = terminal;
 
+		for(int i = selectFilters.size() - 1; i >= 0; i--) {
+			SelectFilter filter = selectFilters.get(i);
+			Function<SelectQuery<?>, ResultTable> next = proceed;
+			proceed = q -> filter.filter(q, next);
+		}
 
-	// ==================== EXECUTE METHODS ====================
+		return proceed.apply(query);
+	}
+
+	private Boolean applyUpdateFilters(UpdateQuery<?> query, Function<UpdateQuery<?>, Boolean> terminal) {
+		Function<UpdateQuery<?>, Boolean> proceed = terminal;
+
+		for(int i = updateFilters.size() - 1; i >= 0; i--) {
+			UpdateFilter filter = updateFilters.get(i);
+			Function<UpdateQuery<?>, Boolean> next = proceed;
+			proceed = q -> filter.filter(q, next);
+		}
+
+		return proceed.apply(query);
+	}
+
+	private Boolean applyDeleteFilters(DeleteQuery<?> query, Function<DeleteQuery<?>, Boolean> terminal) {
+		Function<DeleteQuery<?>, Boolean> proceed = terminal;
+
+		for(int i = deleteFilters.size() - 1; i >= 0; i--) {
+			DeleteFilter filter = deleteFilters.get(i);
+			Function<DeleteQuery<?>, Boolean> next = proceed;
+			proceed = q -> filter.filter(q, next);
+		}
+
+		return proceed.apply(query);
+	}
+
+	private <U> Void applyInsertFilters(InsertQuery<U> query, Function<InsertQuery<U>, Void> terminal) {
+		Function<InsertQuery<?>, Void> proceed = q -> terminal.apply((InsertQuery<U>) q);
+
+		for(int i = insertFilters.size() - 1; i >= 0; i--) {
+			InsertFilter filter = insertFilters.get(i);
+			Function<InsertQuery<?>, Void> next = proceed;
+			proceed = q -> filter.filter(q, next);
+		}
+
+		return proceed.apply(query);
+	}
+
+	private Boolean applyAlterFilters(AlterQuery<?> query, Function<AlterQuery<?>, Boolean> terminal) {
+		Function<AlterQuery<?>, Boolean> proceed = terminal;
+
+		for(int i = alterFilters.size() - 1; i >= 0; i--) {
+			AlterFilter filter = alterFilters.get(i);
+			Function<AlterQuery<?>, Boolean> next = proceed;
+			proceed = q -> filter.filter(q, next);
+		}
+
+		return proceed.apply(query);
+	}
 
 	@SneakyThrows
-	public Boolean execute(Query<?,?> query, Chronometer chronometer) {
+	private Boolean executeTerminal(Query<?,?> query, Chronometer chronometer) {
 		chronometer.step("execute::start");
 		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(preExecute(query), connection)) {
+			Statement statement = queryAsStatement(query, connection)) {
 			chronometer.step("execute::getconnectionAndStatement");
 			Boolean result = statement.executeForValidation();
 			chronometer.step("execute::result");
 			return result;
-
 		}
+	}
+
+	@SneakyThrows
+	private String queryAsStringTerminal(Query<?,?> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = queryAsStatement(query, connection);) {
+			return statement.query();
+		}
+	}
+
+	@SneakyThrows
+	private String queryAsStringTerminal(AlterQuery<?> query) {
+		try(Connection connection = datasource.getConnection();
+			Statement statement = queryAsStatement(query, connection);) {
+			return statement.query();
+		}
+	}
+
+	// ==================== EXECUTE METHODS ====================
+
+	public Boolean execute(Query<?,?> query, Chronometer chronometer) {
+		if(query instanceof UpdateQuery) {
+			return applyUpdateFilters((UpdateQuery<?>) preExecute(query), q -> executeTerminal(q, chronometer));
+		}
+		if(query instanceof DeleteQuery) {
+			return applyDeleteFilters((DeleteQuery<?>) preExecute(query), q -> executeTerminal(q, chronometer));
+		}
+		if(query instanceof SelectQuery) {
+			AtomicReference<Boolean> result = new AtomicReference<>(Boolean.TRUE);
+			applySelectFilters((SelectQuery<?>) preExecute(query), q -> {
+				result.set(executeTerminal(q, chronometer));
+				return new ResultTable(this, new String[0], q);
+			});
+			return result.get();
+		}
+		return executeTerminal(preExecute(query), chronometer);
 	}
 
 	public Boolean execute(Query<?,?> query) {
 		return execute(query, new Chronometer("execute"));
 	}
 
-	@SneakyThrows
 	public Boolean execute(AlterQuery<?> query) {
-
 		if(query.getOperations() == null || query.getOperations().isEmpty()) {
 			throw new RuntimeException("ALTER TABLE query must have at least one operation");
 		}
 
+		return applyAlterFilters(preExecute(query), this::executeAlterTerminal);
+	}
+
+	@SneakyThrows
+	private Boolean executeAlterTerminal(AlterQuery<?> query) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = queryAsStatement(query, connection)){
 			return statement.executeForValidation();
 		}
-
 	}
 
 	@SneakyThrows
@@ -294,18 +426,23 @@ public abstract class Context {
 		
 	}
 
-	@SneakyThrows
 	public <T> void execute(InsertQuery<T> query, Chronometer chronometer) {
-
 		if(query.getValues() == null || query.getValues().isEmpty()) {
 			return;
 		}
-		
+
+		applyInsertFilters(preInsert(query), q -> {
+			executeInsertTerminal(q, chronometer);
+			return null;
+		});
+	}
+
+	@SneakyThrows
+	private <T> void executeInsertTerminal(InsertQuery<T> query, Chronometer chronometer) {
 		try(Connection connection = datasource.getConnection();
 			Statement statement = new Statement(this, connection); ){
-	
+
 			chronometer.step("executeInsert::start");
-			query = preInsert(query);
 			chronometer.step("executeInsert::preInsert");
 			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
 			chronometer.step("executeInsert::appendQuery");
@@ -331,7 +468,7 @@ public abstract class Context {
 			}
 
 			chronometer.step("executeInsert::appendValues");
-			
+
 			try(ResultSet resultSet = statement.executeForGeneratedKeys()){
 				// TODO : handle other types of generated keys
 
@@ -345,10 +482,10 @@ public abstract class Context {
 					for(int i = 0; i < query.getValues().size(); i++) {
 						if(query.getIdField().getType() == long.class) {
 							query.getIdField().setLong(query.getValues().get(i), generatedKeys.get(i));
-						} 
+						}
 						else if(query.getIdField().getType() == Long.class) {
 							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i));
-						} 
+						}
 						else if(query.getIdField().getType() == int.class) {
 							query.getIdField().setInt(query.getValues().get(i), generatedKeys.get(i).intValue());
 						}
@@ -379,7 +516,6 @@ public abstract class Context {
 			chronometer.step("executeInsert::postPersist");
 
 		}
-		
 	}
 
 	public <T> void execute(InsertQuery<T> query) {
@@ -417,21 +553,23 @@ public abstract class Context {
 	
 	
 	
-	@SneakyThrows
 	public <T> ResultTable fetch(SelectQuery<T> query){
-		SelectQuery<T> finalQuery = (SelectQuery<T>) preExecute(query);
-		
+		return applySelectFilters((SelectQuery<?>) preExecute(query), this::fetchTerminal);
+	}
+
+	@SneakyThrows
+	private ResultTable fetchTerminal(SelectQuery<?> query) {
 		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection, finalQuery);
+			Statement statement = new Statement(this, connection, query);
 			ResultSet resultSet = statement.executeForResultSet()) {
-			
-			ResultTable resultTable = new ResultTable(this, createColumnsArray(resultSet.getMetaData()), finalQuery);
-			
+
+			ResultTable resultTable = new ResultTable(this, createColumnsArray(resultSet.getMetaData()), query);
+
 			while(resultSet.next()) {
-	        	String[] values = extractRowValues(resultSet);
-	        	resultTable.addRow(values);
-	        }
-			
+				String[] values = extractRowValues(resultSet);
+				resultTable.addRow(values);
+			}
+
 			return resultTable;
 		}
 	}
@@ -1430,24 +1568,47 @@ public abstract class Context {
 	
 	// ==================== MISC ====================
 
-	@SneakyThrows
 	public String queryAsString(Query<?,?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(preExecute(query), connection);) {
-			return statement.query();
+		AtomicReference<String> sql = new AtomicReference<>();
+
+		if(query instanceof SelectQuery) {
+			applySelectFilters((SelectQuery<?>) preExecute(query), q -> {
+				sql.set(queryAsStringTerminal(q));
+				return new ResultTable(this, new String[0], q);
+			});
+			return sql.get();
 		}
+		if(query instanceof UpdateQuery) {
+			applyUpdateFilters((UpdateQuery<?>) preExecute(query), q -> {
+				sql.set(queryAsStringTerminal(q));
+				return Boolean.TRUE;
+			});
+			return sql.get();
+		}
+		if(query instanceof DeleteQuery) {
+			applyDeleteFilters((DeleteQuery<?>) preExecute(query), q -> {
+				sql.set(queryAsStringTerminal(q));
+				return Boolean.TRUE;
+			});
+			return sql.get();
+		}
+
+		return queryAsStringTerminal(preExecute(query));
 	}
 
-	
 	public String queryAsString(AlterQuery<?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(preExecute(query), connection);) {
-			return statement.query();
+		AtomicReference<String> sql = new AtomicReference<>();
+		try {
+			applyAlterFilters(preExecute(query), q -> {
+				sql.set(queryAsStringTerminal(q));
+				return Boolean.TRUE;
+			});
 		}
 		catch(Exception e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
+		return sql.get();
 	}
 
 

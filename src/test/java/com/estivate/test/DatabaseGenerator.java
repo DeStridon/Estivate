@@ -2,6 +2,7 @@ package com.estivate.test;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import javax.naming.InitialContext;
@@ -38,6 +39,9 @@ public class DatabaseGenerator {
 
 	private static Context context = null;
 
+	/** Guarantees unique emails/names across the shared in-memory H2 database. */
+	private static final AtomicLong UNIQUE_SEQ = new AtomicLong();
+
 	
 	
 	public static Context getContext() {
@@ -46,12 +50,9 @@ public class DatabaseGenerator {
 			
 			try {
 				context = new H2Context(datasource());
-				H2MySqlJsonFunctions.registerAliases(context.datasource);
 			} catch (NamingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (SQLException e) {
-				throw new IllegalStateException("Failed to register H2 MySQL JSON aliases", e);
 			}
 			try {
 				Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8083").start();
@@ -81,10 +82,11 @@ public class DatabaseGenerator {
 	}
 	
 	public static CustomerEntity createRandomCustomer() {
-		
+		long seq = UNIQUE_SEQ.incrementAndGet();
+
 		CustomerEntity customerEntity = new CustomerEntity();
-		customerEntity.setName("Random Customer "+randomInt(1, 1000));
-		customerEntity.setEmail("customer" + randomInt(1, 1000) + "@example.com");
+		customerEntity.setName("Random Customer " + seq);
+		customerEntity.setEmail("customer" + seq + "@example.com");
 		customerEntity.setAddress("Random Address " + randomInt(1, 100));
 		customerEntity.setCountry(randomEnum(CustomerEntity.Country.class));
 		customerEntity.setCreated(new java.util.Date());

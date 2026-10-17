@@ -20,6 +20,18 @@ public class SelectInterceptorTest {
  
     Context context = DatabaseGenerator.getContext();
 
+    @org.junit.Before
+    public void setUp() {
+        context.selectFilters.clear();
+        context.updateFilters.clear();
+        context.deleteFilters.clear();
+        context.insertFilters.clear();
+        context.selectInterceptor = null;
+        context.updateInterceptor = null;
+        context.deleteInterceptor = null;
+        context.insertInterceptor = null;
+    }
+
     @Test
     public void testDeprecatedGenericPreProcessor() {
     	

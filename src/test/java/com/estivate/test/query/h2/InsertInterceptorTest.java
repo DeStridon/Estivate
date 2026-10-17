@@ -23,6 +23,8 @@ public class InsertInterceptorTest {
         // Clear existing products
         Estivate.Tools.createTableFullQuery(CustomerEntity.class, context).ifNotExists().execute(context);	
         context.truncateTable(CustomerEntity.class);
+        context.insertFilters.clear();
+        context.insertInterceptor = null;
     }
     
     @Test

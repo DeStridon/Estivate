@@ -208,8 +208,14 @@ public class ReconciliationManager {
                 List<Mismatch> mismatches = new ArrayList<>();
                 if(!tableField.typeMatches(dbColumn.getType())) { mismatches.add(Mismatch.TYPE); }
                 if(tableField.isNullable() != dbColumn.isNullable()) { mismatches.add(Mismatch.NULLABLE); }
-                if(!Objects.equals(tableField.getDimension(), dbColumn.getDimension())) { mismatches.add(Mismatch.DIMENSION); }
-                if(!Objects.equals(tableField.getScale(), dbColumn.getScale())) { mismatches.add(Mismatch.SCALE); }
+                // Projected null dimension means "unspecified" (e.g. unbounded VARCHAR); ignore DB default length.
+                if(tableField.getDimension() != null && !Objects.equals(tableField.getDimension(), dbColumn.getDimension())) {
+                    mismatches.add(Mismatch.DIMENSION);
+                }
+                // H2/MySQL report scale 0 for integer types; treat null and 0 as equivalent.
+                if(!Objects.equals(normalizeScale(tableField.getScale()), normalizeScale(dbColumn.getScale()))) {
+                    mismatches.add(Mismatch.SCALE);
+                }
                 if(!Objects.equals(tableField.getDefaultValue() == null ? "NULL" : tableField.getDefaultValue().toString(), dbColumn.getDefaultValue() == null ? "NULL" : dbColumn.getDefaultValue().toString())) { mismatches.add(Mismatch.DEFAULT); }
                 
                 if (!mismatches.isEmpty()) {
@@ -297,6 +303,11 @@ public class ReconciliationManager {
         
 
         return diffs;
+    }
+
+    /** Treat unspecified scale (null) the same as 0 for integer/unscaled columns. */
+    static Integer normalizeScale(Integer scale) {
+        return scale == null || scale == 0 ? null : scale;
     }
 
     public boolean isIndexMatching(TableIndex entityIndex, TableIndex databaseIndex) {

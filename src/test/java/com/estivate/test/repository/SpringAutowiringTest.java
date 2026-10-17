@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.spring.EnableEstivateManagers;
 import com.estivate.test.DatabaseGenerator;
@@ -67,6 +68,9 @@ public class SpringAutowiringTest {
 
     @Test
     public void testFindDistinctNameByCountry() {
+        // Shared H2 retains rows from other tests — start from a clean customer table.
+        Estivate.deleteQuery(CustomerEntity.class).execute(context);
+
         CustomerEntity aliceFr = DatabaseGenerator.createRandomCustomer();
         aliceFr.setName("Alice");
         aliceFr.setCountry(CustomerEntity.Country.FRANCE);
