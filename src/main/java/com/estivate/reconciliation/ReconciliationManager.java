@@ -21,7 +21,7 @@ import com.estivate.reconciliation.EstivateReconciliation.Mismatch;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationDelta;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.ReflectionUtils;
 
 import lombok.Data;
@@ -172,7 +172,7 @@ public class ReconciliationManager {
         List<String> projectedFieldNames = new ArrayList<>();
 
         // Check for fields in entity but not in database
-        for (Field entityField : FieldUtils.getPersistableFields(entityClass)) {
+        for (Field entityField : ClassMeta.of(entityClass).getPersistableFields()) {
 
             
             EntityColumn projectedColumn = context.entityColumn(entityField);
@@ -344,7 +344,7 @@ public class ReconciliationManager {
 
         // Scan for primary index from entity fields
         // Iterate through all declared fields in the entity class
-        List<Field> primaryKeyFields = FieldUtils.getEntityFields(entity).stream().filter(field -> field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)).collect(Collectors.toList());
+        List<Field> primaryKeyFields = ClassMeta.of(entity).getFields().stream().filter(field -> field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)).collect(Collectors.toList());
 
         if(primaryKeyFields.size() == 1) {
             String columnName = context.nameMapper.mapDatabaseField(primaryKeyFields.get(0).getName());

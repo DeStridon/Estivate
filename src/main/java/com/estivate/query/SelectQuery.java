@@ -18,6 +18,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.ReflectionUtils;
@@ -122,7 +123,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	public SelectQuery<E> selectAll(Entity<?> c, String... fieldNames) {
 		
-		Set<Field> fields = FieldUtils.getEntityFields(c.entity);
+		Set<Field> fields = ClassMeta.of(c.entity).getFields();
 
 		for(Field field : fields){
 

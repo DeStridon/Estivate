@@ -12,6 +12,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 import com.estivate.context.Context;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -151,12 +152,12 @@ public abstract class IMapper<U> {
 
 		public AttributeMapper(Context context, Class<?> entity, String attributeName) {
 			this.context = context;
-			this.field = FieldUtils.findField(entity, attributeName);
+			this.field = ClassMeta.findField(entity, attributeName);
 			this.type = field.getGenericType();
 		}
 
 		// public AttributeMapper(SelectQuery<?> query, Attribute attribute) {
-		// 	field = FieldUtils.findField(attribute.entity.entity, attribute.attribute);
+		// 	field = ClassMeta.findField(attribute.entity.entity, attribute.attribute);
 		// 	type = field.getGenericType();
 		// 	attribute = attribute;
 		// }
@@ -166,27 +167,8 @@ public abstract class IMapper<U> {
 		public Object map(String row) {
 			
 			// @Convert
-			if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
-				javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(!(converter instanceof javax.persistence.AttributeConverter)) {
-					log.error("Cannot convert with converter "+converter.getClass());
-					return null;
-				}
-				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
-				Object attributeValue = attributeConverter.convertToEntityAttribute(row);
-				return attributeValue;
-			}
-			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(!(converter instanceof jakarta.persistence.AttributeConverter)) {
-					log.error("Cannot convert with converter "+converter.getClass());
-					return null;
-				}
-				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
-				Object attributeValue = attributeConverter.convertToEntityAttribute(row);
-				return attributeValue;
+			if(FieldUtils.hasConvertAnnotation(field)) {
+				return ClassMeta.fieldBinding(field).toEntityAttribute(row);
 			}
 
 			if(type == String.class) { return row; }

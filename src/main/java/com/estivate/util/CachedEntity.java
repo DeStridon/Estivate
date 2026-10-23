@@ -25,7 +25,7 @@ public abstract class CachedEntity {
 	@jakarta.persistence.PostLoad
 	public void saveState() {
 
-		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
+		for(Field field : ClassMeta.of(this.getClass()).getFields()) {
 			field.setAccessible(true);
 			Object object = field.get(this);
 			__cache.put(field.getName(), hashCode(object));
@@ -38,7 +38,7 @@ public abstract class CachedEntity {
 		
 		Set<Field> fields = new HashSet<>();
 		
-		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
+		for(Field field : ClassMeta.of(this.getClass()).getFields()) {
 			field.setAccessible(true);
 			Object object = field.get(this);
 			if(__cache.containsKey(field.getName()) && equals(__cache.get(field.getName()), hashCode(object))) {
@@ -54,7 +54,7 @@ public abstract class CachedEntity {
 	@SneakyThrows
 	public Boolean isFieldUpdated(String fieldName) {
 		
-		Field field = FieldUtils.getEntityFields(this.getClass()).stream().filter(x -> fieldName.equals(x.getName())).findFirst().orElse(null);
+		Field field = ClassMeta.of(this.getClass()).getFields().stream().filter(x -> fieldName.equals(x.getName())).findFirst().orElse(null);
 		
 		if(field == null) {
 			return null;
@@ -68,7 +68,7 @@ public abstract class CachedEntity {
 	
 	@SneakyThrows
 	public Boolean isAnyFieldUpdated() {
-		for(Field field : FieldUtils.getEntityFields(this.getClass())) {
+		for(Field field : ClassMeta.of(this.getClass()).getFields()) {
 			field.setAccessible(true);
 			Object object = field.get(this);
 			if(__cache.containsKey(field.getName()) && equals(__cache.get(field.getName()), hashCode(object))) {

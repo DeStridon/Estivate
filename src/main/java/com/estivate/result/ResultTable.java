@@ -37,6 +37,7 @@ import com.estivate.result.IMapper.OrdinalEnumMapper;
 import com.estivate.result.IMapper.ShortMapper;
 import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -345,7 +346,7 @@ public class ResultTable implements Iterable<ResultRow>{
      */
     private Field resolveNestedByKeyField(Class<?> entityClass, Projection.NestedBy key) {
         if (key.entity().equals(entityClass)) {
-            Field tKeyField = FieldUtils.findField(entityClass, key.attribute());
+            Field tKeyField = ClassMeta.findField(entityClass, key.attribute());
             if (tKeyField == null) {
                 throw new IllegalArgumentException("Class '" + entityClass.getName() + "' does not have a field named '" + key.attribute() + "' (which is required by @Projection.NestedBy on " + key.entity().getName() + ")");
             }

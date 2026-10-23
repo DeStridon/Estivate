@@ -16,6 +16,7 @@ import com.estivate.Estivate;
 import com.estivate.query.Attribute;
 import com.estivate.query.Attribute.Function;
 import com.estivate.result.IMapper.DateMapper;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -125,7 +126,7 @@ public class ResultRow {
 		
 		if(function == null || function.getReturnType() == null){
 //		try {
-			Field field = FieldUtils.findField(c, attribute);
+			Field field = ClassMeta.findField(c, attribute);
 			Type type = field.getGenericType();
 
 			if(type == String.class) { return (T) asString(c, attribute, function); }
@@ -142,26 +143,8 @@ public class ResultRow {
 			else if(type == Instant.class) { return (T) asInstant(c, attribute, function);}
 			else if(type == LocalDate.class) { return (T) asLocalDate(c, attribute, function);}
 			// @Convert (might be enum, this condition should be tested before classic enum)
-			else if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
-				javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(!(converter instanceof javax.persistence.AttributeConverter)) {
-					log.error("Cannot convert with converter "+converter.getClass());
-					return null;
-				}
-				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
-				return (T) attributeConverter.convertToEntityAttribute(asString(c, attribute));
-			}
-
-			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(!(converter instanceof jakarta.persistence.AttributeConverter)) {
-					log.error("Cannot convert with converter "+converter.getClass());
-					return null;
-				}
-				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
-				return (T) attributeConverter.convertToEntityAttribute(asString(c, attribute));
+			else if(FieldUtils.hasConvertAnnotation(field)) {
+				return (T) ClassMeta.fieldBinding(field).toEntityAttribute(asString(c, attribute));
 			}
 			// @Enumerated
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {

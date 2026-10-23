@@ -11,7 +11,7 @@ import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Entity.VirtualForeignKey;
 import com.estivate.Estivate;
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -59,7 +59,7 @@ public class Join {
 	public static Join find(Entity<?> internal, Entity<?> external, JoinType joinType) {
 
 		// try doing the join from external class to internal class
-		for(Field externalField : FieldUtils.getEntityFields(external.entity)) {
+		for(Field externalField : ClassMeta.of(external.entity).getFields()) {
 			VirtualForeignKey reference = externalField.getDeclaredAnnotation(VirtualForeignKey.class);
 
 			// if key not found or not refering to baseClass, skip
@@ -77,7 +77,7 @@ public class Join {
 		}
 
 		// try the other way around
-		for(Field internalField : FieldUtils.getEntityFields(internal.entity)) {
+		for(Field internalField : ClassMeta.of(internal.entity).getFields()) {
 			VirtualForeignKey reference = internalField.getDeclaredAnnotation(VirtualForeignKey.class);
 			if(reference == null || reference.entity() != external.entity) {
 				continue;

@@ -10,7 +10,7 @@ import com.estivate.reconciliation.DatabaseColumnDefinition;
 import com.estivate.reconciliation.EntityColumn;
 import com.estivate.reconciliation.EntityColumn.ColumnDimension;
 import com.estivate.reconciliation.DatabaseColumn;
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 
 import jakarta.persistence.Column;
 
@@ -56,13 +56,13 @@ public class UnsignedColumnTypeTest {
 
 	@Test
 	public void entityColumnPreservesUnsignedFromColumnDefinition() {
-		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
+		EntityColumn column = mysqlContext.entityColumn(ClassMeta.findField(UnsignedSmallintEntity.class, "code"));
 		assertEquals("SMALLINT UNSIGNED", column.getType());
 	}
 
 	@Test
 	public void entityColumnPreservesUnsignedWithDisplayWidth() {
-		EntityColumn column = mysqlContext.entityColumn(FieldUtils.findField(UnsignedSmallintWithDisplayWidthEntity.class, "code"));
+		EntityColumn column = mysqlContext.entityColumn(ClassMeta.findField(UnsignedSmallintWithDisplayWidthEntity.class, "code"));
 		assertEquals("SMALLINT UNSIGNED", column.getType());
 		assertEquals(5, column.getDimension());
 		assertEquals(ColumnDimension.LENGTH_OPTIONAL, column.getDimensionType());
@@ -71,7 +71,7 @@ public class UnsignedColumnTypeTest {
 	@Test
 	public void mysqlTableFieldPreservesUnsignedForReconciliation() {
 		MySQLContext context = new MySQLContext(null);
-		DatabaseColumn databaseColumn = context.databaseColumn(FieldUtils.findField(UnsignedSmallintEntity.class, "code"));
+		DatabaseColumn databaseColumn = context.databaseColumn(ClassMeta.findField(UnsignedSmallintEntity.class, "code"));
 
 		assertEquals("SMALLINT UNSIGNED", databaseColumn.getType());
 

@@ -28,6 +28,7 @@ import com.estivate.query.Projection.IdentityFunction;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.ReflectionUtils;
 
@@ -79,7 +80,7 @@ public class EntityMapper<U> {
 		}
 
 		// Get PostLoadMethods
-		this.entityPostLoadMethods = FieldUtils.getPostLoadMethods(entity.entity);
+		this.entityPostLoadMethods = ClassMeta.of(entity.entity).getPostLoadMethods();
 
 		// Entity Mappings
 		entityMappings = getEntityMappings(query, entity);
@@ -150,7 +151,7 @@ public class EntityMapper<U> {
 		Class<?> currentClass = entity.entity;
 		while (currentClass != Object.class) {
 
-			Set<Field> fields = FieldUtils.getEntityFields(currentClass);
+			Set<Field> fields = ClassMeta.of(currentClass).getFields();
 			for (Field field : fields) {
 				String columnName = fieldToColumnName(entity, field);
 				String value = arguments.get(columnName);
@@ -161,7 +162,7 @@ public class EntityMapper<U> {
 
 		}
 
-		Set<Method> methods = FieldUtils.getPostLoadMethods(obj.getClass());
+		Set<Method> methods = ClassMeta.of(obj.getClass()).getPostLoadMethods();
 		for (Method method : methods) {
 			method.invoke(obj);
 		}
@@ -235,7 +236,7 @@ public class EntityMapper<U> {
 
 		// If alias is null or empty, find the corresponding field in the entity and use
 		// its mapped name
-		Field mappingField = FieldUtils.getEntityFields(entityClass).stream().filter(x -> x.getName().equals(attribute))
+		Field mappingField = ClassMeta.of(entityClass).getFields().stream().filter(x -> x.getName().equals(attribute))
 				.findFirst().orElse(null);
 
 		if (mappingField == null) {
@@ -252,20 +253,13 @@ public class EntityMapper<U> {
 
 	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value, Function<?, ?> transformer) throws EstivateException {
         try {
-            
-            if(value == null) {
-                return;
-            }
-
 			Object convertedValue = convertValue(field, value);
 			if(transformer != null && !(transformer instanceof IdentityFunction)) {
 				convertedValue = ((Function<Object, Object>) transformer).apply(convertedValue);
 			}
 			if(convertedValue != null) {
 				field.set(obj, convertedValue);
-				return;
 			}
-            
         }
         catch(Throwable e) {
             log.error("Impossible to map Entity="+entity.toString()+ ", Field="+field.getName()+", Value="+value+", Object="+obj.toString(), e);
@@ -276,35 +270,27 @@ public class EntityMapper<U> {
 	@SneakyThrows
 	private Object convertValue(Field field, String value) {
 		
-		if(field == null || value == null) {
+		if(field == null) {
 			return null;
 		}
-		Type type = field.getGenericType();
 
 		 // @Projection.Attribute
 		 if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
 		 	Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
-		 	Field mappingField = FieldUtils.findField(annotation.entity(), annotation.attribute());
+		 	Field mappingField = ClassMeta.findField(annotation.entity(), annotation.attribute());
 		 	return convertValue(mappingField, value);
 		 }
 
-		// @Convert
-		if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
-			javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
-			Object converter = convertAnnotation.converter().getConstructor().newInstance();
-			if(converter instanceof javax.persistence.AttributeConverter) {
-				javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
-				return attributeConverter.convertToEntityAttribute(value);
-			}
+		// @Convert — must run for null DB values too
+		if(FieldUtils.hasConvertAnnotation(field)) {
+			return ClassMeta.fieldBinding(field).toEntityAttribute(value);
 		}
-		if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-			jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
-			Object converter = convertAnnotation.converter().getConstructor().newInstance();
-			if(converter instanceof jakarta.persistence.AttributeConverter) {
-				jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
-				return attributeConverter.convertToEntityAttribute(value);
-			}
+
+		if(value == null) {
+			return null;
 		}
+
+		Type type = field.getGenericType();
 
 		// @Enumerated
 		if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
@@ -382,7 +368,7 @@ public class EntityMapper<U> {
 
 		List<String> unmappedFields = new ArrayList<>();
 
-		for(Field field : FieldUtils.getEntityFields(entityClass.entity)) {
+		for(Field field : ClassMeta.of(entityClass.entity).getFields()) {
 			ColumnMapping columnMapping = getColumnMapping(entityClass, field);
 
 			int index = FieldUtils.indexOf(query.getSelects(), columnMapping.getAttribute());
@@ -403,7 +389,7 @@ public class EntityMapper<U> {
 
 	List<EntityMapping> getEntityMappings(SelectQuery<?> query, Entity<?> entityClass){
 		List<EntityMapping> list = new ArrayList<>();
-		for(Field field : FieldUtils.getEntityFields(entityClass.entity)) {
+		for(Field field : ClassMeta.of(entityClass.entity).getFields()) {
 
 			if(!field.isAnnotationPresent(Projection.Nested.class)){
 				continue;

@@ -11,7 +11,7 @@ import com.estivate.context.Context;
 import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.test.DatabaseGenerator;
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 
 import jakarta.persistence.Column;
 
@@ -26,7 +26,7 @@ public class ModelingTest {
 	
 	@Test
 	public void modelingTest1() {
-		Set<Field> fields = FieldUtils.getEntityFields(SingleIntegerFieldClass.class);
+		Set<Field> fields = ClassMeta.of(SingleIntegerFieldClass.class).getFields();
 		DatabaseColumn tableField = context.databaseColumn(fields.iterator().next());
 		
 		assertEquals("0", tableField.getDefaultValue());
@@ -42,7 +42,7 @@ public class ModelingTest {
 	
 	@Test
 	public void modelingTest2() {
-		Set<Field> fields = FieldUtils.getEntityFields(LongTextFieldClass.class);
+		Set<Field> fields = ClassMeta.of(LongTextFieldClass.class).getFields();
 		DatabaseColumn tableField = context.databaseColumn(fields.iterator().next());
 		
 		assertEquals(null, tableField.getDimension());

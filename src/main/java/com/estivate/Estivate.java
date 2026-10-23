@@ -41,6 +41,7 @@ import com.estivate.query.Keyword.KeywordValue;
 import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -844,7 +845,7 @@ public class Estivate {
 		
 		public static CreateQuery<?> createTableFullQuery(Class<?> entity, Context context){
 			CreateQuery<?> createQuery = Estivate.createQuery(entity);
-			for(Field field : FieldUtils.getPersistableFields(entity)) {
+			for(Field field : ClassMeta.of(entity).getPersistableFields()) {
 				createQuery.column(context.entityColumn(field));
 			}
 			for(TableIndex index : entity.getDeclaredAnnotationsByType(TableIndex.class)) {

@@ -62,6 +62,7 @@ import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.DatabaseColumnAnnotation;
+import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -446,9 +447,12 @@ public abstract class Context {
 			chronometer.step("executeInsert::preInsert");
 			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
 			chronometer.step("executeInsert::appendQuery");
-			query.getFields().stream().forEach(x -> x.setAccessible(true));
-			String columnsString = query.getFields().stream().map(x -> nameMapper.mapDatabaseField(x.getName())).collect(Collectors.joining(", "));
-			String valuesString = query.getFields().stream().map(x -> "?").collect(Collectors.joining(", "));
+			Set<Field> insertFields = query.getFields();
+			for(Field field : insertFields) {
+				field.setAccessible(true);
+			}
+			String columnsString = insertFields.stream().map(x -> nameMapper.mapDatabaseField(x.getName())).collect(Collectors.joining(", "));
+			String valuesString = insertFields.stream().map(x -> "?").collect(Collectors.joining(", "));
 			statement.appendQuery("(", columnsString, ") VALUES ");
 			chronometer.step("executeInsert::appendQuery::values");
 			for(T value : query.getValues()) {
@@ -459,8 +463,8 @@ public abstract class Context {
 
 			for(Iter8<T> valueIterator : Iter8.from(query.getValues())) {
 				statement.appendQuery("(", valuesString, ")");
-				for(Field field : query.getFields()) {
-					statement.appendObjectAsValue(valueIterator.getValue().getClass(), field.getName(), field.get(valueIterator.getValue()));
+				for(Field field : insertFields) {
+					statement.appendObjectAsValue(field, field.get(valueIterator.getValue()));
 				}
 				if(!valueIterator.isLast()) {
 					statement.appendQuery(",");
@@ -540,10 +544,22 @@ public abstract class Context {
 
 	@SneakyThrows
 	public <T> void insert(Collection<T> entities) {
-		if(entities != null) {
-			for(T entity : entities) {
-				insert(entity);
+		if(entities == null || entities.isEmpty()) {
+			return;
+		}
+
+		LinkedHashMap<Class<?>, List<T>> byType = new LinkedHashMap<>();
+		for(T entity : entities) {
+			if(entity == null) {
+				continue;
 			}
+			byType.computeIfAbsent(entity.getClass(), ignored -> new ArrayList<>()).add(entity);
+		}
+
+		for(Map.Entry<Class<?>, List<T>> entry : byType.entrySet()) {
+			InsertQuery<T> insertQuery = Estivate.insertQuery((Class<T>) entry.getKey());
+			insertQuery.values(entry.getValue());
+			execute(insertQuery);
 		}
 	}
 
@@ -1088,7 +1104,7 @@ public abstract class Context {
 //	@SneakyThrows
 //	public <U> boolean merge(U entity){
 //		// First try to find entity with same id
-//		Field idField = FieldUtils.getIdField(entity.getClass());
+//		Field idField = ClassMeta.of(entity.getClass()).getIdField();
 //
 //		if(idField != null){
 //			idField.setAccessible(true);
@@ -1098,7 +1114,7 @@ public abstract class Context {
 //				U duplicatedEntity = extractSingle(query, (Class<U>) entity.getClass());
 //				if(duplicatedEntity != null) {
 //					// Copy fields from result into object
-//					for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
+//					for(Field field : ClassMeta.of(entity.getClass()).getFields()) {
 //						field.setAccessible(true);
 //						field.set(entity, field.get(duplicatedEntity));
 //					}
@@ -1127,7 +1143,7 @@ public abstract class Context {
 //			
 //			if(duplicatedEntity != null) {
 //				// Copy fields from result into object
-//				for(Field field : FieldUtils.getEntityFields(entity.getClass())) {
+//				for(Field field : ClassMeta.of(entity.getClass()).getFields()) {
 //					field.setAccessible(true);
 //					field.set(entity, field.get(duplicatedEntity));
 //				}
@@ -1152,7 +1168,7 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> void updateOrInsert(U object, Chronometer chronometer) {
 		chronometer.step("updateOrInsert::start");
-		Field idField = FieldUtils.getIdField(object.getClass());
+		Field idField = ClassMeta.of(object.getClass()).getIdField();
 		chronometer.step("updateOrInsert::idField");
 		if(idField != null) {
 			idField.setAccessible(true);
@@ -1202,7 +1218,7 @@ public abstract class Context {
 		Long id = null;
 		Field idField = null;
 		
-		Set<Field> updatedFields = new LinkedHashSet<>(FieldUtils.getPersistableFields(entity.getClass()));
+		Set<Field> updatedFields = new LinkedHashSet<>(ClassMeta.of(entity.getClass()).getPersistableFields());
 		chronometer.step("update::updatedFields");
 		
 		for(Field field : updatedFields) {
@@ -1288,7 +1304,7 @@ public abstract class Context {
 
 		DeleteQuery<U> query = Estivate.deleteQuery((Class<U>) entity.getClass());
 		
-		Field idField = FieldUtils.getIdField(entity.getClass());
+		Field idField = ClassMeta.of(entity.getClass()).getIdField();
 		
 		query.eq(idField.getName(), idField.get(entity));
 		execute(query);
@@ -1470,7 +1486,7 @@ public abstract class Context {
 	
 	// find field from columnName
 	public String findEntityName(Class<?> c, String columnName) {
-		for(Field field : FieldUtils.getEntityFields(c)) {
+		for(Field field : ClassMeta.of(c).getFields()) {
 			if(columnName.equals(nameMapper.mapDatabaseField(field.getName()))){
 				return field.getName();
 			}

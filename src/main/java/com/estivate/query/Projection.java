@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.util.Set;
 
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -134,7 +134,7 @@ public class Projection {
 			Class<?> targetEntityClass = target.getClass();
 			
 			// 1) Source → target: fields in source with @Attribute pointing to target entity
-			Set<Field> sourceFields = FieldUtils.getEntityFields(source.getClass());
+			Set<Field> sourceFields = ClassMeta.of(source.getClass()).getFields();
 			for (Field projectionField : sourceFields) {
 				Attribute attributeAnnotation = projectionField.getDeclaredAnnotation(Attribute.class);
 				if (attributeAnnotation == null) {
@@ -156,7 +156,7 @@ public class Projection {
 					value = ((java.util.function.Function<Object, Object>) transformer).apply(value);
 				}
 
-				Field entityField = FieldUtils.findField(targetEntityClass, attributeAnnotation.attribute());
+				Field entityField = ClassMeta.findField(targetEntityClass, attributeAnnotation.attribute());
 				if (entityField == null) {
 					continue;
 				}
@@ -165,7 +165,7 @@ public class Projection {
 			}
 
 			// 2) Target pulls from source: fields in target with @Attribute (entity, attribute) get value from matching source field
-			Set<Field> targetFields = FieldUtils.getEntityFields(targetEntityClass);
+			Set<Field> targetFields = ClassMeta.of(targetEntityClass).getFields();
 			for (Field targetField : targetFields) {
 				Attribute attributeAnnotation = targetField.getDeclaredAnnotation(Attribute.class);
 				if (attributeAnnotation == null) {
@@ -224,7 +224,7 @@ public class Projection {
 	 * Finds a field in the given class (or its superclasses) that has @Projection.Attribute with the given entity and attribute.
 	 */
 	private static Field findSourceFieldByAttribute(Class<?> sourceClass, Class<?> entity, String attribute) {
-		for (Field field : FieldUtils.getEntityFields(sourceClass)) {
+		for (Field field : ClassMeta.of(sourceClass).getFields()) {
 			Attribute ann = field.getDeclaredAnnotation(Attribute.class);
 			if (ann != null && ann.entity().equals(entity) && ann.attribute().equals(attribute)) {
 				return field;

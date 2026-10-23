@@ -3,20 +3,25 @@ package com.estivate.query;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.estivate.Entity.InsertDate;
 import com.estivate.context.Context;
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
 
 @Getter
 public class InsertQuery<E> {
+
+    private static final Map<Class<?>, InsertMeta> META = new ConcurrentHashMap<>();
 
     private final Class<E> entity;
 
@@ -28,9 +33,16 @@ public class InsertQuery<E> {
 
     public InsertQuery(Class<E> entity) {
         this.entity = entity;
-        this.fields = new LinkedHashSet<>();
+        InsertMeta meta = META.computeIfAbsent(entity, InsertQuery::buildMeta);
+        this.fields = meta.fields;
+        this.idField = meta.idField;
+    }
 
-        for(Field field : FieldUtils.getPersistableFields(entity)) {
+    private static InsertMeta buildMeta(Class<?> entity) {
+        LinkedHashSet<Field> fields = new LinkedHashSet<>();
+        Field idField = null;
+
+        for(Field field : ClassMeta.of(entity).getPersistableFields()) {
             if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
                 if(idField != null) {
                     throw new IllegalArgumentException("Multiple id fields found for entity: " + entity.getName());
@@ -41,6 +53,8 @@ public class InsertQuery<E> {
             field.setAccessible(true);
             fields.add(field);
         }
+
+        return new InsertMeta(Collections.unmodifiableSet(fields), idField);
     }
 
     @SneakyThrows
@@ -83,6 +97,16 @@ public class InsertQuery<E> {
         InsertQuery<E> query = new InsertQuery<>(entity);
         query.values = new ArrayList<>(values);
         return query;
+    }
+
+    private static final class InsertMeta {
+        private final Set<Field> fields;
+        private final Field idField;
+
+        private InsertMeta(Set<Field> fields, Field idField) {
+            this.fields = fields;
+            this.idField = idField;
+        }
     }
 
 }

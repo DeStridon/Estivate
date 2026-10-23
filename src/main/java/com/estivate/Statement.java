@@ -1,7 +1,6 @@
 package com.estivate;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,7 +35,7 @@ import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
 import com.estivate.util.Chronometer;
-import com.estivate.util.FieldUtils;
+import com.estivate.util.ClassMeta;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -228,6 +227,11 @@ public class Statement implements AutoCloseable{
 	
 	public Statement appendObjectAsValue(Class<?> entity, String fieldName, Object parameter) {
 		parameters.add(compileObject(entity, fieldName, parameter));
+		return this;
+	}
+
+	public Statement appendObjectAsValue(Field field, Object parameter) {
+		parameters.add(compileObject(field, parameter));
 		return this;
 	}
 	
@@ -608,51 +612,11 @@ public class Statement implements AutoCloseable{
 		}
 
 		try {
-			Field field = FieldUtils.findField(entity, attribute);
+			Field field = ClassMeta.findField(entity, attribute);
 			if(field == null) {
 				return value;
 			}
-
-			Type fieldType = field.getType();
-			
-			// Convert annotation takes priority
-			if(field.getDeclaredAnnotation(javax.persistence.Convert.class) != null) {
-				javax.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(javax.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(converter instanceof javax.persistence.AttributeConverter) {
-					javax.persistence.AttributeConverter attributeConverter = (javax.persistence.AttributeConverter) converter;
-					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
-					return convertedValue;
-				}
-			}
-			else if(field.getDeclaredAnnotation(jakarta.persistence.Convert.class) != null) {
-				jakarta.persistence.Convert convertAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Convert.class);
-				Object converter = convertAnnotation.converter().getConstructor().newInstance();
-				if(converter instanceof jakarta.persistence.AttributeConverter) {
-					jakarta.persistence.AttributeConverter attributeConverter = (jakarta.persistence.AttributeConverter) converter;
-					Object convertedValue = attributeConverter.convertToDatabaseColumn(value);
-					return convertedValue;
-				}
-			}
-			// Then check if enum and with annotation
-			if(fieldType instanceof Class && ((Class<?>) fieldType).isEnum()) {
-				if(value == null) {
-					return null;
-				}
-				
-				if(field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null && field.getDeclaredAnnotation(javax.persistence.Enumerated.class).value() != null && field.getDeclaredAnnotation(javax.persistence.Enumerated.class).value() == javax.persistence.EnumType.STRING) {
-					return value.toString();
-				}
-				else if(field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class).value() != null && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class).value() == jakarta.persistence.EnumType.STRING) {
-					return value.toString();
-				}
-				
-				return ((Enum<?>) value).ordinal();
-				
-			}
-
-			return value;
-
+			return compileObject(field, value);
 		}
 		catch(Exception e) {
 			log.error("Exception while trying to map field "+entity.getSimpleName()+"."+attribute, e);
@@ -662,6 +626,19 @@ public class Statement implements AutoCloseable{
 		
 		return compileGenericType(value);
 
+	}
+
+	Object compileObject(Field field, Object value) {
+		if(field == null) {
+			return value;
+		}
+		try {
+			return ClassMeta.fieldBinding(field).toDatabaseColumn(value);
+		}
+		catch(Exception e) {
+			log.error("Exception while trying to map field "+field.getDeclaringClass().getSimpleName()+"."+field.getName(), e);
+			return compileGenericType(value);
+		}
 	}
 	
 	String compileGenericType(Object value) {
