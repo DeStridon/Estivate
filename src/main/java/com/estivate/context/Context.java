@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
-import com.estivate.Entity.UpdateDate;
 import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
@@ -66,6 +66,7 @@ import com.estivate.util.ClassMeta;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +101,9 @@ public abstract class Context {
 	public final List<DeleteFilter> deleteFilters = new ArrayList<>();
 	public final List<InsertFilter> insertFilters = new ArrayList<>();
 	public final List<AlterFilter> alterFilters = new ArrayList<>();
+
+	/** Cached INSERT SQL templates keyed by entity class (depends on {@link #nameMapper}). */
+	private final Map<Class<?>, InsertSqlPlan> insertSqlPlans = new ConcurrentHashMap<>();
 
 	public Context(DataSource datasource, Dialect dialect) {
 		this.datasource = datasource;
@@ -440,85 +444,118 @@ public abstract class Context {
 
 	@SneakyThrows
 	private <T> void executeInsertTerminal(InsertQuery<T> query, Chronometer chronometer) {
+		InsertSqlPlan plan = insertSqlPlans.computeIfAbsent(query.getEntity(), this::buildInsertSqlPlan);
+		List<T> rows = query.getValues();
+
 		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+			Statement statement = new Statement(this, connection, plan.sqlForRowCount(rows.size()))) {
 
 			chronometer.step("executeInsert::start");
-			chronometer.step("executeInsert::preInsert");
-			statement.appendQuery("INSERT INTO ", nameMapper.toTableName(query.getEntity()));
-			chronometer.step("executeInsert::appendQuery");
-			Set<Field> insertFields = query.getFields();
-			for(Field field : insertFields) {
-				field.setAccessible(true);
-			}
-			String columnsString = insertFields.stream().map(x -> nameMapper.mapDatabaseField(x.getName())).collect(Collectors.joining(", "));
-			String valuesString = insertFields.stream().map(x -> "?").collect(Collectors.joining(", "));
-			statement.appendQuery("(", columnsString, ") VALUES ");
-			chronometer.step("executeInsert::appendQuery::values");
-			for(T value : query.getValues()) {
+
+			for(T value : rows) {
 				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PrePersist.class);
 				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PrePersist.class);
 			}
 			chronometer.step("executeInsert::invokeLifecycleMethods");
 
-			for(Iter8<T> valueIterator : Iter8.from(query.getValues())) {
-				statement.appendQuery("(", valuesString, ")");
+			List<Field> insertFields = plan.fields;
+			for(T value : rows) {
 				for(Field field : insertFields) {
-					statement.appendObjectAsValue(field, field.get(valueIterator.getValue()));
-				}
-				if(!valueIterator.isLast()) {
-					statement.appendQuery(",");
+					statement.appendObjectAsValue(field, field.get(value));
 				}
 			}
-
 			chronometer.step("executeInsert::appendValues");
 
-			try(ResultSet resultSet = statement.executeForGeneratedKeys()){
-				// TODO : handle other types of generated keys
-
+			try(ResultSet resultSet = statement.executeForGeneratedKeys()) {
 				chronometer.step("executeInsert::executeForGeneratedKeys");
 				List<Long> generatedKeys = new ArrayList<>();
 				while(resultSet.next()) {
 					generatedKeys.add(resultSet.getLong(1));
 				}
 				chronometer.step("executeInsert::resultSetToGeneratedKeys");
-				if(generatedKeys.size() == query.getValues().size() && query.getIdField() != null) {
-					for(int i = 0; i < query.getValues().size(); i++) {
-						if(query.getIdField().getType() == long.class) {
-							query.getIdField().setLong(query.getValues().get(i), generatedKeys.get(i));
-						}
-						else if(query.getIdField().getType() == Long.class) {
-							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i));
-						}
-						else if(query.getIdField().getType() == int.class) {
-							query.getIdField().setInt(query.getValues().get(i), generatedKeys.get(i).intValue());
-						}
-						else if(query.getIdField().getType() == Integer.class) {
-							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i).intValue());
-						}
-						else if(query.getIdField().getType() == short.class) {
-							query.getIdField().setShort(query.getValues().get(i), generatedKeys.get(i).shortValue());
-						}
-						else if(query.getIdField().getType() == Short.class) {
-							query.getIdField().set(query.getValues().get(i), generatedKeys.get(i).shortValue());
-						}
-						else {
-							throw new IllegalStateException("ID field must be of type long or Long, but found: " + query.getIdField().getType());
-						}
+				Field idField = plan.idField;
+				if(generatedKeys.size() == rows.size() && idField != null) {
+					for(int i = 0; i < rows.size(); i++) {
+						applyGeneratedKey(idField, rows.get(i), generatedKeys.get(i));
 					}
 				}
 				chronometer.step("executeInsert::applyKey");
-
 			}
 
-			// Post Persist
-			for(T value : query.getValues()) {
+			for(T value : rows) {
 				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PostPersist.class);
 				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PostPersist.class);
 			}
-
 			chronometer.step("executeInsert::postPersist");
+		}
+	}
 
+	private InsertSqlPlan buildInsertSqlPlan(Class<?> entity) {
+		ClassMeta meta = ClassMeta.of(entity);
+		List<Field> fields = meta.getWritableFields();
+		StringBuilder columns = new StringBuilder();
+		StringBuilder placeholders = new StringBuilder();
+		for(int i = 0; i < fields.size(); i++) {
+			if(i > 0) {
+				columns.append(", ");
+				placeholders.append(", ");
+			}
+			columns.append(nameMapper.mapDatabaseField(fields.get(i).getName()));
+			placeholders.append('?');
+		}
+		String table = nameMapper.toTableName(entity);
+		String valuesPrefix = "INSERT INTO " + table + " (" + columns + ") VALUES ";
+		String rowPlaceholders = "(" + placeholders + ")";
+		return new InsertSqlPlan(valuesPrefix, rowPlaceholders, valuesPrefix + rowPlaceholders, fields, meta.getIdField());
+	}
+
+	@SneakyThrows
+	private static void applyGeneratedKey(Field idField, Object entity, long generatedKey) {
+		Class<?> type = idField.getType();
+		if(type == long.class) {
+			idField.setLong(entity, generatedKey);
+		}
+		else if(type == Long.class) {
+			idField.set(entity, generatedKey);
+		}
+		else if(type == int.class) {
+			idField.setInt(entity, (int) generatedKey);
+		}
+		else if(type == Integer.class) {
+			idField.set(entity, (int) generatedKey);
+		}
+		else if(type == short.class) {
+			idField.setShort(entity, (short) generatedKey);
+		}
+		else if(type == Short.class) {
+			idField.set(entity, (short) generatedKey);
+		}
+		else {
+			throw new IllegalStateException("ID field must be of type long or Long, but found: " + type);
+		}
+	}
+
+	@AllArgsConstructor
+	private static final class InsertSqlPlan {
+		private final String valuesPrefix;
+		private final String rowPlaceholders;
+		private final String singleRowSql;
+		private final List<Field> fields;
+		private final Field idField;
+
+		private String sqlForRowCount(int rowCount) {
+			if(rowCount == 1) {
+				return singleRowSql;
+			}
+			StringBuilder sql = new StringBuilder(valuesPrefix.length() + rowCount * (rowPlaceholders.length() + 1));
+			sql.append(valuesPrefix);
+			for(int i = 0; i < rowCount; i++) {
+				if(i > 0) {
+					sql.append(',');
+				}
+				sql.append(rowPlaceholders);
+			}
+			return sql.toString();
 		}
 	}
 
@@ -1214,40 +1251,28 @@ public abstract class Context {
 		FieldUtils.invokeLifecycleMethods(entity, javax.persistence.PreUpdate.class);
 		FieldUtils.invokeLifecycleMethods(entity, jakarta.persistence.PreUpdate.class);
 		chronometer.step("update::invokeLifecycleMethods");
-		
-		Long id = null;
-		Field idField = null;
-		
-		Set<Field> updatedFields = new LinkedHashSet<>(ClassMeta.of(entity.getClass()).getPersistableFields());
-		chronometer.step("update::updatedFields");
-		
-		for(Field field : updatedFields) {
-			field.setAccessible(true);
-			
-			if(field.isAnnotationPresent(javax.persistence.Id.class) || field.isAnnotationPresent(jakarta.persistence.Id.class)) {
-				idField = field;
-				id = field.getLong(entity);
-			}
-			else if(field.isAnnotationPresent(UpdateDate.class) && (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
-				field.set(entity, new Date());
-			}
-			
+
+		ClassMeta meta = ClassMeta.of(entity.getClass());
+		Field idField = meta.getIdField();
+		Long id = idField == null ? null : idField.getLong(entity);
+
+		for(Field field : meta.getUpdateDateFields()) {
+			field.set(entity, new Date());
 		}
 		chronometer.step("update::updatedFields::set");
-		
+
+		Set<Field> updatedFields;
 		if(entity instanceof CachedEntity) {
 			updatedFields = ((CachedEntity) entity).updatedFields().stream()
 				.filter(FieldUtils::isPersistable)
+				.filter(field -> field != idField)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
-		chronometer.step("update::updatedFields::cachedEntity");
-		
-		// Remove id field from update set
-		if(idField != null) {
-			updatedFields.remove(idField);
+		else {
+			updatedFields = new LinkedHashSet<>(meta.getWritableFields());
 		}
-		chronometer.step("update::updatedFields::removeIdField");
-		
+		chronometer.step("update::updatedFields::cachedEntity");
+
 		// No change to entity
 		if(updatedFields.isEmpty()) {
 			return;

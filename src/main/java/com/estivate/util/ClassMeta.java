@@ -4,20 +4,26 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.estivate.Entity.InsertDate;
+import com.estivate.Entity.UpdateDate;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Cached reflection snapshot for one entity class hierarchy.
+ * Cached reflection snapshot for one entity class hierarchy,
+ * including insert/update field sets.
  */
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,6 +34,9 @@ public final class ClassMeta {
 	static final ClassMeta EMPTY = new ClassMeta(
 		Collections.emptySet(),
 		Collections.emptySet(),
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList(),
 		Collections.emptyMap(),
 		null,
 		Collections.emptySet(),
@@ -37,6 +46,10 @@ public final class ClassMeta {
 
 	private final Set<Field> fields;
 	private final Set<Field> persistableFields;
+	/** Persistable columns for INSERT/UPDATE (excludes {@code @Id}). */
+	private final List<Field> writableFields;
+	private final List<Field> insertDateFields;
+	private final List<Field> updateDateFields;
 	private final Map<String, Field> fieldsByName;
 	private final Field idField;
 	private final Set<Method> methods;
@@ -138,16 +151,37 @@ public final class ClassMeta {
 
 		LinkedHashSet<Field> persistable = new LinkedHashSet<>();
 		Map<String, Field> byName = new HashMap<>();
-		Field idField = null;
 		for(Field field : fields) {
 			byName.put(field.getName(), field);
 			if(FieldUtils.isPersistable(field)) {
 				persistable.add(field);
 			}
-			if(idField == null
-					&& (field.isAnnotationPresent(javax.persistence.Id.class)
-						|| field.isAnnotationPresent(jakarta.persistence.Id.class))) {
+		}
+
+		List<Field> writableFields = new ArrayList<>();
+		List<Field> insertDateFields = new ArrayList<>();
+		List<Field> updateDateFields = new ArrayList<>();
+		Field idField = null;
+
+		for(Field field : persistable) {
+			boolean isId = field.isAnnotationPresent(javax.persistence.Id.class)
+				|| field.isAnnotationPresent(jakarta.persistence.Id.class);
+			if(isId) {
+				if(idField != null) {
+					throw new IllegalArgumentException("Multiple id fields found for entity: " + objectClass.getName());
+				}
 				idField = field;
+				continue;
+			}
+
+			writableFields.add(field);
+			if(field.isAnnotationPresent(InsertDate.class)
+					&& (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+				insertDateFields.add(field);
+			}
+			if(field.isAnnotationPresent(UpdateDate.class)
+					&& (field.getType() == java.util.Date.class || field.getType() == java.sql.Date.class)) {
+				updateDateFields.add(field);
 			}
 		}
 
@@ -168,6 +202,9 @@ public final class ClassMeta {
 		return new ClassMeta(
 			fields,
 			Collections.unmodifiableSet(persistable),
+			List.copyOf(writableFields),
+			List.copyOf(insertDateFields),
+			List.copyOf(updateDateFields),
 			Collections.unmodifiableMap(byName),
 			idField,
 			methods,
