@@ -31,6 +31,14 @@ public class InsertQuery<E> {
         this.classMeta = classMeta;
     }
 
+    public List<Field> getFields() {
+        return classMeta.getWritableFields();
+    }
+
+    public Field getIdField() {
+        return classMeta.getIdField();
+    }
+
     @SneakyThrows
     public InsertQuery<E> value(E value) {
         for(Field field : classMeta.getInsertDateFields()) {
