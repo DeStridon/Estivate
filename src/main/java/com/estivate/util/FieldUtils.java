@@ -61,7 +61,8 @@ public class FieldUtils {
 	}
 
 	/**
-	 * Invokes methods with a specific annotation on an entity
+	 * Invokes methods with a specific annotation on an entity.
+	 * Prefer {@link ClassMeta} typed helpers ({@code invokePrePersist}, …) on hot paths.
 	 */
 	public static void invokeLifecycleMethods(Object entity, Class<? extends Annotation> annotationClass) {
 		try {

@@ -32,10 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MySQLContext extends Context {
-	
-	
-	public boolean tracePerformances = false;
-	
+
 	public MySQLContext(DataSource datasource) {
 		super(datasource, new MySQLDialect());
 	}
@@ -166,8 +163,8 @@ public class MySQLContext extends Context {
     @SneakyThrows
 	public List<DatabaseColumn> listFields(String tableName) {
 		List<DatabaseColumn> fields = new ArrayList<>(); 
-		try (Connection connection = datasource.getConnection();
-             Statement statement = new Statement(this, connection)) {
+		try (ConnectionLease lease = openConnection();
+             Statement statement = new Statement(this, lease.getConnection())) {
 
             statement.appendQuery("SHOW COLUMNS FROM ").appendQuery(tableName);
             
@@ -218,8 +215,8 @@ public class MySQLContext extends Context {
 	public List<TableIndex> listIndexes(Class<?> c) {
 		List<TableIndex> indexes = new ArrayList<>();
 
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 
 			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.toTableName(c));
 			

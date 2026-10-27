@@ -4,9 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.estivate.context.Context;
 import com.estivate.util.ClassMeta;
@@ -19,22 +17,23 @@ public class InsertQuery<E> {
 
     private final Class<E> entity;
 
+    private final ClassMeta classMeta;
+
     private List<E> values = new ArrayList<>();
-
-    private final Set<Field> fields;
-
-    private final Field idField;
 
     public InsertQuery(Class<E> entity) {
         this.entity = entity;
-        ClassMeta meta = ClassMeta.of(entity);
-        this.fields = new LinkedHashSet<>(meta.getWritableFields());
-        this.idField = meta.getIdField();
+        this.classMeta = ClassMeta.of(entity);
+    }
+
+    private InsertQuery(Class<E> entity, ClassMeta classMeta) {
+        this.entity = entity;
+        this.classMeta = classMeta;
     }
 
     @SneakyThrows
     public InsertQuery<E> value(E value) {
-        for(Field field : ClassMeta.of(entity).getInsertDateFields()) {
+        for(Field field : classMeta.getInsertDateFields()) {
             if(field.get(value) == null) {
                 field.set(value, new Date());
             }
@@ -66,8 +65,11 @@ public class InsertQuery<E> {
         context.execute(this);
     }
 
+    /**
+     * Shallow clone: reuses {@link ClassMeta}, copies only the values list.
+     */
     public InsertQuery<E> clone(){
-        InsertQuery<E> query = new InsertQuery<>(entity);
+        InsertQuery<E> query = new InsertQuery<>(entity, classMeta);
         query.values = new ArrayList<>(values);
         return query;
     }

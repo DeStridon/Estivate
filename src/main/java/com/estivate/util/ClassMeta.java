@@ -20,6 +20,7 @@ import com.estivate.Entity.UpdateDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 /**
  * Cached reflection snapshot for one entity class hierarchy,
@@ -40,7 +41,13 @@ public final class ClassMeta {
 		Collections.emptyMap(),
 		null,
 		Collections.emptySet(),
-		Collections.emptySet(),
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList(),
 		Collections.emptyMap()
 	);
 
@@ -53,7 +60,13 @@ public final class ClassMeta {
 	private final Map<String, Field> fieldsByName;
 	private final Field idField;
 	private final Set<Method> methods;
-	private final Set<Method> postLoadMethods;
+	private final List<Method> postLoadMethods;
+	private final List<Method> prePersistMethods;
+	private final List<Method> postPersistMethods;
+	private final List<Method> preUpdateMethods;
+	private final List<Method> postUpdateMethods;
+	private final List<Method> preRemoveMethods;
+	private final List<Method> postRemoveMethods;
 	@Getter(AccessLevel.NONE)
 	private final Map<Field, FieldBinding> fieldBindings;
 	@Getter(AccessLevel.NONE)
@@ -119,6 +132,44 @@ public final class ClassMeta {
 			return Collections.emptySet();
 		}
 		return of(objectClass).methodsWithAnnotation(annotation);
+	}
+
+	public void invokePrePersist(Object entity) {
+		invokeLifecycle(prePersistMethods, entity);
+	}
+
+	public void invokePostPersist(Object entity) {
+		invokeLifecycle(postPersistMethods, entity);
+	}
+
+	public void invokePreUpdate(Object entity) {
+		invokeLifecycle(preUpdateMethods, entity);
+	}
+
+	public void invokePostUpdate(Object entity) {
+		invokeLifecycle(postUpdateMethods, entity);
+	}
+
+	public void invokePreRemove(Object entity) {
+		invokeLifecycle(preRemoveMethods, entity);
+	}
+
+	public void invokePostRemove(Object entity) {
+		invokeLifecycle(postRemoveMethods, entity);
+	}
+
+	public void invokePostLoad(Object entity) {
+		invokeLifecycle(postLoadMethods, entity);
+	}
+
+	@SneakyThrows
+	private static void invokeLifecycle(List<Method> lifecycleMethods, Object entity) {
+		if(lifecycleMethods.isEmpty()) {
+			return;
+		}
+		for(Method method : lifecycleMethods) {
+			method.invoke(entity);
+		}
 	}
 
 	private static ClassMeta build(Class<?> objectClass) {
@@ -191,11 +242,53 @@ public final class ClassMeta {
 		}
 		methods = Collections.unmodifiableSet(methods);
 
-		Set<Method> postLoadMethods = new HashSet<>();
+		List<Method> postLoadMethods = new ArrayList<>();
+		List<Method> prePersistMethods = new ArrayList<>();
+		List<Method> postPersistMethods = new ArrayList<>();
+		List<Method> preUpdateMethods = new ArrayList<>();
+		List<Method> postUpdateMethods = new ArrayList<>();
+		List<Method> preRemoveMethods = new ArrayList<>();
+		List<Method> postRemoveMethods = new ArrayList<>();
+
 		for(Method method : methods) {
+			boolean lifecycle = false;
 			if(method.isAnnotationPresent(javax.persistence.PostLoad.class)
 					|| method.isAnnotationPresent(jakarta.persistence.PostLoad.class)) {
 				postLoadMethods.add(method);
+				lifecycle = true;
+			}
+			if(method.isAnnotationPresent(javax.persistence.PrePersist.class)
+					|| method.isAnnotationPresent(jakarta.persistence.PrePersist.class)) {
+				prePersistMethods.add(method);
+				lifecycle = true;
+			}
+			if(method.isAnnotationPresent(javax.persistence.PostPersist.class)
+					|| method.isAnnotationPresent(jakarta.persistence.PostPersist.class)) {
+				postPersistMethods.add(method);
+				lifecycle = true;
+			}
+			if(method.isAnnotationPresent(javax.persistence.PreUpdate.class)
+					|| method.isAnnotationPresent(jakarta.persistence.PreUpdate.class)) {
+				preUpdateMethods.add(method);
+				lifecycle = true;
+			}
+			if(method.isAnnotationPresent(javax.persistence.PostUpdate.class)
+					|| method.isAnnotationPresent(jakarta.persistence.PostUpdate.class)) {
+				postUpdateMethods.add(method);
+				lifecycle = true;
+			}
+			if(method.isAnnotationPresent(javax.persistence.PreRemove.class)
+					|| method.isAnnotationPresent(jakarta.persistence.PreRemove.class)) {
+				preRemoveMethods.add(method);
+				lifecycle = true;
+			}
+			if(method.isAnnotationPresent(javax.persistence.PostRemove.class)
+					|| method.isAnnotationPresent(jakarta.persistence.PostRemove.class)) {
+				postRemoveMethods.add(method);
+				lifecycle = true;
+			}
+			if(lifecycle) {
+				method.setAccessible(true);
 			}
 		}
 
@@ -208,7 +301,13 @@ public final class ClassMeta {
 			Collections.unmodifiableMap(byName),
 			idField,
 			methods,
-			Collections.unmodifiableSet(postLoadMethods),
+			List.copyOf(postLoadMethods),
+			List.copyOf(prePersistMethods),
+			List.copyOf(postPersistMethods),
+			List.copyOf(preUpdateMethods),
+			List.copyOf(postUpdateMethods),
+			List.copyOf(preRemoveMethods),
+			List.copyOf(postRemoveMethods),
 			Collections.unmodifiableMap(fieldBindings)
 		);
 	}

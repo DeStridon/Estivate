@@ -45,7 +45,7 @@ public class EntityMapper<U> {
 	final Entity<U> entity;
 
 	final Constructor<U> entityConstructor;
-	final Set<Method> entityPostLoadMethods;
+	final ClassMeta entityClassMeta;
 
 	List<ColumnMapping> columnMappings = new ArrayList<>();
 	Set<Integer> columnMappingIndexes = new HashSet<>();
@@ -69,6 +69,7 @@ public class EntityMapper<U> {
 
 		// Get constructor
 		entityConstructor = entity.entity.getConstructor();
+		entityClassMeta = ClassMeta.of(entity.entity);
 
 		// Get Fields
 		columnMappings = getColumnMappings(query, entity);
@@ -78,9 +79,6 @@ public class EntityMapper<U> {
 				columnMappingIndexes.add(i);
 			}
 		}
-
-		// Get PostLoadMethods
-		this.entityPostLoadMethods = ClassMeta.of(entity.entity).getPostLoadMethods();
 
 		// Entity Mappings
 		entityMappings = getEntityMappings(query, entity);
@@ -117,9 +115,7 @@ public class EntityMapper<U> {
 					setGeneratedField(entity, field, obj, row[i], columnMapping.getTransformer());
 				}
 			}
-			for (Method method : entityPostLoadMethods) {
-				method.invoke(obj);
-			}	
+			entityClassMeta.invokePostLoad(obj);
 		}
 
 		for(EntityMapping entityMapping : entityMappings) {
@@ -162,10 +158,7 @@ public class EntityMapper<U> {
 
 		}
 
-		Set<Method> methods = ClassMeta.of(obj.getClass()).getPostLoadMethods();
-		for (Method method : methods) {
-			method.invoke(obj);
-		}
+		ClassMeta.of(obj.getClass()).invokePostLoad(obj);
 
 		return obj;
 

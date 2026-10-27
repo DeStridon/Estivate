@@ -29,10 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class H2Context extends Context {
-	
-	
-	public boolean tracePerformances = false;
-	
+
 	public H2Context(DataSource datasource) {
 		super(datasource, new H2Dialect());
 	}
@@ -59,8 +56,8 @@ public class H2Context extends Context {
 	 */
 	@SneakyThrows
 	private void executeH2AlterTable(String sql) {
-		try (Connection connection = datasource.getConnection();
-			 java.sql.Statement stmt = connection.createStatement()) {
+		try (ConnectionLease lease = openConnection();
+			 java.sql.Statement stmt = lease.getConnection().createStatement()) {
 			stmt.execute(sql);
 		}
 	}
@@ -79,16 +76,16 @@ public class H2Context extends Context {
 	public boolean addIndex(Class<?> c, String name, IndexType type, List<String> columns) {
 
 		if(type == IndexType.FULLTEXT) {
-			try(Connection connection = datasource.getConnection(); 
-			Statement statement = new Statement(this, connection); ){
+			try (ConnectionLease lease = openConnection(); 
+			Statement statement = new Statement(this, lease.getConnection()); ){
 				statement.appendQuery("CREATE ALIAS IF NOT EXISTS FT_INIT FOR \"org.h2.fulltext.FullText.init\";");
 				//statement.executeForValidation();
 				
-				//statement = new Statement(this, connection);
+				//statement = new Statement(this, lease.getConnection());
 				statement.appendQuery("CALL FT_INIT();");
 				statement.executeForValidation();
 
-				//statement = new Statement(this, connection);
+				//statement = new Statement(this, lease.getConnection());
 				statement.appendQuery("CALL FT_CREATE_INDEX('PUBLIC', '"+nameMapper.toTableName(c)+"', '"+columns.stream().collect(Collectors.joining(", "))+"');");
 
 				return statement.executeForValidation();
@@ -191,8 +188,8 @@ public class H2Context extends Context {
 	
 	@SneakyThrows
 	public List<DatabaseColumn> listFields(String tableName) {
-		try (Connection connection = datasource.getConnection();
-				Statement statement = new Statement(this, connection)) {
+		try (ConnectionLease lease = openConnection();
+				Statement statement = new Statement(this, lease.getConnection())) {
 
 			statement.appendQuery(
 					"SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, "
@@ -211,10 +208,10 @@ public class H2Context extends Context {
 		
 		List<TableIndex> indexes = new ArrayList<>();
 		
-		try(Connection connection = datasource.getConnection(); 
-			Statement indexQueryStatement = new Statement(this, connection);
-			Statement indexColumnQueryStatement = new Statement(this, connection);
-			Statement fulltextIndexQueryStatement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection(); 
+			Statement indexQueryStatement = new Statement(this, lease.getConnection());
+			Statement indexColumnQueryStatement = new Statement(this, lease.getConnection());
+			Statement fulltextIndexQueryStatement = new Statement(this, lease.getConnection()); ){
 			
 			indexQueryStatement.appendQuery("SELECT * FROM information_schema.indexes WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(entity)+"'");
 			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(entity)+"'");

@@ -105,9 +105,73 @@ public abstract class Context {
 	/** Cached INSERT SQL templates keyed by entity class (depends on {@link #nameMapper}). */
 	private final Map<Class<?>, InsertSqlPlan> insertSqlPlans = new ConcurrentHashMap<>();
 
+	/** Thread-bound connection for {@link #withConnection}; joins Spring TX via {@link ConnectionAccess}. */
+	private final ThreadLocal<Connection> boundConnection = new ThreadLocal<>();
+
 	public Context(DataSource datasource, Dialect dialect) {
 		this.datasource = datasource;
 		this.dialect = dialect;
+	}
+
+	private Chronometer chronometer(String name) {
+		return Chronometer.of(name, tracePerformances);
+	}
+
+	/**
+	 * Opens a JDBC connection for one Estivate operation.
+	 * Reuses the connection bound by {@link #withConnection} or a Spring {@code @Transactional}
+	 * when present; otherwise borrows from the pool.
+	 */
+	public ConnectionLease openConnection() throws SQLException {
+		Connection bound = boundConnection.get();
+		if(bound != null) {
+			return new ConnectionLease(bound, datasource, false);
+		}
+		Connection connection = ConnectionAccess.getConnection(datasource);
+		return new ConnectionLease(connection, datasource, true);
+	}
+
+	/**
+	 * Runs work on a single borrowed connection (or the current Spring transaction connection).
+	 * Nested Estivate calls on this thread reuse that connection until the callback returns.
+	 */
+	@SneakyThrows
+	public void withConnection(ConnectionCallback callback) {
+		withConnection(connection -> {
+			callback.run(connection);
+			return null;
+		});
+	}
+
+	/**
+	 * Same as {@link #withConnection(ConnectionCallback)} but returns a value.
+	 */
+	@SneakyThrows
+	public <T> T withConnection(ConnectionCallable<T> callback) {
+		Connection existing = boundConnection.get();
+		if(existing != null) {
+			return callback.call(existing);
+		}
+
+		Connection connection = ConnectionAccess.getConnection(datasource);
+		boundConnection.set(connection);
+		try {
+			return callback.call(connection);
+		}
+		finally {
+			boundConnection.remove();
+			ConnectionAccess.releaseConnection(connection, datasource);
+		}
+	}
+
+	@FunctionalInterface
+	public interface ConnectionCallback {
+		void run(Connection connection) throws Exception;
+	}
+
+	@FunctionalInterface
+	public interface ConnectionCallable<T> {
+		T call(Connection connection) throws Exception;
 	}
 
 	public Context addSelectFilter(SelectFilter filter) {
@@ -202,6 +266,9 @@ public abstract class Context {
 	}
 
 	private <U> InsertQuery<U> preInsert(InsertQuery<U> query) {
+		if(insertInterceptor == null && insertFilters.isEmpty()) {
+			return query;
+		}
 		InsertQuery<U> clonedQuery = query.clone();
 		if(insertInterceptor != null) {
 			insertInterceptor.accept(clonedQuery);
@@ -272,8 +339,8 @@ public abstract class Context {
 	@SneakyThrows
 	private Boolean executeTerminal(Query<?,?> query, Chronometer chronometer) {
 		chronometer.step("execute::start");
-		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(query, connection)) {
+		try (ConnectionLease lease = openConnection();
+			Statement statement = queryAsStatement(query, lease.getConnection())) {
 			chronometer.step("execute::getconnectionAndStatement");
 			Boolean result = statement.executeForValidation();
 			chronometer.step("execute::result");
@@ -283,16 +350,16 @@ public abstract class Context {
 
 	@SneakyThrows
 	private String queryAsStringTerminal(Query<?,?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(query, connection);) {
+		try (ConnectionLease lease = openConnection();
+			Statement statement = queryAsStatement(query, lease.getConnection());) {
 			return statement.query();
 		}
 	}
 
 	@SneakyThrows
 	private String queryAsStringTerminal(AlterQuery<?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(query, connection);) {
+		try (ConnectionLease lease = openConnection();
+			Statement statement = queryAsStatement(query, lease.getConnection());) {
 			return statement.query();
 		}
 	}
@@ -318,7 +385,7 @@ public abstract class Context {
 	}
 
 	public Boolean execute(Query<?,?> query) {
-		return execute(query, new Chronometer("execute"));
+		return execute(query, chronometer("execute"));
 	}
 
 	public Boolean execute(AlterQuery<?> query) {
@@ -331,16 +398,16 @@ public abstract class Context {
 
 	@SneakyThrows
 	private Boolean executeAlterTerminal(AlterQuery<?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = queryAsStatement(query, connection)){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = queryAsStatement(query, lease.getConnection())){
 			return statement.executeForValidation();
 		}
 	}
 
 	@SneakyThrows
 	public Boolean execute(CreateQuery<?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, datasource.getConnection())) {
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection())) {
 
 			statement.appendQuery("CREATE TABLE");
 			if(query.isIfNotExists()) {
@@ -447,14 +514,14 @@ public abstract class Context {
 		InsertSqlPlan plan = insertSqlPlans.computeIfAbsent(query.getEntity(), this::buildInsertSqlPlan);
 		List<T> rows = query.getValues();
 
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection, plan.sqlForRowCount(rows.size()))) {
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection(), plan.sqlForRowCount(rows.size()))) {
 
 			chronometer.step("executeInsert::start");
 
+			ClassMeta meta = ClassMeta.of(query.getEntity());
 			for(T value : rows) {
-				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PrePersist.class);
-				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PrePersist.class);
+				meta.invokePrePersist(value);
 			}
 			chronometer.step("executeInsert::invokeLifecycleMethods");
 
@@ -466,7 +533,7 @@ public abstract class Context {
 			}
 			chronometer.step("executeInsert::appendValues");
 
-			try(ResultSet resultSet = statement.executeForGeneratedKeys()) {
+			try(ResultSet resultSet = statement.executeForGeneratedKeys(chronometer)) {
 				chronometer.step("executeInsert::executeForGeneratedKeys");
 				List<Long> generatedKeys = new ArrayList<>();
 				while(resultSet.next()) {
@@ -483,8 +550,7 @@ public abstract class Context {
 			}
 
 			for(T value : rows) {
-				FieldUtils.invokeLifecycleMethods(value, javax.persistence.PostPersist.class);
-				FieldUtils.invokeLifecycleMethods(value, jakarta.persistence.PostPersist.class);
+				meta.invokePostPersist(value);
 			}
 			chronometer.step("executeInsert::postPersist");
 		}
@@ -560,7 +626,7 @@ public abstract class Context {
 	}
 
 	public <T> void execute(InsertQuery<T> query) {
-		execute(query, new Chronometer("executeInsert"));
+		execute(query, chronometer("executeInsert"));
 	}
 
 	// ==================== PERSISTENCE METHODS ====================
@@ -575,7 +641,7 @@ public abstract class Context {
 	}
 
 	public <U> void insert(U object) {
-		insert(object, new Chronometer("insert"));
+		insert(object, chronometer("insert"));
 	}
 
 
@@ -612,8 +678,8 @@ public abstract class Context {
 
 	@SneakyThrows
 	private ResultTable fetchTerminal(SelectQuery<?> query) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection, query);
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection(), query);
 			ResultSet resultSet = statement.executeForResultSet()) {
 
 			ResultTable resultTable = new ResultTable(this, createColumnsArray(resultSet.getMetaData()), query);
@@ -1199,7 +1265,7 @@ public abstract class Context {
 //	}
 		
 	public <U> void updateOrInsert(U object){
-		updateOrInsert(object, new Chronometer("updateOrInsert"));
+		updateOrInsert(object, chronometer("updateOrInsert"));
 	}
 		
 	@SneakyThrows
@@ -1248,11 +1314,11 @@ public abstract class Context {
 		}
 
 		chronometer.step("update::start");
-		FieldUtils.invokeLifecycleMethods(entity, javax.persistence.PreUpdate.class);
-		FieldUtils.invokeLifecycleMethods(entity, jakarta.persistence.PreUpdate.class);
-		chronometer.step("update::invokeLifecycleMethods");
 
 		ClassMeta meta = ClassMeta.of(entity.getClass());
+		meta.invokePreUpdate(entity);
+		chronometer.step("update::invokeLifecycleMethods");
+
 		Field idField = meta.getIdField();
 		Long id = idField == null ? null : idField.getLong(entity);
 
@@ -1298,13 +1364,12 @@ public abstract class Context {
 		execute(query, chronometer);
 		chronometer.step("update::execute");
 
-		FieldUtils.invokeLifecycleMethods(entity, javax.persistence.PostUpdate.class);
-		FieldUtils.invokeLifecycleMethods(entity, jakarta.persistence.PostUpdate.class);
+		meta.invokePostUpdate(entity);
 		chronometer.step("update::invokeLifecycleMethods::postUpdate");
 	}
 
 	public <U> void update(U entity) {
-		update(entity, new Chronometer("update"));
+		update(entity, chronometer("update"));
 	}
 
 	@SneakyThrows
@@ -1348,8 +1413,8 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public List<String> showTables(){
-		try (Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection, "SHOW TABLES;");
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection(), "SHOW TABLES;");
 			ResultSet resultSet = statement.executeForResultSet(); ){
 			
 			List<String> rows = new ArrayList<>();
@@ -1415,8 +1480,8 @@ public abstract class Context {
 
 	@SneakyThrows
 	public boolean truncateTable(Class<?> entity) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement.appendQuery("TRUNCATE TABLE ").appendQuery(nameMapper.toTableName(entity));
 			return statement.executeForValidation();
 		}
@@ -1440,8 +1505,8 @@ public abstract class Context {
 
 	@SneakyThrows
 	public boolean dropTable(String tableName, boolean ifExists) {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement.appendQuery("DROP TABLE");
 			if(ifExists) {
 				statement.appendQuery("IF EXISTS");
@@ -1457,8 +1522,8 @@ public abstract class Context {
 	 */
 	@SneakyThrows
 	public List<RunningQuery> listRunningQueries() {
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement.appendQuery(runningQueriesSql());
 			return fetchListAsResults(statement).stream()
 				.map(this::toRunningQuery)
@@ -1521,8 +1586,8 @@ public abstract class Context {
 
 	@SneakyThrows
 	public boolean addIndex(Class<?> c, String name, IndexType type, List<String> columns) {
-		try(Connection connection = datasource.getConnection(); 
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection(); 
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement
 				.appendQuery("CREATE")
 				.appendQuery(type == IndexType.DEFAULT ? "" : type.name().toUpperCase())
@@ -1542,8 +1607,8 @@ public abstract class Context {
 			return false;
 		}
 		
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement
 				.appendQuery("DROP INDEX")
 				.appendQuery(name)
@@ -1588,8 +1653,8 @@ public abstract class Context {
 
 	public void dropColumn(Class<?> c, String fieldName) throws Exception {
 		String columnName = nameMapper.mapDatabaseField(fieldName);
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" DROP COLUMN ").appendQuery(columnName);
 			statement.executeForValidation();
 		}
@@ -1599,8 +1664,8 @@ public abstract class Context {
 
 	public void changeColumn(Class<?> c, String fieldName, String columnType) throws Exception {
 		String columnName = nameMapper.mapDatabaseField(fieldName);
-		try(Connection connection = datasource.getConnection();
-			Statement statement = new Statement(this, connection); ){
+		try (ConnectionLease lease = openConnection();
+			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement.appendQuery("ALTER TABLE ").appendQuery(nameMapper.toTableName(c)).appendQuery(" CHANGE COLUMN ").appendQuery(columnName).appendQuery(" ").appendQuery(columnType);
 			statement.executeForValidation();
 		}

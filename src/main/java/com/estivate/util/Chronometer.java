@@ -1,6 +1,7 @@
 package com.estivate.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 public class Chronometer {
 	
 	public static int defaultThreshold = 5000;
+
+	/** Shared no-op instance when performance tracing is off. */
+	private static final Chronometer INACTIVE = new Chronometer("inactive", false);
 	
 	
 	final String name;
@@ -31,6 +35,13 @@ public class Chronometer {
 	
 	private List<Pair<String, Float>> steps = new ArrayList<>();
 	private Map<String, String> details = new LinkedHashMap<>();
+
+	/**
+	 * Returns a live chronometer when {@code active}, otherwise a shared no-op instance.
+	 */
+	public static Chronometer of(String name, boolean active) {
+		return active ? new Chronometer(name, true) : INACTIVE;
+	}
 	
 	
 	public Chronometer(String name){
@@ -44,6 +55,10 @@ public class Chronometer {
 		this.begin = System.currentTimeMillis();
 		this.lastStep = begin;
 		this.timeThreshold = defaultThreshold;
+		if(!activated) {
+			this.steps = Collections.emptyList();
+			this.details = Collections.emptyMap();
+		}
 	}
 	
 	public Chronometer active(boolean active) {
@@ -58,6 +73,9 @@ public class Chronometer {
 	
 	
 	public Chronometer addDetail(String key, String value) {
+		if(!this.active) {
+			return this;
+		}
 		this.details.put(key, value);
 		return this;
 	}
@@ -100,7 +118,7 @@ public class Chronometer {
 	public Chronometer end(String finalStepName) {
 		this.step(finalStepName);
 		
-		if(this.timeThreshold != null && (this.lastStep - this.begin) > this.timeThreshold) {
+		if(this.active && this.timeThreshold != null && (this.lastStep - this.begin) > this.timeThreshold) {
 			log.info(getLog());
 		}
 		return this;

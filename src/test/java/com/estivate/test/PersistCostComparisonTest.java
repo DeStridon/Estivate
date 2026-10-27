@@ -91,6 +91,7 @@ public class PersistCostComparisonTest {
         jdbcBatch();
 
         long estivateInsert = timeInserts(0, ITERATIONS, this::estivateInsert);
+        long estivateInsertSharedConnection = timeEstivateInsertsWithSharedConnection(0, ITERATIONS);
         long jdbcPerCallInsert = timeInserts(0, ITERATIONS, this::jdbcInsertPerCall);
         long jdbcReusedInsert = timeReusedJdbcInserts(0, ITERATIONS);
         long hibernatePerCallInsert = timeInserts(0, ITERATIONS, this::hibernateInsertPerCall);
@@ -112,7 +113,7 @@ public class PersistCostComparisonTest {
         long methodScanNanos = timeNanos(20_000, () -> ClassMeta.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
 
         System.out.println("Persist cost, microseconds per row");
-        System.out.println("  insert  estivate=" + micros(estivateInsert) + " jdbc-per-call=" + micros(jdbcPerCallInsert) + " jdbc-reused-statement=" + micros(jdbcReusedInsert) + " hibernate-per-call=" + micros(hibernatePerCallInsert));
+        System.out.println("  insert  estivate=" + micros(estivateInsert) + " estivate-shared-connection=" + micros(estivateInsertSharedConnection) + " jdbc-per-call=" + micros(jdbcPerCallInsert) + " jdbc-reused-statement=" + micros(jdbcReusedInsert) + " hibernate-per-call=" + micros(hibernatePerCallInsert));
         System.out.println("  update  estivate=" + micros(estivateUpdate) + " jdbc-per-call=" + micros(jdbcPerCallUpdate) + " hibernate-per-call=" + micros(hibernatePerCallUpdate));
         System.out.println("  batch of " + BATCH + " rows, milliseconds: estivate-loop=" + (estivateBatch / 1_000_000) + " estivate-collection=" + (estivateCollectionBatch / 1_000_000) + " hibernate-one-tx=" + (hibernateBatch / 1_000_000) + " jdbc-batch=" + (jdbcBatch / 1_000_000));
         System.out.println("  uncached lifecycle method scan on CustomerEntity: " + (methodScanNanos / 20_000) + " ns");
@@ -196,6 +197,21 @@ public class PersistCostComparisonTest {
 
     private void estivateInsert(PersistBenchEntity row) {
         context.insert(row);
+    }
+
+    private long timeEstivateInsertsWithSharedConnection(int warmup, int iterations) {
+        context.withConnection(ignored -> {
+            for (int i = 0; i < warmup; i++) {
+                context.insert(row(i));
+            }
+        });
+        long begin = System.nanoTime();
+        context.withConnection(ignored -> {
+            for (int i = 0; i < iterations; i++) {
+                context.insert(row(i));
+            }
+        });
+        return (System.nanoTime() - begin) / iterations;
     }
 
     private void estivateUpdate(PersistBenchEntity row) {

@@ -286,7 +286,7 @@ public class Statement implements AutoCloseable{
 	}
 
 	public ResultSet executeForGeneratedKeys() throws SQLException{
-		return executeForGeneratedKeys(new Chronometer("executeForGeneratedKeys"));
+		return executeForGeneratedKeys(Chronometer.of("executeForGeneratedKeys", context.tracePerformances));
 	}
 	
 	public ResultSet executeForResultSet() throws SQLException {
@@ -392,7 +392,7 @@ public class Statement implements AutoCloseable{
 	}
 
 	private boolean execute(Connection connection) throws SQLException {
-		return execute(connection, new Chronometer("execute"));
+		return execute(connection, Chronometer.of("execute", context.tracePerformances));
 	}
 	
 
@@ -671,8 +671,8 @@ public class Statement implements AutoCloseable{
 
 	@Override
 	public void close() throws Exception {
+		// Connection lifecycle is owned by Context.ConnectionLease / Spring DataSourceUtils.
 		if(statement != null) {
-			connection.close();
 			statement.close();
 		}
 	}
