@@ -44,7 +44,7 @@ public final class MysqlTestDatabase {
 		return context;
 	}
 
-	private static DataSource dataSource(MySQLContainer<?> mysql) {
+	public static DataSource dataSource(MySQLContainer<?> mysql) {
 		MysqlDataSource dataSource = new MysqlDataSource();
 		dataSource.setURL(mysql.getJdbcUrl());
 		dataSource.setUser(mysql.getUsername());

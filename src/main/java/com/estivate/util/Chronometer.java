@@ -28,11 +28,13 @@ public class Chronometer {
 	final String name;
 	
 	private boolean active = true;
+	/** Threshold in milliseconds before {@link #end(String)} logs. */
 	private Integer timeThreshold = 5000;
 	
-	private long begin = System.currentTimeMillis();
+	private long begin = System.nanoTime();
 	private long lastStep = begin;
 	
+	/** Step durations in seconds (fractional; measured with {@link System#nanoTime()}). */
 	private List<Pair<String, Float>> steps = new ArrayList<>();
 	private Map<String, String> details = new LinkedHashMap<>();
 
@@ -52,7 +54,7 @@ public class Chronometer {
 		this.name = name;
 		this.active = activated;
 		
-		this.begin = System.currentTimeMillis();
+		this.begin = System.nanoTime();
 		this.lastStep = begin;
 		this.timeThreshold = defaultThreshold;
 		if(!activated) {
@@ -90,7 +92,16 @@ public class Chronometer {
 	
 	public Chronometer reset(){
 		if(this.active){
-			this.begin = System.currentTimeMillis();
+			this.begin = System.nanoTime();
+			this.lastStep = this.begin;
+		}
+		return this;
+	}
+
+	/** Starts the next interval without recording a step (drops idle time between operations). */
+	public Chronometer mark() {
+		if(this.active) {
+			this.lastStep = System.nanoTime();
 		}
 		return this;
 	}
@@ -102,10 +113,10 @@ public class Chronometer {
 			return this;
 		}
 
-		long currentStep = System.currentTimeMillis();
-		float spentTime = (currentStep - this.lastStep) / 1000f;
+		long currentStep = System.nanoTime();
+		float spentTime = (currentStep - this.lastStep) / 1_000_000_000f;
 		
-		if(this.timeThreshold != null && (currentStep - this.begin) > this.timeThreshold) {
+		if(this.timeThreshold != null && (currentStep - this.begin) / 1_000_000L > this.timeThreshold) {
 			log.warn("! Chronometer [ "+name+" ] Logger time limit triggered ! Step: " + stepName);
 		}
 			
@@ -118,7 +129,7 @@ public class Chronometer {
 	public Chronometer end(String finalStepName) {
 		this.step(finalStepName);
 		
-		if(this.active && this.timeThreshold != null && (this.lastStep - this.begin) > this.timeThreshold) {
+		if(this.active && this.timeThreshold != null && (this.lastStep - this.begin) / 1_000_000L > this.timeThreshold) {
 			log.info(getLog());
 		}
 		return this;
@@ -135,20 +146,42 @@ public class Chronometer {
 			stats.get(pair.x).add(pair.y);
 		}
 		
-		double globalTime = this.totalTime();
+		double globalTimeMs = this.totalTime();
+		boolean micros = globalTimeMs < 50;
 		
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("Chrono Triggered : ").append(this.name).append("\n");
-		sb.append("\tTotal time: ").append((int) Math.floor(globalTime)).append("ms\n");
+		if(micros) {
+			sb.append("\tTotal time: ").append(Math.round(globalTimeMs * 1000)).append("µs\n");
+		}
+		else {
+			sb.append("\tTotal time: ").append((int) Math.floor(globalTimeMs)).append("ms\n");
+		}
 
 		if (!stats.isEmpty()){
 			sb.append("\n\tSteps\n");
 			
 			for(Entry<String, List<Float>> entry : stats.entrySet()) {
-				int totalLength = entry.getValue().stream().mapToInt(x -> (int) Math.floor(x*1000)).sum();
-				int ratio = (int) Math.round(totalLength / globalTime * 100);
-				sb.append("\t  ").append(ratio*stats.size() > 500 ? ">>> " : "").append(entry.getKey()).append(" : ").append(totalLength).append("ms - ").append(ratio).append("%").append(entry.getValue().size() > 1 ? " (" + entry.getValue().size() + ")" : "").append("\n");
+				double stepMs = entry.getValue().stream().mapToDouble(x -> x * 1000d).sum();
+				int ratio = globalTimeMs <= 0 ? 0 : (int) Math.round(stepMs / globalTimeMs * 100);
+				int count = entry.getValue().size();
+				sb.append("\t  ").append(ratio * stats.size() > 500 ? ">>> " : "").append(entry.getKey()).append(" : ");
+				if(micros) {
+					long stepMicros = Math.round(stepMs * 1000);
+					sb.append(stepMicros).append("µs");
+					if(count > 1) {
+						sb.append(" avg ").append(stepMicros / count).append("µs");
+					}
+				}
+				else {
+					sb.append((int) Math.floor(stepMs)).append("ms");
+				}
+				sb.append(" - ").append(ratio).append("%");
+				if(count > 1) {
+					sb.append(" (").append(count).append(")");
+				}
+				sb.append("\n");
 			}
 		}
 
@@ -164,6 +197,7 @@ public class Chronometer {
 		return sb.toString();
 	}
 
+	/** Total recorded step time in milliseconds. */
 	public double totalTime() {
 		return this.steps.stream().mapToDouble(x -> x.y*1000).sum();
 	}

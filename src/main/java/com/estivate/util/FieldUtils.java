@@ -148,12 +148,21 @@ public class FieldUtils {
 
 
 	public static int indexOf(Collection<?> collection, Object object) {
-
-		List<Object> list = new ArrayList<>(collection);
-		for(int i = 0; i < list.size(); i++) {
-			if(list.get(i).equals(object)) {
+		if(collection instanceof List) {
+			List<?> list = (List<?>) collection;
+			for(int i = 0; i < list.size(); i++) {
+				if(object == null ? list.get(i) == null : object.equals(list.get(i))) {
+					return i;
+				}
+			}
+			return -1;
+		}
+		int i = 0;
+		for(Object element : collection) {
+			if(object == null ? element == null : object.equals(element)) {
 				return i;
 			}
+			i++;
 		}
 		return -1;
 	}

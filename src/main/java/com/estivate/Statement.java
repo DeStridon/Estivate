@@ -10,15 +10,13 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
@@ -57,6 +55,8 @@ public class Statement implements AutoCloseable{
 	List<Object> parameters = new ArrayList<>();
 	
 	PreparedStatement statement = null;
+	/** When true, {@link #close()} must not close {@link #statement} — Context owns the cache. */
+	private boolean cachedPreparedStatement = false;
 	
 	public Statement(Context context, Connection connection){
 		this.context = context;
@@ -73,8 +73,18 @@ public class Statement implements AutoCloseable{
 
 		this.context = context;
 		this.connection = connection;
-		
-		// 1. Comments
+
+		if(query instanceof UpdateQuery
+				&& query.getComments().isEmpty()
+				&& query.getJoins().isEmpty()
+				&& query.getOrders().isEmpty()
+				&& query.getLimit() == null
+				&& query.getOffset() == null) {
+			appendSimpleUpdate((UpdateQuery<?>) query);
+			return;
+		}
+
+		// 1. Comments (often a stack trace for slow-query diagnosis)
 		for(String comment : query.getComments()) {
 			appendQuery("-- "+comment+"\n");
 		}
@@ -143,7 +153,7 @@ public class Statement implements AutoCloseable{
 
 				appendAttributeAsParameter(entry.getKey());
 				appendQuery("=");
-	  			appendQuery(writeParameter(entry.getKey().entity.entity, entry.getKey().attribute, entry.getValue()));
+	  			appendQuery(writeParameter(entry.getKey(), entry.getValue()));
 			}  
 			
 		}
@@ -181,13 +191,60 @@ public class Statement implements AutoCloseable{
 		if(query.getOffset() != null) {
 			appendQuery("OFFSET "+ query.getOffset() +"\n");
 		}
-	
-		
+	}
+
+	/**
+	 * Hot path for entity updates: no joins/comments/limit. Builds SQL from the same
+	 * {@link UpdateQuery} model as the general renderer, with fewer {@link #appendQuery} calls.
+	 */
+	private void appendSimpleUpdate(UpdateQuery<?> updateQuery) {
+		Entity<?> entity = updateQuery.getEntity();
+		this.query.append("UPDATE ").append(context.mappedTableName(entity.entity)).append(" SET ");
+		boolean first = true;
+		for(Map.Entry<Attribute, Object> entry : updateQuery.getUpdates().entrySet()) {
+			if(!first) {
+				this.query.append(" , ");
+			}
+			first = false;
+			Attribute attribute = entry.getKey();
+			this.query.append(context.mappedTableAttribute(attribute.entity, attribute.attribute)).append(" = ");
+			// writeParameter handles literals, Attribute RHS, and SelectQuery subqueries
+			this.query.append(writeParameter(attribute, entry.getValue()));
+		}
+		if(!updateQuery.getCriterions().isEmpty()) {
+			this.query.append(" WHERE ");
+			appendSimpleWhere(updateQuery);
+		}
+	}
+
+	private void appendSimpleWhere(Query<?,?> query) {
+		List<EstivateNode> criterions = query.getCriterions();
+		for(int i = 0; i < criterions.size(); i++) {
+			if(i > 0) {
+				this.query.append(' ').append(query.getGroupType()).append(' ');
+			}
+			appendSimpleCriterion(criterions.get(i));
+		}
+	}
+
+	private void appendSimpleCriterion(EstivateNode node) {
+		if(node instanceof Criterion.Operator) {
+			Criterion.Operator operator = (Criterion.Operator) node;
+			this.query.append(context.mappedTableAttribute(operator.attribute.entity, operator.attribute.attribute));
+			this.query.append(' ').append(operator.type.symbol).append(' ');
+			this.query.append(writeParameter(operator.attribute, operator.value));
+			return;
+		}
+		appendNodeToStatement(node, false);
 	}
 	
 	public Statement appendQuery(String queryContent) {
-		if(query.length() > 0 && !Arrays.asList(" ", "(").contains(query.substring(query.length() - 1)) && !queryContent.equals(")")) {
-			query.append(" ");
+		int length = query.length();
+		if(length > 0 && !queryContent.equals(")")) {
+			char last = query.charAt(length - 1);
+			if(last != ' ' && last != '(') {
+				query.append(' ');
+			}
 		}
 		query.append(queryContent);
 		return this;
@@ -210,10 +267,10 @@ public class Statement implements AutoCloseable{
 			appendQuery("COUNT(*)");
 		}
 		else if(attribute.function != null) {
-			appendQuery(attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)));
+			appendQuery(attribute.function.render(context.mappedTableAttribute(attribute.entity, attribute.attribute)));
 		}
 		else {
-			appendQuery(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute));
+			appendQuery(context.mappedTableAttribute(attribute.entity, attribute.attribute));
 		}
 
 		return this;
@@ -225,6 +282,13 @@ public class Statement implements AutoCloseable{
 	}
 
 	
+	public Statement ensureParameterCapacity(int capacity) {
+		if(parameters instanceof ArrayList) {
+			((ArrayList<Object>) parameters).ensureCapacity(capacity);
+		}
+		return this;
+	}
+
 	public Statement appendObjectAsValue(Class<?> entity, String fieldName, Object parameter) {
 		parameters.add(compileObject(entity, fieldName, parameter));
 		return this;
@@ -241,29 +305,44 @@ public class Statement implements AutoCloseable{
 	// }
 
 	private Statement appendParameterAsValue(Attribute attribute, Object parameter) {
-		Class<?> entityClass = attribute.entity != null ? attribute.entity.entity : null;
-		appendQuery(writeParameter(entityClass, attribute.attribute, parameter));
+		appendQuery(writeParameter(attribute, parameter));
 		return this;
+	}
+
+	public String writeParameter(Attribute attribute, Object parameter) {
+		if(parameter instanceof Attribute) {
+			Attribute valueAttribute = (Attribute) parameter;
+			String attributeField = valueAttribute.entity == null
+				? valueAttribute.attribute
+				: context.mappedTableAttribute(valueAttribute.entity, valueAttribute.attribute);
+			if(valueAttribute.function != null) {
+				return valueAttribute.function.render(attributeField);
+			}
+			return attributeField;
+		}
+		if(parameter instanceof SelectQuery) {
+			SelectQuery<?> selectQuery = (SelectQuery<?>) parameter;
+			Statement subStatement = new Statement(context, connection, selectQuery);
+			parameters.addAll(subStatement.parameters);
+			return "(" + subStatement.query() + ")";
+		}
+		if(attribute != null && attribute.field != null) {
+			appendObjectAsValue(attribute.field, parameter);
+			return "?";
+		}
+		Class<?> entityClass = attribute != null && attribute.entity != null ? attribute.entity.entity : null;
+		String fieldName = attribute != null ? attribute.attribute : null;
+		appendObjectAsValue(entityClass, fieldName, parameter);
+		return "?";
 	}
 	
 	public String writeParameter(Class<?> entity, String field, Object parameter) {
 		
 		if(parameter instanceof Attribute) {
-			Attribute attribute = (Attribute) parameter;
-			String attributeField = attribute.entity == null ? attribute.attribute : context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
-			if(attribute instanceof Attribute){
-				Attribute Attribute = (Attribute) attribute;
-				if(Attribute.function != null) {
-					return Attribute.function.render(attributeField);
-				}
-			}
-			return attributeField;
+			return writeParameter((Attribute) null, parameter);
 		}
 		else if(parameter instanceof SelectQuery){
-			SelectQuery<?> selectQuery = (SelectQuery<?>) parameter;
-			Statement subStatement = new Statement(context, connection, selectQuery);
-			parameters.addAll(subStatement.parameters);
-			return "("+subStatement.query()+")";
+			return writeParameter((Attribute) null, parameter);
 		}
 		else {
 			appendObjectAsValue(entity, field, parameter);
@@ -274,13 +353,17 @@ public class Statement implements AutoCloseable{
 	
 
 	public boolean executeForValidation() throws SQLException{
-		return execute(connection);
+		return execute(connection, Chronometer.of("execute", context.tracePerformances), false);
+	}
+
+	public boolean executeForValidation(Chronometer chronometer) throws SQLException{
+		return execute(connection, chronometer, false);
 	}
 
 
 	public ResultSet executeForGeneratedKeys(Chronometer chronometer) throws SQLException{
 		if(statement == null) {
-			execute(connection, chronometer);
+			execute(connection, chronometer, true);
 		}
 		return statement.getGeneratedKeys();
 	}
@@ -290,114 +373,119 @@ public class Statement implements AutoCloseable{
 	}
 	
 	public ResultSet executeForResultSet() throws SQLException {
+		return executeForResultSet(Chronometer.of("execute", context.tracePerformances));
+	}
+
+	public ResultSet executeForResultSet(Chronometer chronometer) throws SQLException {
 		if(statement == null) {
-			execute(connection);
+			prepareAndBind(connection, chronometer, false);
+			ResultSet resultSet = statement.executeQuery();
+			chronometer.step("jdbc::executeQuery");
+			return resultSet;
 		}
 		return statement.getResultSet();
 	}
 	
 
 
-	private boolean execute(Connection connection, Chronometer chronometer) throws SQLException {
-		
-		String queryString = query.toString();
-		if(StringUtils.isBlank(queryString)) {
+	private boolean execute(Connection connection, Chronometer chronometer, boolean returnGeneratedKeys) throws SQLException {
+		prepareAndBind(connection, chronometer, returnGeneratedKeys);
+		try {
+			statement.executeUpdate();
+			chronometer.step("jdbc::execute");
 			return true;
-		}
-		
-		try{
-			statement = connection.prepareStatement(queryString, java.sql.Statement.RETURN_GENERATED_KEYS);
-
-			for(int i = 0; i < parameters.size(); i++) {
-				
-				Object object = parameters.get(i);
-				
-				if(object instanceof String) {
-					String s = (String) object;
-					statement.setString(i+1, s);
-				}
-				else if(object instanceof Integer) {
-					Integer n = (Integer) object;
-					statement.setInt(i+1, n);
-				}
-				else if(object instanceof Long) {
-					Long l = (Long) object;
-					statement.setLong(i+1, l);
-				}
-				else if(object instanceof Float) {
-					Float f = (Float) object;
-					statement.setFloat(i+1, f);
-				}
-				else if(object instanceof Double) {
-					Double f = (Double) object;
-					statement.setDouble(i+1, f);
-				}
-				else if(object instanceof BigDecimal) {
-					statement.setBigDecimal(i+1, (BigDecimal) object);
-				}
-				else if(object instanceof Boolean) {
-					Boolean b = (Boolean) object;
-					statement.setBoolean(i+1, b);
-				}
-				else if(object instanceof java.util.Date) {
-					java.util.Date d = (java.util.Date) object;
-					statement.setTimestamp(i+1, new Timestamp(d.getTime()));
-				}
-				else if(object instanceof java.sql.Date) {
-					java.sql.Date d = (java.sql.Date) object;
-					statement.setTimestamp(i+1, new Timestamp(d.getTime()));
-				}
-				else if(object instanceof java.sql.Time) {
-					java.sql.Time t = (java.sql.Time) object;
-					statement.setTimestamp(i+1, new Timestamp(t.getTime()));
-				}
-				else if(object instanceof java.sql.Timestamp) {
-					java.sql.Timestamp ts = (java.sql.Timestamp) object;
-					statement.setTimestamp(i+1, ts);
-				}
-				else if(object instanceof LocalDateTime) {
-					LocalDateTime ldt = (LocalDateTime) object;
-					statement.setTimestamp(i+1, Timestamp.valueOf(ldt));
-				}
-				else if(object instanceof Instant) {
-					Instant instant = (Instant) object;
-					statement.setTimestamp(i+1, Timestamp.from(instant));
-				}
-				else if(object instanceof java.time.LocalDate) {
-					java.time.LocalDate ld = (java.time.LocalDate) object;
-					statement.setTimestamp(i+1, Timestamp.valueOf(ld.atStartOfDay()));
-				}
-				else if(object instanceof java.time.LocalTime) {
-					java.time.LocalTime lt = (java.time.LocalTime) object;
-					statement.setTimestamp(i+1, Timestamp.valueOf(lt.atDate(java.time.LocalDate.now())));
-				}
-				else if(object == null) {
-					statement.setObject(i+1, null);
-				}
-				else {
-					log.error("Cannot map object of type "+object.getClass());
-				}
-
-			}
-		
-			return statement.execute();
 		}
 		catch(Exception e) {
 			log.error("Error executing statement : "+query, e);
 			throw e;
 		}
-						
-		
-	
 	}
 
-	private boolean execute(Connection connection) throws SQLException {
-		return execute(connection, Chronometer.of("execute", context.tracePerformances));
-	}
-	
+	private void prepareAndBind(Connection connection, Chronometer chronometer, boolean returnGeneratedKeys) throws SQLException {
+		if(query.length() == 0) {
+			return;
+		}
+		String queryString = query.toString();
+		chronometer.step("jdbc::toString");
 
-		
-	
+		try {
+			cachedPreparedStatement = false;
+			PreparedStatement cached = context.prepareCachedStatement(connection, queryString, returnGeneratedKeys);
+			if(cached != null) {
+				statement = cached;
+				cachedPreparedStatement = true;
+			}
+			if(statement == null) {
+				statement = returnGeneratedKeys
+					? connection.prepareStatement(queryString, java.sql.Statement.RETURN_GENERATED_KEYS)
+					: connection.prepareStatement(queryString);
+			}
+			chronometer.step("jdbc::prepare");
+
+			for(int i = 0; i < parameters.size(); i++) {
+				Object object = parameters.get(i);
+				int index = i + 1;
+
+				if(object == null) {
+					statement.setObject(index, null);
+				}
+				else if(object instanceof String) {
+					statement.setString(index, (String) object);
+				}
+				else if(object instanceof Integer) {
+					statement.setInt(index, (Integer) object);
+				}
+				else if(object instanceof Long) {
+					statement.setLong(index, (Long) object);
+				}
+				else if(object instanceof Boolean) {
+					statement.setBoolean(index, (Boolean) object);
+				}
+				else if(object instanceof Float) {
+					statement.setFloat(index, (Float) object);
+				}
+				else if(object instanceof Double) {
+					statement.setDouble(index, (Double) object);
+				}
+				else if(object instanceof BigDecimal) {
+					statement.setBigDecimal(index, (BigDecimal) object);
+				}
+				else if(object instanceof java.util.Date) {
+					statement.setTimestamp(index, new Timestamp(((java.util.Date) object).getTime()));
+				}
+				else if(object instanceof java.sql.Date) {
+					statement.setTimestamp(index, new Timestamp(((java.sql.Date) object).getTime()));
+				}
+				else if(object instanceof java.sql.Time) {
+					statement.setTimestamp(index, new Timestamp(((java.sql.Time) object).getTime()));
+				}
+				else if(object instanceof java.sql.Timestamp) {
+					statement.setTimestamp(index, (java.sql.Timestamp) object);
+				}
+				else if(object instanceof LocalDateTime) {
+					statement.setTimestamp(index, Timestamp.valueOf((LocalDateTime) object));
+				}
+				else if(object instanceof Instant) {
+					statement.setTimestamp(index, Timestamp.from((Instant) object));
+				}
+				else if(object instanceof java.time.LocalDate) {
+					statement.setTimestamp(index, Timestamp.valueOf(((java.time.LocalDate) object).atStartOfDay()));
+				}
+				else if(object instanceof java.time.LocalTime) {
+					statement.setTimestamp(index, Timestamp.valueOf(((java.time.LocalTime) object).atDate(java.time.LocalDate.now())));
+				}
+				else {
+					log.error("Cannot map object of type "+object.getClass());
+				}
+			}
+			chronometer.step("jdbc::bind");
+		}
+		catch(Exception e) {
+			log.error("Error preparing statement : "+query, e);
+			throw e;
+		}
+	}
+
 	public void appendJoin(Join join) {
 
 		appendQuery(join.joinType.toString());
@@ -413,7 +501,7 @@ public class Statement implements AutoCloseable{
 			
 		}
 		else{
-			appendQuery(context.nameMapper.toTableName(join.rightEntity.entity));
+			appendQuery(context.mappedTableName(join.rightEntity.entity));
 			if(join.rightEntity.alias != null) { appendQuery(join.rightEntity.alias);}
 			if(join.indexHint != null && join.indexNames != null && !join.indexNames.isEmpty()) {
 				appendQuery(join.indexHint.toString()+ " INDEX ("+join.indexNames.stream().collect(Collectors.joining(", "))+")");
@@ -439,7 +527,7 @@ public class Statement implements AutoCloseable{
 
 		}
 		else{
-			appendQuery(context.nameMapper.toTableName(entity.entity));
+			appendQuery(context.mappedTableName(entity.entity));
 			if(entity.alias != null) {
 				appendQuery(entity.alias);
 			}
@@ -451,10 +539,10 @@ public class Statement implements AutoCloseable{
 		StringBuilder sb = new StringBuilder();
 	
 		if(order.function != null) {
-			sb.append(order.function.render(context.nameMapper.toTableNameAttribute(order.entity, order.attribute)));
+			sb.append(order.function.render(context.mappedTableAttribute(order.entity, order.attribute)));
 		}
 		else {
-			sb.append(context.nameMapper.toTableNameAttribute(order.entity, order.attribute));
+			sb.append(context.mappedTableAttribute(order.entity, order.attribute));
 		}
 		sb.append(order.direction != null ? " " + order.direction.toString().toUpperCase() : "");
 	
@@ -465,7 +553,7 @@ public class Statement implements AutoCloseable{
 	
 	public String groupString(Attribute attribute) {
 		// TODO : handle attribute function level
-		return context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute);
+		return context.mappedTableAttribute(attribute.entity, attribute.attribute);
 	}
 	
 	public String selectString(Attribute attribute) {
@@ -483,19 +571,19 @@ public class Statement implements AutoCloseable{
 			}
 			sb.append(")");
 			if(attributeWindow.alias != null) {
-				sb.append(" AS ").append(context.nameMapper.mapEntityField(attributeWindow.alias));
+				sb.append(" AS ").append(context.mappedEntityField(attributeWindow.alias));
 			}
 			return sb.toString();
 		}
 
 		if(attribute.function != null && attribute.function.equals(Estivate.Functions.count) && (attribute.entity == null || attribute.entity.entity == null)) {
-			return "COUNT(*)"+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
+			return "COUNT(*)"+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.mappedEntityField(attribute.alias)+"`" : "");
 		}
 		else if (attribute.function != null) {
-			return attribute.function.render(context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute))+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.nameMapper.mapEntityField(attribute.alias)+"`" : "");
+			return attribute.function.render(context.mappedTableAttribute(attribute.entity, attribute.attribute))+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.mappedEntityField(attribute.alias)+"`" : "");
 		}
 
-		return context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute)+" as `"+(attribute.alias != null && !attribute.alias.isEmpty() ? context.nameMapper.mapEntityField(attribute.alias) : context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute))+"`";
+		return context.mappedTableAttribute(attribute.entity, attribute.attribute)+" as `"+(attribute.alias != null && !attribute.alias.isEmpty() ? context.mappedEntityField(attribute.alias) : context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute))+"`";
 	
 	}
 
@@ -536,14 +624,14 @@ public class Statement implements AutoCloseable{
 			Criterion.In in = (Criterion.In) node;
 			appendAttributeAsParameter(in.attribute);
 			appendQuery("IN (");
-			appendQuery(in.getValues().stream().map(x -> writeParameter(in.attribute.entity.entity, in.attribute.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(in.getValues().stream().map(x -> writeParameter(in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.NotIn) {
 			Criterion.NotIn in = (Criterion.NotIn) node;
 			appendAttributeAsParameter(in.attribute);
 			appendQuery("NOT IN (");
-			appendQuery(in.getValues().stream().map(x -> writeParameter(in.attribute.entity.entity, in.attribute.attribute, x)).collect(Collectors.joining(", ")));
+			appendQuery(in.getValues().stream().map(x -> writeParameter(in.attribute, x)).collect(Collectors.joining(", ")));
 			appendQuery(")");
 		}
 		else if(node instanceof Criterion.Between) {
@@ -565,7 +653,7 @@ public class Statement implements AutoCloseable{
 			if(!matchAgainst.inclusive){
 				appendQuery("NOT");
 			}
-			appendQuery("MATCH" + context.nameMapper.toTableNameAttribute(matchAgainst.attribute.entity, matchAgainst.attribute.attribute));
+			appendQuery("MATCH" + context.mappedTableAttribute(matchAgainst.attribute.entity, matchAgainst.attribute.attribute));
 			appendQuery("AGAINST(");
 			appendParameterAsValue(matchAgainst.attribute, matchAgainst.value);
 			appendQuery(")");
@@ -633,7 +721,11 @@ public class Statement implements AutoCloseable{
 			return value;
 		}
 		try {
-			return ClassMeta.fieldBinding(field).toDatabaseColumn(value);
+			ClassMeta.FieldBinding binding = ClassMeta.fieldBinding(field);
+			if(binding == null || !binding.needsConversion()) {
+				return value;
+			}
+			return binding.toDatabaseColumn(value);
 		}
 		catch(Exception e) {
 			log.error("Exception while trying to map field "+field.getDeclaringClass().getSimpleName()+"."+field.getName(), e);
@@ -672,9 +764,12 @@ public class Statement implements AutoCloseable{
 	@Override
 	public void close() throws Exception {
 		// Connection lifecycle is owned by Context.ConnectionLease / Spring DataSourceUtils.
-		if(statement != null) {
+		// Cached insert PreparedStatements stay open until the connection session ends.
+		if(statement != null && !cachedPreparedStatement) {
 			statement.close();
 		}
+		statement = null;
+		cachedPreparedStatement = false;
 	}
 	
 

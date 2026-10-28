@@ -40,6 +40,9 @@ public final class ClassMeta {
 		Collections.emptyList(),
 		Collections.emptyMap(),
 		null,
+		null,
+		false,
+		Collections.emptyList(),
 		Collections.emptySet(),
 		Collections.emptyList(),
 		Collections.emptyList(),
@@ -59,6 +62,12 @@ public final class ClassMeta {
 	private final List<Field> updateDateFields;
 	private final Map<String, Field> fieldsByName;
 	private final Field idField;
+	/** No-arg constructor used to instantiate mapped entities; may be {@code null}. */
+	private final Constructor<?> noArgConstructor;
+	/** True when any field uses {@code @Projection.*} / nested select expansion. */
+	private final boolean hasProjectionSelectFields;
+	/** Plain field names for {@code selectAll} when {@link #hasProjectionSelectFields} is false. */
+	private final List<String> plainSelectFieldNames;
 	private final Set<Method> methods;
 	private final List<Method> postLoadMethods;
 	private final List<Method> prePersistMethods;
@@ -163,12 +172,33 @@ public final class ClassMeta {
 	}
 
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	public <T> T newInstance() {
+		if(noArgConstructor == null) {
+			throw new NoSuchMethodException("No no-arg constructor");
+		}
+		return (T) noArgConstructor.newInstance();
+	}
+
+	@SneakyThrows
 	private static void invokeLifecycle(List<Method> lifecycleMethods, Object entity) {
 		if(lifecycleMethods.isEmpty()) {
 			return;
 		}
 		for(Method method : lifecycleMethods) {
 			method.invoke(entity);
+		}
+	}
+
+	@SneakyThrows
+	private static Constructor<?> resolveNoArgConstructor(Class<?> objectClass) {
+		try {
+			Constructor<?> constructor = objectClass.getDeclaredConstructor();
+			constructor.setAccessible(true);
+			return constructor;
+		}
+		catch(NoSuchMethodException ignored) {
+			return null;
 		}
 	}
 
@@ -292,6 +322,17 @@ public final class ClassMeta {
 			}
 		}
 
+		boolean hasProjectionSelectFields = false;
+		List<String> plainSelectFieldNames = new ArrayList<>();
+		for(Field field : fields) {
+			if(FieldUtils.hasProjectionAnnotation(field)) {
+				hasProjectionSelectFields = true;
+			}
+			else {
+				plainSelectFieldNames.add(field.getName());
+			}
+		}
+
 		return new ClassMeta(
 			fields,
 			Collections.unmodifiableSet(persistable),
@@ -300,6 +341,9 @@ public final class ClassMeta {
 			List.copyOf(updateDateFields),
 			Collections.unmodifiableMap(byName),
 			idField,
+			resolveNoArgConstructor(objectClass),
+			hasProjectionSelectFields,
+			List.copyOf(plainSelectFieldNames),
 			methods,
 			List.copyOf(postLoadMethods),
 			List.copyOf(prePersistMethods),
@@ -328,6 +372,7 @@ public final class ClassMeta {
 		@Getter
 		private final Field field;
 		private final Object converter;
+		@Getter
 		private final EnumMode enumMode;
 
 		static FieldBinding of(Field field) {
@@ -368,6 +413,10 @@ public final class ClassMeta {
 
 		public boolean hasConverter() {
 			return converter != null;
+		}
+
+		public boolean needsConversion() {
+			return converter != null || enumMode != EnumMode.NONE;
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
