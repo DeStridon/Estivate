@@ -126,7 +126,9 @@ public class EntityMapper<U> {
 					list = new ArrayList<>();
 					entityMapping.getField().set(obj, list);
 				}
-				list.add(subObj);
+				if(subObj != null) {
+					list.add(subObj);
+				}
 			}
 			else {
 				entityMapping.getField().set(obj, subObj);
