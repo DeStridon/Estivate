@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.H2Context;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.PersistBenchEntity;
+import com.estivate.util.Chronometer;
 import com.estivate.util.ClassMeta;
 
 /**
@@ -90,25 +91,45 @@ public class PersistCostComparisonTest {
         hibernateBatch();
         jdbcBatch();
 
-        long estivateInsert = timeInserts(0, ITERATIONS, this::estivateInsert);
-        long estivateInsertSharedConnection = timeEstivateInsertsWithSharedConnection(0, ITERATIONS);
-        long jdbcPerCallInsert = timeInserts(0, ITERATIONS, this::jdbcInsertPerCall);
-        long jdbcReusedInsert = timeReusedJdbcInserts(0, ITERATIONS);
-        long hibernatePerCallInsert = timeInserts(0, ITERATIONS, this::hibernateInsertPerCall);
-        long estivateBatch = timeBatch(this::estivateBatch);
-        long estivateCollectionBatch = timeBatch(this::estivateCollectionBatch);
-        long hibernateBatch = timeBatch(this::hibernateBatch);
-        long jdbcBatch = timeBatch(this::jdbcBatch);
+        long estivateInsert = 0;
+        long estivateInsertSharedConnection = 0;
+        long jdbcPerCallInsert = 0;
+        long jdbcReusedInsert = 0;
+        long hibernatePerCallInsert = 0;
+        long estivateBatch = 0;
+        long estivateCollectionBatch = 0;
+        long hibernateBatch = 0;
+        long jdbcBatch = 0;
+        long estivateUpdate = 0;
+        long jdbcPerCallUpdate = 0;
+        long hibernatePerCallUpdate = 0;
+        List<PersistBenchEntity> estivateRows = null;
 
-        List<PersistBenchEntity> estivateRows = insertRows(ITERATIONS, this::estivateInsert);
-        List<PersistBenchEntity> jdbcRows = insertRows(ITERATIONS, this::jdbcInsertPerCall);
-        List<PersistBenchEntity> hibernateRows = insertRows(ITERATIONS, this::hibernateInsertPerCall);
-        timeUpdates(estivateRows, this::estivateUpdate);
-        timeUpdates(jdbcRows, this::jdbcUpdatePerCall);
-        timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
-        long estivateUpdate = timeUpdates(estivateRows, this::estivateUpdate);
-        long jdbcPerCallUpdate = timeUpdates(jdbcRows, this::jdbcUpdatePerCall);
-        long hibernatePerCallUpdate = timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
+        // Two passes. The first pays for JIT; the printed numbers are the second.
+        for(int pass = 0; pass < 2; pass++) {
+            estivateInsert = timeInserts(0, ITERATIONS, this::estivateInsert);
+            estivateInsertSharedConnection = timeEstivateInsertsWithSharedConnection(0, ITERATIONS);
+            jdbcPerCallInsert = timeInserts(0, ITERATIONS, this::jdbcInsertPerCall);
+            jdbcReusedInsert = timeReusedJdbcInserts(0, ITERATIONS);
+            hibernatePerCallInsert = timeInserts(0, ITERATIONS, this::hibernateInsertPerCall);
+            estivateBatch = timeBatch(this::estivateBatch);
+            estivateCollectionBatch = timeBatch(this::estivateCollectionBatch);
+            hibernateBatch = timeBatch(this::hibernateBatch);
+            jdbcBatch = timeBatch(this::jdbcBatch);
+
+            estivateRows = insertRows(ITERATIONS, this::estivateInsert);
+            for(PersistBenchEntity row : estivateRows) {
+                row.saveState();
+            }
+            List<PersistBenchEntity> jdbcRows = insertRows(ITERATIONS, this::jdbcInsertPerCall);
+            List<PersistBenchEntity> hibernateRows = insertRows(ITERATIONS, this::hibernateInsertPerCall);
+            timeUpdates(estivateRows, this::estivateUpdate);
+            timeUpdates(jdbcRows, this::jdbcUpdatePerCall);
+            timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
+            estivateUpdate = timeUpdates(estivateRows, this::estivateUpdate);
+            jdbcPerCallUpdate = timeUpdates(jdbcRows, this::jdbcUpdatePerCall);
+            hibernatePerCallUpdate = timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
+        }
 
         long methodScanNanos = timeNanos(20_000, () -> ClassMeta.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
 
@@ -117,9 +138,12 @@ public class PersistCostComparisonTest {
         System.out.println("  update  estivate=" + micros(estivateUpdate) + " jdbc-per-call=" + micros(jdbcPerCallUpdate) + " hibernate-per-call=" + micros(hibernatePerCallUpdate));
         System.out.println("  batch of " + BATCH + " rows, milliseconds: estivate-loop=" + (estivateBatch / 1_000_000) + " estivate-collection=" + (estivateCollectionBatch / 1_000_000) + " hibernate-one-tx=" + (hibernateBatch / 1_000_000) + " jdbc-batch=" + (jdbcBatch / 1_000_000));
         System.out.println("  uncached lifecycle method scan on CustomerEntity: " + (methodScanNanos / 20_000) + " ns");
+        System.out.println(profileInsert(100));
+        System.out.println(profileUpdate(100));
 
         Assertions.assertTrue(estivateRows.get(0).id > 0);
         Assertions.assertEquals(ITERATIONS, estivateRows.size());
+        Assertions.assertEquals("timed", noteOf(estivateRows.get(0).id));
         Assertions.assertTrue(count() > ITERATIONS);
     }
 
@@ -197,6 +221,37 @@ public class PersistCostComparisonTest {
 
     private void estivateInsert(PersistBenchEntity row) {
         context.insert(row);
+    }
+
+    private String profileInsert(int iterations) {
+        Chronometer chronometer = new Chronometer("insert-profile", true).timeThreshold(Integer.MAX_VALUE);
+        for(int i = 0; i < 20; i++) {
+            context.insert(row(i), chronometer);
+        }
+        chronometer = new Chronometer("insert-profile", true).timeThreshold(Integer.MAX_VALUE);
+        for(int i = 0; i < iterations; i++) {
+            context.insert(row(i), chronometer);
+        }
+        return chronometer.getLog();
+    }
+
+    private String profileUpdate(int iterations) {
+        List<PersistBenchEntity> rows = insertRows(iterations, this::estivateInsert);
+        for(PersistBenchEntity row : rows) {
+            row.saveState();
+            row.note = "profile";
+        }
+        Chronometer warm = new Chronometer("update-profile-warm", true).timeThreshold(Integer.MAX_VALUE);
+        for(PersistBenchEntity row : rows) {
+            context.update(row, warm);
+            row.saveState();
+            row.note = "profiled";
+        }
+        Chronometer chronometer = new Chronometer("update-profile", true).timeThreshold(Integer.MAX_VALUE);
+        for(PersistBenchEntity row : rows) {
+            context.update(row, chronometer);
+        }
+        return chronometer.getLog();
     }
 
     private long timeEstivateInsertsWithSharedConnection(int warmup, int iterations) {
@@ -330,6 +385,17 @@ public class PersistCostComparisonTest {
         row.active = true;
         row.note = "note " + index;
         return row;
+    }
+
+    private String noteOf(long id) throws Exception {
+        try (Connection connection = pool.getConnection();
+                PreparedStatement statement = connection.prepareStatement("SELECT NOTE FROM PERSISTBENCHENTITY WHERE ID = ?")) {
+            statement.setLong(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getString(1);
+            }
+        }
     }
 
     private long count() throws Exception {

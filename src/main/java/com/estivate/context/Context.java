@@ -3,6 +3,7 @@ package com.estivate.context;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -12,8 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,6 +58,7 @@ import com.estivate.query.UpdateQuery;
 import com.estivate.reconciliation.EntityTable;
 import com.estivate.reconciliation.EntityColumn;
 import com.estivate.reconciliation.DatabaseColumn;
+import com.estivate.result.EntityMapper;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
@@ -105,8 +107,18 @@ public abstract class Context {
 	/** Cached INSERT SQL templates keyed by entity class (depends on {@link #nameMapper}). */
 	private final Map<Class<?>, InsertSqlPlan> insertSqlPlans = new ConcurrentHashMap<>();
 
+	/** Name-mapper derived strings; cleared when {@link #nameMapper} is replaced. */
+	private NameMapper nameMapperCacheKey;
+	private final Map<Class<?>, String> tableNames = new ConcurrentHashMap<>();
+	private final Map<String, String> databaseFields = new ConcurrentHashMap<>();
+	private final Map<String, String> entityFields = new ConcurrentHashMap<>();
+	private final Map<String, String> tableAttributes = new ConcurrentHashMap<>();
+
 	/** Thread-bound connection for {@link #withConnection}; joins Spring TX via {@link ConnectionAccess}. */
 	private final ThreadLocal<Connection> boundConnection = new ThreadLocal<>();
+
+	/** PreparedStatements reused while the same connection is held ({@link #withConnection} / Spring TX). */
+	private final ThreadLocal<PreparedStatementCache> preparedStatementCache = new ThreadLocal<>();
 
 	public Context(DataSource datasource, Dialect dialect) {
 		this.datasource = datasource;
@@ -117,6 +129,49 @@ public abstract class Context {
 		return Chronometer.of(name, tracePerformances);
 	}
 
+	private void ensureNameMapperCaches() {
+		if(nameMapperCacheKey != nameMapper) {
+			nameMapperCacheKey = nameMapper;
+			tableNames.clear();
+			databaseFields.clear();
+			entityFields.clear();
+			tableAttributes.clear();
+			insertSqlPlans.clear();
+		}
+	}
+
+	/** Cached {@link NameMapper#toTableName(Class)}. */
+	public String mappedTableName(Class<?> entityClass) {
+		ensureNameMapperCaches();
+		return tableNames.computeIfAbsent(entityClass, nameMapper::toTableName);
+	}
+
+	/** Cached {@link NameMapper#mapDatabaseField(String)}. */
+	public String mappedDatabaseField(String fieldName) {
+		ensureNameMapperCaches();
+		return databaseFields.computeIfAbsent(fieldName, nameMapper::mapDatabaseField);
+	}
+
+	/** Cached {@link NameMapper#mapEntityField(String)}. */
+	public String mappedEntityField(String fieldName) {
+		ensureNameMapperCaches();
+		return entityFields.computeIfAbsent(fieldName, nameMapper::mapEntityField);
+	}
+
+	/** Cached {@link NameMapper#toTableNameAttribute(Entity, String)}. */
+	public String mappedTableAttribute(Entity<?> entity, String fieldName) {
+		if(entity == null || entity.entity == null) {
+			return fieldName;
+		}
+		if(entity.alias != null) {
+			return entity.alias + '.' + mappedDatabaseField(fieldName);
+		}
+		ensureNameMapperCaches();
+		String key = entity.entity.getName() + '#' + fieldName;
+		return tableAttributes.computeIfAbsent(key, ignored ->
+			mappedTableName(entity.entity) + '.' + mappedDatabaseField(fieldName));
+	}
+
 	/**
 	 * Opens a JDBC connection for one Estivate operation.
 	 * Reuses the connection bound by {@link #withConnection} or a Spring {@code @Transactional}
@@ -125,15 +180,20 @@ public abstract class Context {
 	public ConnectionLease openConnection() throws SQLException {
 		Connection bound = boundConnection.get();
 		if(bound != null) {
-			return new ConnectionLease(bound, datasource, false);
+			ensurePreparedStatementCache(bound);
+			return new ConnectionLease(this, bound, datasource, false);
 		}
 		Connection connection = ConnectionAccess.getConnection(datasource);
-		return new ConnectionLease(connection, datasource, true);
+		if(ConnectionAccess.retainsConnection(datasource)) {
+			ensurePreparedStatementCache(connection);
+		}
+		return new ConnectionLease(this, connection, datasource, true);
 	}
 
 	/**
 	 * Runs work on a single borrowed connection (or the current Spring transaction connection).
-	 * Nested Estivate calls on this thread reuse that connection until the callback returns.
+	 * Nested Estivate calls on this thread reuse that connection (and insert PreparedStatements)
+	 * until the callback returns.
 	 */
 	@SneakyThrows
 	public void withConnection(ConnectionCallback callback) {
@@ -155,12 +215,111 @@ public abstract class Context {
 
 		Connection connection = ConnectionAccess.getConnection(datasource);
 		boundConnection.set(connection);
+		ensurePreparedStatementCache(connection);
 		try {
 			return callback.call(connection);
 		}
 		finally {
+			closePreparedStatementCache(connection);
 			boundConnection.remove();
 			ConnectionAccess.releaseConnection(connection, datasource);
+		}
+	}
+
+	/**
+	 * Returns a cached PreparedStatement for {@code sql} when the current connection holds a cache;
+	 * otherwise {@code null} (caller prepares a one-shot statement).
+	 * {@code returnGeneratedKeys} selects the insert vs select prepare mode (separate cache entries).
+	 */
+	public PreparedStatement prepareCachedStatement(Connection connection, String sql, boolean returnGeneratedKeys) throws SQLException {
+		PreparedStatementCache cache = preparedStatementCache.get();
+		if(cache == null || cache.connection != connection) {
+			return null;
+		}
+		return cache.prepare(sql, returnGeneratedKeys);
+	}
+
+	/** @deprecated use {@link #prepareCachedStatement(Connection, String, boolean)} */
+	public PreparedStatement prepareCachedInsertStatement(Connection connection, String sql) throws SQLException {
+		return prepareCachedStatement(connection, sql, true);
+	}
+
+	void ensurePreparedStatementCache(Connection connection) {
+		PreparedStatementCache cache = preparedStatementCache.get();
+		if(cache != null && cache.connection == connection) {
+			return;
+		}
+		if(cache != null) {
+			cache.closeQuietly();
+		}
+		preparedStatementCache.set(new PreparedStatementCache(connection));
+	}
+
+	void closePreparedStatementCache(Connection connection) {
+		PreparedStatementCache cache = preparedStatementCache.get();
+		if(cache == null) {
+			return;
+		}
+		if(connection == null || cache.connection == connection) {
+			cache.closeQuietly();
+			preparedStatementCache.remove();
+		}
+	}
+
+	/** Package-visible for tests. */
+	int cachedInsertStatementCount() {
+		PreparedStatementCache cache = preparedStatementCache.get();
+		return cache == null ? 0 : cache.insertSize();
+	}
+
+	private static final class PreparedStatementCache {
+		final Connection connection;
+		private final Map<String, PreparedStatement> insertStatements = new HashMap<>();
+		private final Map<String, PreparedStatement> selectStatements = new HashMap<>();
+
+		PreparedStatementCache(Connection connection) {
+			this.connection = connection;
+		}
+
+		PreparedStatement prepare(String sql, boolean returnGeneratedKeys) throws SQLException {
+			Map<String, PreparedStatement> statements = returnGeneratedKeys ? insertStatements : selectStatements;
+			PreparedStatement existing = statements.get(sql);
+			if(existing != null) {
+				try {
+					if(!existing.isClosed()) {
+						existing.clearParameters();
+						return existing;
+					}
+				}
+				catch(SQLException ignored) {
+					// fall through and prepare again
+				}
+			}
+			PreparedStatement prepared = returnGeneratedKeys
+				? connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)
+				: connection.prepareStatement(sql);
+			statements.put(sql, prepared);
+			return prepared;
+		}
+
+		int insertSize() {
+			return insertStatements.size();
+		}
+
+		void closeQuietly() {
+			closeMap(insertStatements);
+			closeMap(selectStatements);
+		}
+
+		private static void closeMap(Map<String, PreparedStatement> statements) {
+			for(PreparedStatement statement : statements.values()) {
+				try {
+					statement.close();
+				}
+				catch(SQLException ignored) {
+				}
+			}
+			statements.clear();
 		}
 	}
 
@@ -214,23 +373,23 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
-	private String[] createColumnsArray(ResultSetMetaData metadata) {
-		
-		String[] columns = new String[metadata.getColumnCount()];
-		for(int i = 0; i < metadata.getColumnCount(); i++) {
-			columns[i] = metadata.getColumnLabel(i+1);
+	private String[] createColumnsArray(ResultSetMetaData metadata) throws SQLException {
+		int columnCount = metadata.getColumnCount();
+		String[] columns = new String[columnCount];
+		for(int i = 0; i < columnCount; i++) {
+			columns[i] = metadata.getColumnLabel(i + 1);
 		}
 		return columns;
-		
 	}
-	
+
 	/**
-	 * Extracts all values from a ResultSet row as String array
+	 * Extracts all values from a ResultSet row as String array.
+	 * {@code columnCount} must match the ResultSet width (avoid re-querying metadata per cell).
 	 */
-	private String[] extractRowValues(ResultSet resultSet) throws SQLException {
-		String[] values = new String[resultSet.getMetaData().getColumnCount()];
-		for(int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) { 
-			values[i] = resultSet.getString(i+1);
+	private String[] extractRowValues(ResultSet resultSet, int columnCount) throws SQLException {
+		String[] values = new String[columnCount];
+		for(int i = 0; i < columnCount; i++) {
+			values[i] = resultSet.getString(i + 1);
 		}
 		return values;
 	}
@@ -238,23 +397,26 @@ public abstract class Context {
 	
 	
 	/**
-	 * Legacy interceptor pre-processing: clone the query then run the matching interceptor.
+	 * Legacy interceptor pre-processing. The query is cloned only when an interceptor will modify it.
 	 * Filters are applied separately afterwards via {@code apply*Filters}.
 	 */
 	private Query<?,?> preExecute(Query<?,?> query) {
-		Query<?,?> clonedQuery = query.clone();
-
 		if(query instanceof SelectQuery && selectInterceptor != null) {
-			selectInterceptor.accept((SelectQuery<?>) clonedQuery);
+			SelectQuery<?> clonedQuery = ((SelectQuery<?>) query).clone();
+			selectInterceptor.accept(clonedQuery);
+			return clonedQuery;
 		}
-		else if(query instanceof UpdateQuery && updateInterceptor != null) {
-			updateInterceptor.accept((UpdateQuery<?>) clonedQuery);
+		if(query instanceof UpdateQuery && updateInterceptor != null) {
+			UpdateQuery<?> clonedQuery = ((UpdateQuery<?>) query).clone();
+			updateInterceptor.accept(clonedQuery);
+			return clonedQuery;
 		}
-		else if(query instanceof DeleteQuery && deleteInterceptor != null) {
-			deleteInterceptor.accept((DeleteQuery<?>) clonedQuery);
+		if(query instanceof DeleteQuery && deleteInterceptor != null) {
+			DeleteQuery<?> clonedQuery = ((DeleteQuery<?>) query).clone();
+			deleteInterceptor.accept(clonedQuery);
+			return clonedQuery;
 		}
-
-		return clonedQuery;
+		return query;
 	}
 
 	private AlterQuery<?> preExecute(AlterQuery<?> query) {
@@ -277,74 +439,92 @@ public abstract class Context {
 	}
 
 	private ResultTable applySelectFilters(SelectQuery<?> query, Function<SelectQuery<?>, ResultTable> terminal) {
-		Function<SelectQuery<?>, ResultTable> proceed = terminal;
+		if(selectFilters.isEmpty()) {
+			return terminal.apply(query);
+		}
 
+		Function<SelectQuery<?>, ResultTable> proceed = terminal;
 		for(int i = selectFilters.size() - 1; i >= 0; i--) {
 			SelectFilter filter = selectFilters.get(i);
 			Function<SelectQuery<?>, ResultTable> next = proceed;
 			proceed = q -> filter.filter(q, next);
 		}
-
 		return proceed.apply(query);
 	}
 
 	private Boolean applyUpdateFilters(UpdateQuery<?> query, Function<UpdateQuery<?>, Boolean> terminal) {
-		Function<UpdateQuery<?>, Boolean> proceed = terminal;
+		if(updateFilters.isEmpty()) {
+			return terminal.apply(query);
+		}
 
+		Function<UpdateQuery<?>, Boolean> proceed = terminal;
 		for(int i = updateFilters.size() - 1; i >= 0; i--) {
 			UpdateFilter filter = updateFilters.get(i);
 			Function<UpdateQuery<?>, Boolean> next = proceed;
 			proceed = q -> filter.filter(q, next);
 		}
-
 		return proceed.apply(query);
 	}
 
 	private Boolean applyDeleteFilters(DeleteQuery<?> query, Function<DeleteQuery<?>, Boolean> terminal) {
-		Function<DeleteQuery<?>, Boolean> proceed = terminal;
+		if(deleteFilters.isEmpty()) {
+			return terminal.apply(query);
+		}
 
+		Function<DeleteQuery<?>, Boolean> proceed = terminal;
 		for(int i = deleteFilters.size() - 1; i >= 0; i--) {
 			DeleteFilter filter = deleteFilters.get(i);
 			Function<DeleteQuery<?>, Boolean> next = proceed;
 			proceed = q -> filter.filter(q, next);
 		}
-
 		return proceed.apply(query);
 	}
 
 	private <U> Void applyInsertFilters(InsertQuery<U> query, Function<InsertQuery<U>, Void> terminal) {
-		Function<InsertQuery<?>, Void> proceed = q -> terminal.apply((InsertQuery<U>) q);
+		if(insertFilters.isEmpty()) {
+			return terminal.apply(query);
+		}
 
+		Function<InsertQuery<?>, Void> proceed = q -> terminal.apply((InsertQuery<U>) q);
 		for(int i = insertFilters.size() - 1; i >= 0; i--) {
 			InsertFilter filter = insertFilters.get(i);
 			Function<InsertQuery<?>, Void> next = proceed;
 			proceed = q -> filter.filter(q, next);
 		}
-
 		return proceed.apply(query);
 	}
 
 	private Boolean applyAlterFilters(AlterQuery<?> query, Function<AlterQuery<?>, Boolean> terminal) {
-		Function<AlterQuery<?>, Boolean> proceed = terminal;
+		if(alterFilters.isEmpty()) {
+			return terminal.apply(query);
+		}
 
+		Function<AlterQuery<?>, Boolean> proceed = terminal;
 		for(int i = alterFilters.size() - 1; i >= 0; i--) {
 			AlterFilter filter = alterFilters.get(i);
 			Function<AlterQuery<?>, Boolean> next = proceed;
 			proceed = q -> filter.filter(q, next);
 		}
-
 		return proceed.apply(query);
 	}
 
 	@SneakyThrows
 	private Boolean executeTerminal(Query<?,?> query, Chronometer chronometer) {
 		chronometer.step("execute::start");
-		try (ConnectionLease lease = openConnection();
-			Statement statement = queryAsStatement(query, lease.getConnection())) {
-			chronometer.step("execute::getconnectionAndStatement");
-			Boolean result = statement.executeForValidation();
-			chronometer.step("execute::result");
+		ConnectionLease lease = openConnection();
+		chronometer.step("execute::openConnection");
+		try {
+			Statement statement = queryAsStatement(query, lease.getConnection());
+			chronometer.step("execute::buildStatement");
+			Boolean result = statement.executeForValidation(chronometer);
+			chronometer.step("execute::jdbcDone");
+			statement.close();
+			chronometer.step("execute::closeStatement");
 			return result;
+		}
+		finally {
+			lease.close();
+			chronometer.step("execute::releaseConnection");
 		}
 	}
 
@@ -513,11 +693,12 @@ public abstract class Context {
 	private <T> void executeInsertTerminal(InsertQuery<T> query, Chronometer chronometer) {
 		InsertSqlPlan plan = insertSqlPlans.computeIfAbsent(query.getEntity(), this::buildInsertSqlPlan);
 		List<T> rows = query.getValues();
+		chronometer.step("executeInsert::plan");
 
-		try (ConnectionLease lease = openConnection();
-			Statement statement = new Statement(this, lease.getConnection(), plan.sqlForRowCount(rows.size()))) {
-
-			chronometer.step("executeInsert::start");
+		try (ConnectionLease lease = openConnection()) {
+			chronometer.step("executeInsert::openConnection");
+			Statement statement = new Statement(this, lease.getConnection(), plan.sqlForRowCount(rows.size()));
+			chronometer.step("executeInsert::statement");
 
 			ClassMeta meta = ClassMeta.of(query.getEntity());
 			for(T value : rows) {
@@ -526,6 +707,7 @@ public abstract class Context {
 			chronometer.step("executeInsert::invokeLifecycleMethods");
 
 			List<Field> insertFields = plan.fields;
+			statement.ensureParameterCapacity(rows.size() * insertFields.size());
 			for(T value : rows) {
 				for(Field field : insertFields) {
 					statement.appendObjectAsValue(field, field.get(value));
@@ -534,7 +716,7 @@ public abstract class Context {
 			chronometer.step("executeInsert::appendValues");
 
 			try(ResultSet resultSet = statement.executeForGeneratedKeys(chronometer)) {
-				chronometer.step("executeInsert::executeForGeneratedKeys");
+				chronometer.step("executeInsert::generatedKeysCursor");
 				List<Long> generatedKeys = new ArrayList<>();
 				while(resultSet.next()) {
 					generatedKeys.add(resultSet.getLong(1));
@@ -553,6 +735,7 @@ public abstract class Context {
 				meta.invokePostPersist(value);
 			}
 			chronometer.step("executeInsert::postPersist");
+			statement.close();
 		}
 	}
 
@@ -566,10 +749,10 @@ public abstract class Context {
 				columns.append(", ");
 				placeholders.append(", ");
 			}
-			columns.append(nameMapper.mapDatabaseField(fields.get(i).getName()));
+			columns.append(mappedDatabaseField(fields.get(i).getName()));
 			placeholders.append('?');
 		}
-		String table = nameMapper.toTableName(entity);
+		String table = mappedTableName(entity);
 		String valuesPrefix = "INSERT INTO " + table + " (" + columns + ") VALUES ";
 		String rowPlaceholders = "(" + placeholders + ")";
 		return new InsertSqlPlan(valuesPrefix, rowPlaceholders, valuesPrefix + rowPlaceholders, fields, meta.getIdField());
@@ -633,11 +816,12 @@ public abstract class Context {
 		
 	@SneakyThrows
 	public <U> void insert(U object, Chronometer chronometer) {
-
+		chronometer.mark();
 		InsertQuery<U> insertQuery = Estivate.insertQuery((Class<U>) object.getClass());
+		chronometer.step("insert::newQuery");
 		insertQuery.value(object);
+		chronometer.step("insert::value");
 		execute(insertQuery, chronometer);
-			
 	}
 
 	public <U> void insert(U object) {
@@ -673,23 +857,32 @@ public abstract class Context {
 	
 	
 	public <T> ResultTable fetch(SelectQuery<T> query){
-		return applySelectFilters((SelectQuery<?>) preExecute(query), this::fetchTerminal);
+		return fetch(query, chronometer("fetch"));
+	}
+
+	public <T> ResultTable fetch(SelectQuery<T> query, Chronometer chronometer){
+		return applySelectFilters((SelectQuery<?>) preExecute(query), q -> fetchTerminal(q, chronometer));
 	}
 
 	@SneakyThrows
-	private ResultTable fetchTerminal(SelectQuery<?> query) {
-		try (ConnectionLease lease = openConnection();
+	private ResultTable fetchTerminal(SelectQuery<?> query, Chronometer chronometer) {
+		try (ConnectionLease lease = openConnection()) {
+			chronometer.step("fetch::openConnection");
 			Statement statement = new Statement(this, lease.getConnection(), query);
-			ResultSet resultSet = statement.executeForResultSet()) {
-
-			ResultTable resultTable = new ResultTable(this, createColumnsArray(resultSet.getMetaData()), query);
-
-			while(resultSet.next()) {
-				String[] values = extractRowValues(resultSet);
-				resultTable.addRow(values);
+			chronometer.step("fetch::buildStatement");
+			try (ResultSet resultSet = statement.executeForResultSet(chronometer)) {
+				chronometer.step("fetch::execute");
+				String[] columns = createColumnsArray(resultSet.getMetaData());
+				chronometer.step("fetch::columns");
+				ResultTable resultTable = new ResultTable(this, columns, query);
+				int columnCount = columns.length;
+				while(resultSet.next()) {
+					resultTable.addRow(extractRowValues(resultSet, columnCount));
+				}
+				chronometer.step("fetch::rows");
+				statement.close();
+				return resultTable;
 			}
-
-			return resultTable;
 		}
 	}
 	
@@ -703,12 +896,20 @@ public abstract class Context {
 	 * Clones the query, clears selects, and imports selects from result mapping, and returns a single value
 	 */
 	public <T> T extractSingle(SelectQuery<?> query, Class<T> entity) 	{ 
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity).limit(1);
-		return fetch(newQuery).asSingle(entity); 
+		return extractSingle(query, new Entity<>(entity));
 	}
 	public <T> T extractSingle(SelectQuery<?> query, Entity<T> entity) { 
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity).limit(1);
-		return fetch(newQuery).asSingle(entity); 
+		return extractSingle(query, entity, chronometer("extractSingle"));
+	}
+	public <T> T extractSingle(SelectQuery<?> query, Entity<T> entity, Chronometer chronometer) {
+		SelectQuery<?> newQuery = prepareEntityExtractQuery(query, entity, true);
+		chronometer.step("extract::prepareQuery");
+		if(entity.entity.getDeclaredAnnotation(com.estivate.query.Projection.NestedBy.class) != null) {
+			List<T> rows = fetch(newQuery, chronometer).asList(entity);
+			return rows.isEmpty() ? null : rows.get(0);
+		}
+		List<T> rows = extractEntitiesTerminal(newQuery, entity, chronometer);
+		return rows.isEmpty() ? null : rows.get(0);
 	}
 	
 
@@ -716,12 +917,74 @@ public abstract class Context {
 	public <T> Optional<T> extractOptional(SelectQuery<?> query, Entity<T> entity) { return Optional.ofNullable(extractSingle(query, entity)); }
 	
 	public <T> List<T> extractList(SelectQuery<?> query, Entity<T> entity) {
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
-		return fetch(newQuery).asList(entity);
+		return extractList(query, entity, chronometer("extractList"));
 	}
 	public <T> List<T> extractList(SelectQuery<?> query, Class<T> entity) 	{ 
-		SelectQuery<?> newQuery = query.clone().clearSelects().selectAll(entity);
-		return fetch(newQuery).asList(entity); 
+		return extractList(query, new Entity<>(entity));
+	}
+	public <T> List<T> extractList(SelectQuery<?> query, Entity<T> entity, Chronometer chronometer) {
+		SelectQuery<?> newQuery = prepareEntityExtractQuery(query, entity, false);
+		chronometer.step("extract::prepareQuery");
+		// NestedBy needs ResultTable.asList merge semantics across duplicate parent rows.
+		if(entity.entity.getDeclaredAnnotation(com.estivate.query.Projection.NestedBy.class) != null) {
+			return fetch(newQuery, chronometer).asList(entity);
+		}
+		return extractEntitiesTerminal(newQuery, entity, chronometer);
+	}
+
+	/**
+	 * Builds the select-all query used by entity extract helpers.
+	 * Preserves {@link Entity} alias; skips {@code clearSelects} when selects are already empty.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private SelectQuery<?> prepareEntityExtractQuery(SelectQuery<?> query, Entity<?> entity, boolean limitOne) {
+		SelectQuery clone = query.clone();
+		if(!clone.getSelects().isEmpty()) {
+			clone.clearSelects();
+		}
+		clone.selectAll(entity);
+		if(limitOne) {
+			clone.limit(1);
+		}
+		return clone;
+	}
+
+	/**
+	 * Runs the select and maps rows directly from {@link ResultSet} into entities
+	 * (no intermediate {@code String[]} {@link ResultTable}).
+	 */
+	@SneakyThrows
+	private <T> List<T> extractEntitiesTerminal(SelectQuery<?> query, Entity<T> entity, Chronometer chronometer) {
+		AtomicReference<List<T>> result = new AtomicReference<>();
+		applySelectFilters((SelectQuery<?>) preExecute(query), q -> {
+			result.set(mapEntitiesFromQuery(q, entity, chronometer));
+			return new ResultTable(this, new String[0], q);
+		});
+		return result.get();
+	}
+
+	@SneakyThrows
+	private <T> List<T> mapEntitiesFromQuery(SelectQuery<?> query, Entity<T> entity, Chronometer chronometer) {
+		try (ConnectionLease lease = openConnection()) {
+			chronometer.step("extract::openConnection");
+			Statement statement = new Statement(this, lease.getConnection(), query);
+			chronometer.step("extract::buildStatement");
+			try (ResultSet resultSet = statement.executeForResultSet(chronometer)) {
+				chronometer.step("extract::execute");
+				EntityMapper<T> mapper = new EntityMapper<>(this, query, entity);
+				chronometer.step("extract::mapper");
+				List<T> rows = new ArrayList<>();
+				while(resultSet.next()) {
+					T mapped = mapper.map(resultSet);
+					if(mapped != null) {
+						rows.add(mapped);
+					}
+				}
+				chronometer.step("extract::mapRows");
+				statement.close();
+				return rows;
+			}
+		}
 	}
 
 	
@@ -736,10 +999,10 @@ public abstract class Context {
 	        String[] columnNames = createColumnsArray(metadata);
 
 			ResultTable resultTable = new ResultTable(this, columnNames, null);
-			
+			int columnCount = columnNames.length;
 	        
 	        while(resultSet.next()) {	        	
-	        	resultTable.addRow(extractRowValues(resultSet));
+	        	resultTable.addRow(extractRowValues(resultSet, columnCount));
 	        }
 	        
 	        return resultTable.getRows();
@@ -1313,6 +1576,7 @@ public abstract class Context {
 			return;
 		}
 
+		chronometer.mark();
 		chronometer.step("update::start");
 
 		ClassMeta meta = ClassMeta.of(entity.getClass());
@@ -1320,22 +1584,24 @@ public abstract class Context {
 		chronometer.step("update::invokeLifecycleMethods");
 
 		Field idField = meta.getIdField();
-		Long id = idField == null ? null : idField.getLong(entity);
+		long id = idField == null ? 0L : idField.getLong(entity);
 
 		for(Field field : meta.getUpdateDateFields()) {
 			field.set(entity, new Date());
 		}
 		chronometer.step("update::updatedFields::set");
 
-		Set<Field> updatedFields;
+		List<Field> updatedFields = new ArrayList<>();
 		if(entity instanceof CachedEntity) {
-			updatedFields = ((CachedEntity) entity).updatedFields().stream()
-				.filter(FieldUtils::isPersistable)
-				.filter(field -> field != idField)
-				.collect(Collectors.toCollection(LinkedHashSet::new));
+			CachedEntity cached = (CachedEntity) entity;
+			for(Field field : meta.getWritableFields()) {
+				if(cached.isUpdated(field)) {
+					updatedFields.add(field);
+				}
+			}
 		}
 		else {
-			updatedFields = new LinkedHashSet<>(meta.getWritableFields());
+			updatedFields.addAll(meta.getWritableFields());
 		}
 		chronometer.step("update::updatedFields::cachedEntity");
 
@@ -1344,22 +1610,19 @@ public abstract class Context {
 			return;
 		}
 		
-		if(idField == null || id == null || id == 0) {
+		if(idField == null || id == 0L) {
 			log.error("No id with value found, no update possible");
 			return;
 		}
 
-	
-
-		
 		UpdateQuery<U> query = Estivate.updateQuery((Class<U>) entity.getClass());
 
 		chronometer.step("update::query");
 		for(Field field : updatedFields) {
-			query.set(field.getName(), field.get(entity));
+			query.set(field, field.get(entity));
 		}
 		chronometer.step("update::query::set");
-		query.eq(idField.getName(), idField.get(entity));
+		query.eq(Attribute.of(query.getEntity(), idField), id);
 		chronometer.step("update::query::eq");
 		execute(query, chronometer);
 		chronometer.step("update::execute");
@@ -1719,117 +1982,7 @@ public abstract class Context {
 
 
 	public Statement queryAsStatement(Query<?,?> query, Connection connection) {
-		Statement statement = new Statement(this, connection);
-	
-		// 1. Comments
-		for(String comment : query.getComments()) {
-			statement.appendQuery("-- "+comment+"\n");
-		}
-			
-			// 2. Select or update or delete or alter table
-		if(query instanceof SelectQuery) {
-			statement.appendQuery("SELECT");
-			
-			if(((SelectQuery<?>) query).isDistinct()) {
-				statement.appendQuery("DISTINCT");
-			}
-			
-			if(((SelectQuery<?>) query).getSelects().isEmpty()) {
-				((SelectQuery<?>) query).selectAll(query.getEntity());
-			}
-			
-			//List<Select> selects = ((SelectQuery<?>) query).getSelects().stream().sorted(Comparator.comparing(x -> x.function == null || !x.function.equals(Estivate.Functions.distinct))).collect(Collectors.toList());
-			
-			statement.appendQuery(String.join(", ", ((SelectQuery<?>) query).getSelects().stream().map(x -> statement.selectString(x)).collect(Collectors.toList()))+"\n");
-			
-			statement.appendQuery("FROM");
-
-		}
-		else if(query instanceof UpdateQuery) {
-			statement.appendQuery("UPDATE");
-		}
-		else if(query instanceof DeleteQuery) {
-			statement.appendQuery("DELETE");
-			if(!query.getJoins().isEmpty()){
-				statement.appendEntity(query.getEntity());
-			}
-			statement.appendQuery("FROM");
-		}
-
-		statement.appendEntity(query.getEntity());
-		
-		
-		
-		// 4. Add Hint
-		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getIndexHint() != null && ((SelectQuery<?>) query).getIndexNames() != null && !((SelectQuery<?>) query).getIndexNames().isEmpty()) {
-			statement.appendQuery(((SelectQuery<?>) query).getIndexHint()+ " INDEX ("+((SelectQuery<?>) query).getIndexNames().stream().collect(Collectors.joining(", "))+")");
-		}
-		
-		// 5. Add Join (not applicable for ALTER TABLE or CREATE TABLE)
-		for(Join join : query.getJoins()) {
-			statement.appendJoin(join);
-			statement.appendQuery("\n");
-		}
-	
-
-		// 6. If update query, add set
-		if(query instanceof UpdateQuery) {
-			statement.appendQuery("SET");
-			
-			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery) query).getUpdates();
-			boolean first = true;
-			for(Map.Entry<Attribute, Object> entry : attributeMap.entrySet()) {
-
-				// if not first, add comma
-				if(first) {
-					first = false;
-				}
-				else {
-					statement.appendQuery(", ");
-				}
-
-				statement.appendAttributeAsParameter(entry.getKey());
-				statement.appendQuery("=");
-					statement.appendQuery(statement.writeParameter(entry.getKey().entity.entity, entry.getKey().attribute, entry.getValue()));
-			}  
-			
-		}
-
-		
-		// 7. Add Where (not applicable for ALTER TABLE or CREATE TABLE)
-		if(!query.getCriterions().isEmpty()) {
-			statement.appendQuery("WHERE");
-			statement.appendNodeToStatement(query, true);
-		}
-		
-		// 8. Add Group by
-		if(query instanceof SelectQuery && !((SelectQuery<?>) query).getGroupBys().isEmpty()) {
-			List<Attribute> groups = ((SelectQuery<?>) query).getGroupBys();
-			statement.appendQuery(groups.stream().map(x -> statement.groupString(x)).collect(Collectors.joining(", ", "GROUP BY ", ""))+"\n");
-		}
-		
-		// 9. Add Having
-		// Append having (if any)
-		if(query instanceof SelectQuery && ((SelectQuery<?>) query).getHaving() != null) {
-			statement.appendQuery("HAVING");
-			statement.appendNodeToStatement(((SelectQuery<?>) query).getHaving(), true);
-		}
-		
-		// 10. Append order (not applicable for ALTER TABLE or CREATE TABLE)
-		if(!query.getOrders().isEmpty()) {
-			statement.appendQuery(query.getOrders().stream().map(x -> statement.orderString(x)).collect(Collectors.joining(", ", "ORDER BY ", ""))+"\n");
-		}
-		
-		// 11. Append limit & offset (not applicable for ALTER TABLE or CREATE TABLE)
-		if(query.getLimit() != null) {
-			statement.appendQuery("LIMIT "+query.getLimit()+"\n");
-		}
-		if(query.getOffset() != null) {
-			statement.appendQuery("OFFSET "+ query.getOffset() +"\n");
-		}
-		
-
-		return statement;
+		return new Statement(this, connection, query);
 	}
 
 	public Statement queryAsStatement(AlterQuery<?> query, Connection connection) {

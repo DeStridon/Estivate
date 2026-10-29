@@ -46,4 +46,35 @@ public class ConnectionReuseTest {
 		Assert.assertEquals(2, seen.size());
 		Assert.assertSame(seen.get(0), seen.get(1));
 	}
+
+	@Test
+	public void withConnectionCachesInsertPreparedStatement() {
+		Assert.assertEquals(0, context.cachedInsertStatementCount());
+
+		context.withConnection(ignored -> {
+			Assert.assertEquals(0, context.cachedInsertStatementCount());
+
+			PersistBenchEntity first = row("first");
+			context.insert(first);
+			Assert.assertTrue(first.id > 0);
+			Assert.assertEquals(1, context.cachedInsertStatementCount());
+
+			PersistBenchEntity second = row("second");
+			context.insert(second);
+			Assert.assertTrue(second.id > first.id);
+			Assert.assertEquals(1, context.cachedInsertStatementCount());
+		});
+
+		Assert.assertEquals(0, context.cachedInsertStatementCount());
+	}
+
+	private static PersistBenchEntity row(String name) {
+		PersistBenchEntity entity = new PersistBenchEntity();
+		entity.name = name;
+		entity.email = name + "@example.com";
+		entity.score = 1;
+		entity.active = true;
+		entity.note = "n";
+		return entity;
+	}
 }

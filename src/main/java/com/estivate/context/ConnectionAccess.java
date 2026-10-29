@@ -27,6 +27,14 @@ final class ConnectionAccess {
 		ACCESSOR.releaseConnection(connection, dataSource);
 	}
 
+	/**
+	 * True when {@link #releaseConnection} leaves the physical connection open
+	 * (e.g. Spring {@code @Transactional}), so PreparedStatements can be reused.
+	 */
+	static boolean retainsConnection(DataSource dataSource) {
+		return ACCESSOR.retainsConnection(dataSource);
+	}
+
 	private static Accessor createAccessor() {
 		try {
 			Class.forName("org.springframework.jdbc.datasource.DataSourceUtils");
@@ -43,6 +51,8 @@ final class ConnectionAccess {
 		Connection getConnection(DataSource dataSource) throws SQLException;
 
 		void releaseConnection(Connection connection, DataSource dataSource) throws SQLException;
+
+		boolean retainsConnection(DataSource dataSource);
 	}
 
 	private static final class DirectAccessor implements Accessor {
@@ -54,6 +64,11 @@ final class ConnectionAccess {
 		@Override
 		public void releaseConnection(Connection connection, DataSource dataSource) throws SQLException {
 			connection.close();
+		}
+
+		@Override
+		public boolean retainsConnection(DataSource dataSource) {
+			return false;
 		}
 	}
 }

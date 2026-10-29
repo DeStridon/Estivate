@@ -1,9 +1,11 @@
 package com.estivate.result;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
 import com.estivate.util.ClassMeta;
+import com.estivate.util.ClassMeta.FieldBinding;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.ReflectionUtils;
 
@@ -43,11 +46,11 @@ public class EntityMapper<U> {
 	// Entity side
 	final Entity<U> entity;
 
-	final Constructor<U> entityConstructor;
 	final ClassMeta entityClassMeta;
 
 	List<ColumnMapping> columnMappings = new ArrayList<>();
-	Set<Integer> columnMappingIndexes = new HashSet<>();
+	/** Indexes into {@link #columnMappings} that have a field mapping (primitive array for hot path). */
+	int[] columnMappingIndexes = new int[0];
 
 	List<EntityMapping> entityMappings = new ArrayList<>();
 	
@@ -66,17 +69,19 @@ public class EntityMapper<U> {
 		this.entity = entity;
 		this.query = query;
 
-		// Get constructor
-		entityConstructor = entity.entity.getConstructor();
 		entityClassMeta = ClassMeta.of(entity.entity);
 
 		// Get Fields
 		columnMappings = getColumnMappings(query, entity);
-		columnMappingIndexes = new HashSet<>();
+		List<Integer> indexes = new ArrayList<>();
 		for(int i = 0; i < columnMappings.size(); i++) {
 			if(columnMappings.get(i) != null) {
-				columnMappingIndexes.add(i);
+				indexes.add(i);
 			}
+		}
+		columnMappingIndexes = new int[indexes.size()];
+		for(int i = 0; i < indexes.size(); i++) {
+			columnMappingIndexes[i] = indexes.get(i);
 		}
 
 		// Entity Mappings
@@ -98,12 +103,19 @@ public class EntityMapper<U> {
 	public U map(String[] row, U obj) {
 
 		// if all row values are null for columnMapping, return null
-		if(columnMappingIndexes.stream().map(x -> row[x]).allMatch(x -> x == null)) {
+		boolean allNull = true;
+		for(int index : columnMappingIndexes) {
+			if(row[index] != null) {
+				allNull = false;
+				break;
+			}
+		}
+		if(allNull) {
 			return null;
 		}
 
 		if(obj == null) {
-			obj = entityConstructor.newInstance();
+			obj = entityClassMeta.newInstance();
 			for (int i = 0; i < row.length; i++) {
 				if (i >= columnMappings.size() || columnMappings.get(i) == null) {
 					continue;
@@ -117,33 +129,198 @@ public class EntityMapper<U> {
 			entityClassMeta.invokePostLoad(obj);
 		}
 
-		for(EntityMapping entityMapping : entityMappings) {
-			
-			Object subObj = entityMapping.getEntityMapper().map(row, null);
-			if(entityMapping.getField().getType().isAssignableFrom(List.class)) {
-				List<Object> list = (List<Object>) entityMapping.getField().get(obj);
-				if(list == null) {
-					list = new ArrayList<>();
-					entityMapping.getField().set(obj, list);
-				}
-				if(subObj != null) {
-					list.add(subObj);
-				}
-			}
-			else {
-				entityMapping.getField().set(obj, subObj);
-			}
+		mapNestedEntities(row, obj);
 
-		}
-		
-		
 		return obj;
+	}
+
+	/**
+	 * Maps one JDBC row directly into an entity (typed getters, no {@code String[]} buffer).
+	 */
+	@SneakyThrows
+	public U map(ResultSet resultSet) {
+		boolean allNull = true;
+		Object[] values = new Object[columnMappings.size()];
+		for(int index : columnMappingIndexes) {
+			ColumnMapping columnMapping = columnMappings.get(index);
+			Object value = readTyped(resultSet, index + 1, columnMapping.getField());
+			values[index] = value;
+			if(value != null) {
+				allNull = false;
+			}
+		}
+		if(allNull) {
+			return null;
+		}
+
+		U obj = entityClassMeta.newInstance();
+		for(int index : columnMappingIndexes) {
+			ColumnMapping columnMapping = columnMappings.get(index);
+			Field field = columnMapping.getField();
+			Object value = values[index];
+			if(field == null) {
+				continue;
+			}
+			if(columnMapping.getTransformer() != null && !(columnMapping.getTransformer() instanceof IdentityFunction)) {
+				value = ((Function<Object, Object>) columnMapping.getTransformer()).apply(value);
+			}
+			if(value != null) {
+				field.set(obj, value);
+			}
+		}
+		entityClassMeta.invokePostLoad(obj);
+
+		for(EntityMapping entityMapping : entityMappings) {
+			Object subObj = entityMapping.getEntityMapper().map(resultSet);
+			applyNested(obj, entityMapping, subObj);
+		}
+		return obj;
+	}
+
+	@SneakyThrows
+	private void mapNestedEntities(String[] row, U obj) {
+		for(EntityMapping entityMapping : entityMappings) {
+			Object subObj = entityMapping.getEntityMapper().map(row, null);
+			applyNested(obj, entityMapping, subObj);
+		}
+	}
+
+	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	private void applyNested(U obj, EntityMapping entityMapping, Object subObj) {
+		if(entityMapping.getField().getType().isAssignableFrom(List.class)) {
+			List<Object> list = (List<Object>) entityMapping.getField().get(obj);
+			if(list == null) {
+				list = new ArrayList<>();
+				entityMapping.getField().set(obj, list);
+			}
+			if(subObj != null) {
+				list.add(subObj);
+			}
+		}
+		else {
+			entityMapping.getField().set(obj, subObj);
+		}
+	}
+
+	@SneakyThrows
+	private Object readTyped(ResultSet resultSet, int jdbcIndex, Field field) throws SQLException {
+		if(field == null) {
+			return null;
+		}
+
+		Projection.Attribute projectionAttribute = field.getDeclaredAnnotation(Projection.Attribute.class);
+		if(projectionAttribute != null) {
+			Field mappingField = ClassMeta.findField(projectionAttribute.entity(), projectionAttribute.attribute());
+			return readTyped(resultSet, jdbcIndex, mappingField);
+		}
+
+		FieldBinding binding = entityClassMeta.getFieldBinding(field);
+		if(binding != null && binding.hasConverter()) {
+			Object raw = resultSet.getObject(jdbcIndex);
+			return binding.toEntityAttribute(raw);
+		}
+
+		Class<?> type = field.getType();
+		if(type.isEnum()) {
+			String raw = resultSet.getString(jdbcIndex);
+			if(raw == null || resultSet.wasNull()) {
+				return null;
+			}
+			FieldBinding enumBinding = binding != null ? binding : ClassMeta.fieldBinding(field);
+			if(enumBinding != null && enumBinding.getEnumMode() == FieldBinding.EnumMode.ORDINAL) {
+				int ordinal = Integer.parseInt(raw);
+				return type.getEnumConstants()[ordinal];
+			}
+			return Enum.valueOf((Class) type, raw);
+		}
+
+		if(type == String.class) {
+			return resultSet.getString(jdbcIndex);
+		}
+		if(type == short.class || type == Short.class) {
+			short value = resultSet.getShort(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == short.class ? Short.valueOf((short) 0) : null;
+			}
+			return value;
+		}
+		if(type == int.class || type == Integer.class) {
+			int value = resultSet.getInt(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == int.class ? Integer.valueOf(0) : null;
+			}
+			return value;
+		}
+		if(type == long.class || type == Long.class) {
+			long value = resultSet.getLong(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == long.class ? Long.valueOf(0L) : null;
+			}
+			return value;
+		}
+		if(type == float.class || type == Float.class) {
+			float value = resultSet.getFloat(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == float.class ? Float.valueOf(0f) : null;
+			}
+			return value;
+		}
+		if(type == double.class || type == Double.class) {
+			double value = resultSet.getDouble(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == double.class ? Double.valueOf(0d) : null;
+			}
+			return value;
+		}
+		if(type == BigDecimal.class) {
+			return resultSet.getBigDecimal(jdbcIndex);
+		}
+		if(type == boolean.class || type == Boolean.class) {
+			boolean value = resultSet.getBoolean(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == boolean.class ? Boolean.FALSE : null;
+			}
+			return value;
+		}
+		if(type == Byte.class || type == byte.class) {
+			byte value = resultSet.getByte(jdbcIndex);
+			if(resultSet.wasNull()) {
+				return type == byte.class ? Byte.valueOf((byte) 0) : null;
+			}
+			return value;
+		}
+		if(type == Character.class || type == char.class) {
+			String value = resultSet.getString(jdbcIndex);
+			if(value == null || value.isEmpty()) {
+				return type == char.class ? '\0' : null;
+			}
+			return value.charAt(0);
+		}
+		if(type == Date.class) {
+			Timestamp timestamp = resultSet.getTimestamp(jdbcIndex);
+			return timestamp == null ? null : new Date(timestamp.getTime());
+		}
+		if(type == LocalDateTime.class) {
+			Timestamp timestamp = resultSet.getTimestamp(jdbcIndex);
+			return timestamp == null ? null : timestamp.toLocalDateTime();
+		}
+		if(type == LocalDate.class) {
+			java.sql.Date date = resultSet.getDate(jdbcIndex);
+			return date == null ? null : date.toLocalDate();
+		}
+		if(type == Instant.class) {
+			Timestamp timestamp = resultSet.getTimestamp(jdbcIndex);
+			return timestamp == null ? null : timestamp.toInstant();
+		}
+
+		return resultSet.getObject(jdbcIndex);
 	}
 
 	@SneakyThrows
 	public U map(Map<String, String> arguments) {
 
-		U obj = entityConstructor.newInstance();
+		U obj = entityClassMeta.newInstance();
 
 		Class<?> currentClass = entity.entity;
 		while (currentClass != Object.class) {
@@ -275,9 +452,10 @@ public class EntityMapper<U> {
 		 	return convertValue(mappingField, value);
 		 }
 
+		FieldBinding binding = ClassMeta.fieldBinding(field);
 		// @Convert — must run for null DB values too
-		if(FieldUtils.hasConvertAnnotation(field)) {
-			return ClassMeta.fieldBinding(field).toEntityAttribute(value);
+		if(binding != null && binding.hasConverter()) {
+			return binding.toEntityAttribute(value);
 		}
 
 		if(value == null) {
@@ -286,27 +464,13 @@ public class EntityMapper<U> {
 
 		Type type = field.getGenericType();
 
-		// @Enumerated
-		if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
-
-			javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
-			if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
-				return Enum.valueOf((Class)type, value);
+		// @Enumerated via cached FieldBinding
+		if(type instanceof Class && ((Class<?>) type).isEnum() && binding != null && binding.getEnumMode() != FieldBinding.EnumMode.NONE) {
+			if(binding.getEnumMode() == FieldBinding.EnumMode.STRING) {
+				return Enum.valueOf((Class) type, value);
 			}
-			else {
-				int ordinal = Integer.parseInt(value);
-				return field.getType().getEnumConstants()[ordinal];
-			}
-		}
-		if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
-			jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
-			if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
-				return Enum.valueOf((Class)type, value);
-			}
-			else {
-				int ordinal = Integer.parseInt(value);
-				return field.getType().getEnumConstants()[ordinal];
-			}
+			int ordinal = Integer.parseInt(value);
+			return field.getType().getEnumConstants()[ordinal];
 		}
 
 		// Classic types

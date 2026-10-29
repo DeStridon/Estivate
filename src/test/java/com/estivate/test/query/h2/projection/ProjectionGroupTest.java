@@ -1,4 +1,4 @@
-package com.estivate.test.query.projection;
+package com.estivate.test.query.h2.projection;
 
 import java.util.Arrays;
 import java.util.Date;

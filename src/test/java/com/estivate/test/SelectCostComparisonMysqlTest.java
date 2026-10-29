@@ -1,0 +1,366 @@
+package com.estivate.test;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import com.estivate.Estivate;
+import com.estivate.context.Context;
+import com.estivate.context.MySQLContext;
+import com.estivate.Entity;
+import com.estivate.test.entities.PersistBenchEntity;
+import com.estivate.test.query.mysql.MysqlTestDatabase;
+import com.estivate.util.Chronometer;
+
+/**
+ * Same select cost comparison as {@link SelectCostComparisonTest}, against real MySQL 8
+ * (Testcontainers). Skipped when Docker is unavailable.
+ */
+@Testcontainers(disabledWithoutDocker = true)
+public class SelectCostComparisonMysqlTest {
+
+	private static final int SEED = 500;
+	private static final int WARMUP = 50;
+	private static final int BY_ID_ITERATIONS = 300;
+	private static final int LIST_ITERATIONS = 80;
+
+	private static final String SELECT_BY_ID_SQL =
+		"SELECT ID, NAME, EMAIL, SCORE, ACTIVE, NOTE FROM PERSISTBENCHENTITY WHERE ID = ?";
+	private static final String SELECT_ACTIVE_SQL =
+		"SELECT ID, NAME, EMAIL, SCORE, ACTIVE, NOTE FROM PERSISTBENCHENTITY WHERE ACTIVE = ?";
+
+	@Container
+	static MySQLContainer<?> mysql = MysqlTestDatabase.newContainer();
+
+	private static DataSource dataSource;
+	private static Context context;
+	private static SessionFactory sessionFactory;
+	private static List<Long> ids;
+
+	@BeforeAll
+	public static void setUp() {
+		dataSource = MysqlTestDatabase.dataSource(mysql);
+		context = new MySQLContext(dataSource);
+		context.nameMapper = new DatabaseGenerator.TestNameMapper();
+
+		Estivate.Tools.createTableFullQuery(PersistBenchEntity.class, context)
+			.ifNotExists()
+			.execute(context);
+
+		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+			.applySetting(AvailableSettings.DATASOURCE, dataSource)
+			.applySetting(AvailableSettings.DIALECT, "org.hibernate.dialect.MySQL8Dialect")
+			.applySetting(AvailableSettings.HBM2DDL_AUTO, "none")
+			.applySetting(AvailableSettings.SHOW_SQL, "false")
+			.build();
+		sessionFactory = new MetadataSources(registry)
+			.addAnnotatedClass(PersistBenchEntity.class)
+			.buildMetadata()
+			.buildSessionFactory();
+
+		ids = new ArrayList<>(SEED);
+		for(int i = 0; i < SEED; i++) {
+			PersistBenchEntity row = row(i);
+			context.insert(row);
+			ids.add(row.id);
+		}
+	}
+
+	@AfterAll
+	public static void tearDown() {
+		if(sessionFactory != null) {
+			sessionFactory.close();
+		}
+	}
+
+	@Test
+	public void comparesSelectCost() throws Exception {
+		timeById(WARMUP, 1, this::estivateById);
+		timeById(WARMUP, 1, this::jdbcById);
+		timeById(WARMUP, 1, this::hibernateById);
+		timeList(WARMUP, 1, this::estivateList);
+		timeList(WARMUP, 1, this::jdbcList);
+		timeList(WARMUP, 1, this::hibernateList);
+
+		long estivateById = 0;
+		long estivateByIdShared = 0;
+		long jdbcById = 0;
+		long hibernateById = 0;
+		long estivateList = 0;
+		long estivateListShared = 0;
+		long jdbcList = 0;
+		long hibernateList = 0;
+		long jdbcReusedList = 0;
+
+		for(int pass = 0; pass < 2; pass++) {
+			estivateById = timeById(0, BY_ID_ITERATIONS, this::estivateById);
+			estivateByIdShared = timeEstivateByIdShared(0, BY_ID_ITERATIONS);
+			jdbcById = timeById(0, BY_ID_ITERATIONS, this::jdbcById);
+			hibernateById = timeById(0, BY_ID_ITERATIONS, this::hibernateById);
+
+			estivateList = timeList(0, LIST_ITERATIONS, this::estivateList);
+			estivateListShared = timeEstivateListShared(0, LIST_ITERATIONS);
+			jdbcList = timeList(0, LIST_ITERATIONS, this::jdbcList);
+			hibernateList = timeList(0, LIST_ITERATIONS, this::hibernateList);
+			jdbcReusedList = timeJdbcReusedList(0, LIST_ITERATIONS);
+		}
+
+		System.out.println("Select cost (MySQL 8 / Testcontainers), microseconds");
+		System.out.println("  by-id  estivate=" + micros(estivateById)
+			+ " estivate-shared-connection=" + micros(estivateByIdShared)
+			+ " jdbc-per-call=" + micros(jdbcById)
+			+ " hibernate-per-call=" + micros(hibernateById));
+		System.out.println("  list(" + SEED + " active rows)  estivate=" + micros(estivateList)
+			+ " estivate-shared-connection=" + micros(estivateListShared)
+			+ " jdbc-per-call=" + micros(jdbcList)
+			+ " jdbc-reused-statement=" + micros(jdbcReusedList)
+			+ " hibernate-per-call=" + micros(hibernateList)
+			+ "  (per full list fetch)");
+		System.out.println(profileByIdShared(100));
+		System.out.println(profileListShared(20));
+
+		PersistBenchEntity sample = estivateById(ids.get(0));
+		Assertions.assertNotNull(sample);
+		Assertions.assertEquals("Row 0", sample.name);
+		Assertions.assertEquals(SEED, estivateList().size());
+		Assertions.assertEquals(SEED, jdbcList().size());
+		Assertions.assertEquals(SEED, hibernateList().size());
+	}
+
+	private long timeById(int warmup, int iterations, ByIdLoader loader) {
+		for(int i = 0; i < warmup; i++) {
+			loader.load(ids.get(i % ids.size()));
+		}
+		long begin = System.nanoTime();
+		for(int i = 0; i < iterations; i++) {
+			loader.load(ids.get(i % ids.size()));
+		}
+		return (System.nanoTime() - begin) / iterations;
+	}
+
+	private long timeList(int warmup, int iterations, ListLoader loader) {
+		for(int i = 0; i < warmup; i++) {
+			loader.load();
+		}
+		long begin = System.nanoTime();
+		for(int i = 0; i < iterations; i++) {
+			loader.load();
+		}
+		return (System.nanoTime() - begin) / iterations;
+	}
+
+	private long timeEstivateByIdShared(int warmup, int iterations) {
+		context.withConnection(ignored -> {
+			for(int i = 0; i < warmup; i++) {
+				estivateById(ids.get(i % ids.size()));
+			}
+		});
+		long begin = System.nanoTime();
+		context.withConnection(ignored -> {
+			for(int i = 0; i < iterations; i++) {
+				estivateById(ids.get(i % ids.size()));
+			}
+		});
+		return (System.nanoTime() - begin) / iterations;
+	}
+
+	private long timeEstivateListShared(int warmup, int iterations) {
+		context.withConnection(ignored -> {
+			for(int i = 0; i < warmup; i++) {
+				estivateList();
+			}
+		});
+		long begin = System.nanoTime();
+		context.withConnection(ignored -> {
+			for(int i = 0; i < iterations; i++) {
+				estivateList();
+			}
+		});
+		return (System.nanoTime() - begin) / iterations;
+	}
+
+	private long timeJdbcReusedList(int warmup, int iterations) throws Exception {
+		try(Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SQL)) {
+			for(int i = 0; i < warmup; i++) {
+				readActiveList(statement);
+			}
+			long begin = System.nanoTime();
+			for(int i = 0; i < iterations; i++) {
+				readActiveList(statement);
+			}
+			return (System.nanoTime() - begin) / iterations;
+		}
+	}
+
+	private PersistBenchEntity estivateById(long id) {
+		return Estivate.selectQuery(PersistBenchEntity.class)
+			.eq(PersistBenchEntity.class, "id", id)
+			.extractSingle(context);
+	}
+
+	private List<PersistBenchEntity> estivateList() {
+		return Estivate.selectQuery(PersistBenchEntity.class)
+			.eq(PersistBenchEntity.class, "active", true)
+			.extractList(context);
+	}
+
+	private String profileByIdShared(int iterations) {
+		Chronometer warm = new Chronometer("select-by-id-mysql-warm", true).timeThreshold(Integer.MAX_VALUE);
+		context.withConnection(ignored -> {
+			for(int i = 0; i < 20; i++) {
+				context.extractSingle(
+					Estivate.selectQuery(PersistBenchEntity.class).eq(PersistBenchEntity.class, "id", ids.get(i % ids.size())),
+					new Entity<>(PersistBenchEntity.class),
+					warm);
+			}
+		});
+		Chronometer chronometer = new Chronometer("select-by-id-mysql-shared", true).timeThreshold(Integer.MAX_VALUE);
+		context.withConnection(ignored -> {
+			for(int i = 0; i < iterations; i++) {
+				context.extractSingle(
+					Estivate.selectQuery(PersistBenchEntity.class).eq(PersistBenchEntity.class, "id", ids.get(i % ids.size())),
+					new Entity<>(PersistBenchEntity.class),
+					chronometer);
+			}
+		});
+		return chronometer.getLog();
+	}
+
+	private String profileListShared(int iterations) {
+		Chronometer warm = new Chronometer("select-list-mysql-warm", true).timeThreshold(Integer.MAX_VALUE);
+		context.withConnection(ignored -> {
+			for(int i = 0; i < 5; i++) {
+				context.extractList(
+					Estivate.selectQuery(PersistBenchEntity.class).eq(PersistBenchEntity.class, "active", true),
+					new Entity<>(PersistBenchEntity.class),
+					warm);
+			}
+		});
+		Chronometer chronometer = new Chronometer("select-list-mysql-shared", true).timeThreshold(Integer.MAX_VALUE);
+		context.withConnection(ignored -> {
+			for(int i = 0; i < iterations; i++) {
+				context.extractList(
+					Estivate.selectQuery(PersistBenchEntity.class).eq(PersistBenchEntity.class, "active", true),
+					new Entity<>(PersistBenchEntity.class),
+					chronometer);
+			}
+		});
+		return chronometer.getLog();
+	}
+
+	private PersistBenchEntity jdbcById(long id) {
+		try(Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(SELECT_BY_ID_SQL)) {
+			statement.setLong(1, id);
+			try(ResultSet resultSet = statement.executeQuery()) {
+				if(!resultSet.next()) {
+					return null;
+				}
+				return mapRow(resultSet);
+			}
+		}
+		catch(Exception exception) {
+			throw new IllegalStateException(exception);
+		}
+	}
+
+	private List<PersistBenchEntity> jdbcList() {
+		try(Connection connection = dataSource.getConnection();
+				PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SQL)) {
+			return readActiveList(statement);
+		}
+		catch(Exception exception) {
+			throw new IllegalStateException(exception);
+		}
+	}
+
+	private List<PersistBenchEntity> readActiveList(PreparedStatement statement) throws Exception {
+		statement.setBoolean(1, true);
+		try(ResultSet resultSet = statement.executeQuery()) {
+			List<PersistBenchEntity> rows = new ArrayList<>();
+			while(resultSet.next()) {
+				rows.add(mapRow(resultSet));
+			}
+			return rows;
+		}
+	}
+
+	private PersistBenchEntity hibernateById(long id) {
+		Session session = sessionFactory.openSession();
+		try {
+			return session.get(PersistBenchEntity.class, id);
+		}
+		finally {
+			session.close();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<PersistBenchEntity> hibernateList() {
+		Session session = sessionFactory.openSession();
+		Transaction transaction = session.beginTransaction();
+		try {
+			List<PersistBenchEntity> rows = session
+				.createQuery("from PersistBenchEntity where active = true")
+				.list();
+			transaction.commit();
+			return rows;
+		}
+		finally {
+			session.close();
+		}
+	}
+
+	private static PersistBenchEntity mapRow(ResultSet resultSet) throws Exception {
+		PersistBenchEntity row = new PersistBenchEntity();
+		row.id = resultSet.getLong(1);
+		row.name = resultSet.getString(2);
+		row.email = resultSet.getString(3);
+		row.score = resultSet.getInt(4);
+		row.active = resultSet.getBoolean(5);
+		row.note = resultSet.getString(6);
+		return row;
+	}
+
+	private static PersistBenchEntity row(int index) {
+		PersistBenchEntity row = new PersistBenchEntity();
+		row.name = "Row " + index;
+		row.email = "row" + index + "@example.test";
+		row.score = index;
+		row.active = true;
+		row.note = "note " + index;
+		return row;
+	}
+
+	private static long micros(long nanosPerOp) {
+		return nanosPerOp / 1_000L;
+	}
+
+	private interface ByIdLoader {
+		PersistBenchEntity load(long id);
+	}
+
+	private interface ListLoader {
+		List<PersistBenchEntity> load();
+	}
+}

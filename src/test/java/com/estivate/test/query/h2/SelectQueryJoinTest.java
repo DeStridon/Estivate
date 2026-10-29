@@ -59,7 +59,8 @@ public class SelectQueryJoinTest {
 	@Test
 	public void selectJoiningTest2() throws SQLException {
 		
-		CustomerEntity parent = CustomerEntity.builder().name("join test name 1").build();
+		String uniqueName = "join test name 1-" + System.nanoTime();
+		CustomerEntity parent = CustomerEntity.builder().name(uniqueName).build();
 		context.updateOrInsert(parent);
 		
 		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());

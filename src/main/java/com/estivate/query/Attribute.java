@@ -1,5 +1,6 @@
 package com.estivate.query;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
 
@@ -9,7 +10,6 @@ import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,6 @@ import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
 public class Attribute  {
 
@@ -25,6 +24,21 @@ public class Attribute  {
 	public String attribute;
     public Function function;
     public String alias;
+	/** Optional reflected field for faster JDBC binding; not part of equality. */
+	public Field field;
+
+	public Attribute(Entity<?> entity, String attribute, Function function, String alias) {
+		this.entity = entity;
+		this.attribute = attribute;
+		this.function = function;
+		this.alias = alias;
+	}
+
+	public static Attribute of(Entity<?> entity, Field field) {
+		Attribute attribute = new Attribute(entity, field.getName(), null, null);
+		attribute.field = field;
+		return attribute;
+	}
 
 
     @Override

@@ -122,8 +122,17 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	}
 
 	public SelectQuery<E> selectAll(Entity<?> c, String... fieldNames) {
-		
-		Set<Field> fields = ClassMeta.of(c.entity).getFields();
+		ClassMeta classMeta = ClassMeta.of(c.entity);
+
+		// Fast path: plain entity columns (no @Projection.*) — names cached on ClassMeta.
+		if(fieldNames.length == 0 && !classMeta.isHasProjectionSelectFields()) {
+			for(String fieldName : classMeta.getPlainSelectFieldNames()) {
+				select(c, fieldName);
+			}
+			return this;
+		}
+
+		Set<Field> fields = classMeta.getFields();
 
 		for(Field field : fields){
 

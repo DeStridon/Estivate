@@ -1,5 +1,6 @@
 package com.estivate.query;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
@@ -31,6 +32,10 @@ public class UpdateQuery<E> extends Query<UpdateQuery<E>, E> {
 
     public UpdateQuery<E> set(String attribute, Object value) {
         return set(Estivate.attribute(entity, attribute), value);
+    }
+
+    public UpdateQuery<E> set(Field field, Object value) {
+        return set(Attribute.of(entity, field), value);
     }
 
     public <T, P> UpdateQuery<E> set(AttributeGetter<T, P> getter, P value) {

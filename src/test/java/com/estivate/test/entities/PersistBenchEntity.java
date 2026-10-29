@@ -9,13 +9,17 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.estivate.util.CachedEntity;
+
 /**
  * Small mapped type shared by the Estivate / JDBC / Hibernate persist benchmark.
- * The note column uses a converter so the benchmark includes converter handling.
+ * Extends {@link CachedEntity} so the update timing follows the dirty-check path
+ * used for real updates. The note column uses a converter so the benchmark
+ * includes converter handling.
  */
 @Entity
 @Table(name = "PERSISTBENCHENTITY")
-public class PersistBenchEntity {
+public class PersistBenchEntity extends CachedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
