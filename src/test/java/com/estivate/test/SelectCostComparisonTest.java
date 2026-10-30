@@ -56,7 +56,7 @@ public class SelectCostComparisonTest {
 		}
 
 		context = new H2Context(pool);
-		context.nameMapper = new DatabaseGenerator.TestNameMapper();
+		context.nameMapper = new TestData.TestNameMapper();
 
 		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
 			.applySetting(AvailableSettings.DATASOURCE, pool)

@@ -23,14 +23,13 @@ import com.estivate.query.EstivateNode;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
 
 public class SelectQueryCriterionTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 
 	@BeforeEach

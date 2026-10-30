@@ -151,7 +151,7 @@ public class Statement implements AutoCloseable{
 					appendQuery(", ");
 				}
 
-				appendAttributeAsParameter(entry.getKey());
+				appendQuery(assignmentTarget(entry.getKey()));
 				appendQuery("=");
 	  			appendQuery(writeParameter(entry.getKey(), entry.getValue()));
 			}  
@@ -207,7 +207,7 @@ public class Statement implements AutoCloseable{
 			}
 			first = false;
 			Attribute attribute = entry.getKey();
-			this.query.append(context.mappedTableAttribute(attribute.entity, attribute.attribute)).append(" = ");
+			this.query.append(assignmentTarget(attribute)).append(" = ");
 			// writeParameter handles literals, Attribute RHS, and SelectQuery subqueries
 			this.query.append(writeParameter(attribute, entry.getValue()));
 		}
@@ -215,6 +215,13 @@ public class Statement implements AutoCloseable{
 			this.query.append(" WHERE ");
 			appendSimpleWhere(updateQuery);
 		}
+	}
+
+	private String assignmentTarget(Attribute attribute) {
+		if(context.dialect.qualifyUpdateTarget()) {
+			return context.mappedTableAttribute(attribute.entity, attribute.attribute);
+		}
+		return context.mappedDatabaseField(attribute.attribute);
 	}
 
 	private void appendSimpleWhere(Query<?,?> query) {
@@ -577,13 +584,23 @@ public class Statement implements AutoCloseable{
 		}
 
 		if(attribute.function != null && attribute.function.equals(Estivate.Functions.count) && (attribute.entity == null || attribute.entity.entity == null)) {
-			return "COUNT(*)"+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.mappedEntityField(attribute.alias)+"`" : "");
+			return "COUNT(*)" + aliasClause(attribute.alias);
 		}
 		else if (attribute.function != null) {
-			return attribute.function.render(context.mappedTableAttribute(attribute.entity, attribute.attribute))+(attribute.alias != null && !attribute.alias.isEmpty() ? " as `"+context.mappedEntityField(attribute.alias)+"`" : "");
+			return attribute.function.render(context.mappedTableAttribute(attribute.entity, attribute.attribute)) + aliasClause(attribute.alias);
 		}
 
-		return context.mappedTableAttribute(attribute.entity, attribute.attribute)+" as `"+(attribute.alias != null && !attribute.alias.isEmpty() ? context.mappedEntityField(attribute.alias) : context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute))+"`";
+		String alias = attribute.alias != null && !attribute.alias.isEmpty()
+				? context.mappedEntityField(attribute.alias)
+				: context.nameMapper.toEntityNameAttribute(attribute.entity, attribute.attribute);
+		return context.mappedTableAttribute(attribute.entity, attribute.attribute) + " as " + context.dialect.quoteIdentifier(alias);
+	}
+
+	private String aliasClause(String alias) {
+		if(alias == null || alias.isEmpty()) {
+			return "";
+		}
+		return " as " + context.dialect.quoteIdentifier(context.mappedEntityField(alias));
 	
 	}
 

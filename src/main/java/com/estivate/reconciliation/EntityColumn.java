@@ -1,8 +1,6 @@
 package com.estivate.reconciliation;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -82,18 +80,12 @@ public class EntityColumn {
 		}
 		// 2.2. enum (skipped when @Convert remapped javaType away from the enum)
 		else if (javaType.isEnum()) {
-			if (FieldUtils.isEnumeratedAsString(field)) {
-				String enumValues = Arrays.stream(field.getType().getEnumConstants())
-						.map(c -> "'" + ((Enum<?>) c).name() + "'")
-						.collect(Collectors.joining(","));
-				this.type = "ENUM(" + enumValues + ")";
-				this.dimensionType = ColumnDimension.NONE;
-
-			}
-			else{
-				this.type = "TINYINT";
-				this.dimensionType = ColumnDimension.NONE;
-			}
+			ProjectedColumnDefinition enumColumn = FieldUtils.isEnumeratedAsString(field)
+					? context.dialect.stringEnumColumn(javaType)
+					: context.dialect.ordinalEnumColumn();
+			this.type = enumColumn.getType();
+			this.dimensionType = enumColumn.getColumnDimension();
+			this.projectedColumnDefinition = enumColumn;
 		}
 		// 2.3. default (including @Convert → dialect type for converter DB type)
 		else {

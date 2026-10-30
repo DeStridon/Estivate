@@ -1,5 +1,7 @@
 package com.estivate.test.result;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -10,7 +12,6 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Attribute;
 import com.estivate.result.ResultRow;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 
@@ -20,7 +21,7 @@ import com.estivate.test.entities.CustomerEntity;
  */
 public class ResultRowTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@Test
 	public void as_plainAttribute() {
@@ -101,7 +102,6 @@ public class ResultRowTest {
 		assertNotNull(count);
 		assertEquals(1L, ((Number) count).longValue());
 	}
-
 
 	private CustomerEntity insertCustomer(String name) {
 		CustomerEntity customer = CustomerEntity.builder()

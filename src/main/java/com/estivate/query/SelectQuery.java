@@ -3,6 +3,7 @@ package com.estivate.query;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +133,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			return this;
 		}
 
+		Set<Class<?>> availableEntities = availableEntityClasses();
 		Set<Field> fields = classMeta.getFields();
 
 		for(Field field : fields){
@@ -144,43 +146,83 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			
 			if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
 				Projection.Attribute attribute = field.getDeclaredAnnotation(Projection.Attribute.class);
-				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				select(target, attribute.attribute());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Count.class) != null) {
 				Projection.Count attribute = field.getDeclaredAnnotation(Projection.Count.class);
-				selectCount(Estivate.attribute(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), null, attribute.alias()));
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				selectCount(Estivate.attribute(target, attribute.attribute(), null, attribute.alias()));
 			}
 			else if(field.getDeclaredAnnotation(Projection.CountDistinct.class) != null) {
 				Projection.CountDistinct attribute = field.getDeclaredAnnotation(Projection.CountDistinct.class);
-				selectCountDistinct(Estivate.attribute(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), null, attribute.alias()));
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				selectCountDistinct(Estivate.attribute(target, attribute.attribute(), null, attribute.alias()));
 			}
 			else if(field.getDeclaredAnnotation(Projection.Sum.class) != null) {
 				Projection.Sum attribute = field.getDeclaredAnnotation(Projection.Sum.class);
-				selectSum(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				selectSum(target, attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Min.class) != null) {
 				Projection.Min attribute = field.getDeclaredAnnotation(Projection.Min.class);
-				selectMin(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				selectMin(target, attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Max.class) != null) {
 				Projection.Max attribute = field.getDeclaredAnnotation(Projection.Max.class);
-				selectMax(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				selectMax(target, attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Avg.class) != null) {
 				Projection.Avg attribute = field.getDeclaredAnnotation(Projection.Avg.class);
-				selectAvg(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				selectAvg(target, attribute.attribute(), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.IsNull.class) != null) {
 				Projection.IsNull attribute = field.getDeclaredAnnotation(Projection.IsNull.class);
-				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNull, attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				select(target, attribute.attribute(), Estivate.Functions.isNull, attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.IsNotNull.class) != null) {
 				Projection.IsNotNull attribute = field.getDeclaredAnnotation(Projection.IsNotNull.class);
-				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.Functions.isNotNull, attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				select(target, attribute.attribute(), Estivate.Functions.isNotNull, attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Function.class) != null) {
 				Projection.Function attribute = field.getDeclaredAnnotation(Projection.Function.class);
-				select(attribute.entity() == null ? c : new Entity<>(attribute.entity()), attribute.attribute(), Estivate.function( attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
+				Entity<?> target = projectionEntity(c, attribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				select(target, attribute.attribute(), Estivate.function(attribute.functionPrefix(), attribute.functionSuffix()), attribute.alias());
 			}
 			else if(field.getDeclaredAnnotation(Projection.Nested.class) != null) {
 				if(field.getType().isAssignableFrom(List.class)) {
@@ -195,7 +237,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 					selectAll(field.getType());
 				}
 			}
-			else{
+			else if(isEntityAvailable(c, availableEntities)) {
 				select(c, field.getName());
 			}
 		
@@ -203,6 +245,33 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 		return this;
 		
+	}
+
+	private Set<Class<?>> availableEntityClasses() {
+		Set<Class<?>> classes = new HashSet<>();
+		if(entity != null && entity.entity != null) {
+			classes.add(entity.entity);
+		}
+		for(Join join : getJoins()) {
+			if(join.leftEntity != null && join.leftEntity.entity != null) {
+				classes.add(join.leftEntity.entity);
+			}
+			if(join.rightEntity != null && join.rightEntity.entity != null) {
+				classes.add(join.rightEntity.entity);
+			}
+		}
+		return classes;
+	}
+
+	private static Entity<?> projectionEntity(Entity<?> fallback, Class<?> annotatedEntity) {
+		if(annotatedEntity == null || annotatedEntity == void.class) {
+			return fallback;
+		}
+		return new Entity<>(annotatedEntity);
+	}
+
+	private static boolean isEntityAvailable(Entity<?> target, Set<Class<?>> availableEntities) {
+		return target != null && target.entity != null && availableEntities.contains(target.entity);
 	}
 
 	// Select count all with alias
@@ -394,6 +463,19 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public 			List<E> extractList(Context context){ return context.extractList(this, entity); }
 	public <T> 		List<T> extractList(Context context, Class<T> entity) { return context.extractList(this, entity); }
 	public <T> 		List<T> extractList(Context context, Entity<T> entity) { return context.extractList(this, entity); }
+
+	/**
+	 * Runs this query and fills nested {@link Projection.Nested} fields on {@code existing},
+	 * matching by {@link Projection.NestedBy}. Empty {@code nestedFieldNames} hydrates every nested field.
+	 */
+	public <T> List<T> hydrate(Context context, Class<T> entityClass, List<T> existing, String... nestedFieldNames) {
+		return context.hydrate(this, entityClass, existing, nestedFieldNames);
+	}
+
+	@SafeVarargs
+	public final <T> List<T> hydrate(Context context, Class<T> entityClass, List<T> existing, AttributeGetter<T, ?>... nestedGetters) {
+		return context.hydrate(this, entityClass, existing, nestedGetters);
+	}
 	public 			List<?> extractList(Context context, Attribute attribute) { return context.extractList(this, attribute); }
 	public 			List<?> extractList(Context context, Class<?> entity, String attributeName) { return context.extractList(this, entity, attributeName); }
 	public 			List<?> extractList(Context context, Entity<?> entity, String attributeName) { return context.extractList(this, entity, attributeName); }

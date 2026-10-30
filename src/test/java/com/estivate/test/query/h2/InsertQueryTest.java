@@ -15,7 +15,6 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.CustomerEntity.Country;
 import com.estivate.test.entities.ProductEntity;
@@ -23,7 +22,7 @@ import com.estivate.test.entities.ProductEntity.ProductCategory;
 
 public class InsertQueryTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     @BeforeEach
     public void setUp() {

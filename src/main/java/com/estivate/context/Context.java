@@ -51,6 +51,7 @@ import com.estivate.query.CreateQuery.Index;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.Join;
+import com.estivate.query.Projection;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
@@ -586,6 +587,8 @@ public abstract class Context {
 
 	@SneakyThrows
 	public Boolean execute(CreateQuery<?> query) {
+		List<Index> deferredIndexes = new ArrayList<>();
+		boolean created;
 		try (ConnectionLease lease = openConnection();
 			Statement statement = new Statement(this, lease.getConnection())) {
 
@@ -626,7 +629,7 @@ public abstract class Context {
 					}
 				}
 				if (column.isAutoIncrement()) {
-					statement.appendQuery("AUTO_INCREMENT");
+					appendAutoIncrement(statement);
 				}
 				if (Boolean.TRUE.equals(column.getPrimaryKey())) {
 					statement.appendQuery("PRIMARY KEY");
@@ -641,41 +644,64 @@ public abstract class Context {
 			}
 			
 			for(Index index : query.getIndexes()) {
-				
-				statement.appendQuery(",");
-
-				switch(index.getType() != null ? index.getType() : IndexType.DEFAULT) {
-					case PRIMARY:
-						statement.appendQuery("PRIMARY KEY");
-						break;
-					case UNIQUE:
-						statement.appendQuery("UNIQUE INDEX");
-						statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
-						break;
-					case FULLTEXT:
-						statement.appendQuery("FULLTEXT INDEX");
-						statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
-						break;
-					case DEFAULT:
-					default:
-						statement.appendQuery("INDEX");
-						statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
-						break;
+				IndexType type = index.getType() != null ? index.getType() : IndexType.DEFAULT;
+				if(!supportsInlineIndex(type)) {
+					deferredIndexes.add(index);
+					continue;
 				}
 
-				statement.appendQuery("(");
-				statement.appendQuery(index.getColumns().stream()
-						.map(col -> nameMapper.mapDatabaseField(col.getColumnName()) + (col.getLength() != null && col.getLength() != 0 ? "("+col.getLength()+")" : ""))
-						.collect(Collectors.joining(", ")));
-
-				statement.appendQuery(")");
-
+				statement.appendQuery(",");
+				appendInlineIndex(statement, index);
 			}
 			statement.appendQuery(")");
-			return statement.executeForValidation();
+			created = statement.executeForValidation();
 		}
 
-		
+		for(Index index : deferredIndexes) {
+			IndexType type = index.getType() != null ? index.getType() : IndexType.DEFAULT;
+			String indexName = nameMapper.mapIndex(index.getName(), type, index.getColumns());
+			List<String> columns = index.getColumns().stream()
+					.map(col -> nameMapper.mapDatabaseField(col.getColumnName()))
+					.collect(Collectors.toList());
+			addIndex(query.getEntity(), indexName, type, columns);
+		}
+		return created;
+	}
+
+	/** MySQL and H2 accept every index kind inside {@code CREATE TABLE}. PostgreSQL does not. */
+	protected boolean supportsInlineIndex(IndexType type) {
+		return true;
+	}
+
+	protected void appendInlineIndex(Statement statement, Index index) {
+		switch(index.getType() != null ? index.getType() : IndexType.DEFAULT) {
+			case PRIMARY:
+				statement.appendQuery("PRIMARY KEY");
+				break;
+			case UNIQUE:
+				statement.appendQuery("UNIQUE INDEX");
+				statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
+				break;
+			case FULLTEXT:
+				statement.appendQuery("FULLTEXT INDEX");
+				statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
+				break;
+			case DEFAULT:
+			default:
+				statement.appendQuery("INDEX");
+				statement.appendQuery(nameMapper.mapIndex(index.getName(), index.getType(), index.getColumns()));
+				break;
+		}
+
+		statement.appendQuery("(");
+		statement.appendQuery(index.getColumns().stream()
+				.map(col -> nameMapper.mapDatabaseField(col.getColumnName()) + (col.getLength() != null && col.getLength() != 0 ? "(" + col.getLength() + ")" : ""))
+				.collect(Collectors.joining(", ")));
+		statement.appendQuery(")");
+	}
+
+	protected void appendAutoIncrement(Statement statement) {
+		statement.appendQuery("AUTO_INCREMENT");
 	}
 
 	public <T> void execute(InsertQuery<T> query, Chronometer chronometer) {
@@ -930,6 +956,51 @@ public abstract class Context {
 			return fetch(newQuery, chronometer).asList(entity);
 		}
 		return extractEntitiesTerminal(newQuery, entity, chronometer);
+	}
+
+	/**
+	 * Runs {@code query} and fills nested {@link com.estivate.query.Projection.Nested} fields
+	 * on already-fetched rows, matching by {@link com.estivate.query.Projection.NestedBy}.
+	 * Only the NestedBy key and nested fields are selected (not root projection columns).
+	 * When {@code nestedFieldNames} is empty, every {@code @Nested} field is hydrated.
+	 */
+	public <T> List<T> hydrate(SelectQuery<?> query, Class<T> entityClass, List<T> existing, String... nestedFieldNames) {
+		return hydrate(query, entityClass, existing, chronometer("hydrate"), nestedFieldNames);
+	}
+
+	@SafeVarargs
+	public final <T> List<T> hydrate(SelectQuery<?> query, Class<T> entityClass, List<T> existing, AttributeGetter<T, ?>... nestedGetters) {
+		String[] nestedFieldNames = new String[nestedGetters.length];
+		for(int i = 0; i < nestedGetters.length; i++) {
+			nestedFieldNames[i] = Estivate.attribute(nestedGetters[i]).attribute;
+		}
+		return hydrate(query, entityClass, existing, nestedFieldNames);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public <T> List<T> hydrate(SelectQuery<?> query, Class<T> entityClass, List<T> existing, Chronometer chronometer, String... nestedFieldNames) {
+		SelectQuery clone = query.clone();
+		if(!clone.getSelects().isEmpty()) {
+			clone.clearSelects();
+		}
+
+		Projection.NestedBy nestedBy = entityClass.getDeclaredAnnotation(Projection.NestedBy.class);
+		if(nestedBy == null) {
+			throw new IllegalArgumentException("hydrate requires @Projection.NestedBy on " + entityClass.getName());
+		}
+		clone.select(nestedBy.entity(), nestedBy.attribute());
+
+		String[] fieldsToSelect = nestedFieldNames;
+		if(fieldsToSelect.length == 0) {
+			fieldsToSelect = ClassMeta.of(entityClass).getFields().stream()
+					.filter(field -> field.getDeclaredAnnotation(Projection.Nested.class) != null)
+					.map(Field::getName)
+					.toArray(String[]::new);
+		}
+		clone.selectAll(entityClass, fieldsToSelect);
+
+		chronometer.step("hydrate::prepareQuery");
+		return fetch(clone, chronometer).hydrate(entityClass, existing);
 	}
 
 	/**
@@ -2006,7 +2077,7 @@ public abstract class Context {
 					statement.appendQuery("NOT NULL");
 				}
 				if(tableField.isAutoIncrement()) {
-					statement.appendQuery("AUTO_INCREMENT");
+					appendAutoIncrement(statement);
 				}
 				if(tableField.getDefaultValue() != null) {					
 					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), addColumnOperation.getProjectedColumn().getJavaType()));
@@ -2027,7 +2098,7 @@ public abstract class Context {
 					statement.appendQuery("NOT NULL");
 				}
 				if(tableField.isAutoIncrement()) {
-					statement.appendQuery("AUTO_INCREMENT");
+					appendAutoIncrement(statement);
 				}
 				if(tableField.getDefaultValue() != null) {
 					statement.appendQuery("DEFAULT "+defaultValueForType(tableField.getDefaultValue(), modifyColumnOperation.getProjectedColumn().getJavaType()));

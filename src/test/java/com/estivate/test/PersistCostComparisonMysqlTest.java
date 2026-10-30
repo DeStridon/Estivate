@@ -58,7 +58,7 @@ public class PersistCostComparisonMysqlTest {
 	public static void setUp() {
 		dataSource = MysqlTestDatabase.dataSource(mysql);
 		context = new MySQLContext(dataSource);
-		context.nameMapper = new DatabaseGenerator.TestNameMapper();
+		context.nameMapper = new TestData.TestNameMapper();
 
 		Estivate.Tools.createTableFullQuery(PersistBenchEntity.class, context)
 			.ifNotExists()

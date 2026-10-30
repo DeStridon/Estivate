@@ -10,12 +10,11 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.InsertQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 
 public class InsertFilterTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@BeforeEach
 	public void setUp() {

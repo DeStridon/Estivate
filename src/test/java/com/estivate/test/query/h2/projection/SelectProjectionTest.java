@@ -1,5 +1,7 @@
 package com.estivate.test.query.h2.projection;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,7 +20,6 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.CustomerEntity.Country;
@@ -30,10 +31,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 public class SelectProjectionTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     // Test data holder
     private CustomerEntity testCustomer1;
@@ -98,7 +98,6 @@ public class SelectProjectionTest {
     }
 
 
-
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -159,7 +158,6 @@ public class SelectProjectionTest {
         testCustomer1.setEmailVerified(true);
         testCustomer1.setCreated(new Date());
 
-
         testCustomer2 = new CustomerEntity();
         testCustomer2.setName("Bob Johnson");
         testCustomer2.setEmail("bob@example.com");
@@ -167,7 +165,6 @@ public class SelectProjectionTest {
         testCustomer2.setCountry(CustomerEntity.Country.USA);
         testCustomer2.setEmailVerified(false);
         testCustomer2.setCreated(new Date());
-
 
         testCustomer3 = new CustomerEntity();
         testCustomer3.setName("Charlie Brown");
@@ -177,7 +174,6 @@ public class SelectProjectionTest {
         testCustomer3.setEmailVerified(true);
         testCustomer3.setCreated(new Date());
 
-
         // Create test products
         testProduct1 = new ProductEntity();
         testProduct1.setName("Widget A");
@@ -185,7 +181,6 @@ public class SelectProjectionTest {
         testProduct1.setCategory(ProductEntity.ProductCategory.Electronics);
         testProduct1.setPrice(29.99f);
         testProduct1.setStock(100);
-
 
         testProduct2 = new ProductEntity();
         testProduct2.setName("Gadget B");
@@ -433,7 +428,6 @@ public class SelectProjectionTest {
         assertEquals(1, results.size(), "Should return 1 customer matching criteria");
         assertEquals("Alice Smith", results.get(0).getName(), "Should be Alice Smith");
     }
-
 
     @Data
     @NoArgsConstructor

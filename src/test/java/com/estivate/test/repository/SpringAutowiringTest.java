@@ -1,5 +1,9 @@
 package com.estivate.test.repository;
 
+import com.estivate.test.TestData;
+
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,7 +18,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.spring.EnableEstivateManagers;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,11 +42,11 @@ public class SpringAutowiringTest {
     public void testAutowiredManager() {
 
 
-        context.insert(DatabaseGenerator.createRandomCustomer());
-        context.insert(DatabaseGenerator.createRandomCustomer());
-        context.insert(DatabaseGenerator.createRandomCustomer());
-        context.insert(DatabaseGenerator.createRandomCustomer());
-        context.insert(DatabaseGenerator.createRandomCustomer());
+        context.insert(TestData.createRandomCustomer());
+        context.insert(TestData.createRandomCustomer());
+        context.insert(TestData.createRandomCustomer());
+        context.insert(TestData.createRandomCustomer());
+        context.insert(TestData.createRandomCustomer());
 
         // The manager is autowired - no need to call Estivate.implementManager!
         assertNotNull(customerManager, "CustomerManager should be autowired");
@@ -71,22 +74,22 @@ public class SpringAutowiringTest {
         // Shared H2 retains rows from other tests — start from a clean customer table.
         Estivate.deleteQuery(CustomerEntity.class).execute(context);
 
-        CustomerEntity aliceFr = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity aliceFr = TestData.createRandomCustomer();
         aliceFr.setName("Alice");
         aliceFr.setCountry(CustomerEntity.Country.FRANCE);
         context.insert(aliceFr);
 
-        CustomerEntity aliceFrDup = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity aliceFrDup = TestData.createRandomCustomer();
         aliceFrDup.setName("Alice");
         aliceFrDup.setCountry(CustomerEntity.Country.FRANCE);
         context.insert(aliceFrDup);
 
-        CustomerEntity bobFr = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity bobFr = TestData.createRandomCustomer();
         bobFr.setName("Bob");
         bobFr.setCountry(CustomerEntity.Country.FRANCE);
         context.insert(bobFr);
 
-        CustomerEntity charlieUs = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity charlieUs = TestData.createRandomCustomer();
         charlieUs.setName("Charlie");
         charlieUs.setCountry(CustomerEntity.Country.USA);
         context.insert(charlieUs);
@@ -102,11 +105,11 @@ public class SpringAutowiringTest {
 
     @Test
     public void testFindNameById() {
-        CustomerEntity alice = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity alice = TestData.createRandomCustomer();
         alice.setName("Alice");
         context.insert(alice);
 
-        CustomerEntity bob = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity bob = TestData.createRandomCustomer();
         bob.setName("Bob");
         context.insert(bob);
 
@@ -123,7 +126,7 @@ public class SpringAutowiringTest {
         @Bean
         public Context estivateContext() {
             // Use the existing test context
-            return DatabaseGenerator.getContext();
+            return H2TestDatabase.getContext();
         }
     }
 }

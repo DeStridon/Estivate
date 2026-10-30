@@ -11,17 +11,20 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Projection;
 import com.estivate.result.ResultTable;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.ProductEntity.ProductCategory;
+import com.estivate.test.query.h2.H2TestDatabase;
+
+import lombok.Data;
 
 public class ProjectionGroupTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
+    @Data
     @Projection.NestedBy(entity = OrderEntity.class, attribute = OrderEntity.Fields.customerId)
     public static class MainDto{
 
@@ -42,6 +45,7 @@ public class ProjectionGroupTest {
 
     }
 
+    @Data
     public static class NestedListDto{
 
         @Projection.Attribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.category)
@@ -85,7 +89,6 @@ public class ProjectionGroupTest {
 
     }
 
-
     @Test
     public void testGroupBy() {
 
@@ -94,7 +97,6 @@ public class ProjectionGroupTest {
         ProductEntity product2 = ProductEntity.builder().name("Daycream").category(ProductCategory.Beauty).price(1.5f).build();
         ProductEntity product3 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
         ProductEntity product4 = ProductEntity.builder().name("Shirt").category(ProductCategory.Clothing).price(2.5f).build();
-
 
         context.insert(product1);
         context.insert(product2);
@@ -125,7 +127,6 @@ public class ProjectionGroupTest {
         context.insert(line22);
         context.insert(line23);
 
-
         List<MainDto> mainDtos = Estivate.selectQuery(OrderEntity.class)
             .joinInner(OrderEntity.class, OrderLineEntity.class)
             .joinInner(OrderLineEntity.class, ProductEntity.class)
@@ -148,7 +149,6 @@ public class ProjectionGroupTest {
         Assertions.assertEquals(ProductEntity.ProductCategory.Beauty, mixedDto1.groupedDtos.get(1).category);
         Assertions.assertEquals(2, mixedDto1.groupedDtos.get(1).productCount);
         Assertions.assertEquals(3.5f, mixedDto1.groupedDtos.get(1).totalPrice);
-
 
 
     }
@@ -218,9 +218,8 @@ public class ProjectionGroupTest {
         Assertions.assertEquals(3.0f, clothing100.groupedDtos.get(0).totalPrice);
     }
 
-
     @Test
-    public void testEntityListWithNestedEntitiesFromTwoRequests_usingAsListWithExistingObjects() {
+    public void testEntityListWithNestedEntitiesFromTwoRequests_usingHydrate() {
 
         ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
         ProductEntity product2 = ProductEntity.builder().name("Daycream").category(ProductCategory.Beauty).price(1.5f).build();
@@ -260,7 +259,7 @@ public class ProjectionGroupTest {
             dto.orderDetails = null;
         }
 
-        // 2nd QUERY: nested projection columns, merged into existing MainDto by @NestedBy customerId
+        // 2nd QUERY: nested projection columns, hydrated into existing MainDto by @NestedBy customerId
         ResultTable nestedTable = Estivate.selectQuery(OrderEntity.class)
             .joinInner(OrderEntity.class, OrderLineEntity.class)
             .joinInner(OrderLineEntity.class, ProductEntity.class)
@@ -275,7 +274,77 @@ public class ProjectionGroupTest {
             .groupBy(ProductEntity::getCategory)
             .fetch(context);
 
-        List<MainDto> filledDtos = nestedTable.asList(MainDto.class, dtos);
+        List<MainDto> filledDtos = nestedTable.hydrate(MainDto.class, dtos);
+
+        Assertions.assertSame(dtos, filledDtos);
+        Assertions.assertEquals(2, filledDtos.size());
+
+        MainDto mixedDto1 = filledDtos.stream().filter(d -> d.customerId == 100L).findFirst().orElse(null);
+        Assertions.assertEquals(OrderEntity.OrderStatus.COMPLETED, mixedDto1.status);
+        Assertions.assertNotNull(mixedDto1.created);
+        Assertions.assertEquals(2, mixedDto1.groupedDtos.size());
+        Assertions.assertEquals(ProductEntity.ProductCategory.Clothing, mixedDto1.groupedDtos.get(0).category);
+        Assertions.assertEquals(1, mixedDto1.groupedDtos.get(0).productCount);
+        Assertions.assertEquals(ProductEntity.ProductCategory.Beauty, mixedDto1.groupedDtos.get(1).category);
+        Assertions.assertEquals(2, mixedDto1.groupedDtos.get(1).productCount);
+        Assertions.assertEquals(3.5f, mixedDto1.groupedDtos.get(1).totalPrice);
+        Assertions.assertNotNull(mixedDto1.orderDetails);
+        Assertions.assertEquals(OrderEntity.OrderStatus.COMPLETED, mixedDto1.orderDetails.status);
+
+        MainDto mixedDto2 = filledDtos.stream().filter(d -> d.customerId == 200L).findFirst().orElse(null);
+        Assertions.assertEquals(2, mixedDto2.groupedDtos.size());
+        Assertions.assertNotNull(mixedDto2.orderDetails);
+    }
+
+    @Test
+    public void testEntityListWithNestedEntitiesFromTwoRequests_usingContextHydrate() {
+
+        ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
+        ProductEntity product2 = ProductEntity.builder().name("Daycream").category(ProductCategory.Beauty).price(1.5f).build();
+        ProductEntity product3 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
+        ProductEntity product4 = ProductEntity.builder().name("Shirt").category(ProductCategory.Clothing).price(2.5f).build();
+
+        context.insert(product1);
+        context.insert(product2);
+        context.insert(product3);
+        context.insert(product4);
+
+        OrderEntity order1 = OrderEntity.builder().customerId(100L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+        OrderEntity order2 = OrderEntity.builder().customerId(200L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+
+        context.insert(order1);
+        context.insert(order2);
+
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product1.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product3.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product3.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product4.getId()).build());
+
+        List<Long> orderIds = Arrays.asList(order1.getId(), order2.getId());
+
+        // 1st QUERY: main projection only (Product nested columns skipped — no joins yet)
+        List<MainDto> dtos = Estivate.selectQuery(OrderEntity.class)
+            .in(OrderEntity::getId, orderIds)
+            .extractList(context, MainDto.class);
+
+        Assertions.assertEquals(2, dtos.size());
+        for (MainDto dto : dtos) {
+            Assertions.assertTrue(dto.groupedDtos == null || dto.groupedDtos.isEmpty()
+                || dto.groupedDtos.stream().allMatch(java.util.Objects::isNull));
+            dto.groupedDtos = null;
+            dto.orderDetails = null;
+        }
+
+        // 2nd QUERY: joins induce nested selects; hydrate only the requested nested fields
+        List<MainDto> filledDtos = Estivate.selectQuery(OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .in(OrderEntity::getId, orderIds)
+            .groupBy(OrderEntity::getCustomerId)
+            .groupBy(ProductEntity::getCategory)
+            .hydrate(context, MainDto.class, dtos, MainDto::getGroupedDtos, MainDto::getOrderDetails);
 
         Assertions.assertSame(dtos, filledDtos);
         Assertions.assertEquals(2, filledDtos.size());

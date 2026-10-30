@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
 
@@ -24,14 +23,13 @@ import com.estivate.test.entities.OrderEntity;
  */
 public class SelectQueryLambdaTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	@BeforeEach
 	public void setUp() {
     	Estivate.Tools.createTableFullQuery(CustomerEntity.class, context).ifNotExists().execute(context);
     	Estivate.Tools.createTableFullQuery(OrderEntity.class, context).ifNotExists().execute(context);
 	}
-
 
 	@Test
 	public void testEqLambda() {

@@ -6,7 +6,6 @@ import org.junit.Assert;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.DeleteQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -15,7 +14,7 @@ import com.estivate.test.entities.ProductEntity;
 
 public class DeleteQueryTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     @Test
     public void testDeleteQueryWithInnerJoin() {
@@ -170,7 +169,6 @@ public class DeleteQueryTest {
         Assert.assertTrue("Query should contain subquery", queryString.contains("SELECT"));
         Assert.assertTrue("Query should contain amount condition", queryString.contains("TOTALAMOUNT > ?"));
     }
-
 
     @Test
     public void testDeleteQueryWithLimit() {

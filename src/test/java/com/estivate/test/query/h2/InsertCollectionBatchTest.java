@@ -1,5 +1,7 @@
 package com.estivate.test.query.h2;
 
+import com.estivate.test.TestData;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.ProductEntity.ProductCategory;
@@ -19,7 +20,7 @@ import com.estivate.test.entities.ProductEntity.ProductCategory;
  */
 public class InsertCollectionBatchTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     @BeforeEach
     public void setUp() {
@@ -44,10 +45,10 @@ public class InsertCollectionBatchTest {
 
     @Test
     public void groupsMixedCollectionsByType() {
-        CustomerEntity customer = DatabaseGenerator.createRandomCustomer();
+        CustomerEntity customer = TestData.createRandomCustomer();
         ProductEntity product = ProductEntity.builder().name("Mixed").description("m").price(3f).stock(3).category(ProductCategory.Clothing).build();
 
-        context.insert(List.of(customer, product, DatabaseGenerator.createRandomCustomer()));
+        context.insert(List.of(customer, product, TestData.createRandomCustomer()));
 
         Assert.assertTrue(customer.getId() > 0);
         Assert.assertTrue(product.getId() > 0);

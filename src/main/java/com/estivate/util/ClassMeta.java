@@ -374,6 +374,8 @@ public final class ClassMeta {
 		private final Object converter;
 		@Getter
 		private final EnumMode enumMode;
+		@Getter
+		private final Class<?> convertDatabaseType;
 
 		static FieldBinding of(Field field) {
 			Class<?> converterClass = FieldUtils.getBestOption(field,
@@ -394,7 +396,8 @@ public final class ClassMeta {
 				}
 			}
 
-			return new FieldBinding(field, converter, enumMode);
+			Class<?> convertDatabaseType = converter != null ? FieldUtils.resolveConvertDatabaseType(field) : null;
+			return new FieldBinding(field, converter, enumMode, convertDatabaseType);
 		}
 
 		private static Object instantiateConverter(Class<?> converterClass) {

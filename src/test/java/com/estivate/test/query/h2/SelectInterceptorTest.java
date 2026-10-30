@@ -11,14 +11,12 @@ import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 
-
 public class SelectInterceptorTest {
  
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     @org.junit.Before
     public void setUp() {
@@ -211,7 +209,6 @@ public class SelectInterceptorTest {
         context.selectInterceptor = null;
     }
 
-
     @Test
     public void testPreProcessorWithInsertQuery() {
         context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
@@ -227,6 +224,5 @@ public class SelectInterceptorTest {
     }
 
     
-
 
 }

@@ -1,5 +1,7 @@
 package com.estivate.test;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.util.List;
 
 import org.junit.Assert;
@@ -13,7 +15,7 @@ import com.estivate.test.entities.CustomerEntity;
 
 public class MapperTest {
 	
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	@Test
 	public void testPerf() {

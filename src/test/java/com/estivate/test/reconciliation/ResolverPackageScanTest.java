@@ -1,5 +1,7 @@
 package com.estivate.test.reconciliation;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.reconciliation.ReconciliationManager;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.reconciliation.resolvers.excluded.ExcludedPackageResolver;
 import com.estivate.test.reconciliation.resolvers.included.IncludedPackageResolver;
 
@@ -21,7 +22,7 @@ import com.estivate.test.reconciliation.resolvers.included.IncludedPackageResolv
  */
 public class ResolverPackageScanTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@Test
 	public void addResolvers_onlyLoadsResolversFromCitedPackage() {

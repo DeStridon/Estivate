@@ -1,5 +1,9 @@
 package com.estivate.test.page;
 
+import com.estivate.test.TestData;
+
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +17,6 @@ import com.estivate.page.KeysetPagingStrategy;
 import com.estivate.page.OffsetPagingStrategy;
 import com.estivate.page.PageResult;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.ProductEntity.ProductCategory;
@@ -27,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class PagingStrategyTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
     
     List<ProductEntity> testProducts = new ArrayList<>();
 
@@ -473,7 +476,7 @@ public class PagingStrategyTest {
         @Test
         public void testBothStrategies_ReturnSameTotalItems() {
             for(int i = 0; i < 25; i++) {
-                ProductEntity product = DatabaseGenerator.createRandomProduct();
+                ProductEntity product = TestData.createRandomProduct();
                 context.insert(product);
             }
             

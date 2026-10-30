@@ -6,13 +6,11 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.AlterQuery;
 import com.estivate.reconciliation.EntityColumn;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
-
 
 public class AlterQueryTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     
     @Test

@@ -1,5 +1,7 @@
 package com.estivate.context;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.reflect.Field;
@@ -10,14 +12,13 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.reconciliation.DatabaseColumn;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.util.ClassMeta;
 
 import jakarta.persistence.Column;
 
 public class ModelingTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	public static class SingleIntegerFieldClass{
 		@ColumnDefaultValue("0")

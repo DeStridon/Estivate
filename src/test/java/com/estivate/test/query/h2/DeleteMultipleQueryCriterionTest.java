@@ -7,14 +7,13 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.DeleteQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
 
 public class DeleteMultipleQueryCriterionTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	
 	@Test

@@ -1,5 +1,7 @@
 package com.estivate.context;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.PersistBenchEntity;
 
 public class ConnectionReuseTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@BeforeEach
 	public void setUp() {

@@ -1,5 +1,7 @@
 package com.estivate.test;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +25,7 @@ import lombok.experimental.SuperBuilder;
 
 public class ContextTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	
 	@Test
@@ -31,11 +33,11 @@ public class ContextTest {
 		
 		context.truncateTable(CustomerEntity.class);
 		
-		CustomerEntity customer1 = DatabaseGenerator.createRandomCustomer();
+		CustomerEntity customer1 = TestData.createRandomCustomer();
 		context.updateOrInsert(customer1);
-		CustomerEntity customer2 = DatabaseGenerator.createRandomCustomer();
+		CustomerEntity customer2 = TestData.createRandomCustomer();
 		context.updateOrInsert(customer2);
-		CustomerEntity customer3 = DatabaseGenerator.createRandomCustomer();
+		CustomerEntity customer3 = TestData.createRandomCustomer();
 		context.updateOrInsert(customer3);
 
 		customer1.setName("Updated Name 1");

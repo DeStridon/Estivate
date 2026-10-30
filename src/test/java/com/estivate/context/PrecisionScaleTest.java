@@ -1,5 +1,7 @@
 package com.estivate.context;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,7 +20,6 @@ import com.estivate.reconciliation.EntityColumn;
 import com.estivate.reconciliation.EntityColumn.ColumnDimension;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.DatabaseColumn;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.PrecisionScaleEntity;
 import com.estivate.util.ClassMeta;
@@ -27,7 +28,7 @@ import jakarta.persistence.Column;
 
 public class PrecisionScaleTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     @Test
     public void parseDecimalColumnType() {
@@ -120,7 +121,6 @@ public class PrecisionScaleTest {
         assertTrue(delta.getMismatchs().contains(Mismatch.SCALE));
         assertEquals(2, delta.getProjectedDefinition().getScale());
         assertEquals(3, delta.getDatabaseDefinition().getScale());  
-
 
         assertEquals("NUMERIC", delta.getDatabaseDefinition().getType());
 

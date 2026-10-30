@@ -1,5 +1,7 @@
 package com.estivate.showcase;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,7 +14,6 @@ import com.estivate.context.Context;
 import com.estivate.query.Projection;
 import com.estivate.query.QueryMapping;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ProductEntity;
@@ -24,7 +25,7 @@ import lombok.Builder;
 
 public class ProductSearchShowcase {
 	
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@BeforeEach
     public void setUp() {

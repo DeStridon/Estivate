@@ -1,5 +1,7 @@
 package com.estivate.test.reconciliation;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -13,12 +15,11 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.CustomerEntity;
 
 public class IndexTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 
 //	@Test
@@ -55,7 +56,6 @@ public class IndexTest {
 	// 	Assert.assertEquals(1, missingDbIndexes.size());
 
 	// }
-
 
 //	@Test
 //	@Disabled

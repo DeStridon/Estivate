@@ -12,14 +12,13 @@ import com.estivate.context.Context;
 import com.estivate.query.Attribute;
 import com.estivate.query.UpdateQuery;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.CustomerEntity;
 
 public class UpdateQueryCriterionTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	// ===== FOCUSED TESTS USING queryAsString() =====
 	

@@ -18,7 +18,6 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.ResultRow;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.OrderLineEntity;
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SelectQueryJoinTest {
 
 	
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	
 	@Test
@@ -143,7 +142,6 @@ public class SelectQueryJoinTest {
 		Assert.assertTrue(queryString.contains("INNER JOIN ORDERLINEENTITY OrderLineB ON PRODUCTENTITY.ID = OrderLineB.PRODUCTID"));
 		Assert.assertTrue(queryString.contains("LEFT JOIN ORDERENTITY OrderB ON OrderLineB.ORDERID = OrderB.ID"));
 		
-
 
 	}
 

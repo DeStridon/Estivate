@@ -12,7 +12,6 @@ import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.ResultRow;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.CustomerEntity;
@@ -21,7 +20,7 @@ import com.estivate.test.entities.ProductEntity.ProductCategory;
 
 public class SelectQuerySubTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	
 	
@@ -42,7 +41,6 @@ public class SelectQuerySubTest {
 		}
 		
 	}
-
 
     @Test
     void fromSubQueryTest() throws SQLException {

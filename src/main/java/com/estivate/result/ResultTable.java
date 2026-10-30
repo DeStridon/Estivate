@@ -298,18 +298,18 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     /**
-     * Maps this result into already-fetched projection rows, keyed by {@link Projection.NestedBy}.
-     * Nested {@link Projection.Nested} fields are filled on the existing instances.
+     * Fills nested {@link Projection.Nested} fields on already-fetched projection rows,
+     * matching by {@link Projection.NestedBy}. Returns the same list instance.
      */
     @SneakyThrows
-    public <T> List<T> asList(Class<T> entityClass, List<T> existing) {
+    public <T> List<T> hydrate(Class<T> entityClass, List<T> existing) {
         if (existing == null || existing.isEmpty()) {
             return asList(entityClass);
         }
 
         Projection.NestedBy key = entityClass.getDeclaredAnnotation(Projection.NestedBy.class);
         if (key == null) {
-            throw new IllegalArgumentException("asList with existing objects requires @Projection.NestedBy on " + entityClass.getName());
+            throw new IllegalArgumentException("hydrate requires @Projection.NestedBy on " + entityClass.getName());
         }
         if(query.getSelects().stream().noneMatch(s -> s.entity.entity.equals(key.entity()) && s.attribute.equals(key.attribute()))) {
             throw new IllegalArgumentException("@Projection.NestedBy attribute '" + key.entity().getSimpleName() + "." + key.attribute() + "' of entity '" + key.entity().getSimpleName() + "' must be present in selects");

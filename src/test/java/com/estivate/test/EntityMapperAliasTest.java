@@ -1,5 +1,7 @@
 package com.estivate.test;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -25,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntityMapperAliasTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	/**
 	 * Test that fetching entities works when the query is created with an aliased Entity.

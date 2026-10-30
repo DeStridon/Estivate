@@ -1,5 +1,7 @@
 package com.estivate.test;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Field;
@@ -25,7 +27,7 @@ import com.estivate.util.Chronometer;
 
 public class ResultTest {
 	
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	
 	@Test

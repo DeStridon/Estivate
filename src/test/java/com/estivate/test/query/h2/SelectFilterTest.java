@@ -14,13 +14,12 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.ResultTable;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 
 public class SelectFilterTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@Before
 	public void setUp() {

@@ -1,5 +1,7 @@
 package com.estivate.test.reconciliation;
 
+import com.estivate.test.query.h2.H2TestDatabase;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,7 +27,6 @@ import com.estivate.reconciliation.EstivateReconciliation.ReconciliationResult;
 import com.estivate.reconciliation.EstivateReconciliation.ReconciliationScope;
 import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.ReconciliationManager.ApplyResolversResult;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 
 import lombok.Data;
@@ -40,7 +41,7 @@ import lombok.experimental.SuperBuilder;
  */
 public class ResolverApplicationTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     // ==================== Test Entity Classes ====================
 
@@ -124,9 +125,7 @@ public class ResolverApplicationTest {
         }
     }
 
-
     // ==================== Setup ====================
-
 
     private void dropTableIfExists(String tableName) {
         try (Connection connection = context.datasource.getConnection();
@@ -369,11 +368,9 @@ public class ResolverApplicationTest {
 
         ApplyResolversResult result = manager.applyResolvers();
 
-
         assertTrue(result.isFullyResolved(), "Should be fully resolved");
         // Second resolver might or might not be called depending on sorting and matching
         // but if first succeeds, diff is resolved
     }
-
 
 }

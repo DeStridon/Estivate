@@ -1,5 +1,7 @@
 package com.estivate.test.query.h2;
 
+import com.estivate.test.TestData;
+
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SelectQueryOrderTest {
 
 	
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 	
 	
 	@Test
@@ -44,14 +45,14 @@ public class SelectQueryOrderTest {
 		context.truncateTable(CustomerEntity.class);
 
 		List<CustomerEntity> list = Arrays.asList(
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer(),
-			DatabaseGenerator.createRandomCustomer()
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer(),
+			TestData.createRandomCustomer()
 		);
 		
 		context.updateOrInsert(list);

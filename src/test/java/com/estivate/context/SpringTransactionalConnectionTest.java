@@ -1,5 +1,7 @@
 package com.estivate.context;
 
+import com.estivate.test.TestData;
+
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -11,7 +13,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.estivate.Estivate;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.PersistBenchEntity;
 
 /**
@@ -27,7 +28,7 @@ public class SpringTransactionalConnectionTest {
 	public void setUp() {
 		pool = JdbcConnectionPool.create("jdbc:h2:mem:estivate_tx;MODE=MySQL;DB_CLOSE_DELAY=-1", "sa", "");
 		context = new H2Context(pool);
-		context.nameMapper = new DatabaseGenerator.TestNameMapper();
+		context.nameMapper = new TestData.TestNameMapper();
 		Estivate.Tools.createTableFullQuery(PersistBenchEntity.class, context).ifNotExists().execute(context);
 		context.truncateTable(PersistBenchEntity.class);
 

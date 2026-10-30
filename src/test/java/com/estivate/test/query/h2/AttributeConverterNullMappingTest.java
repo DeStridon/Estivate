@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.test.DatabaseGenerator;
 import com.estivate.test.entities.AbstractEntity;
 
 import jakarta.persistence.Entity;
@@ -28,7 +27,7 @@ import lombok.experimental.SuperBuilder;
  */
 public class AttributeConverterNullMappingTest {
 
-    Context context = DatabaseGenerator.getContext();
+    Context context = H2TestDatabase.getContext();
 
     @BeforeEach
     public void setUp() {
@@ -67,6 +66,25 @@ public class AttributeConverterNullMappingTest {
 
         Assert.assertEquals(List.of("a", "b"), loaded.getTags());
         Assert.assertEquals("set", loaded.getLabel());
+    }
+
+    @Test
+    public void mapsJsonColumnThroughStringAttributeConverter() {
+        Estivate.Tools.createTableFullQuery(JsonThemeEntity.class, context).ifNotExists().execute(context);
+        context.truncateTable(JsonThemeEntity.class);
+
+        JsonThemeEntity inserted = JsonThemeEntity.builder()
+            .name("course")
+            .theme("{\"preset\":\"NONE\"}")
+            .build();
+        context.insert(inserted);
+
+        JsonThemeEntity loaded = Estivate.selectQuery(JsonThemeEntity.class)
+            .eq(JsonThemeEntity::getId, inserted.getId())
+            .extractSingle(context);
+
+        Assert.assertNotNull(loaded.getTheme());
+        Assert.assertTrue("Converter must receive a String, not byte[]", loaded.getTheme().contains("NONE"));
     }
 
     @Data
@@ -120,6 +138,35 @@ public class AttributeConverterNullMappingTest {
         @Override
         public String convertToEntityAttribute(String dbData) {
             return dbData == null ? "unset" : dbData;
+        }
+    }
+
+    @Data
+    @Entity
+    @SuperBuilder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldNameConstants
+    public static class JsonThemeEntity extends AbstractEntity {
+
+        String name;
+
+        @jakarta.persistence.Column(columnDefinition = "JSON")
+        @Convert(converter = IdentityJsonStringConverter.class)
+        String theme;
+    }
+
+    @Converter
+    public static class IdentityJsonStringConverter implements AttributeConverter<String, String> {
+
+        @Override
+        public String convertToDatabaseColumn(String attribute) {
+            return attribute;
+        }
+
+        @Override
+        public String convertToEntityAttribute(String dbData) {
+            return dbData;
         }
     }
 }

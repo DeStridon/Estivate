@@ -5,7 +5,7 @@ import javax.sql.DataSource;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.context.MySQLContext;
-import com.estivate.test.DatabaseGenerator;
+import com.estivate.test.TestData;
 import com.estivate.test.entities.JsonDocumentEntity;
 import com.mysql.cj.jdbc.MysqlDataSource;
 
@@ -30,7 +30,7 @@ public final class MysqlTestDatabase {
 	public static Context createContext(MySQLContainer<?> mysql) {
 		DataSource dataSource = dataSource(mysql);
 		Context context = new MySQLContext(dataSource);
-		context.nameMapper = new DatabaseGenerator.TestNameMapper();
+		context.nameMapper = new TestData.TestNameMapper();
 
 		Estivate.Tools.createTableFullQuery(JsonDocumentEntity.class, context)
 			.ifNotExists()

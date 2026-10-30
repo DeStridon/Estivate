@@ -198,13 +198,13 @@ public class EntityMapper<U> {
 				list.add(subObj);
 			}
 		}
-		else {
+		else if(subObj != null) {
 			entityMapping.getField().set(obj, subObj);
 		}
 	}
 
 	@SneakyThrows
-	private Object readTyped(ResultSet resultSet, int jdbcIndex, Field field) throws SQLException {
+	private Object readTyped(ResultSet resultSet, int index, Field field) throws SQLException {
 		if(field == null) {
 			return null;
 		}
@@ -212,18 +212,18 @@ public class EntityMapper<U> {
 		Projection.Attribute projectionAttribute = field.getDeclaredAnnotation(Projection.Attribute.class);
 		if(projectionAttribute != null) {
 			Field mappingField = ClassMeta.findField(projectionAttribute.entity(), projectionAttribute.attribute());
-			return readTyped(resultSet, jdbcIndex, mappingField);
+			return readTyped(resultSet, index, mappingField);
 		}
 
 		FieldBinding binding = entityClassMeta.getFieldBinding(field);
 		if(binding != null && binding.hasConverter()) {
-			Object raw = resultSet.getObject(jdbcIndex);
+			Object raw = readConverterDatabaseValue(resultSet, index, binding.getConvertDatabaseType());
 			return binding.toEntityAttribute(raw);
 		}
 
 		Class<?> type = field.getType();
 		if(type.isEnum()) {
-			String raw = resultSet.getString(jdbcIndex);
+			String raw = resultSet.getString(index);
 			if(raw == null || resultSet.wasNull()) {
 				return null;
 			}
@@ -236,85 +236,111 @@ public class EntityMapper<U> {
 		}
 
 		if(type == String.class) {
-			return resultSet.getString(jdbcIndex);
+			return resultSet.getString(index);
 		}
 		if(type == short.class || type == Short.class) {
-			short value = resultSet.getShort(jdbcIndex);
+			short value = resultSet.getShort(index);
 			if(resultSet.wasNull()) {
 				return type == short.class ? Short.valueOf((short) 0) : null;
 			}
 			return value;
 		}
 		if(type == int.class || type == Integer.class) {
-			int value = resultSet.getInt(jdbcIndex);
+			int value = resultSet.getInt(index);
 			if(resultSet.wasNull()) {
 				return type == int.class ? Integer.valueOf(0) : null;
 			}
 			return value;
 		}
 		if(type == long.class || type == Long.class) {
-			long value = resultSet.getLong(jdbcIndex);
+			long value = resultSet.getLong(index);
 			if(resultSet.wasNull()) {
 				return type == long.class ? Long.valueOf(0L) : null;
 			}
 			return value;
 		}
 		if(type == float.class || type == Float.class) {
-			float value = resultSet.getFloat(jdbcIndex);
+			float value = resultSet.getFloat(index);
 			if(resultSet.wasNull()) {
 				return type == float.class ? Float.valueOf(0f) : null;
 			}
 			return value;
 		}
 		if(type == double.class || type == Double.class) {
-			double value = resultSet.getDouble(jdbcIndex);
+			double value = resultSet.getDouble(index);
 			if(resultSet.wasNull()) {
 				return type == double.class ? Double.valueOf(0d) : null;
 			}
 			return value;
 		}
 		if(type == BigDecimal.class) {
-			return resultSet.getBigDecimal(jdbcIndex);
+			return resultSet.getBigDecimal(index);
 		}
 		if(type == boolean.class || type == Boolean.class) {
-			boolean value = resultSet.getBoolean(jdbcIndex);
+			boolean value = resultSet.getBoolean(index);
 			if(resultSet.wasNull()) {
 				return type == boolean.class ? Boolean.FALSE : null;
 			}
 			return value;
 		}
 		if(type == Byte.class || type == byte.class) {
-			byte value = resultSet.getByte(jdbcIndex);
+			byte value = resultSet.getByte(index);
 			if(resultSet.wasNull()) {
 				return type == byte.class ? Byte.valueOf((byte) 0) : null;
 			}
 			return value;
 		}
 		if(type == Character.class || type == char.class) {
-			String value = resultSet.getString(jdbcIndex);
+			String value = resultSet.getString(index);
 			if(value == null || value.isEmpty()) {
 				return type == char.class ? '\0' : null;
 			}
 			return value.charAt(0);
 		}
 		if(type == Date.class) {
-			Timestamp timestamp = resultSet.getTimestamp(jdbcIndex);
+			Timestamp timestamp = resultSet.getTimestamp(index);
 			return timestamp == null ? null : new Date(timestamp.getTime());
 		}
 		if(type == LocalDateTime.class) {
-			Timestamp timestamp = resultSet.getTimestamp(jdbcIndex);
+			Timestamp timestamp = resultSet.getTimestamp(index);
 			return timestamp == null ? null : timestamp.toLocalDateTime();
 		}
 		if(type == LocalDate.class) {
-			java.sql.Date date = resultSet.getDate(jdbcIndex);
+			java.sql.Date date = resultSet.getDate(index);
 			return date == null ? null : date.toLocalDate();
 		}
 		if(type == Instant.class) {
-			Timestamp timestamp = resultSet.getTimestamp(jdbcIndex);
+			Timestamp timestamp = resultSet.getTimestamp(index);
 			return timestamp == null ? null : timestamp.toInstant();
 		}
 
-		return resultSet.getObject(jdbcIndex);
+		return resultSet.getObject(index);
+	}
+
+	/**
+	 * Reads a JDBC value with the Java type declared as the AttributeConverter database type.
+	 * Drivers may return {@code byte[]} for JSON/CLOB columns even when the converter expects {@link String}.
+	 */
+	private static Object readConverterDatabaseValue(ResultSet resultSet, int index, Class<?> convertDatabaseType) throws SQLException {
+		if(convertDatabaseType == null || convertDatabaseType == String.class) {
+			return resultSet.getString(index);
+		}
+		if(convertDatabaseType == Integer.class || convertDatabaseType == int.class) {
+			int value = resultSet.getInt(index);
+			return resultSet.wasNull() ? null : value;
+		}
+		if(convertDatabaseType == Long.class || convertDatabaseType == long.class) {
+			long value = resultSet.getLong(index);
+			return resultSet.wasNull() ? null : value;
+		}
+		if(convertDatabaseType == Boolean.class || convertDatabaseType == boolean.class) {
+			boolean value = resultSet.getBoolean(index);
+			return resultSet.wasNull() ? null : value;
+		}
+		if(convertDatabaseType == byte[].class) {
+			return resultSet.getBytes(index);
+		}
+		return resultSet.getObject(index);
 	}
 
 	@SneakyThrows
