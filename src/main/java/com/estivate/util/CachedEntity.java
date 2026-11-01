@@ -23,7 +23,7 @@ public abstract class CachedEntity {
 	@jakarta.persistence.PostLoad
 	public void saveState() {
 		__cache.clear();
-		for(Field field : ClassMeta.of(this.getClass()).getFields()) {
+		for(Field field : EntityMetaCache.of(this.getClass()).getFields()) {
 			__cache.put(field, hashCode(field.get(this)));
 		}
 	}
@@ -39,7 +39,7 @@ public abstract class CachedEntity {
 	@SneakyThrows
 	public Set<Field> updatedFields(){
 		Set<Field> fields = new HashSet<>();
-		for(Field field : ClassMeta.of(this.getClass()).getFields()) {
+		for(Field field : EntityMetaCache.of(this.getClass()).getFields()) {
 			if(isUpdated(field)) {
 				fields.add(field);
 			}
@@ -48,7 +48,7 @@ public abstract class CachedEntity {
 	}
 	
 	public Boolean isFieldUpdated(String fieldName) {
-		Field field = ClassMeta.of(this.getClass()).findField(fieldName);
+		Field field = EntityMetaCache.of(this.getClass()).findField(fieldName);
 		if(field == null) {
 			return null;
 		}
@@ -56,7 +56,7 @@ public abstract class CachedEntity {
 	}
 	
 	public Boolean isAnyFieldUpdated() {
-		for(Field field : ClassMeta.of(this.getClass()).getFields()) {
+		for(Field field : EntityMetaCache.of(this.getClass()).getFields()) {
 			if(isUpdated(field)) {
 				return true;
 			}

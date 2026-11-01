@@ -62,11 +62,11 @@ public class FieldUtils {
 
 	/**
 	 * Invokes methods with a specific annotation on an entity.
-	 * Prefer {@link ClassMeta} typed helpers ({@code invokePrePersist}, …) on hot paths.
+	 * Prefer {@link EntityMetaCache} typed helpers ({@code invokePrePersist}, …) on hot paths.
 	 */
 	public static void invokeLifecycleMethods(Object entity, Class<? extends Annotation> annotationClass) {
 		try {
-			for(Method method : ClassMeta.findMethodWithAnnotation(entity.getClass(), annotationClass)) {
+			for(Method method : EntityMetaCache.findMethodWithAnnotation(entity.getClass(), annotationClass)) {
 				method.setAccessible(true);
 				method.invoke(entity);
 			}
@@ -127,14 +127,14 @@ public class FieldUtils {
      */
     private static String methodToProperty(String name, Class<?> targetClass) {
         if (name.startsWith("get") && name.length() > 3) {
-			if (ClassMeta.findField(targetClass, name) != null) {
+			if (EntityMetaCache.findField(targetClass, name) != null) {
                 return name;
             }
             String base = name.substring(3);
             return Character.toLowerCase(base.charAt(0)) + base.substring(1);
         }
         if (name.startsWith("is") && name.length() > 2) {
-            if (ClassMeta.findField(targetClass, name) != null) {
+            if (EntityMetaCache.findField(targetClass, name) != null) {
                 return name;
             }
             String base = name.substring(2);

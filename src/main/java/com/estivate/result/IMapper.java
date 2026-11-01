@@ -12,7 +12,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 import com.estivate.context.Context;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils;
 
 import lombok.AllArgsConstructor;
@@ -102,42 +102,6 @@ public abstract class IMapper<U> {
 		}
 	}
 
-	
-	// public static class ResultMapper extends IMapper<ResultRow>{
-
-	// 	String[] columnNames = null;
-
-	// 	final Context context;
-	// 	final SelectQuery<?> query;
-
-	// 	public ResultMapper(Context context, SelectQuery<?> query) {
-	// 		columnNames = new String[query.getSelects().size()];
-
-	// 		this.context = context;
-	// 		this.query = query;
-
-	// 		List<Attribute> attributes = new ArrayList<>(query.getSelects());
-	// 		for(int i = 0; i < attributes.size(); i++) {
-	// 			Attribute attribute = attributes.get(i);
-	// 			if(attribute.alias != null) {
-	// 				columnNames[i] = attribute.alias;
-	// 			}
-	// 			else if(attribute.function != null) {
-
-	// 				columnNames[i] = attribute.function.render( context.nameMapper.toTableNameAttribute(attribute.entity, attribute.attribute));
-	// 			}
-	// 			else {
-	// 				columnNames[i] = context.nameMapper.toTableNameAttribute(attributes.get(i).entity, attributes.get(i).attribute);
-	// 			}
-	// 		}
-	// 	}
-
-	// 	@Override
-	// 	public ResultRow map(String[] row) {
-	// 		return new ResultRow(row, columnNames, context, query);
-	// 	}
-		
-	// }
 
 	@Slf4j
 	@AllArgsConstructor
@@ -152,12 +116,12 @@ public abstract class IMapper<U> {
 
 		public AttributeMapper(Context context, Class<?> entity, String attributeName) {
 			this.context = context;
-			this.field = ClassMeta.findField(entity, attributeName);
+			this.field = EntityMetaCache.findField(entity, attributeName);
 			this.type = field.getGenericType();
 		}
 
 		// public AttributeMapper(SelectQuery<?> query, Attribute attribute) {
-		// 	field = ClassMeta.findField(attribute.entity.entity, attribute.attribute);
+		// 	field = EntityMetaCache.findField(attribute.entity.entity, attribute.attribute);
 		// 	type = field.getGenericType();
 		// 	attribute = attribute;
 		// }
@@ -168,7 +132,7 @@ public abstract class IMapper<U> {
 			
 			// @Convert
 			if(FieldUtils.hasConvertAnnotation(field)) {
-				return ClassMeta.fieldBinding(field).toEntityAttribute(row);
+				return EntityMetaCache.fieldBinding(field).toEntityAttribute(row);
 			}
 
 			if(type == String.class) { return row; }

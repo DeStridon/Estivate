@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.estivate.context.Context;
 import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.reconciliation.DatabaseColumn;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 
 import jakarta.persistence.Column;
 
@@ -27,7 +27,7 @@ public class ModelingTest {
 	
 	@Test
 	public void modelingTest1() {
-		Set<Field> fields = ClassMeta.of(SingleIntegerFieldClass.class).getFields();
+		Set<Field> fields = EntityMetaCache.of(SingleIntegerFieldClass.class).getFields();
 		DatabaseColumn tableField = context.databaseColumn(fields.iterator().next());
 		
 		assertEquals("0", tableField.getDefaultValue());
@@ -43,7 +43,7 @@ public class ModelingTest {
 	
 	@Test
 	public void modelingTest2() {
-		Set<Field> fields = ClassMeta.of(LongTextFieldClass.class).getFields();
+		Set<Field> fields = EntityMetaCache.of(LongTextFieldClass.class).getFields();
 		DatabaseColumn tableField = context.databaseColumn(fields.iterator().next());
 		
 		assertEquals(null, tableField.getDimension());

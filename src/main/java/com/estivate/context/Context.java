@@ -65,7 +65,7 @@ import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
 import com.estivate.util.DatabaseColumnAnnotation;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -726,7 +726,7 @@ public abstract class Context {
 			Statement statement = new Statement(this, lease.getConnection(), plan.sqlForRowCount(rows.size()));
 			chronometer.step("executeInsert::statement");
 
-			ClassMeta meta = ClassMeta.of(query.getEntity());
+			EntityMetaCache meta = EntityMetaCache.of(query.getEntity());
 			for(T value : rows) {
 				meta.invokePrePersist(value);
 			}
@@ -766,7 +766,7 @@ public abstract class Context {
 	}
 
 	private InsertSqlPlan buildInsertSqlPlan(Class<?> entity) {
-		ClassMeta meta = ClassMeta.of(entity);
+		EntityMetaCache meta = EntityMetaCache.of(entity);
 		List<Field> fields = meta.getWritableFields();
 		StringBuilder columns = new StringBuilder();
 		StringBuilder placeholders = new StringBuilder();
@@ -992,7 +992,7 @@ public abstract class Context {
 
 		String[] fieldsToSelect = nestedFieldNames;
 		if(fieldsToSelect.length == 0) {
-			fieldsToSelect = ClassMeta.of(entityClass).getFields().stream()
+			fieldsToSelect = EntityMetaCache.of(entityClass).getFields().stream()
 					.filter(field -> field.getDeclaredAnnotation(Projection.Nested.class) != null)
 					.map(Field::getName)
 					.toArray(String[]::new);
@@ -1528,75 +1528,6 @@ public abstract class Context {
 		return fetch(query).asMapSet(uClass, vClass);
 	}
 
-	
-
-
-	
-	
-
-	
-
-//	// Tries to find entity with same id, and if not found, tries to find entity with same unicity constraints
-//	// Returns true if entity was merged to existing entity
-//	@SneakyThrows
-//	public <U> boolean merge(U entity){
-//		// First try to find entity with same id
-//		Field idField = ClassMeta.of(entity.getClass()).getIdField();
-//
-//		if(idField != null){
-//			idField.setAccessible(true);
-//			if(idField.getLong(entity) != 0L) {
-//				SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
-//				query.eq(entity.getClass(), idField.getName(), idField.getLong(entity));
-//				U duplicatedEntity = extractSingle(query, (Class<U>) entity.getClass());
-//				if(duplicatedEntity != null) {
-//					// Copy fields from result into object
-//					for(Field field : ClassMeta.of(entity.getClass()).getFields()) {
-//						field.setAccessible(true);
-//						field.set(entity, field.get(duplicatedEntity));
-//					}
-//					return true;
-//				}
-//			}
-//		}
-//	
-//		// Tries to merge with entity having same unicity constraints
-//		IndexDiff indexDiff = new IndexDiff(this, entity.getClass());
-//		for(TableIndex entityIndex : indexDiff.getEntityIndexes()){
-//			if(entityIndex.type() != IndexType.UNIQUE) {
-//				continue;
-//			}
-//
-//			SelectQuery<U> query = Estivate.selectQuery((Class<U>) entity.getClass());
-//			for(IndexColumn columnIndex : entityIndex.columns()) {
-//				Field field = entity.getClass().getDeclaredField(columnIndex.value());
-//				field.setAccessible(true);
-//				Object value = field.get(entity);
-//
-//				query.eq(entity.getClass(), columnIndex.value(), value);
-//			}
-//
-//			U duplicatedEntity = extractSingle(query, (Class<U>) entity.getClass());
-//			
-//			if(duplicatedEntity != null) {
-//				// Copy fields from result into object
-//				for(Field field : ClassMeta.of(entity.getClass()).getFields()) {
-//					field.setAccessible(true);
-//					field.set(entity, field.get(duplicatedEntity));
-//				}
-//				return true;
-//			}
-//		}
-//
-//		return false;
-//	}
-
-//	// Try merging if entity has a valid id, otherwise insert
-//	public <U> void mergeOrInsert(U entity){
-//		if(!merge(entity)){
-//			insert(entity);
-//		}
-//	}
 		
 	public <U> void updateOrInsert(U object){
 		updateOrInsert(object, chronometer("updateOrInsert"));
@@ -1605,7 +1536,7 @@ public abstract class Context {
 	@SneakyThrows
 	public <U> void updateOrInsert(U object, Chronometer chronometer) {
 		chronometer.step("updateOrInsert::start");
-		Field idField = ClassMeta.of(object.getClass()).getIdField();
+		Field idField = EntityMetaCache.of(object.getClass()).getIdField();
 		chronometer.step("updateOrInsert::idField");
 		if(idField != null) {
 			idField.setAccessible(true);
@@ -1650,7 +1581,7 @@ public abstract class Context {
 		chronometer.mark();
 		chronometer.step("update::start");
 
-		ClassMeta meta = ClassMeta.of(entity.getClass());
+		EntityMetaCache meta = EntityMetaCache.of(entity.getClass());
 		meta.invokePreUpdate(entity);
 		chronometer.step("update::invokeLifecycleMethods");
 
@@ -1728,7 +1659,7 @@ public abstract class Context {
 
 		DeleteQuery<U> query = Estivate.deleteQuery((Class<U>) entity.getClass());
 		
-		Field idField = ClassMeta.of(entity.getClass()).getIdField();
+		Field idField = EntityMetaCache.of(entity.getClass()).getIdField();
 		
 		query.eq(idField.getName(), idField.get(entity));
 		execute(query);
@@ -1910,7 +1841,7 @@ public abstract class Context {
 	
 	// find field from columnName
 	public String findEntityName(Class<?> c, String columnName) {
-		for(Field field : ClassMeta.of(c).getFields()) {
+		for(Field field : EntityMetaCache.of(c).getFields()) {
 			if(columnName.equals(nameMapper.mapDatabaseField(field.getName()))){
 				return field.getName();
 			}

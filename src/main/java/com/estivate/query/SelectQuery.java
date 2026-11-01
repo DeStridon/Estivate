@@ -19,7 +19,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.ReflectionUtils;
@@ -123,9 +123,9 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	}
 
 	public SelectQuery<E> selectAll(Entity<?> c, String... fieldNames) {
-		ClassMeta classMeta = ClassMeta.of(c.entity);
+		EntityMetaCache classMeta = EntityMetaCache.of(c.entity);
 
-		// Fast path: plain entity columns (no @Projection.*) — names cached on ClassMeta.
+		// Fast path: plain entity columns (no @Projection.*) — names cached on EntityMetaCache.
 		if(fieldNames.length == 0 && !classMeta.isHasProjectionSelectFields()) {
 			for(String fieldName : classMeta.getPlainSelectFieldNames()) {
 				select(c, fieldName);

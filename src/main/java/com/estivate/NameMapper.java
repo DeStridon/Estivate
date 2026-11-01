@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.IndexColumn;
 import com.estivate.query.Attribute.Function;
+import com.estivate.util.EntityMetaCache;
 
 public abstract class NameMapper {
 
@@ -23,13 +24,14 @@ public abstract class NameMapper {
 	
 	
 	public String toTableName(Class<?> c) {
-		javax.persistence.Table javaxPersistenceTableAnnotation = c.getDeclaredAnnotation(javax.persistence.Table.class);
-		jakarta.persistence.Table jakartaPersistenceTableAnnotation = c.getDeclaredAnnotation(jakarta.persistence.Table.class);
-		if(javaxPersistenceTableAnnotation != null && StringUtils.isNotBlank(javaxPersistenceTableAnnotation.name())) {
-			return javaxPersistenceTableAnnotation.name();
+		if(c == null) {
+			return null;
 		}
-		else if(jakartaPersistenceTableAnnotation != null && StringUtils.isNotBlank(jakartaPersistenceTableAnnotation.name())) {
-			return jakartaPersistenceTableAnnotation.name();
+
+		// TODO : This class should only be a helper, it shouldn't handle cache by itself 
+		String annotatedTableName = EntityMetaCache.of(c).getAnnotatedTableName();
+		if(annotatedTableName != null) {
+			return annotatedTableName;
 		}
 		return mapDatabaseClass(c);
 	}
@@ -44,7 +46,7 @@ public abstract class NameMapper {
 		if(c == null) {
 			return field;
 		}
-		return mapDatabaseClass(c)+"."+mapDatabaseField(field); 
+		return toTableName(c)+"."+mapDatabaseField(field); 
 	}
 	
 	public String toTableNameAttribute(Entity<?> e, String field) 	{

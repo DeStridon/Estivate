@@ -22,7 +22,7 @@ import com.estivate.reconciliation.ReconciliationManager;
 import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.PrecisionScaleEntity;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 
 import jakarta.persistence.Column;
 
@@ -40,12 +40,12 @@ public class PrecisionScaleTest {
 
     @Test
     public void entityColumnReadsPrecisionAndScale() {
-        EntityColumn amountColumn = context.entityColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        EntityColumn amountColumn = context.entityColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
         assertEquals(10, amountColumn.getDimension());
         assertEquals(ColumnDimension.PRECISION_OPTIONAL, amountColumn.getDimensionType());
         assertEquals(2, amountColumn.getScale());
 
-        EntityColumn rateColumn = context.entityColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
+        EntityColumn rateColumn = context.entityColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
         assertEquals("DECIMAL", rateColumn.getType());
         assertEquals(8, rateColumn.getDimension());
         assertEquals(ColumnDimension.PRECISION_OPTIONAL, rateColumn.getDimensionType());
@@ -54,7 +54,7 @@ public class PrecisionScaleTest {
 
     @Test
     public void tableFieldIncludesPrecisionAndScale() {
-        DatabaseColumn amountField = context.databaseColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        DatabaseColumn amountField = context.databaseColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
         assertEquals("DECIMAL", amountField.getType());
         assertEquals(10, amountField.getDimension());
         assertEquals(2, amountField.getScale());
@@ -62,8 +62,8 @@ public class PrecisionScaleTest {
 
     @Test
     public void createTableDeclarationIncludesDecimalPrecisionAndScale() {
-        DatabaseColumn amountField = context.databaseColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
-        DatabaseColumn rateField = context.databaseColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
+        DatabaseColumn amountField = context.databaseColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        DatabaseColumn rateField = context.databaseColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.rate));
         assertEquals(10, amountField.getDimension());
         assertEquals(2, amountField.getScale());
         assertEquals(8, rateField.getDimension());
@@ -113,9 +113,9 @@ public class PrecisionScaleTest {
                 .findFirst()
                 .orElse(null);
 
-        EntityColumn entityColumn = context.entityColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        EntityColumn entityColumn = context.entityColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
 
-        DatabaseColumn databaseColumn = context.databaseColumn(ClassMeta.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
+        DatabaseColumn databaseColumn = context.databaseColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
 
         assertNotNull(delta);
         assertTrue(delta.getMismatchs().contains(Mismatch.SCALE));
@@ -144,7 +144,7 @@ public class PrecisionScaleTest {
 
     @Test
     public void columnDefinitionOnlySetsPrecisionAndScale() {
-        EntityColumn column = context.entityColumn(ClassMeta.findField(ColumnDefinitionEntity.class, "value"));
+        EntityColumn column = context.entityColumn(EntityMetaCache.findField(ColumnDefinitionEntity.class, "value"));
         assertEquals("NUMERIC", column.getType());
         assertEquals(12, column.getDimension());
         assertEquals(ColumnDimension.PRECISION_OPTIONAL, column.getDimensionType());

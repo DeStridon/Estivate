@@ -33,7 +33,7 @@ import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
 import com.estivate.query.UpdateQuery;
 import com.estivate.util.Chronometer;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -717,7 +717,7 @@ public class Statement implements AutoCloseable{
 		}
 
 		try {
-			Field field = ClassMeta.findField(entity, attribute);
+			Field field = EntityMetaCache.findField(entity, attribute);
 			if(field == null) {
 				return value;
 			}
@@ -738,7 +738,7 @@ public class Statement implements AutoCloseable{
 			return value;
 		}
 		try {
-			ClassMeta.FieldBinding binding = ClassMeta.fieldBinding(field);
+			EntityMetaCache.FieldBinding binding = EntityMetaCache.fieldBinding(field);
 			if(binding == null || !binding.needsConversion()) {
 				return value;
 			}

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import com.estivate.Estivate;
 import com.estivate.query.Query.Order;
 import com.estivate.query.SelectQuery;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 import com.estivate.util.Pair;
 
 /**
@@ -122,7 +122,7 @@ public class RepositoryQuery {
             .sorted((a, b) -> Integer.compare(b.length(), a.length()))
             .collect(Collectors.toList());
 
-        fieldList = ClassMeta.of(entityClass).getFields().stream()
+        fieldList = EntityMetaCache.of(entityClass).getFields().stream()
             .map(Member::getName)
             .sorted((a, b) -> Integer.compare(b.length(), a.length()))
             .collect(Collectors.toList());
@@ -221,7 +221,7 @@ public class RepositoryQuery {
     }
 
     private Class<?> fieldType(String fieldName) {
-        java.lang.reflect.Field field = ClassMeta.findField(entityClass, fieldName);
+        java.lang.reflect.Field field = EntityMetaCache.findField(entityClass, fieldName);
         return field != null ? field.getType() : Object.class;
     }
 

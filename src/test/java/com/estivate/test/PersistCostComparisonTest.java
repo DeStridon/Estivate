@@ -25,7 +25,7 @@ import com.estivate.context.H2Context;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.PersistBenchEntity;
 import com.estivate.util.Chronometer;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 
 /**
  * Compares one-row Estivate insert/update with the same writes done through JDBC and Hibernate.
@@ -131,7 +131,7 @@ public class PersistCostComparisonTest {
             hibernatePerCallUpdate = timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
         }
 
-        long methodScanNanos = timeNanos(20_000, () -> ClassMeta.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
+        long methodScanNanos = timeNanos(20_000, () -> EntityMetaCache.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
 
         System.out.println("Persist cost, microseconds per row");
         System.out.println("  insert  estivate=" + micros(estivateInsert) + " estivate-shared-connection=" + micros(estivateInsertSharedConnection) + " jdbc-per-call=" + micros(jdbcPerCallInsert) + " jdbc-reused-statement=" + micros(jdbcReusedInsert) + " hibernate-per-call=" + micros(hibernatePerCallInsert));

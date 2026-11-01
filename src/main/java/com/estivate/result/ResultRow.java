@@ -16,7 +16,7 @@ import com.estivate.Estivate;
 import com.estivate.query.Attribute;
 import com.estivate.query.Attribute.Function;
 import com.estivate.result.IMapper.DateMapper;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
@@ -126,7 +126,7 @@ public class ResultRow {
 		
 		if(function == null || function.getReturnType() == null){
 //		try {
-			Field field = ClassMeta.findField(c, attribute);
+			Field field = EntityMetaCache.findField(c, attribute);
 			Type type = field.getGenericType();
 
 			if(type == String.class) { return (T) asString(c, attribute, function); }
@@ -144,7 +144,7 @@ public class ResultRow {
 			else if(type == LocalDate.class) { return (T) asLocalDate(c, attribute, function);}
 			// @Convert (might be enum, this condition should be tested before classic enum)
 			else if(FieldUtils.hasConvertAnnotation(field)) {
-				return (T) ClassMeta.fieldBinding(field).toEntityAttribute(asString(c, attribute));
+				return (T) EntityMetaCache.fieldBinding(field).toEntityAttribute(asString(c, attribute));
 			}
 			// @Enumerated
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {

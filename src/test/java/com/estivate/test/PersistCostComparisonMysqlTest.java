@@ -31,7 +31,7 @@ import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.PersistBenchEntity;
 import com.estivate.test.query.mysql.MysqlTestDatabase;
 import com.estivate.util.Chronometer;
-import com.estivate.util.ClassMeta;
+import com.estivate.util.EntityMetaCache;
 
 /**
  * Same persist cost comparison as {@link PersistCostComparisonTest}, against real MySQL 8
@@ -134,7 +134,7 @@ public class PersistCostComparisonMysqlTest {
 			hibernatePerCallUpdate = timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
 		}
 
-		long methodScanNanos = timeNanos(20_000, () -> ClassMeta.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
+		long methodScanNanos = timeNanos(20_000, () -> EntityMetaCache.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
 
 		System.out.println("Persist cost (MySQL 8 / Testcontainers), microseconds per row");
 		System.out.println("  insert  estivate=" + micros(estivateInsert) + " estivate-shared-connection=" + micros(estivateInsertSharedConnection) + " jdbc-per-call=" + micros(jdbcPerCallInsert) + " jdbc-reused-statement=" + micros(jdbcReusedInsert) + " hibernate-per-call=" + micros(hibernatePerCallInsert));

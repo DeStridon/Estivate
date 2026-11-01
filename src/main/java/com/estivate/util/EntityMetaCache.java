@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,15 +25,16 @@ import lombok.SneakyThrows;
 
 /**
  * Cached reflection snapshot for one entity class hierarchy,
- * including insert/update field sets.
+ * including insert/update field sets and {@code @Table} name.
  */
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ClassMeta {
+public final class EntityMetaCache {
 
-	private static final Map<Class<?>, ClassMeta> CACHE = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, EntityMetaCache> CACHE = new ConcurrentHashMap<>();
 
-	static final ClassMeta EMPTY = new ClassMeta(
+	static final EntityMetaCache EMPTY = new EntityMetaCache(
+		null,
 		Collections.emptySet(),
 		Collections.emptySet(),
 		Collections.emptyList(),
@@ -41,6 +43,9 @@ public final class ClassMeta {
 		Collections.emptyMap(),
 		null,
 		null,
+		false,
+		null,
+		Collections.emptyList(),
 		false,
 		Collections.emptyList(),
 		Collections.emptySet(),
@@ -54,6 +59,11 @@ public final class ClassMeta {
 		Collections.emptyMap()
 	);
 
+	/**
+	 * Explicit {@code @Table(name=…)} when present and non-blank; otherwise {@code null}
+	 * (caller falls back to {@link com.estivate.NameMapper#mapDatabaseClass(Class)}).
+	 */
+	private final String annotatedTableName;
 	private final Set<Field> fields;
 	private final Set<Field> persistableFields;
 	/** Persistable columns for INSERT/UPDATE (excludes {@code @Id}). */
@@ -64,6 +74,12 @@ public final class ClassMeta {
 	private final Field idField;
 	/** No-arg constructor used to instantiate mapped entities; may be {@code null}. */
 	private final Constructor<?> noArgConstructor;
+	/** True for {@code record} types (canonical constructor hydration). */
+	private final boolean recordType;
+	/** Canonical record constructor; {@code null} when not a record. */
+	private final Constructor<?> recordConstructor;
+	/** Record component fields in canonical constructor order. */
+	private final List<Field> recordComponentFields;
 	/** True when any field uses {@code @Projection.*} / nested select expansion. */
 	private final boolean hasProjectionSelectFields;
 	/** Plain field names for {@code selectAll} when {@link #hasProjectionSelectFields} is false. */
@@ -81,18 +97,18 @@ public final class ClassMeta {
 	@Getter(AccessLevel.NONE)
 	private final Map<Class<? extends Annotation>, Set<Method>> methodsByAnnotation = new ConcurrentHashMap<>();
 
-	public static ClassMeta of(Class<?> objectClass) {
-		if(objectClass == null || objectClass == Object.class) {
+	public static EntityMetaCache of(Class<?> objectClass) {
+		if(objectClass == null || objectClass == Object.class || objectClass == Record.class) {
 			return EMPTY;
 		}
 
-		ClassMeta cached = CACHE.get(objectClass);
+		EntityMetaCache cached = CACHE.get(objectClass);
 		if(cached != null) {
 			return cached;
 		}
 
-		ClassMeta built = build(objectClass);
-		ClassMeta raced = CACHE.putIfAbsent(objectClass, built);
+		EntityMetaCache built = build(objectClass);
+		EntityMetaCache raced = CACHE.putIfAbsent(objectClass, built);
 		return raced != null ? raced : built;
 	}
 
@@ -175,9 +191,64 @@ public final class ClassMeta {
 	@SuppressWarnings("unchecked")
 	public <T> T newInstance() {
 		if(noArgConstructor == null) {
-			throw new NoSuchMethodException("No no-arg constructor");
+			throw new NoSuchMethodException("No no-arg constructor"
+				+ (recordType ? " (use newRecordInstance for record types)" : ""));
 		}
 		return (T) noArgConstructor.newInstance();
+	}
+
+	public boolean isRecord() {
+		return recordType;
+	}
+
+	/**
+	 * Instantiates a record via its canonical constructor.
+	 * {@code args} must match {@link #getRecordComponentFields()} order.
+	 */
+	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	public <T> T newRecordInstance(Object[] args) {
+		if(!recordType || recordConstructor == null) {
+			throw new IllegalStateException("Not a record type");
+		}
+		Object[] ctorArgs = args != null ? args : new Object[recordComponentFields.size()];
+		for(int i = 0; i < recordComponentFields.size(); i++) {
+			if(ctorArgs[i] == null) {
+				ctorArgs[i] = defaultPrimitive(recordComponentFields.get(i).getType());
+			}
+		}
+		return (T) recordConstructor.newInstance(ctorArgs);
+	}
+
+	private static Object defaultPrimitive(Class<?> type) {
+		if(!type.isPrimitive()) {
+			return null;
+		}
+		if(type == boolean.class) {
+			return Boolean.FALSE;
+		}
+		if(type == byte.class) {
+			return Byte.valueOf((byte) 0);
+		}
+		if(type == short.class) {
+			return Short.valueOf((short) 0);
+		}
+		if(type == int.class) {
+			return Integer.valueOf(0);
+		}
+		if(type == long.class) {
+			return Long.valueOf(0L);
+		}
+		if(type == float.class) {
+			return Float.valueOf(0f);
+		}
+		if(type == double.class) {
+			return Double.valueOf(0d);
+		}
+		if(type == char.class) {
+			return Character.valueOf('\0');
+		}
+		return null;
 	}
 
 	@SneakyThrows
@@ -202,8 +273,9 @@ public final class ClassMeta {
 		}
 	}
 
-	private static ClassMeta build(Class<?> objectClass) {
-		ClassMeta parent = of(objectClass.getSuperclass());
+	@SneakyThrows
+	private static EntityMetaCache build(Class<?> objectClass) {
+		EntityMetaCache parent = of(objectClass.getSuperclass());
 
 		// CachedEntity is the persistence base: keep its lifecycle methods, but do not expose its fields.
 		Set<Field> fields;
@@ -333,7 +405,29 @@ public final class ClassMeta {
 			}
 		}
 
-		return new ClassMeta(
+		boolean recordType = objectClass.isRecord();
+		Constructor<?> recordConstructor = null;
+		List<Field> recordComponentFields = Collections.emptyList();
+		if(recordType) {
+			RecordComponent[] components = objectClass.getRecordComponents();
+			List<Field> ordered = new ArrayList<>(components.length);
+			Class<?>[] paramTypes = new Class<?>[components.length];
+			for(int i = 0; i < components.length; i++) {
+				Field field = byName.get(components[i].getName());
+				if(field == null) {
+					field = objectClass.getDeclaredField(components[i].getName());
+					field.setAccessible(true);
+				}
+				ordered.add(field);
+				paramTypes[i] = components[i].getType();
+			}
+			recordComponentFields = List.copyOf(ordered);
+			recordConstructor = objectClass.getDeclaredConstructor(paramTypes);
+			recordConstructor.setAccessible(true);
+		}
+
+		return new EntityMetaCache(
+			resolveAnnotatedTableName(objectClass),
 			fields,
 			Collections.unmodifiableSet(persistable),
 			List.copyOf(writableFields),
@@ -342,6 +436,9 @@ public final class ClassMeta {
 			Collections.unmodifiableMap(byName),
 			idField,
 			resolveNoArgConstructor(objectClass),
+			recordType,
+			recordConstructor,
+			recordComponentFields,
 			hasProjectionSelectFields,
 			List.copyOf(plainSelectFieldNames),
 			methods,
@@ -356,9 +453,27 @@ public final class ClassMeta {
 		);
 	}
 
+	private static String resolveAnnotatedTableName(Class<?> objectClass) {
+		javax.persistence.Table javaxTable = objectClass.getDeclaredAnnotation(javax.persistence.Table.class);
+		if(javaxTable != null) {
+			String name = javaxTable.name();
+			if(name != null && !name.trim().isEmpty()) {
+				return name;
+			}
+		}
+		jakarta.persistence.Table jakartaTable = objectClass.getDeclaredAnnotation(jakarta.persistence.Table.class);
+		if(jakartaTable != null) {
+			String name = jakartaTable.name();
+			if(name != null && !name.trim().isEmpty()) {
+				return name;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Per-field write/read strategy for {@code @Convert} and {@code @Enumerated},
-	 * built once with the declaring class {@link ClassMeta}.
+	 * built once with the declaring class {@link EntityMetaCache}.
 	 */
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static final class FieldBinding {

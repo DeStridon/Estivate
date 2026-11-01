@@ -29,8 +29,8 @@ import com.estivate.query.Projection.IdentityFunction;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.IMapper.DateMapper;
 import com.estivate.util.EstivateException;
-import com.estivate.util.ClassMeta;
-import com.estivate.util.ClassMeta.FieldBinding;
+import com.estivate.util.EntityMetaCache;
+import com.estivate.util.EntityMetaCache.FieldBinding;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.ReflectionUtils;
 
@@ -46,7 +46,7 @@ public class EntityMapper<U> {
 	// Entity side
 	final Entity<U> entity;
 
-	final ClassMeta entityClassMeta;
+	final EntityMetaCache entityClassMeta;
 
 	List<ColumnMapping> columnMappings = new ArrayList<>();
 	/** Indexes into {@link #columnMappings} that have a field mapping (primitive array for hot path). */
@@ -69,7 +69,7 @@ public class EntityMapper<U> {
 		this.entity = entity;
 		this.query = query;
 
-		entityClassMeta = ClassMeta.of(entity.entity);
+		entityClassMeta = EntityMetaCache.of(entity.entity);
 
 		// Get Fields
 		columnMappings = getColumnMappings(query, entity);
@@ -115,18 +115,25 @@ public class EntityMapper<U> {
 		}
 
 		if(obj == null) {
-			obj = entityClassMeta.newInstance();
-			for (int i = 0; i < row.length; i++) {
-				if (i >= columnMappings.size() || columnMappings.get(i) == null) {
-					continue;
-				}
-				ColumnMapping columnMapping = columnMappings.get(i);
-				Field field = columnMapping.getField();
-				if (field != null) {
-					setGeneratedField(entity, field, obj, row[i], columnMapping.getTransformer());
-				}
+			if(entityClassMeta.isRecord()) {
+				// Nested lists are seeded as mutable ArrayLists in the canonical ctor;
+				// nested singles are mapped below before construction.
+				obj = mapRecordFromStrings(row);
 			}
-			entityClassMeta.invokePostLoad(obj);
+			else {
+				obj = entityClassMeta.newInstance();
+				for (int i = 0; i < row.length; i++) {
+					if (i >= columnMappings.size() || columnMappings.get(i) == null) {
+						continue;
+					}
+					ColumnMapping columnMapping = columnMappings.get(i);
+					Field field = columnMapping.getField();
+					if (field != null) {
+						setGeneratedField(entity, field, obj, row[i], columnMapping.getTransformer());
+					}
+				}
+				entityClassMeta.invokePostLoad(obj);
+			}
 		}
 
 		mapNestedEntities(row, obj);
@@ -153,6 +160,11 @@ public class EntityMapper<U> {
 			return null;
 		}
 
+		if(entityClassMeta.isRecord()) {
+			U obj = mapRecordFromTypedValues(values, resultSet);
+			return obj;
+		}
+
 		U obj = entityClassMeta.newInstance();
 		for(int index : columnMappingIndexes) {
 			ColumnMapping columnMapping = columnMappings.get(index);
@@ -177,9 +189,98 @@ public class EntityMapper<U> {
 		return obj;
 	}
 
+	// TODO : see how to merge that code with the one for regular classes
+	@SneakyThrows
+	private U mapRecordFromStrings(String[] row) {
+		java.util.Map<Field, Object> byField = new java.util.IdentityHashMap<>();
+		for(int i = 0; i < row.length; i++) {
+			if(i >= columnMappings.size() || columnMappings.get(i) == null) {
+				continue;
+			}
+			ColumnMapping columnMapping = columnMappings.get(i);
+			Field field = columnMapping.getField();
+			if(field == null) {
+				continue;
+			}
+			Object convertedValue = convertValue(field, row[i]);
+			if(columnMapping.getTransformer() != null && !(columnMapping.getTransformer() instanceof IdentityFunction)) {
+				convertedValue = ((Function<Object, Object>) columnMapping.getTransformer()).apply(convertedValue);
+			}
+			byField.put(field, convertedValue);
+		}
+		// Single nested components must be ctor args (final); lists get a mutable ArrayList to fill later.
+		for(EntityMapping entityMapping : entityMappings) {
+			Field nestedField = entityMapping.getField();
+			if(isNestedList(nestedField)) {
+				continue;
+			}
+			Object subObj = entityMapping.getEntityMapper().map(row, null);
+			byField.put(nestedField, subObj);
+		}
+		return instantiateRecord(byField);
+	}
+
+	@SneakyThrows
+	private U mapRecordFromTypedValues(Object[] values, ResultSet resultSet) {
+		java.util.Map<Field, Object> byField = new java.util.IdentityHashMap<>();
+		for(int index : columnMappingIndexes) {
+			ColumnMapping columnMapping = columnMappings.get(index);
+			Field field = columnMapping.getField();
+			if(field == null) {
+				continue;
+			}
+			Object value = values[index];
+			if(columnMapping.getTransformer() != null && !(columnMapping.getTransformer() instanceof IdentityFunction)) {
+				value = ((Function<Object, Object>) columnMapping.getTransformer()).apply(value);
+			}
+			byField.put(field, value);
+		}
+		for(EntityMapping entityMapping : entityMappings) {
+			Field nestedField = entityMapping.getField();
+			if(isNestedList(nestedField)) {
+				continue;
+			}
+			byField.put(nestedField, entityMapping.getEntityMapper().map(resultSet));
+		}
+		U obj = instantiateRecord(byField);
+		for(EntityMapping entityMapping : entityMappings) {
+			if(!isNestedList(entityMapping.getField())) {
+				continue;
+			}
+			Object subObj = entityMapping.getEntityMapper().map(resultSet);
+			applyNested(obj, entityMapping, subObj);
+		}
+		return obj;
+	}
+
+	private U instantiateRecord(java.util.Map<Field, Object> byField) {
+		for(EntityMapping entityMapping : entityMappings) {
+			Field nestedField = entityMapping.getField();
+			if(isNestedList(nestedField) && byField.get(nestedField) == null) {
+				byField.put(nestedField, new ArrayList<>());
+			}
+		}
+		List<Field> components = entityClassMeta.getRecordComponentFields();
+		Object[] args = new Object[components.size()];
+		for(int i = 0; i < components.size(); i++) {
+			args[i] = byField.get(components.get(i));
+		}
+		U obj = entityClassMeta.newRecordInstance(args);
+		entityClassMeta.invokePostLoad(obj);
+		return obj;
+	}
+
+	private static boolean isNestedList(Field field) {
+		return field != null && field.getType().isAssignableFrom(List.class);
+	}
+
 	@SneakyThrows
 	private void mapNestedEntities(String[] row, U obj) {
 		for(EntityMapping entityMapping : entityMappings) {
+			// Record singles are already bound in the canonical constructor.
+			if(entityClassMeta.isRecord() && !isNestedList(entityMapping.getField())) {
+				continue;
+			}
 			Object subObj = entityMapping.getEntityMapper().map(row, null);
 			applyNested(obj, entityMapping, subObj);
 		}
@@ -188,9 +289,14 @@ public class EntityMapper<U> {
 	@SneakyThrows
 	@SuppressWarnings("unchecked")
 	private void applyNested(U obj, EntityMapping entityMapping, Object subObj) {
-		if(entityMapping.getField().getType().isAssignableFrom(List.class)) {
+		if(isNestedList(entityMapping.getField())) {
 			List<Object> list = (List<Object>) entityMapping.getField().get(obj);
 			if(list == null) {
+				if(entityClassMeta.isRecord()) {
+					throw new IllegalStateException(
+						"Record nested List '" + entityMapping.getField().getName()
+							+ "' was null; it must be seeded in the canonical constructor");
+				}
 				list = new ArrayList<>();
 				entityMapping.getField().set(obj, list);
 			}
@@ -198,7 +304,7 @@ public class EntityMapper<U> {
 				list.add(subObj);
 			}
 		}
-		else if(subObj != null) {
+		else if(!entityClassMeta.isRecord() && subObj != null) {
 			entityMapping.getField().set(obj, subObj);
 		}
 	}
@@ -211,7 +317,7 @@ public class EntityMapper<U> {
 
 		Projection.Attribute projectionAttribute = field.getDeclaredAnnotation(Projection.Attribute.class);
 		if(projectionAttribute != null) {
-			Field mappingField = ClassMeta.findField(projectionAttribute.entity(), projectionAttribute.attribute());
+			Field mappingField = EntityMetaCache.findField(projectionAttribute.entity(), projectionAttribute.attribute());
 			return readTyped(resultSet, index, mappingField);
 		}
 
@@ -227,7 +333,7 @@ public class EntityMapper<U> {
 			if(raw == null || resultSet.wasNull()) {
 				return null;
 			}
-			FieldBinding enumBinding = binding != null ? binding : ClassMeta.fieldBinding(field);
+			FieldBinding enumBinding = binding != null ? binding : EntityMetaCache.fieldBinding(field);
 			if(enumBinding != null && enumBinding.getEnumMode() == FieldBinding.EnumMode.ORDINAL) {
 				int ordinal = Integer.parseInt(raw);
 				return type.getEnumConstants()[ordinal];
@@ -351,7 +457,7 @@ public class EntityMapper<U> {
 		Class<?> currentClass = entity.entity;
 		while (currentClass != Object.class) {
 
-			Set<Field> fields = ClassMeta.of(currentClass).getFields();
+			Set<Field> fields = EntityMetaCache.of(currentClass).getFields();
 			for (Field field : fields) {
 				String columnName = fieldToColumnName(entity, field);
 				String value = arguments.get(columnName);
@@ -362,7 +468,7 @@ public class EntityMapper<U> {
 
 		}
 
-		ClassMeta.of(obj.getClass()).invokePostLoad(obj);
+		EntityMetaCache.of(obj.getClass()).invokePostLoad(obj);
 
 		return obj;
 
@@ -433,7 +539,7 @@ public class EntityMapper<U> {
 
 		// If alias is null or empty, find the corresponding field in the entity and use
 		// its mapped name
-		Field mappingField = ClassMeta.of(entityClass).getFields().stream().filter(x -> x.getName().equals(attribute))
+		Field mappingField = EntityMetaCache.of(entityClass).getFields().stream().filter(x -> x.getName().equals(attribute))
 				.findFirst().orElse(null);
 
 		if (mappingField == null) {
@@ -474,11 +580,11 @@ public class EntityMapper<U> {
 		 // @Projection.Attribute
 		 if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
 		 	Projection.Attribute annotation = field.getDeclaredAnnotation(Projection.Attribute.class);
-		 	Field mappingField = ClassMeta.findField(annotation.entity(), annotation.attribute());
+		 	Field mappingField = EntityMetaCache.findField(annotation.entity(), annotation.attribute());
 		 	return convertValue(mappingField, value);
 		 }
 
-		FieldBinding binding = ClassMeta.fieldBinding(field);
+		FieldBinding binding = EntityMetaCache.fieldBinding(field);
 		// @Convert — must run for null DB values too
 		if(binding != null && binding.hasConverter()) {
 			return binding.toEntityAttribute(value);
@@ -552,7 +658,7 @@ public class EntityMapper<U> {
 
 		List<String> unmappedFields = new ArrayList<>();
 
-		for(Field field : ClassMeta.of(entityClass.entity).getFields()) {
+		for(Field field : EntityMetaCache.of(entityClass.entity).getFields()) {
 			ColumnMapping columnMapping = getColumnMapping(entityClass, field);
 
 			int index = FieldUtils.indexOf(query.getSelects(), columnMapping.getAttribute());
@@ -573,7 +679,7 @@ public class EntityMapper<U> {
 
 	List<EntityMapping> getEntityMappings(SelectQuery<?> query, Entity<?> entityClass){
 		List<EntityMapping> list = new ArrayList<>();
-		for(Field field : ClassMeta.of(entityClass.entity).getFields()) {
+		for(Field field : EntityMetaCache.of(entityClass.entity).getFields()) {
 
 			if(!field.isAnnotationPresent(Projection.Nested.class)){
 				continue;
