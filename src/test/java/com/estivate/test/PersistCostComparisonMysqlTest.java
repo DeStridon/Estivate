@@ -104,6 +104,9 @@ public class PersistCostComparisonMysqlTest {
 		long hibernateBatch = 0;
 		long jdbcBatch = 0;
 		long estivateUpdate = 0;
+		long estivateUpdateOrInsertAsInsert = 0;
+		long estivateUpdateOrInsertAsUpdate = 0;
+		long estivateUpdateOrInsertCollectionBatch = 0;
 		long jdbcPerCallUpdate = 0;
 		long hibernatePerCallUpdate = 0;
 		List<PersistBenchEntity> estivateRows = null;
@@ -112,11 +115,13 @@ public class PersistCostComparisonMysqlTest {
 		for(int pass = 0; pass < 2; pass++) {
 			estivateInsert = timeInserts(0, ITERATIONS, this::estivateInsert);
 			estivateInsertSharedConnection = timeEstivateInsertsWithSharedConnection(0, ITERATIONS);
+			estivateUpdateOrInsertAsInsert = timeInserts(0, ITERATIONS, this::estivateUpdateOrInsert);
 			jdbcPerCallInsert = timeInserts(0, ITERATIONS, this::jdbcInsertPerCall);
 			jdbcReusedInsert = timeReusedJdbcInserts(0, ITERATIONS);
 			hibernatePerCallInsert = timeInserts(0, ITERATIONS, this::hibernateInsertPerCall);
 			estivateBatch = timeBatch(this::estivateBatch);
 			estivateCollectionBatch = timeBatch(this::estivateCollectionBatch);
+			estivateUpdateOrInsertCollectionBatch = timeBatch(this::estivateUpdateOrInsertCollectionBatch);
 			hibernateBatch = timeBatch(this::hibernateBatch);
 			jdbcBatch = timeBatch(this::jdbcBatch);
 
@@ -124,12 +129,18 @@ public class PersistCostComparisonMysqlTest {
 			for(PersistBenchEntity row : estivateRows) {
 				row.saveState();
 			}
+			List<PersistBenchEntity> updateOrInsertRows = insertRows(ITERATIONS, this::estivateInsert);
+			for(PersistBenchEntity row : updateOrInsertRows) {
+				row.saveState();
+			}
 			List<PersistBenchEntity> jdbcRows = insertRows(ITERATIONS, this::jdbcInsertPerCall);
 			List<PersistBenchEntity> hibernateRows = insertRows(ITERATIONS, this::hibernateInsertPerCall);
 			timeUpdates(estivateRows, this::estivateUpdate);
+			timeUpdates(updateOrInsertRows, this::estivateUpdateOrInsert);
 			timeUpdates(jdbcRows, this::jdbcUpdatePerCall);
 			timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
 			estivateUpdate = timeUpdates(estivateRows, this::estivateUpdate);
+			estivateUpdateOrInsertAsUpdate = timeUpdates(updateOrInsertRows, this::estivateUpdateOrInsert);
 			jdbcPerCallUpdate = timeUpdates(jdbcRows, this::jdbcUpdatePerCall);
 			hibernatePerCallUpdate = timeUpdates(hibernateRows, this::hibernateUpdatePerCall);
 		}
@@ -137,12 +148,14 @@ public class PersistCostComparisonMysqlTest {
 		long methodScanNanos = timeNanos(20_000, () -> EntityMetaCache.findMethodWithAnnotation(CustomerEntity.class, PrePersist.class));
 
 		System.out.println("Persist cost (MySQL 8 / Testcontainers), microseconds per row");
-		System.out.println("  insert  estivate=" + micros(estivateInsert) + " estivate-shared-connection=" + micros(estivateInsertSharedConnection) + " jdbc-per-call=" + micros(jdbcPerCallInsert) + " jdbc-reused-statement=" + micros(jdbcReusedInsert) + " hibernate-per-call=" + micros(hibernatePerCallInsert));
-		System.out.println("  update  estivate=" + micros(estivateUpdate) + " jdbc-per-call=" + micros(jdbcPerCallUpdate) + " hibernate-per-call=" + micros(hibernatePerCallUpdate));
-		System.out.println("  batch of " + BATCH + " rows, milliseconds: estivate-loop=" + (estivateBatch / 1_000_000) + " estivate-collection=" + (estivateCollectionBatch / 1_000_000) + " hibernate-one-tx=" + (hibernateBatch / 1_000_000) + " jdbc-batch=" + (jdbcBatch / 1_000_000));
+		System.out.println("  insert  estivate=" + micros(estivateInsert) + " estivate-shared-connection=" + micros(estivateInsertSharedConnection) + " updateOrInsert=" + micros(estivateUpdateOrInsertAsInsert) + " jdbc-per-call=" + micros(jdbcPerCallInsert) + " jdbc-reused-statement=" + micros(jdbcReusedInsert) + " hibernate-per-call=" + micros(hibernatePerCallInsert));
+		System.out.println("  update  estivate=" + micros(estivateUpdate) + " updateOrInsert=" + micros(estivateUpdateOrInsertAsUpdate) + " jdbc-per-call=" + micros(jdbcPerCallUpdate) + " hibernate-per-call=" + micros(hibernatePerCallUpdate));
+		System.out.println("  batch of " + BATCH + " rows, milliseconds: estivate-loop=" + (estivateBatch / 1_000_000) + " estivate-collection=" + (estivateCollectionBatch / 1_000_000) + " updateOrInsert-collection=" + (estivateUpdateOrInsertCollectionBatch / 1_000_000) + " hibernate-one-tx=" + (hibernateBatch / 1_000_000) + " jdbc-batch=" + (jdbcBatch / 1_000_000));
 		System.out.println("  uncached lifecycle method scan on CustomerEntity: " + (methodScanNanos / 20_000) + " ns");
 		System.out.println(profileInsert(100));
 		System.out.println(profileUpdate(100));
+		System.out.println(profileUpdateOrInsertInsert(100));
+		System.out.println(profileUpdateOrInsertUpdate(100));
 
 		Assertions.assertTrue(estivateRows.get(0).id > 0);
 		Assertions.assertEquals(ITERATIONS, estivateRows.size());
@@ -226,6 +239,10 @@ public class PersistCostComparisonMysqlTest {
 		context.insert(row);
 	}
 
+	private void estivateUpdateOrInsert(PersistBenchEntity row) {
+		context.updateOrInsert(row);
+	}
+
 	private String profileInsert(int iterations) {
 		Chronometer chronometer = new Chronometer("insert-profile-mysql", true).timeThreshold(Integer.MAX_VALUE);
 		for(int i = 0; i < 20; i++) {
@@ -253,6 +270,36 @@ public class PersistCostComparisonMysqlTest {
 		Chronometer chronometer = new Chronometer("update-profile-mysql", true).timeThreshold(Integer.MAX_VALUE);
 		for(PersistBenchEntity row : rows) {
 			context.update(row, chronometer);
+		}
+		return chronometer.getLog();
+	}
+
+	private String profileUpdateOrInsertInsert(int iterations) {
+		Chronometer chronometer = new Chronometer("updateOrInsert-insert-profile-mysql", true).timeThreshold(Integer.MAX_VALUE);
+		for(int i = 0; i < 20; i++) {
+			context.updateOrInsert(row(i), chronometer);
+		}
+		chronometer = new Chronometer("updateOrInsert-insert-profile-mysql", true).timeThreshold(Integer.MAX_VALUE);
+		for(int i = 0; i < iterations; i++) {
+			context.updateOrInsert(row(i), chronometer);
+		}
+		return chronometer.getLog();
+	}
+
+	private String profileUpdateOrInsertUpdate(int iterations) {
+		List<PersistBenchEntity> rows = insertRows(iterations, this::estivateInsert);
+		for(PersistBenchEntity row : rows) {
+			row.saveState();
+			row.note = "profile";
+		}
+		Chronometer warm = new Chronometer("updateOrInsert-update-profile-mysql-warm", true).timeThreshold(Integer.MAX_VALUE);
+		for(PersistBenchEntity row : rows) {
+			context.updateOrInsert(row, warm);
+			row.note = "profiled";
+		}
+		Chronometer chronometer = new Chronometer("updateOrInsert-update-profile-mysql", true).timeThreshold(Integer.MAX_VALUE);
+		for(PersistBenchEntity row : rows) {
+			context.updateOrInsert(row, chronometer);
 		}
 		return chronometer.getLog();
 	}
@@ -288,6 +335,14 @@ public class PersistCostComparisonMysqlTest {
 			rows.add(row(i));
 		}
 		context.insert(rows);
+	}
+
+	private void estivateUpdateOrInsertCollectionBatch() {
+		List<PersistBenchEntity> rows = new ArrayList<>();
+		for(int i = 0; i < BATCH; i++) {
+			rows.add(row(i));
+		}
+		context.updateOrInsert(rows);
 	}
 
 	private void jdbcInsertPerCall(PersistBenchEntity row) {

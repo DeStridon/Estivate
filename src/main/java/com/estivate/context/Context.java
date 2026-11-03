@@ -1535,38 +1535,85 @@ public abstract class Context {
 		
 	@SneakyThrows
 	public <U> void updateOrInsert(U object, Chronometer chronometer) {
-		chronometer.step("updateOrInsert::start");
+		if(object == null) {
+			return;
+		}
+
+		chronometer.mark();
 		Field idField = EntityMetaCache.of(object.getClass()).getIdField();
 		chronometer.step("updateOrInsert::idField");
-		if(idField != null) {
-			idField.setAccessible(true);
-			chronometer.step("updateOrInsert::idField::accessible");
-			if(idField.getLong(object) == 0L) {
-				insert(object, chronometer);
-				chronometer.step("updateOrInsert::insert");
-			}
-			else {
-				update(object, chronometer);
-				chronometer.step("updateOrInsert::update");
-			}
-			
-			if(object instanceof CachedEntity) {
-				((CachedEntity) object).saveState();
-				chronometer.step("updateOrInsert::cachedEntity::saveState");
-			}
-		}
-		else{
+
+		if(idField == null || idField.getLong(object) == 0L) {
 			insert(object, chronometer);
 			chronometer.step("updateOrInsert::insert");
 		}
-			
+		else {
+			update(object, chronometer);
+			chronometer.step("updateOrInsert::update");
+		}
+
+		if(object instanceof CachedEntity) {
+			((CachedEntity) object).saveState();
+			chronometer.step("updateOrInsert::saveState");
+		}
 	}
 
+	/**
+	 * Upserts a collection: new rows ({@code id == 0} / no {@code @Id}) are inserted in one
+	 * multi-value statement per entity type; existing rows reuse a shared connection for updates.
+	 */
 	@SneakyThrows
 	public <U> void updateOrInsert(Collection<U> entities) {
-		if(entities != null) {
-			for(U entity : entities) {
-				updateOrInsert(entity);
+		if(entities == null || entities.isEmpty()) {
+			return;
+		}
+
+		LinkedHashMap<Class<?>, List<U>> byType = new LinkedHashMap<>();
+		for(U entity : entities) {
+			if(entity == null) {
+				continue;
+			}
+			byType.computeIfAbsent(entity.getClass(), ignored -> new ArrayList<>()).add(entity);
+		}
+
+		for(Map.Entry<Class<?>, List<U>> entry : byType.entrySet()) {
+			EntityMetaCache meta = EntityMetaCache.of(entry.getKey());
+			Field idField = meta.getIdField();
+			List<U> toInsert = new ArrayList<>();
+			List<U> toUpdate = new ArrayList<>();
+
+			if(idField == null) {
+				toInsert.addAll(entry.getValue());
+			}
+			else {
+				for(U entity : entry.getValue()) {
+					if(idField.getLong(entity) == 0L) {
+						toInsert.add(entity);
+					}
+					else {
+						toUpdate.add(entity);
+					}
+				}
+			}
+
+			if(!toInsert.isEmpty()) {
+				insert(toInsert);
+				for(U entity : toInsert) {
+					if(entity instanceof CachedEntity) {
+						((CachedEntity) entity).saveState();
+					}
+				}
+			}
+
+			if(!toUpdate.isEmpty()) {
+				withConnection(ignored -> {
+					for(U entity : toUpdate) {
+						update(entity);
+						if(entity instanceof CachedEntity) {
+							((CachedEntity) entity).saveState();
+						}
+					}
+				});
 			}
 		}
 	}
