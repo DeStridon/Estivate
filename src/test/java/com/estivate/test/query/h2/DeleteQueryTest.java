@@ -1,5 +1,8 @@
 package com.estivate.test.query.h2;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.Assert;
 
@@ -11,6 +14,7 @@ import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.OrderLineEntity;
 import com.estivate.test.entities.ProductEntity;
+import com.estivate.test.entities.ProductEntity.ProductCategory;
 
 public class DeleteQueryTest {
 
@@ -249,6 +253,49 @@ public class DeleteQueryTest {
         long leftJoinCount = queryString.split("LEFT JOIN").length - 1;
         Assert.assertEquals("Should have 2 INNER JOINs", 2, innerJoinCount);
         Assert.assertEquals("Should have 1 LEFT JOIN", 1, leftJoinCount);
+    }
+
+    @Test
+    public void testDeleteCollectionUsesInCriterion() {
+        ProductEntity keep = ProductEntity.builder().name("Keep").category(ProductCategory.Beauty).price(1.0f).build();
+        ProductEntity remove1 = ProductEntity.builder().name("Remove1").category(ProductCategory.Beauty).price(1.0f).build();
+        ProductEntity remove2 = ProductEntity.builder().name("Remove2").category(ProductCategory.Beauty).price(1.0f).build();
+
+        context.insert(Arrays.asList(keep, remove1, remove2));
+
+        context.delete(Arrays.asList(remove1, remove2));
+
+        List<String> remaining = Estivate.selectQuery(ProductEntity.class)
+            .in(ProductEntity::getId, Arrays.asList(keep.getId(), remove1.getId(), remove2.getId()))
+            .orderByAsc(ProductEntity::getId)
+            .extractList(context, ProductEntity::getName);
+
+        Assert.assertEquals(Arrays.asList("Keep"), remaining);
+    }
+
+    @Test
+    public void testDeleteCollectionRejectsMixedEntityTypes() {
+        ProductEntity product = ProductEntity.builder().name("Mixed").category(ProductCategory.Beauty).price(1.0f).build();
+        CustomerEntity customer = CustomerEntity.builder().name("Mixed").build();
+
+        context.insert(product);
+        context.insert(customer);
+
+        try {
+            context.delete(Arrays.asList(product, customer));
+            Assert.fail("Expected IllegalArgumentException for mixed entity types");
+        }
+        catch (IllegalArgumentException expected) {
+            Assert.assertTrue(expected.getMessage().contains(ProductEntity.class.getName()));
+            Assert.assertTrue(expected.getMessage().contains(CustomerEntity.class.getName()));
+        }
+
+        Assert.assertNotNull(Estivate.selectQuery(ProductEntity.class)
+            .eq(ProductEntity::getId, product.getId())
+            .extractSingle(context));
+        Assert.assertNotNull(Estivate.selectQuery(CustomerEntity.class)
+            .eq(CustomerEntity::getId, customer.getId())
+            .extractSingle(context));
     }
 
 }

@@ -17,7 +17,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Projection;
 import com.estivate.query.SelectQuery;
-import com.estivate.test.DatabaseGenerator;
+import com.estivate.test.query.h2.H2TestDatabase;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
@@ -32,7 +32,7 @@ import com.estivate.util.EntityMetaCache;
  */
 public class SelectProjectionRecordTest {
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	private CustomerEntity customer;
 

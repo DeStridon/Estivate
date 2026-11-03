@@ -1668,9 +1668,38 @@ public abstract class Context {
 	
 	@SneakyThrows
 	public <U> void delete(Collection<U> entities) {
-		for(U entity : entities) {
-			delete(entity);
+		if(entities == null || entities.isEmpty()) {
+			return;
 		}
+
+		Class<U> entityClass = null;
+		Field idField = null;
+		List<Object> ids = new ArrayList<>();
+
+		for(U entity : entities) {
+			if(entity == null) {
+				continue;
+			}
+			if(entityClass == null) {
+				entityClass = (Class<U>) entity.getClass();
+				idField = EntityMetaCache.of(entityClass).getIdField();
+				if(idField == null) {
+					throw new IllegalArgumentException("delete(Collection) requires an @Id field on " + entityClass.getName());
+				}
+			}
+			else if(entity.getClass() != entityClass) {
+				throw new IllegalArgumentException("delete(Collection) requires a homogeneous entity type, found " + entityClass.getName() + " and " + entity.getClass().getName());
+			}
+			ids.add(idField.get(entity));
+		}
+
+		if(ids.isEmpty()) {
+			return;
+		}
+
+		DeleteQuery<U> query = Estivate.deleteQuery(entityClass);
+		query.in(idField.getName(), ids);
+		execute(query);
 	}
 
 	
@@ -1692,56 +1721,6 @@ public abstract class Context {
 		}
 	}
 
-
-//	public <U> boolean createTable(Class<U> entityClass) {
-//
-//		CreateQuery<U> query = Estivate.createQuery(entityClass);
-//		execute(query);
-//
-//		TableIndex[] compositeIndex = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
-//		
-//		for(TableIndex index : compositeIndex) {
-//			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
-//			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-//			addIndex(entityClass, name, index.type(), columns);
-//		}
-//
-//		return true;
-//
-//	}
-	
-	
-//	@SneakyThrows
-//	public <U> boolean createTableIfNotExists(Class<U> entityClass) {
-//
-//		List<String> existingTables = showTables();
-//		String newTableName = nameMapper.toTableName(entityClass);
-//		if(showTables().contains(nameMapper.toTableName(entityClass))) {
-//			return false;
-//		}
-//		
-//		
-//		CreateQuery<U> query = Estivate.createQuery(entityClass);
-//		query.ifNotExists();
-//		execute(query);
-//
-//		List<TableIndex> tableIndexes = listIndexes(entityClass);
-//
-//		TableIndex[] entityIndexes = entityClass.getDeclaredAnnotationsByType(TableIndex.class);
-//		
-//		for(TableIndex index : entityIndexes) {
-//			String name = index.name().isEmpty() ? nameMapper.mapIndex(index) : index.name();
-//			List<String> columns = Arrays.asList(index.columns()).stream().map(x -> nameMapper.mapDatabaseField(x.value())+ (x.length() > 0 ? "("+x.length()+")":"")).collect(Collectors.toList());
-//			
-//			if(tableIndexes.stream().anyMatch(x -> x.name().equals(name))) {
-//				continue;
-//			}
-//
-//			addIndex(entityClass, name, index.type(), columns);
-//		}
-//
-//		return true;
-//	}
 
 	@SneakyThrows
 	public boolean truncateTable(Class<?> entity) {

@@ -11,6 +11,7 @@ import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomTableNameEntity;
+import com.estivate.test.query.h2.H2TestDatabase;
 import com.estivate.util.EntityMetaCache;
 
 /**
@@ -21,7 +22,7 @@ public class TableAnnotationTest {
 
 	private static final String TABLE = "legacy_widget_inventory";
 
-	Context context = DatabaseGenerator.getContext();
+	Context context = H2TestDatabase.getContext();
 
 	@BeforeEach
 	public void setUp() {
