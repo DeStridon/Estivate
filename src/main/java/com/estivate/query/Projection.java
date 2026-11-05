@@ -105,6 +105,36 @@ public class Projection {
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface Nested { }
 
+	/**
+	 * Collects a single joined-table column into a {@link java.util.Collection} on the root
+	 * projection (e.g. {@code List<String>}), without an intermediate nested DTO.
+	 * Requires {@link NestedBy} merge semantics across duplicate parent rows.
+	 */
+	@Target({ ElementType.FIELD, ElementType.RECORD_COMPONENT })
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface NestedAttribute {
+		public Class<?> entity();
+		public String attribute();
+		public String alias() default "";
+	}
+
+	/**
+	 * Collects key/value columns from joined tables into a {@link java.util.Map} on the root
+	 * projection (e.g. {@code Map<Long, String>}), without an intermediate nested DTO.
+	 * Requires {@link NestedBy} merge semantics across duplicate parent rows.
+	 * Null keys are skipped; duplicate keys overwrite with the latest row.
+	 */
+	@Target({ ElementType.FIELD, ElementType.RECORD_COMPONENT })
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface NestedMap {
+		public Class<?> keyEntity();
+		public String keyAttribute();
+		public String keyAlias() default "";
+		public Class<?> valueEntity();
+		public String valueAttribute();
+		public String valueAlias() default "";
+	}
+
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface NestedBy{

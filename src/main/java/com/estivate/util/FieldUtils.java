@@ -57,7 +57,9 @@ public class FieldUtils {
 			|| field.getDeclaredAnnotation(Projection.IsNull.class) != null
 			|| field.getDeclaredAnnotation(Projection.IsNotNull.class) != null
 			|| field.getDeclaredAnnotation(Projection.Function.class) != null
-			|| field.getDeclaredAnnotation(Projection.Nested.class) != null;
+			|| field.getDeclaredAnnotation(Projection.Nested.class) != null
+			|| field.getDeclaredAnnotation(Projection.NestedAttribute.class) != null
+			|| field.getDeclaredAnnotation(Projection.NestedMap.class) != null;
 	}
 
 	/**

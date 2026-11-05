@@ -11,8 +11,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +56,8 @@ public class EntityMapper<U> {
 	int[] columnMappingIndexes = new int[0];
 
 	List<EntityMapping> entityMappings = new ArrayList<>();
+	List<NestedAttributeMapping> nestedAttributeMappings = new ArrayList<>();
+	List<NestedMapMapping> nestedMapMappings = new ArrayList<>();
 	
 	// Result side
 
@@ -86,8 +91,8 @@ public class EntityMapper<U> {
 
 		// Entity Mappings
 		entityMappings = getEntityMappings(query, entity);
-
-		
+		nestedAttributeMappings = getNestedAttributeMappings(query, entity);
+		nestedMapMappings = getNestedMapMappings(query, entity);
 
 	}
 
@@ -137,6 +142,8 @@ public class EntityMapper<U> {
 		}
 
 		mapNestedEntities(row, obj);
+		mapNestedAttributes(row, obj);
+		mapNestedMaps(row, obj);
 
 		return obj;
 	}
@@ -186,6 +193,8 @@ public class EntityMapper<U> {
 			Object subObj = entityMapping.getEntityMapper().map(resultSet);
 			applyNested(obj, entityMapping, subObj);
 		}
+		mapNestedAttributesFromResultSet(resultSet, obj);
+		mapNestedMapsFromResultSet(resultSet, obj);
 		return obj;
 	}
 
@@ -250,6 +259,8 @@ public class EntityMapper<U> {
 			Object subObj = entityMapping.getEntityMapper().map(resultSet);
 			applyNested(obj, entityMapping, subObj);
 		}
+		mapNestedAttributesFromResultSet(resultSet, obj);
+		mapNestedMapsFromResultSet(resultSet, obj);
 		return obj;
 	}
 
@@ -257,7 +268,19 @@ public class EntityMapper<U> {
 		for(EntityMapping entityMapping : entityMappings) {
 			Field nestedField = entityMapping.getField();
 			if(isNestedList(nestedField) && byField.get(nestedField) == null) {
-				byField.put(nestedField, new ArrayList<>());
+				byField.put(nestedField, newCollection(nestedField));
+			}
+		}
+		for(NestedAttributeMapping nestedAttributeMapping : nestedAttributeMappings) {
+			Field nestedField = nestedAttributeMapping.getField();
+			if(byField.get(nestedField) == null) {
+				byField.put(nestedField, newCollection(nestedField));
+			}
+		}
+		for(NestedMapMapping nestedMapMapping : nestedMapMappings) {
+			Field nestedField = nestedMapMapping.getField();
+			if(byField.get(nestedField) == null) {
+				byField.put(nestedField, new LinkedHashMap<>());
 			}
 		}
 		List<Field> components = entityClassMeta.getRecordComponentFields();
@@ -274,6 +297,21 @@ public class EntityMapper<U> {
 		return field != null && field.getType().isAssignableFrom(List.class);
 	}
 
+	private static boolean isCollectionField(Field field) {
+		return field != null && Collection.class.isAssignableFrom(field.getType());
+	}
+
+	private static boolean isMapField(Field field) {
+		return field != null && Map.class.isAssignableFrom(field.getType());
+	}
+
+	private static Collection<Object> newCollection(Field field) {
+		if(Set.class.isAssignableFrom(field.getType())) {
+			return new LinkedHashSet<>();
+		}
+		return new ArrayList<>();
+	}
+
 	@SneakyThrows
 	private void mapNestedEntities(String[] row, U obj) {
 		for(EntityMapping entityMapping : entityMappings) {
@@ -283,6 +321,30 @@ public class EntityMapper<U> {
 			}
 			Object subObj = entityMapping.getEntityMapper().map(row, null);
 			applyNested(obj, entityMapping, subObj);
+		}
+	}
+
+	@SneakyThrows
+	private void mapNestedAttributes(String[] row, U obj) {
+		for(NestedAttributeMapping nestedAttributeMapping : nestedAttributeMappings) {
+			int index = nestedAttributeMapping.getSelectIndex();
+			if(index < 0 || index >= row.length) {
+				continue;
+			}
+			Object value = convertValue(nestedAttributeMapping.getSourceField(), row[index]);
+			applyNestedAttribute(obj, nestedAttributeMapping, value);
+		}
+	}
+
+	@SneakyThrows
+	private void mapNestedAttributesFromResultSet(ResultSet resultSet, U obj) {
+		for(NestedAttributeMapping nestedAttributeMapping : nestedAttributeMappings) {
+			int index = nestedAttributeMapping.getSelectIndex();
+			if(index < 0) {
+				continue;
+			}
+			Object value = readTyped(resultSet, index + 1, nestedAttributeMapping.getSourceField());
+			applyNestedAttribute(obj, nestedAttributeMapping, value);
 		}
 	}
 
@@ -307,6 +369,72 @@ public class EntityMapper<U> {
 		else if(!entityClassMeta.isRecord() && subObj != null) {
 			entityMapping.getField().set(obj, subObj);
 		}
+	}
+
+	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	private void applyNestedAttribute(U obj, NestedAttributeMapping nestedAttributeMapping, Object value) {
+		if(value == null) {
+			return;
+		}
+		Collection<Object> collection = (Collection<Object>) nestedAttributeMapping.getField().get(obj);
+		if(collection == null) {
+			if(entityClassMeta.isRecord()) {
+				throw new IllegalStateException(
+					"Record nested attribute collection '" + nestedAttributeMapping.getField().getName()
+						+ "' was null; it must be seeded in the canonical constructor");
+			}
+			collection = newCollection(nestedAttributeMapping.getField());
+			nestedAttributeMapping.getField().set(obj, collection);
+		}
+		collection.add(value);
+	}
+
+	@SneakyThrows
+	private void mapNestedMaps(String[] row, U obj) {
+		for(NestedMapMapping nestedMapMapping : nestedMapMappings) {
+			int keyIndex = nestedMapMapping.getKeySelectIndex();
+			int valueIndex = nestedMapMapping.getValueSelectIndex();
+			if(keyIndex < 0 || keyIndex >= row.length || valueIndex < 0 || valueIndex >= row.length) {
+				continue;
+			}
+			Object key = convertValue(nestedMapMapping.getKeySourceField(), row[keyIndex]);
+			Object value = convertValue(nestedMapMapping.getValueSourceField(), row[valueIndex]);
+			applyNestedMap(obj, nestedMapMapping, key, value);
+		}
+	}
+
+	@SneakyThrows
+	private void mapNestedMapsFromResultSet(ResultSet resultSet, U obj) {
+		for(NestedMapMapping nestedMapMapping : nestedMapMappings) {
+			int keyIndex = nestedMapMapping.getKeySelectIndex();
+			int valueIndex = nestedMapMapping.getValueSelectIndex();
+			if(keyIndex < 0 || valueIndex < 0) {
+				continue;
+			}
+			Object key = readTyped(resultSet, keyIndex + 1, nestedMapMapping.getKeySourceField());
+			Object value = readTyped(resultSet, valueIndex + 1, nestedMapMapping.getValueSourceField());
+			applyNestedMap(obj, nestedMapMapping, key, value);
+		}
+	}
+
+	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	private void applyNestedMap(U obj, NestedMapMapping nestedMapMapping, Object key, Object value) {
+		if(key == null) {
+			return;
+		}
+		Map<Object, Object> map = (Map<Object, Object>) nestedMapMapping.getField().get(obj);
+		if(map == null) {
+			if(entityClassMeta.isRecord()) {
+				throw new IllegalStateException(
+					"Record nested map '" + nestedMapMapping.getField().getName()
+						+ "' was null; it must be seeded in the canonical constructor");
+			}
+			map = new LinkedHashMap<>();
+			nestedMapMapping.getField().set(obj, map);
+		}
+		map.put(key, value);
 	}
 
 	@SneakyThrows
@@ -648,6 +776,29 @@ public class EntityMapper<U> {
 		EntityMapper<?> entityMapper;
 	}
 
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class NestedAttributeMapping {
+		Field field;
+		Field sourceField;
+		Attribute attribute;
+		int selectIndex;
+	}
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class NestedMapMapping {
+		Field field;
+		Field keySourceField;
+		Field valueSourceField;
+		Attribute keyAttribute;
+		Attribute valueAttribute;
+		int keySelectIndex;
+		int valueSelectIndex;
+	}
+
 
 	List<ColumnMapping> getColumnMappings(SelectQuery<?> query, Entity<?> entityClass) {
 		List<ColumnMapping> columnMappings = new ArrayList<>(query.getSelects().size());
@@ -659,6 +810,12 @@ public class EntityMapper<U> {
 		List<String> unmappedFields = new ArrayList<>();
 
 		for(Field field : EntityMetaCache.of(entityClass.entity).getFields()) {
+			if(field.isAnnotationPresent(Projection.Nested.class)
+					|| field.isAnnotationPresent(Projection.NestedAttribute.class)
+					|| field.isAnnotationPresent(Projection.NestedMap.class)) {
+				continue;
+			}
+
 			ColumnMapping columnMapping = getColumnMapping(entityClass, field);
 
 			int index = FieldUtils.indexOf(query.getSelects(), columnMapping.getAttribute());
@@ -701,6 +858,66 @@ public class EntityMapper<U> {
 			entityMapping.setField(field);
 			list.add(entityMapping);
 	
+		}
+		return list;
+	}
+
+	List<NestedAttributeMapping> getNestedAttributeMappings(SelectQuery<?> query, Entity<?> entityClass) {
+		List<NestedAttributeMapping> list = new ArrayList<>();
+		for(Field field : EntityMetaCache.of(entityClass.entity).getFields()) {
+			Projection.NestedAttribute nestedAttribute = field.getDeclaredAnnotation(Projection.NestedAttribute.class);
+			if(nestedAttribute == null) {
+				continue;
+			}
+			if(!isCollectionField(field)) {
+				log.error("@Projection.NestedAttribute requires a Collection field: " + field.getName());
+				continue;
+			}
+			Attribute attribute = Estivate.attribute(nestedAttribute.entity(), nestedAttribute.attribute(), nestedAttribute.alias());
+			int index = FieldUtils.indexOf(query.getSelects(), attribute);
+			if(index == -1) {
+				log.warn("NestedAttribute select missing for field " + field.getName() + " (" + attribute + ")");
+				continue;
+			}
+			Field sourceField = EntityMetaCache.findField(nestedAttribute.entity(), nestedAttribute.attribute());
+			if(sourceField == null) {
+				log.error("NestedAttribute source field not found: " + nestedAttribute.entity().getSimpleName() + "." + nestedAttribute.attribute());
+				continue;
+			}
+			list.add(new NestedAttributeMapping(field, sourceField, attribute, index));
+		}
+		return list;
+	}
+
+	List<NestedMapMapping> getNestedMapMappings(SelectQuery<?> query, Entity<?> entityClass) {
+		List<NestedMapMapping> list = new ArrayList<>();
+		for(Field field : EntityMetaCache.of(entityClass.entity).getFields()) {
+			Projection.NestedMap nestedMap = field.getDeclaredAnnotation(Projection.NestedMap.class);
+			if(nestedMap == null) {
+				continue;
+			}
+			if(!isMapField(field)) {
+				log.error("@Projection.NestedMap requires a Map field: " + field.getName());
+				continue;
+			}
+			Attribute keyAttribute = Estivate.attribute(nestedMap.keyEntity(), nestedMap.keyAttribute(), nestedMap.keyAlias());
+			Attribute valueAttribute = Estivate.attribute(nestedMap.valueEntity(), nestedMap.valueAttribute(), nestedMap.valueAlias());
+			int keyIndex = FieldUtils.indexOf(query.getSelects(), keyAttribute);
+			int valueIndex = FieldUtils.indexOf(query.getSelects(), valueAttribute);
+			if(keyIndex == -1 || valueIndex == -1) {
+				log.warn("NestedMap select missing for field " + field.getName()
+					+ " (key=" + keyAttribute + ", value=" + valueAttribute + ")");
+				continue;
+			}
+			Field keySourceField = EntityMetaCache.findField(nestedMap.keyEntity(), nestedMap.keyAttribute());
+			Field valueSourceField = EntityMetaCache.findField(nestedMap.valueEntity(), nestedMap.valueAttribute());
+			if(keySourceField == null || valueSourceField == null) {
+				log.error("NestedMap source field not found for " + field.getName()
+					+ " (key=" + nestedMap.keyEntity().getSimpleName() + "." + nestedMap.keyAttribute()
+					+ ", value=" + nestedMap.valueEntity().getSimpleName() + "." + nestedMap.valueAttribute() + ")");
+				continue;
+			}
+			list.add(new NestedMapMapping(field, keySourceField, valueSourceField, keyAttribute, valueAttribute, keyIndex, valueIndex));
 		}
 		return list;
 	}

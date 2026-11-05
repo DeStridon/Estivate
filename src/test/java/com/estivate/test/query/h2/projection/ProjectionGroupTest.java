@@ -2,7 +2,11 @@ package com.estivate.test.query.h2.projection;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -87,6 +91,34 @@ public class ProjectionGroupTest {
         @Projection.Nested
         NestedSingleDto orderDetails;
 
+    }
+
+    @Data
+    @Projection.NestedBy(entity = OrderEntity.class, attribute = OrderEntity.Fields.customerId)
+    public static class NestedAttributeDto {
+
+        @Projection.Attribute(entity = OrderEntity.class, attribute = OrderEntity.Fields.customerId)
+        long customerId;
+
+        @Projection.NestedAttribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.name)
+        List<String> productNames;
+
+        @Projection.NestedAttribute(entity = ProductEntity.class, attribute = ProductEntity.Fields.category)
+        Set<ProductCategory> categories;
+    }
+
+    @Data
+    @Projection.NestedBy(entity = OrderEntity.class, attribute = OrderEntity.Fields.customerId)
+    public static class NestedMapDto {
+
+        @Projection.Attribute(entity = OrderEntity.class, attribute = OrderEntity.Fields.customerId)
+        long customerId;
+
+        @Projection.NestedMap(
+            keyEntity = ProductEntity.class, keyAttribute = AbstractEntity.Fields.id,
+            valueEntity = ProductEntity.class, valueAttribute = ProductEntity.Fields.name
+        )
+        Map<Long, String> productNamesById;
     }
 
     @Test
@@ -364,6 +396,162 @@ public class ProjectionGroupTest {
         MainDto mixedDto2 = filledDtos.stream().filter(d -> d.customerId == 200L).findFirst().orElse(null);
         Assertions.assertEquals(2, mixedDto2.groupedDtos.size());
         Assertions.assertNotNull(mixedDto2.orderDetails);
+    }
+
+    @Test
+    public void testNestedAttributeCollectsJoinedColumnValues() {
+
+        ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
+        ProductEntity product2 = ProductEntity.builder().name("Daycream").category(ProductCategory.Beauty).price(1.5f).build();
+        ProductEntity product3 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
+        ProductEntity product4 = ProductEntity.builder().name("Shirt").category(ProductCategory.Clothing).price(2.5f).build();
+
+        context.insert(product1);
+        context.insert(product2);
+        context.insert(product3);
+        context.insert(product4);
+
+        OrderEntity order1 = OrderEntity.builder().customerId(100L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+        OrderEntity order2 = OrderEntity.builder().customerId(200L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+
+        context.insert(order1);
+        context.insert(order2);
+
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product1.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product3.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product3.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product4.getId()).build());
+
+        List<NestedAttributeDto> dtos = Estivate.selectQuery(OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .in(OrderEntity::getId, Arrays.asList(order1.getId(), order2.getId()))
+            .orderByAsc(OrderEntity::getCustomerId)
+            .orderByAsc(ProductEntity::getName)
+            .extractList(context, NestedAttributeDto.class);
+
+        Assertions.assertEquals(2, dtos.size());
+
+        NestedAttributeDto customer100 = dtos.stream().filter(d -> d.customerId == 100L).findFirst().orElse(null);
+        Assertions.assertEquals(Arrays.asList("Daycream", "Dress", "Lipstick"), customer100.productNames);
+        Assertions.assertEquals(new HashSet<>(Arrays.asList(ProductCategory.Beauty, ProductCategory.Clothing)), customer100.categories);
+
+        NestedAttributeDto customer200 = dtos.stream().filter(d -> d.customerId == 200L).findFirst().orElse(null);
+        Assertions.assertEquals(Arrays.asList("Daycream", "Dress", "Shirt"), customer200.productNames);
+        Assertions.assertEquals(new HashSet<>(Arrays.asList(ProductCategory.Beauty, ProductCategory.Clothing)), customer200.categories);
+    }
+
+    @Test
+    public void testNestedAttributeHydrate() {
+
+        ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
+        ProductEntity product2 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
+
+        context.insert(product1);
+        context.insert(product2);
+
+        OrderEntity order = OrderEntity.builder().customerId(100L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+        context.insert(order);
+        context.insert(OrderLineEntity.builder().orderId(order.getId()).productId(product1.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order.getId()).productId(product2.getId()).build());
+
+        List<NestedAttributeDto> dtos = Estivate.selectQuery(OrderEntity.class)
+            .eq(OrderEntity::getId, order.getId())
+            .extractList(context, NestedAttributeDto.class);
+
+        Assertions.assertEquals(1, dtos.size());
+        Assertions.assertTrue(dtos.get(0).productNames == null || dtos.get(0).productNames.isEmpty());
+
+        Estivate.selectQuery(OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .eq(OrderEntity::getId, order.getId())
+            .orderByAsc(ProductEntity::getName)
+            .hydrate(context, NestedAttributeDto.class, dtos, NestedAttributeDto::getProductNames, NestedAttributeDto::getCategories);
+
+        Assertions.assertEquals(Arrays.asList("Dress", "Lipstick"), dtos.get(0).productNames);
+        Assertions.assertEquals(new HashSet<>(Arrays.asList(ProductCategory.Beauty, ProductCategory.Clothing)), dtos.get(0).categories);
+    }
+
+    @Test
+    public void testNestedMapCollectsJoinedKeyValues() {
+
+        ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
+        ProductEntity product2 = ProductEntity.builder().name("Daycream").category(ProductCategory.Beauty).price(1.5f).build();
+        ProductEntity product3 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
+
+        context.insert(product1);
+        context.insert(product2);
+        context.insert(product3);
+
+        OrderEntity order1 = OrderEntity.builder().customerId(100L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+        OrderEntity order2 = OrderEntity.builder().customerId(200L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+
+        context.insert(order1);
+        context.insert(order2);
+
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product1.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order1.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product2.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order2.getId()).productId(product3.getId()).build());
+
+        List<NestedMapDto> dtos = Estivate.selectQuery(OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .in(OrderEntity::getId, Arrays.asList(order1.getId(), order2.getId()))
+            .orderByAsc(OrderEntity::getCustomerId)
+            .orderByAsc(ProductEntity::getName)
+            .extractList(context, NestedMapDto.class);
+
+        Assertions.assertEquals(2, dtos.size());
+
+        NestedMapDto customer100 = dtos.stream().filter(d -> d.customerId == 100L).findFirst().orElse(null);
+        Map<Long, String> expected100 = new LinkedHashMap<>();
+        expected100.put(product2.getId(), "Daycream");
+        expected100.put(product1.getId(), "Lipstick");
+        Assertions.assertEquals(expected100, customer100.productNamesById);
+
+        NestedMapDto customer200 = dtos.stream().filter(d -> d.customerId == 200L).findFirst().orElse(null);
+        Map<Long, String> expected200 = new LinkedHashMap<>();
+        expected200.put(product2.getId(), "Daycream");
+        expected200.put(product3.getId(), "Dress");
+        Assertions.assertEquals(expected200, customer200.productNamesById);
+    }
+
+    @Test
+    public void testNestedMapHydrate() {
+
+        ProductEntity product1 = ProductEntity.builder().name("Lipstick").category(ProductCategory.Beauty).price(2.0f).build();
+        ProductEntity product2 = ProductEntity.builder().name("Dress").category(ProductCategory.Clothing).price(3.0f).build();
+
+        context.insert(product1);
+        context.insert(product2);
+
+        OrderEntity order = OrderEntity.builder().customerId(100L).status(OrderEntity.OrderStatus.COMPLETED).created(new Date()).build();
+        context.insert(order);
+        context.insert(OrderLineEntity.builder().orderId(order.getId()).productId(product1.getId()).build());
+        context.insert(OrderLineEntity.builder().orderId(order.getId()).productId(product2.getId()).build());
+
+        List<NestedMapDto> dtos = Estivate.selectQuery(OrderEntity.class)
+            .eq(OrderEntity::getId, order.getId())
+            .extractList(context, NestedMapDto.class);
+
+        Assertions.assertEquals(1, dtos.size());
+        Assertions.assertTrue(dtos.get(0).productNamesById == null || dtos.get(0).productNamesById.isEmpty());
+
+        Estivate.selectQuery(OrderEntity.class)
+            .joinInner(OrderEntity.class, OrderLineEntity.class)
+            .joinInner(OrderLineEntity.class, ProductEntity.class)
+            .eq(OrderEntity::getId, order.getId())
+            .orderByAsc(ProductEntity::getName)
+            .hydrate(context, NestedMapDto.class, dtos, NestedMapDto::getProductNamesById);
+
+        Map<Long, String> expected = new LinkedHashMap<>();
+        expected.put(product2.getId(), "Dress");
+        expected.put(product1.getId(), "Lipstick");
+        Assertions.assertEquals(expected, dtos.get(0).productNamesById);
     }
 
 }

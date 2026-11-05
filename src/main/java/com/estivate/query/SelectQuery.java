@@ -237,6 +237,24 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 					selectAll(field.getType());
 				}
 			}
+			else if(field.getDeclaredAnnotation(Projection.NestedAttribute.class) != null) {
+				Projection.NestedAttribute nestedAttribute = field.getDeclaredAnnotation(Projection.NestedAttribute.class);
+				Entity<?> target = projectionEntity(c, nestedAttribute.entity());
+				if(!isEntityAvailable(target, availableEntities)) {
+					continue;
+				}
+				select(target, nestedAttribute.attribute(), nestedAttribute.alias());
+			}
+			else if(field.getDeclaredAnnotation(Projection.NestedMap.class) != null) {
+				Projection.NestedMap nestedMap = field.getDeclaredAnnotation(Projection.NestedMap.class);
+				Entity<?> keyTarget = projectionEntity(c, nestedMap.keyEntity());
+				Entity<?> valueTarget = projectionEntity(c, nestedMap.valueEntity());
+				if(!isEntityAvailable(keyTarget, availableEntities) || !isEntityAvailable(valueTarget, availableEntities)) {
+					continue;
+				}
+				select(keyTarget, nestedMap.keyAttribute(), nestedMap.keyAlias());
+				select(valueTarget, nestedMap.valueAttribute(), nestedMap.valueAlias());
+			}
 			else if(isEntityAvailable(c, availableEntities)) {
 				select(c, field.getName());
 			}
@@ -465,8 +483,9 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public <T> 		List<T> extractList(Context context, Entity<T> entity) { return context.extractList(this, entity); }
 
 	/**
-	 * Runs this query and fills nested {@link Projection.Nested} fields on {@code existing},
-	 * matching by {@link Projection.NestedBy}. Empty {@code nestedFieldNames} hydrates every nested field.
+	 * Runs this query and fills nested {@link Projection.Nested} / {@link Projection.NestedAttribute} /
+	 * {@link Projection.NestedMap} fields on {@code existing}, matching by {@link Projection.NestedBy}.
+	 * Empty {@code nestedFieldNames} hydrates every nested field.
 	 */
 	public <T> List<T> hydrate(Context context, Class<T> entityClass, List<T> existing, String... nestedFieldNames) {
 		return context.hydrate(this, entityClass, existing, nestedFieldNames);

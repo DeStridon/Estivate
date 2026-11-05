@@ -298,7 +298,8 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
     /**
-     * Fills nested {@link Projection.Nested} fields on already-fetched projection rows,
+     * Fills nested {@link Projection.Nested} / {@link Projection.NestedAttribute} /
+     * {@link Projection.NestedMap} fields on already-fetched projection rows,
      * matching by {@link Projection.NestedBy}. Returns the same list instance.
      */
     @SneakyThrows

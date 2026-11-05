@@ -959,10 +959,12 @@ public abstract class Context {
 	}
 
 	/**
-	 * Runs {@code query} and fills nested {@link com.estivate.query.Projection.Nested} fields
-	 * on already-fetched rows, matching by {@link com.estivate.query.Projection.NestedBy}.
+	 * Runs {@code query} and fills nested {@link com.estivate.query.Projection.Nested} /
+	 * {@link com.estivate.query.Projection.NestedAttribute} / {@link com.estivate.query.Projection.NestedMap}
+	 * fields on already-fetched rows, matching by {@link com.estivate.query.Projection.NestedBy}.
 	 * Only the NestedBy key and nested fields are selected (not root projection columns).
-	 * When {@code nestedFieldNames} is empty, every {@code @Nested} field is hydrated.
+	 * When {@code nestedFieldNames} is empty, every {@code @Nested} / {@code @NestedAttribute} /
+	 * {@code @NestedMap} field is hydrated.
 	 */
 	public <T> List<T> hydrate(SelectQuery<?> query, Class<T> entityClass, List<T> existing, String... nestedFieldNames) {
 		return hydrate(query, entityClass, existing, chronometer("hydrate"), nestedFieldNames);
@@ -993,7 +995,9 @@ public abstract class Context {
 		String[] fieldsToSelect = nestedFieldNames;
 		if(fieldsToSelect.length == 0) {
 			fieldsToSelect = EntityMetaCache.of(entityClass).getFields().stream()
-					.filter(field -> field.getDeclaredAnnotation(Projection.Nested.class) != null)
+					.filter(field -> field.getDeclaredAnnotation(Projection.Nested.class) != null
+						|| field.getDeclaredAnnotation(Projection.NestedAttribute.class) != null
+						|| field.getDeclaredAnnotation(Projection.NestedMap.class) != null)
 					.map(Field::getName)
 					.toArray(String[]::new);
 		}
