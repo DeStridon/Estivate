@@ -126,7 +126,6 @@ public class AlterQuery<E> {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     public AlterQuery<E> clone() {
         AlterQuery<E> queryClone = new AlterQuery<E>(entity);
         

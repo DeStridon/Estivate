@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
 
 import com.destridon.iter8.Iter8;
 import com.estivate.Entity;
@@ -40,7 +38,6 @@ import com.estivate.context.Filter.DeleteFilter;
 import com.estivate.context.Filter.InsertFilter;
 import com.estivate.context.Filter.SelectFilter;
 import com.estivate.context.Filter.UpdateFilter;
-import com.estivate.index.Annotations.ColumnDefaultValue;
 import com.estivate.index.Annotations.IndexColumn;
 import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
@@ -50,7 +47,6 @@ import com.estivate.query.CreateQuery;
 import com.estivate.query.CreateQuery.Index;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.InsertQuery;
-import com.estivate.query.Join;
 import com.estivate.query.Projection;
 import com.estivate.query.Query;
 import com.estivate.query.SelectQuery;
@@ -64,7 +60,6 @@ import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.CachedEntity;
 import com.estivate.util.Chronometer;
-import com.estivate.util.DatabaseColumnAnnotation;
 import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
@@ -198,7 +193,7 @@ public abstract class Context {
 	 */
 	@SneakyThrows
 	public void withConnection(ConnectionCallback callback) {
-		withConnection(connection -> {
+		callWithConnection(connection -> {
 			callback.run(connection);
 			return null;
 		});
@@ -206,9 +201,10 @@ public abstract class Context {
 
 	/**
 	 * Same as {@link #withConnection(ConnectionCallback)} but returns a value.
+	 * Named differently so void lambdas are not ambiguous with {@link ConnectionCallback}.
 	 */
 	@SneakyThrows
-	public <T> T withConnection(ConnectionCallable<T> callback) {
+	public <T> T callWithConnection(ConnectionCallable<T> callback) {
 		Connection existing = boundConnection.get();
 		if(existing != null) {
 			return callback.call(existing);
@@ -481,6 +477,7 @@ public abstract class Context {
 		return proceed.apply(query);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <U> Void applyInsertFilters(InsertQuery<U> query, Function<InsertQuery<U>, Void> terminal) {
 		if(insertFilters.isEmpty()) {
 			return terminal.apply(query);
@@ -841,6 +838,7 @@ public abstract class Context {
 	// ==================== PERSISTENCE METHODS ====================
 		
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <U> void insert(U object, Chronometer chronometer) {
 		chronometer.mark();
 		InsertQuery<U> insertQuery = Estivate.insertQuery((Class<U>) object.getClass());
@@ -856,6 +854,7 @@ public abstract class Context {
 
 
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <T> void insert(Collection<T> entities) {
 		if(entities == null || entities.isEmpty()) {
 			return;
@@ -1063,11 +1062,7 @@ public abstract class Context {
 	}
 
 	
-		
-	
-
-	@Deprecated
-	protected List<ResultRow> fetchListAsResults(Statement statement) throws SQLException{
+	protected ResultTable fetch(Statement statement) throws SQLException{
 		try(ResultSet resultSet = statement.executeForResultSet()) {
 	        ResultSetMetaData metadata = resultSet.getMetaData();
 	        
@@ -1080,7 +1075,7 @@ public abstract class Context {
 	        	resultTable.addRow(extractRowValues(resultSet, columnCount));
 	        }
 	        
-	        return resultTable.getRows();
+	        return resultTable;
 		}
 	}
 
@@ -1095,9 +1090,11 @@ public abstract class Context {
 	}
 	public Object 	extractSingle(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSingle(query, Estivate.attribute(entity, attributeName)); }
 	public Object 	extractSingle(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSingle(query, Estivate.attribute(entity, attributeName)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> P extractSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (P) extractSingle(query, Estivate.attribute(attributeGetter)); }
 	public Object 	extractSingle(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSingle(query, Estivate.attribute(entity, attributeName, function)); }
 	public Object 	extractSingle(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSingle(query, Estivate.attribute(entity, attributeName, function)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> P extractSingle(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (P) extractSingle(query, Estivate.attribute(attributeGetter, function)); }
 
 	/*
@@ -1106,9 +1103,11 @@ public abstract class Context {
 	public 			Optional<?> extractOptional(SelectQuery<?> query, Attribute attribute) { return Optional.ofNullable(extractSingle(query, attribute)); }
 	public 			Optional<?> extractOptional(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractOptional(query, Estivate.attribute(entity, attributeName)); }
 	public 			Optional<?> extractOptional(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractOptional(query, Estivate.attribute(entity, attributeName)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	Optional<P> extractOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) extractOptional(query, Estivate.attribute(attributeGetter)); }
 	public 			Optional<?> extractOptional(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractOptional(query, Estivate.attribute(entity, attributeName, function)); }
 	public 			Optional<?> extractOptional(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractOptional(query, Estivate.attribute(entity, attributeName, function)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	Optional<P> extractOptional(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Optional<P>) extractOptional(query, Estivate.attribute(attributeGetter, function)); }
 	
 	/* 
@@ -1120,9 +1119,11 @@ public abstract class Context {
 	}
 	public 			List<?> extractList(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractList(query, Estivate.attribute(entity, attributeName)); }
 	public 			List<?> extractList(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractList(query, Estivate.attribute(entity, attributeName)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	List<P> extractList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) extractList(query, Estivate.attribute(attributeGetter)); }
 	public 			List<?> extractList(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractList(query, Estivate.attribute(entity, attributeName, function)); }
 	public 			List<?> extractList(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractList(query, Estivate.attribute(entity, attributeName, function)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	List<P> extractList(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (List<P>) extractList(query, Estivate.attribute(attributeGetter, function)); }
 	
 
@@ -1132,9 +1133,11 @@ public abstract class Context {
 	}
 	public 			List<?> extractListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractListDistinct(query, Estivate.attribute(entity, attributeName)); }
 	public 			List<?> extractListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractListDistinct(query, Estivate.attribute(entity, attributeName)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	List<P> extractListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (List<P>) extractListDistinct(query, Estivate.attribute(attributeGetter)); }
 	public 			List<?> extractListDistinct(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(query, Estivate.attribute(entity, attributeName, function)); }
 	public 			List<?> extractListDistinct(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractListDistinct(query, Estivate.attribute(entity, attributeName, function)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	List<P> extractListDistinct(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (List<P>) extractListDistinct(query, Estivate.attribute(attributeGetter, function)); }
 
 	/*
@@ -1146,9 +1149,11 @@ public abstract class Context {
 	}
 	public 			Set<?> extractSet(SelectQuery<?> query, Class<?> entity, String attributeName) { return extractSet(query, Estivate.attribute(entity, attributeName)); }
 	public 			Set<?> extractSet(SelectQuery<?> query, Entity<?> entity, String attributeName) { return extractSet(query, Estivate.attribute(entity, attributeName)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	Set<P> extractSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter) { return (Set<P>) extractSet(query, Estivate.attribute(attributeGetter)); }
 	public 			Set<?> extractSet(SelectQuery<?> query, Class<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, Estivate.attribute(entity, attributeName, function)); }
 	public 			Set<?> extractSet(SelectQuery<?> query, Entity<?> entity, String attributeName, Attribute.Function function) { return extractSet(query, Estivate.attribute(entity, attributeName, function)); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	Set<P> extractSet(SelectQuery<?> query, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Set<P>) extractSet(query, Estivate.attribute(attributeGetter, function)); }
 	
 	
@@ -1623,6 +1628,7 @@ public abstract class Context {
 	}
 
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <U> void update(U entity, Chronometer chronometer) {
 		
 		if(entity == null) {
@@ -1702,6 +1708,7 @@ public abstract class Context {
 
 	
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <U> void delete(U entity) {
 		
 		if(entity == null) {
@@ -1718,6 +1725,7 @@ public abstract class Context {
 	}
 	
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <U> void delete(Collection<U> entities) {
 		if(entities == null || entities.isEmpty()) {
 			return;
@@ -1741,7 +1749,7 @@ public abstract class Context {
 			else if(entity.getClass() != entityClass) {
 				throw new IllegalArgumentException("delete(Collection) requires a homogeneous entity type, found " + entityClass.getName() + " and " + entity.getClass().getName());
 			}
-			ids.add(idField.get(entity));
+			ids.add(java.util.Objects.requireNonNull(idField).get(entity));
 		}
 
 		if(ids.isEmpty()) {
@@ -1749,7 +1757,7 @@ public abstract class Context {
 		}
 
 		DeleteQuery<U> query = Estivate.deleteQuery(entityClass);
-		query.in(idField.getName(), ids);
+		query.in(java.util.Objects.requireNonNull(idField).getName(), ids);
 		execute(query);
 	}
 
@@ -1820,7 +1828,7 @@ public abstract class Context {
 		try (ConnectionLease lease = openConnection();
 			Statement statement = new Statement(this, lease.getConnection()); ){
 			statement.appendQuery(runningQueriesSql());
-			return fetchListAsResults(statement).stream()
+			return fetch(statement).getRows().stream()
 				.map(this::toRunningQuery)
 				.collect(Collectors.toList());
 		}
@@ -2111,7 +2119,7 @@ public abstract class Context {
 
 	}
 	
-	private String defaultValueForType(String defaultValue, Class type) {
+	private String defaultValueForType(String defaultValue, Class<?> type) {
 		if(defaultValue == null) {
 			return null;
 		}

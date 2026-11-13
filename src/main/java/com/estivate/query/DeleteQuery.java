@@ -20,7 +20,6 @@ public class DeleteQuery<E> extends Query<DeleteQuery<E>, E> {
 
 
 
-	@SuppressWarnings("unchecked")
 	public DeleteQuery<E> clone() {
 		DeleteQuery<E> queryClone = new DeleteQuery<E>(entity);
 		

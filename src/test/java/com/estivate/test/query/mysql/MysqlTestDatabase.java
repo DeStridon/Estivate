@@ -20,6 +20,7 @@ public final class MysqlTestDatabase {
 	private MysqlTestDatabase() {
 	}
 
+	@SuppressWarnings("resource")
 	public static MySQLContainer<?> newContainer() {
 		return new MySQLContainer<>("mysql:8.0.36")
 			.withDatabaseName("estivate")

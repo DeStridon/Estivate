@@ -1,7 +1,6 @@
 package com.estivate.test.query.h2;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ public class SelectQueryTest {
         boolean thrown = false;
 
         try{
-            List<CustomerEntity> customers = context.extractList(query, CustomerEntity.class);
+            context.extractList(query, CustomerEntity.class);
         }
         catch(Exception e) {
             thrown = true;

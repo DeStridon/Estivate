@@ -1,7 +1,6 @@
 package com.estivate.repository;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;

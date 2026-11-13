@@ -1,13 +1,7 @@
 package com.estivate.context;
 
 
-import java.sql.Connection;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +17,7 @@ import com.estivate.index.Annotations.TableIndex;
 import com.estivate.reconciliation.EntityColumn.ColumnDimension;
 import com.estivate.reconciliation.DatabaseColumn;
 import com.estivate.result.ResultRow;
+import com.estivate.result.ResultTable;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -197,7 +192,7 @@ public class H2Context extends Context {
 							+ "FROM INFORMATION_SCHEMA.COLUMNS "
 							+ "WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = '" + tableName + "' ORDER BY ORDINAL_POSITION");
 
-			return fetchListAsResults(statement).stream()
+			return fetch(statement).getRows().stream()
 					.map(this::toTableField)
 					.collect(Collectors.toList());
 		}
@@ -217,12 +212,12 @@ public class H2Context extends Context {
 			indexColumnQueryStatement.appendQuery("SELECT * FROM information_schema.index_columns WHERE table_schema = 'PUBLIC' AND table_name=").appendQuery("'"+nameMapper.toTableName(entity)+"'");
 			//fulltextIndexQueryStatement.appendQuery("SELECT * FROM FT.INDEXES;").appendQuery("'"+nameMapper.toTableName(c)+"'");
 
-			List<ResultRow> indexResults = fetchListAsResults(indexQueryStatement);
-			List<ResultRow> columnResults = fetchListAsResults(indexColumnQueryStatement);
+			ResultTable indexResults = fetch(indexQueryStatement);
+			ResultTable columnResults = fetch(indexColumnQueryStatement);
 			//List<ResultRow> fulltextIndexResults = fetchListAsResults(fulltextIndexQueryStatement);
 			
 			for(ResultRow indexResult : indexResults) {
-				List<ResultRow> indexColumnResults = columnResults.stream().filter(x -> x.asString("INDEX_NAME").equals(indexResult.asString("INDEX_NAME"))).collect(Collectors.toList());
+				List<ResultRow> indexColumnResults = columnResults.getRows().stream().filter(x -> x.asString("INDEX_NAME").equals(indexResult.asString("INDEX_NAME"))).collect(Collectors.toList());
 
 				List<IndexColumn> indexColumns = indexColumnResults.stream().map(x-> Annotations.ColumnIndex(findEntityName(entity, x.asString("COLUMN_NAME")), 0)).collect(Collectors.toList());
 

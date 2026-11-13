@@ -15,7 +15,6 @@ import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.OrderEntity;
-import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.OrderEntity.OrderStatus;
 
 public class DeleteQueryCriterionTest {

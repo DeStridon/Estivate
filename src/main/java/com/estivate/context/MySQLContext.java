@@ -1,7 +1,6 @@
 package com.estivate.context;
 
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -220,7 +219,7 @@ public class MySQLContext extends Context {
 
 			statement.appendQuery("SHOW INDEX FROM ").appendQuery(nameMapper.toTableName(c));
 			
-			List<ResultRow> results = this.fetchListAsResults(statement);
+			List<ResultRow> results = this.fetch(statement).getRows();
 			List<IndexRow> indexRows = new ArrayList<>();
 			for(ResultRow result : results) {
 				String physicalIndexType = null;

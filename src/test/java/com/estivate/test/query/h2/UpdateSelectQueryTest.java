@@ -5,10 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.context.Context;
 import com.estivate.query.UpdateQuery;
-import com.estivate.query.SelectQuery;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
-import com.estivate.test.entities.OrderEntity;
 import com.estivate.Estivate;
 
 public class UpdateSelectQueryTest {

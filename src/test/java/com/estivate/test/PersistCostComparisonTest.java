@@ -154,6 +154,7 @@ public class PersistCostComparisonTest {
         System.out.println(profileUpdateOrInsertInsert(100));
         System.out.println(profileUpdateOrInsertUpdate(100));
 
+        Assertions.assertNotNull(estivateRows);
         Assertions.assertTrue(estivateRows.get(0).id > 0);
         Assertions.assertEquals(ITERATIONS, estivateRows.size());
         Assertions.assertEquals("timed", noteOf(estivateRows.get(0).id));

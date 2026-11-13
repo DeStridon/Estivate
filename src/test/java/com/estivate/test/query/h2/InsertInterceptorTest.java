@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.InsertQuery;
-import com.estivate.reconciliation.ManualReconciliationManager.ManualReconciliationEntity;
 import com.estivate.test.entities.CustomerEntity;
 
 public class InsertInterceptorTest {
@@ -27,6 +26,7 @@ public class InsertInterceptorTest {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void testInsertInterceptorWithCollection() {
         // Set up interceptor to add prefix to names
         context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
@@ -111,6 +111,7 @@ public class InsertInterceptorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testInsertInterceptorWithNullCollection() {
         context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
             if(insertQuery.getEntity() == CustomerEntity.class) {

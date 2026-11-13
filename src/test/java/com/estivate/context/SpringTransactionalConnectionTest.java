@@ -63,7 +63,7 @@ public class SpringTransactionalConnectionTest {
 			Assert.assertEquals("force rollback", expected.getMessage());
 		}
 
-		Long count = Estivate.selectQuery(PersistBenchEntity.class).fetchCountAll(context);
+		Long count = Estivate.selectQuery(PersistBenchEntity.class).extractCountAll(context);
 		Assert.assertEquals(Long.valueOf(0L), count);
 	}
 
@@ -79,7 +79,7 @@ public class SpringTransactionalConnectionTest {
 			context.insert(entity);
 		});
 
-		Long count = Estivate.selectQuery(PersistBenchEntity.class).fetchCountAll(context);
+		Long count = Estivate.selectQuery(PersistBenchEntity.class).extractCountAll(context);
 		Assert.assertEquals(Long.valueOf(1L), count);
 	}
 }

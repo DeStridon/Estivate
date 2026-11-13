@@ -9,11 +9,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -181,7 +179,9 @@ public class EntityMapper<U> {
 				continue;
 			}
 			if(columnMapping.getTransformer() != null && !(columnMapping.getTransformer() instanceof IdentityFunction)) {
-				value = ((Function<Object, Object>) columnMapping.getTransformer()).apply(value);
+				@SuppressWarnings("unchecked")
+				Function<Object, Object> transformer = (Function<Object, Object>) columnMapping.getTransformer();
+				value = transformer.apply(value);
 			}
 			if(value != null) {
 				field.set(obj, value);
@@ -213,7 +213,9 @@ public class EntityMapper<U> {
 			}
 			Object convertedValue = convertValue(field, row[i]);
 			if(columnMapping.getTransformer() != null && !(columnMapping.getTransformer() instanceof IdentityFunction)) {
-				convertedValue = ((Function<Object, Object>) columnMapping.getTransformer()).apply(convertedValue);
+				@SuppressWarnings("unchecked")
+				Function<Object, Object> transformer = (Function<Object, Object>) columnMapping.getTransformer();
+				convertedValue = transformer.apply(convertedValue);
 			}
 			byField.put(field, convertedValue);
 		}
@@ -240,7 +242,9 @@ public class EntityMapper<U> {
 			}
 			Object value = values[index];
 			if(columnMapping.getTransformer() != null && !(columnMapping.getTransformer() instanceof IdentityFunction)) {
-				value = ((Function<Object, Object>) columnMapping.getTransformer()).apply(value);
+				@SuppressWarnings("unchecked")
+				Function<Object, Object> transformer = (Function<Object, Object>) columnMapping.getTransformer();
+				value = transformer.apply(value);
 			}
 			byField.put(field, value);
 		}
@@ -466,7 +470,7 @@ public class EntityMapper<U> {
 				int ordinal = Integer.parseInt(raw);
 				return type.getEnumConstants()[ordinal];
 			}
-			return Enum.valueOf((Class) type, raw);
+			return enumValueOf(type, raw);
 		}
 
 		if(type == String.class) {
@@ -727,7 +731,7 @@ public class EntityMapper<U> {
 		// @Enumerated via cached FieldBinding
 		if(type instanceof Class && ((Class<?>) type).isEnum() && binding != null && binding.getEnumMode() != FieldBinding.EnumMode.NONE) {
 			if(binding.getEnumMode() == FieldBinding.EnumMode.STRING) {
-				return Enum.valueOf((Class) type, value);
+				return enumValueOf((Class<?>) type, value);
 			}
 			int ordinal = Integer.parseInt(value);
 			return field.getType().getEnumConstants()[ordinal];
@@ -986,6 +990,11 @@ public class EntityMapper<U> {
 		}
 
 		return new ColumnMapping(Estivate.attribute(entityClass, field.getName()), field, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <E extends Enum<E>> Object enumValueOf(Class<?> enumType, String value) {
+		return Enum.valueOf((Class<E>) enumType, value);
 	}
 		
 }

@@ -38,8 +38,10 @@ public class EntityColumn {
 
 	private Integer dimension;
 	private Integer scale;
+	@Builder.Default
 	private boolean nullable = true;
 	private String defaultValue;
+	@Builder.Default
 	private boolean autoIncrement = false;
 
 

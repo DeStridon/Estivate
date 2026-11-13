@@ -112,6 +112,7 @@ public class SelectInterceptorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testInsertPreProcessor() {
         context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
             if(insertQuery.getEntity() == CustomerEntity.class) {
@@ -210,6 +211,7 @@ public class SelectInterceptorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testPreProcessorWithInsertQuery() {
         context.insertInterceptor = (InsertQuery<?> insertQuery) -> {
             if(insertQuery.getEntity() == CustomerEntity.class) {

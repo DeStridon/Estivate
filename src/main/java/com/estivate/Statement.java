@@ -10,20 +10,16 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.context.Context;
 import com.estivate.query.Aggregator;
 import com.estivate.query.Attribute;
 import com.estivate.query.Criterion;
-import com.estivate.query.AlterQuery;
-import com.estivate.query.CreateQuery;
 import com.estivate.query.DeleteQuery;
 import com.estivate.query.EstivateNode;
 import com.estivate.query.Join;
@@ -139,7 +135,7 @@ public class Statement implements AutoCloseable{
 		if(query instanceof UpdateQuery) {
 			appendQuery("SET");
 			
-			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery) query).getUpdates();
+			LinkedHashMap<Attribute, Object> attributeMap = ((UpdateQuery<?>) query).getUpdates();
 			boolean first = true;
 			for(Map.Entry<Attribute, Object> entry : attributeMap.entrySet()) {
 
@@ -329,6 +325,7 @@ public class Statement implements AutoCloseable{
 		}
 		if(parameter instanceof SelectQuery) {
 			SelectQuery<?> selectQuery = (SelectQuery<?>) parameter;
+			@SuppressWarnings("resource")
 			Statement subStatement = new Statement(context, connection, selectQuery);
 			parameters.addAll(subStatement.parameters);
 			return "(" + subStatement.query() + ")";
@@ -500,12 +497,12 @@ public class Statement implements AutoCloseable{
 
 		if(join.rightEntity instanceof SubQueryEntity<?>) {
 			appendQuery("(");
+			@SuppressWarnings("resource")
 			Statement subStatement = new Statement(context, connection, ((SubQueryEntity<?>) join.rightEntity).query);
 			appendQuery(subStatement.query());
 			appendQuery(") AS ");
 			appendQuery(join.rightEntity.alias);
 			parameters.addAll(subStatement.parameters);
-			
 		}
 		else{
 			appendQuery(context.mappedTableName(join.rightEntity.entity));
@@ -524,6 +521,7 @@ public class Statement implements AutoCloseable{
 		if(entity instanceof SubQueryEntity<?>){
 
 			appendQuery("(");
+			@SuppressWarnings("resource")
 			Statement subStatement = new Statement(context, connection, ((SubQueryEntity<?>) entity).query);
 			appendQuery(subStatement.query());
 			appendQuery(") AS ");
@@ -690,12 +688,14 @@ public class Statement implements AutoCloseable{
 			Criterion.InSubQuery subQuery = (Criterion.InSubQuery) node;
 			appendAttributeAsParameter(subQuery.attribute);
 			appendQuery(subQuery.include ? "IN" : "NOT IN");
+			@SuppressWarnings("resource")
 			Statement subStatement = new Statement(context, connection, subQuery.subQuery);
 			appendQuery("("+subStatement.query()+")");
 			parameters.addAll(subStatement.parameters);
 		}
 		else if(node instanceof Criterion.ExistsSubQuery){
 			Criterion.ExistsSubQuery subQuery = (Criterion.ExistsSubQuery) node;
+			@SuppressWarnings("resource")
 			Statement subStatement = new Statement(context, connection, subQuery.subQuery);
 			appendQuery(subQuery.include ? "EXISTS": "NOT EXISTS");
 			appendQuery("("+subStatement.query()+")");

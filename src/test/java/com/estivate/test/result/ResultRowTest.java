@@ -5,7 +5,6 @@ import com.estivate.test.query.h2.H2TestDatabase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;

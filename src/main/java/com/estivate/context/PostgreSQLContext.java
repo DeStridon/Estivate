@@ -14,6 +14,7 @@ import com.estivate.index.Annotations.IndexType;
 import com.estivate.index.Annotations.TableIndex;
 import com.estivate.query.CreateQuery.Index;
 import com.estivate.reconciliation.DatabaseColumn;
+import com.estivate.result.ResultRow;
 
 import lombok.SneakyThrows;
 
@@ -112,7 +113,7 @@ public class PostgreSQLContext extends Context {
 							+ "ORDER BY ordinal_position");
 
 			List<DatabaseColumn> fields = new ArrayList<>();
-			for (com.estivate.result.ResultRow row : fetchListAsResults(statement)) {
+			for (ResultRow row : fetch(statement).getRows()) {
 				String dataType = canonicalType(row.asString("data_type"));
 				boolean identity = "YES".equalsIgnoreCase(row.asString("is_identity"));
 				Integer length = row.asInteger("character_maximum_length");
@@ -162,8 +163,8 @@ public class PostgreSQLContext extends Context {
 							+ "WHERE n.nspname = current_schema() AND t.relname = '" + lookup + "' "
 							+ "ORDER BY i.relname, cols.ord");
 
-			Map<String, List<com.estivate.result.ResultRow>> byName = new LinkedHashMap<>();
-			for (com.estivate.result.ResultRow row : fetchListAsResults(statement)) {
+			Map<String, List<ResultRow>> byName = new LinkedHashMap<>();
+			for (ResultRow row : fetch(statement).getRows()) {
 				byName.computeIfAbsent(row.asString("index_name"), key -> new ArrayList<>()).add(row);
 			}
 

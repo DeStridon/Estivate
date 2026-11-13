@@ -13,6 +13,8 @@ import com.estivate.Estivate;
 import com.estivate.query.Attribute.Function;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
@@ -760,6 +762,7 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 		return self();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Q processFieldAnnotations(Field field, Object value) {
 		// Handle @Eq annotation
 		QueryMapping.Eq eq = field.getAnnotation(QueryMapping.Eq.class);
@@ -1046,8 +1049,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	/* Order */
 
 	@SuperBuilder
-	@lombok.Data
-	@lombok.AllArgsConstructor
+	@Data
+	@AllArgsConstructor
 	public static class Order extends Attribute{
 		public Direction direction;
 		public enum Direction{

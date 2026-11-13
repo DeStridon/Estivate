@@ -42,7 +42,6 @@ public class UpdateQuery<E> extends Query<UpdateQuery<E>, E> {
         return set(Estivate.attribute(getter), value);
     }
 
-	@SuppressWarnings("unchecked")
 	public UpdateQuery<E> clone() {
 		UpdateQuery<E> queryClone = new UpdateQuery<E>(entity);
 

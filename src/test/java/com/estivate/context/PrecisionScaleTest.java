@@ -113,10 +113,6 @@ public class PrecisionScaleTest {
                 .findFirst()
                 .orElse(null);
 
-        EntityColumn entityColumn = context.entityColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
-
-        DatabaseColumn databaseColumn = context.databaseColumn(EntityMetaCache.findField(PrecisionScaleEntity.class, PrecisionScaleEntity.Fields.amount));
-
         assertNotNull(delta);
         assertTrue(delta.getMismatchs().contains(Mismatch.SCALE));
         assertEquals(2, delta.getProjectedDefinition().getScale());

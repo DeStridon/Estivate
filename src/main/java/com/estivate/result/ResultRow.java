@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +43,7 @@ public class ResultRow {
 
 	
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <T> T as(Entity<T> entity) throws SecurityException, IllegalArgumentException {
 		
 		String key = resultTable.context.nameMapper.toEntityName(entity);
@@ -100,8 +100,8 @@ public class ResultRow {
 	public Character 		asChar(String column) { String value = asString(column); return value == null ? null : value.charAt(0); }
 	public Character 		asChar(Attribute attribute) { String value = asString(attribute); return value == null ? null : value.charAt(0); }
 	
-	public <T extends Enum<T>> T asStringEnum(String column, Class<T> enumClass) { String value = asString(column); return value == null ? null : (T) Enum.valueOf((Class<T>)enumClass, asString(column)); }
-	public <T extends Enum<T>> T asOrdinalEnum(String column, Class<T> enumClass) { String value = asString(column); return value == null ? null : (T) ((Class<T>)enumClass).getEnumConstants()[asInteger(column)]; }
+	public <T extends Enum<T>> T asStringEnum(String column, Class<T> enumClass) { String value = asString(column); return value == null ? null : Enum.valueOf(enumClass, value); }
+	public <T extends Enum<T>> T asOrdinalEnum(String column, Class<T> enumClass) { String value = asString(column); return value == null ? null : enumClass.getEnumConstants()[asInteger(column)]; }
 	
 
 	private Integer indexOf(String column){
@@ -122,10 +122,12 @@ public class ResultRow {
 	}
 
 	@SneakyThrows
+	@SuppressWarnings("unchecked")
 	public <T> T as(Class<?> c, String attribute, Function function) {
-		
-		if(function == null || function.getReturnType() == null){
-//		try {
+
+		Class<?> returnType = function == null ? null : function.getReturnType();
+
+		if(returnType == null){
 			Field field = EntityMetaCache.findField(c, attribute);
 			Type type = field.getGenericType();
 
@@ -148,42 +150,57 @@ public class ResultRow {
 			}
 			// @Enumerated
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
-	
+
 				javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
+				String column = resultTable.context.nameMapper.toEntityNameAttribute(c, attribute);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
-					return (T) asStringEnum(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
+					return asEnumFromString(column, (Class<?>) type);
 				}
 				else {
-					return (T) asOrdinalEnum(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
+					return asEnumFromOrdinal(column, (Class<?>) type);
 				}
 			}
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
 				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
+				String column = resultTable.context.nameMapper.toEntityNameAttribute(c, attribute);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
-					return (T) asStringEnum(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
+					return asEnumFromString(column, (Class<?>) type);
 				}
 				else {
-					return (T) asOrdinalEnum(resultTable.context.nameMapper.toEntityNameAttribute(c, attribute), (Class) type);
+					return asEnumFromOrdinal(column, (Class<?>) type);
 				}
 			}
 			else {
 				log.error("This type is not mapped yet : "+type);
 			}
 		}
-		else if(function.getReturnType() == Integer.class){ return (T) asInteger(c, attribute, function); }
-		else if(function.getReturnType() == Long.class){ 	return (T) asLong(c, attribute, function); }
-		else if(function.getReturnType() == Float.class){ 	return (T) asFloat(c, attribute, function); }
-		else if(function.getReturnType() == Double.class){	return (T) asDouble(c, attribute, function); }
-		else if(function.getReturnType() == String.class){ return (T) asString(c, attribute, function); }
-		else if(function.getReturnType() == Character.class){ return (T) asChar(c, attribute, function); }
-		else if(function.getReturnType() == Boolean.class){ return (T) asBoolean(c, attribute, function); }
-		else if(function.getReturnType() == Byte.class){ return (T) asByte(c, attribute, function); }
-		else if(function.getReturnType() == Short.class){ return (T) asShort(c, attribute, function); }
-		else if(function.getReturnType() == Date.class){ return (T) asDate(c, attribute, function); }
-		else if(function.getReturnType() == LocalDateTime.class){ return (T) asLocalDateTime(c, attribute, function); }
-		else if(function.getReturnType() == Instant.class){ return (T) asInstant(c, attribute, function); }
-		else if(function.getReturnType() == LocalDate.class){ return (T) asLocalDate(c, attribute, function); }
-		log.error("This type is not mapped yet : "+function.getReturnType()); return null;
+		else if(returnType == Integer.class){ return (T) asInteger(c, attribute, function); }
+		else if(returnType == Long.class){ 	return (T) asLong(c, attribute, function); }
+		else if(returnType == Float.class){ 	return (T) asFloat(c, attribute, function); }
+		else if(returnType == Double.class){	return (T) asDouble(c, attribute, function); }
+		else if(returnType == String.class){ return (T) asString(c, attribute, function); }
+		else if(returnType == Character.class){ return (T) asChar(c, attribute, function); }
+		else if(returnType == Boolean.class){ return (T) asBoolean(c, attribute, function); }
+		else if(returnType == Byte.class){ return (T) asByte(c, attribute, function); }
+		else if(returnType == Short.class){ return (T) asShort(c, attribute, function); }
+		else if(returnType == Date.class){ return (T) asDate(c, attribute, function); }
+		else if(returnType == LocalDateTime.class){ return (T) asLocalDateTime(c, attribute, function); }
+		else if(returnType == Instant.class){ return (T) asInstant(c, attribute, function); }
+		else if(returnType == LocalDate.class){ return (T) asLocalDate(c, attribute, function); }
+		else {
+			log.error("This type is not mapped yet : "+returnType);
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T, E extends Enum<E>> T asEnumFromString(String column, Class<?> enumType) {
+		return (T) asStringEnum(column, (Class<E>) enumType);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T, E extends Enum<E>> T asEnumFromOrdinal(String column, Class<?> enumType) {
+		return (T) asOrdinalEnum(column, (Class<E>) enumType);
 	}
 
 	public <T, R> R  as(AttributeGetter<T, R> attributeGetter) {
@@ -283,29 +300,28 @@ public class ResultRow {
 	
 
 	// @Enumerated
-	public Enum asEnum(Attribute attribute) {
+	public Enum<?> asEnum(Attribute attribute) {
 		try {
-			Class entity = attribute.getEntity().entity;
 			Field field = attribute.getEntity().entity.getDeclaredField(attribute.getAttribute());
 			Type type = field.getGenericType();
-			
+
 			if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
-	
+
 				javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
-					return Enum.valueOf((Class)type, asString(attribute));
+					return enumValueOf((Class<?>) type, asString(attribute));
 				}
 				else {
-					return (Enum) field.getType().getEnumConstants()[asInteger(attribute)];
+					return (Enum<?>) field.getType().getEnumConstants()[asInteger(attribute)];
 				}
 			}
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
 				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
-					return Enum.valueOf((Class)type, asString(attribute));
+					return enumValueOf((Class<?>) type, asString(attribute));
 				}
 				else {
-					return (Enum) field.getType().getEnumConstants()[asInteger(attribute)];
+					return (Enum<?>) field.getType().getEnumConstants()[asInteger(attribute)];
 				}
 			}
 		}
@@ -314,9 +330,15 @@ public class ResultRow {
 		}
 		return null;
 	}
-	public Enum asEnum(Class<?> entity, String attribute) { return asEnum(Estivate.attribute(entity, attribute)); }
-	public Enum asEnum(Entity<?> entity, String attribute) { return asEnum(Estivate.attribute(entity, attribute)); }
-	public <T,R> Enum asEnum(AttributeGetter<T, R> attributeGetter) { return asEnum(Estivate.attribute(attributeGetter)); }
+
+	@SuppressWarnings("unchecked")
+	private static <E extends Enum<E>> Enum<?> enumValueOf(Class<?> enumType, String value) {
+		return Enum.valueOf((Class<E>) enumType, value);
+	}
+
+	public Enum<?> asEnum(Class<?> entity, String attribute) { return asEnum(Estivate.attribute(entity, attribute)); }
+	public Enum<?> asEnum(Entity<?> entity, String attribute) { return asEnum(Estivate.attribute(entity, attribute)); }
+	public <T,R> Enum<?> asEnum(AttributeGetter<T, R> attributeGetter) { return asEnum(Estivate.attribute(attributeGetter)); }
     
 
 	public Long getCount() { return asLong("count(*)"); }

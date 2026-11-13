@@ -66,6 +66,14 @@ public class Attribute  {
 
     }
 
+	@Override
+	public int hashCode() {
+		if(StringUtils.isBlank(this.alias)) {
+			return Objects.hash(entity, attribute, function);
+		}
+		return Objects.hash(entity, attribute, function, alias);
+	}
+
 	
 	
     @Data
@@ -81,10 +89,16 @@ public class Attribute  {
 			return prefix + (emptyParameter ? "" : attribute) + suffix;
 		}
 
-		public boolean equals(Function function){
-			if(function == null) return false;
-			boolean result = prefix.equals(function.prefix) && suffix.equals(function.suffix);
-			return result;
+		@Override
+		public boolean equals(Object object){
+			if(object == null || !(object instanceof Function)) return false;
+			Function function = (Function) object;
+			return Objects.equals(prefix, function.prefix) && Objects.equals(suffix, function.suffix);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(prefix, suffix);
 		}
 
 		public static Function reduce(Function sup, Function sub){

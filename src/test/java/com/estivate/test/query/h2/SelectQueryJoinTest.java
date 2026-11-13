@@ -78,21 +78,7 @@ public class SelectQueryJoinTest {
 	}
 	
 
-	@Test
-	public void whereJoiningTest() throws SQLException {
-		
-		CustomerEntity parent = CustomerEntity.builder().name("join test name 2").build();
-		context.updateOrInsert(parent);
-		
-		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());
-		context.updateOrInsert(OrderEntity.builder().customerId(parent.getId()).build());
-		
-		SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
-				.eq(OrderEntity.class, OrderEntity.Fields.status, "source content 1");
-		
-		String queryString = context.queryAsString(query);
-	
-	}
+
 	
 	@Test
 	public void nameMappingTest() throws SQLException {

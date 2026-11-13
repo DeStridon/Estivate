@@ -17,10 +17,8 @@ import com.estivate.Entity;
 import com.estivate.Entity.SubQueryEntity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.result.ResultRow;
 import com.estivate.result.ResultTable;
 import com.estivate.util.EntityMetaCache;
-import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.ReflectionUtils;
 
@@ -403,7 +401,6 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	// Having
 	public SelectQuery<E> having(EstivateNode node) { this.having = node; return this; }
 	
-	@SuppressWarnings("unchecked")
 	public SelectQuery<E> clone() {
 		SelectQuery<E> queryClone = new SelectQuery<E>(entity);
 		
@@ -452,29 +449,30 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public ResultTable fetch(Context context) { return context.fetch(this); }
 
 	// Base entity shortcuts (uses the query's type parameter E)
-	@SuppressWarnings("unchecked")
 	public 		E 	extractSingle(Context context) { return context.extractSingle(this); }
 	public <T> 	T 	extractSingle(Context context, Class<T> clazz) { return context.extractSingle(this, clazz); }
 	public <T> 	T 	extractSingle(Context context, Entity<T> entity) { return context.extractSingle(this, entity); }
 	public 	Object 	extractSingle(Context context, Attribute attribute) { return context.extractSingle(this, attribute); }
 	public 	Object 	extractSingle(Context context, Class<?> entity, String attributeName) { return context.extractSingle(this, entity, attributeName); }
 	public 	Object 	extractSingle(Context context, Entity<?> entity, String attributeName) { return context.extractSingle(this, entity.entity, attributeName); }
+	@SuppressWarnings("unchecked")
 	public <T, P> P extractSingle(Context context, AttributeGetter<T, P> getter) { return (P) extractSingle(context, Estivate.attribute(getter));}
 	public Object 	extractSingle(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return context.extractSingle(this, entity, attributeName, function); }
 	public Object 	extractSingle(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return context.extractSingle(this, entity.entity, attributeName, function); }
+	@SuppressWarnings("unchecked")
 	public <T, P> P extractSingle(Context context, AttributeGetter<T, P> getter, Attribute.Function function) { return (P) extractSingle(context, Estivate.attribute(getter, function));}
 	
-	
-	@SuppressWarnings("unchecked")
 	public 			Optional<E> extractOptional(Context context) { return context.extractOptional(this, (Class<E>) entity.entity); }
 	public <T> 		Optional<T> extractOptional(Context context, Class<T> clazz) { return context.extractOptional(this, clazz); }
 	public <T> 		Optional<T> extractOptional(Context context, Entity<T> entity) { return context.extractOptional(this, entity); }
 	public 			Optional<?> extractOptional(Context context, Attribute attribute) { return context.extractOptional(this, attribute); }
 	public 			Optional<?> extractOptional(Context context, Entity<?> entity, String attributeName) { return context.extractOptional(this, entity.entity, attributeName); }
 	public 			Optional<?> extractOptional(Context context, Class<?> entity, String attributeName) { return context.extractOptional(this, entity, attributeName); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	Optional<P> extractOptional(Context context, AttributeGetter<T, P> attributeGetter) { return (Optional<P>) context.extractOptional(this, Estivate.attribute(attributeGetter)); }
 	public 			Optional<?> extractOptional(Context context, Entity<?> entity, String attributeName, Attribute.Function function) { return context.extractOptional(this, entity.entity, attributeName, function); }
 	public 			Optional<?> extractOptional(Context context, Class<?> entity, String attributeName, Attribute.Function function) { return context.extractOptional(this, entity, attributeName, function); }
+	@SuppressWarnings("unchecked")
 	public <T, P> 	Optional<P> extractOptional(Context context, AttributeGetter<T, P> attributeGetter, Attribute.Function function) { return (Optional<P>) context.extractOptional(this, Estivate.attribute(attributeGetter, function)); }
 	
 	

@@ -20,9 +20,11 @@ public class Projection {
 		public Class<?> entity();
 		public String attribute();
 		public String alias() default "";
+		@SuppressWarnings("rawtypes")
 		Class<? extends java.util.function.Function> transformer() default IdentityFunction.class;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static class IdentityFunction implements java.util.function.Function{
 		@Override public Object apply(Object t) { return t; }
 	}
@@ -177,13 +179,13 @@ public class Projection {
 				Object value = projectionField.get(source);
 
 				if(attributeAnnotation.transformer() != IdentityFunction.class){
-					java.util.function.Function<?, ?> transformer = null;
 					try {
-						transformer = attributeAnnotation.transformer().getConstructor().newInstance();
+						@SuppressWarnings("unchecked")
+						java.util.function.Function<Object, Object> transformer = (java.util.function.Function<Object, Object>) attributeAnnotation.transformer().getConstructor().newInstance();
+						value = transformer.apply(value);
 					} catch (Exception e) {
 						log.error("Impossible to create transformer for field " + projectionField.getName(), e);
 					}
-					value = ((java.util.function.Function<Object, Object>) transformer).apply(value);
 				}
 
 				Field entityField = EntityMetaCache.findField(targetEntityClass, attributeAnnotation.attribute());
@@ -208,13 +210,13 @@ public class Projection {
 				sourceField.setAccessible(true);
 				Object value = sourceField.get(source);
 				if(attributeAnnotation.transformer() != IdentityFunction.class){
-					java.util.function.Function<?, ?> transformer = null;
 					try {
-						transformer = attributeAnnotation.transformer().getConstructor().newInstance();
+						@SuppressWarnings("unchecked")
+						java.util.function.Function<Object, Object> transformer = (java.util.function.Function<Object, Object>) attributeAnnotation.transformer().getConstructor().newInstance();
+						value = transformer.apply(value);
 					} catch (Exception e) {
 						log.error("Impossible to create transformer for field " + sourceField.getName(), e);
 					}
-					value = ((java.util.function.Function<Object, Object>) transformer).apply(value);
 				}
 				targetField.setAccessible(true);
 				targetField.set(target, value);

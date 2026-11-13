@@ -12,11 +12,13 @@ import com.estivate.test.entities.misc.StringListConverter;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @SuperBuilder
 @NoArgsConstructor

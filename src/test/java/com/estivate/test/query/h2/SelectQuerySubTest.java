@@ -35,8 +35,8 @@ public class SelectQuerySubTest {
 				.inSubQuery(CustomerEntity.class, AbstractEntity.Fields.id, subQuery);
 		
 		try(Connection connection = context.datasource.getConnection()){
+			@SuppressWarnings("resource")
 			Statement statement = new Statement(context, connection, query);
-			
 			System.out.println(statement.query());
 		}
 		
@@ -86,14 +86,12 @@ public class SelectQuerySubTest {
             .select(ProductEntity.class, ProductEntity.Fields.category)
             .joinInner(ProductEntity.class, Estivate.subQueryEntity(subQuery, "latest"), AbstractEntity.Fields.id, "maxId");
         
-        String queryString = context.queryAsString(query);
-        
-        
-        
+        Assert.assertNotNull(context.queryAsString(query));
+
         List<ResultRow> results = query.fetch(context).getRows();
-        
+
         for(ResultRow result : results) {
-        	ProductCategory productCategory = (ProductCategory) result.asEnum(ProductEntity.class, ProductEntity.Fields.category);
+        	Assert.assertNotNull(result.asEnum(ProductEntity.class, ProductEntity.Fields.category));
         }
         
         

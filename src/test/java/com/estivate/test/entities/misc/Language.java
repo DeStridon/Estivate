@@ -1,6 +1,5 @@
 package com.estivate.test.entities.misc;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 
 
-public enum Language implements Serializable{
+public enum Language {
 	
 	//See https://msdn.microsoft.com/en-us/library/ee825488(v=cs.20).aspx for reference
 

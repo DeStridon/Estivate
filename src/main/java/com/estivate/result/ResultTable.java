@@ -38,7 +38,6 @@ import com.estivate.result.IMapper.ShortMapper;
 import com.estivate.result.IMapper.StringEnumMapper;
 import com.estivate.result.IMapper.StringMapper;
 import com.estivate.util.EntityMetaCache;
-import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.Data;
@@ -86,6 +85,7 @@ public class ResultTable implements Iterable<ResultRow>{
     public Object asSingle(Attribute attribute) { return asSingleMapped(new AttributeMapper(context, attribute.getEntity().entity, attribute.attribute), indexOf(attribute)); }
     public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(context, entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
     public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(context, entity.entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
+    @SuppressWarnings("unchecked")
     public <T, P> P asSingle(AttributeGetter<T, P> attributeGetter) { return (P) asSingle(Estivate.attribute(attributeGetter)); }
 
 
@@ -175,6 +175,7 @@ public class ResultTable implements Iterable<ResultRow>{
     public Optional<?> asOptional(Attribute attribute) { return Optional.ofNullable(asSingle(attribute)); }
     public Optional<?> asOptional(Class<?> entity, String attributeName) { return asOptional(Estivate.attribute(entity, attributeName)); }
     public Optional<?> asOptional(Entity<?> entity, String attributeName) { return asOptional(Estivate.attribute(entity, attributeName)); }
+    @SuppressWarnings("unchecked")
     public <T, P> Optional<P> asOptional(AttributeGetter<T, P> attributeGetter) { return (Optional<P>) asOptional(Estivate.attribute(attributeGetter)); }
 
     public Optional<String> asOptionalString() { return Optional.ofNullable(asSingleString()); }

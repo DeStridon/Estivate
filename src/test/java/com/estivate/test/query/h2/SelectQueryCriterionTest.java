@@ -85,8 +85,8 @@ public class SelectQueryCriterionTest {
 		assertEquals(1, results.size());
 		
 		for(ResultRow result : results) {
-			OrderEntity child = result.as(OrderEntity.class);
-			CustomerEntity parent = result.as(CustomerEntity.class);
+			Assert.assertNotNull(result.as(OrderEntity.class));
+			Assert.assertNotNull(result.as(CustomerEntity.class));
 		}
 		
 	}

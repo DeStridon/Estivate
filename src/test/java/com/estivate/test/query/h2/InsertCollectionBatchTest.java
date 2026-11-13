@@ -40,7 +40,7 @@ public class InsertCollectionBatchTest {
         Assert.assertTrue(first.getId() > 0);
         Assert.assertTrue(second.getId() > 0);
         Assert.assertNotEquals(first.getId(), second.getId());
-        Assert.assertEquals(2L, Estivate.selectQuery(ProductEntity.class).fetchCountAll(context).longValue());
+        Assert.assertEquals(2L, Estivate.selectQuery(ProductEntity.class).extractCountAll(context).longValue());
     }
 
     @Test
@@ -52,7 +52,7 @@ public class InsertCollectionBatchTest {
 
         Assert.assertTrue(customer.getId() > 0);
         Assert.assertTrue(product.getId() > 0);
-        Assert.assertEquals(2L, Estivate.selectQuery(CustomerEntity.class).fetchCountAll(context).longValue());
-        Assert.assertEquals(1L, Estivate.selectQuery(ProductEntity.class).fetchCountAll(context).longValue());
+        Assert.assertEquals(2L, Estivate.selectQuery(CustomerEntity.class).extractCountAll(context).longValue());
+        Assert.assertEquals(1L, Estivate.selectQuery(ProductEntity.class).extractCountAll(context).longValue());
     }
 }

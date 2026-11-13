@@ -5,25 +5,20 @@ import com.estivate.test.query.h2.H2TestDatabase;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import com.estivate.Statement;
 import com.estivate.context.Context;
 import com.estivate.query.SelectQuery;
 import com.estivate.result.ResultRow;
 import com.estivate.test.entities.AbstractEntity;
 import com.estivate.test.entities.CustomerEntity;
-import com.estivate.test.entities.OrderEntity;
 import com.estivate.test.entities.ProductEntity;
 import com.estivate.test.entities.ProductEntity.ProductCategory;
-import com.estivate.util.Chronometer;
+
 
 public class ResultTest {
 	

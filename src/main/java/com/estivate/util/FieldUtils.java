@@ -7,7 +7,6 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,13 +15,10 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
-import com.estivate.query.SelectQuery;
 import com.estivate.reconciliation.DatabaseColumnDefinition;
-import com.estivate.result.EntityMapper.ColumnMapping;
 
 import lombok.extern.slf4j.Slf4j;
 

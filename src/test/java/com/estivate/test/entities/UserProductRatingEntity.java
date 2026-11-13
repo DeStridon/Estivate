@@ -10,11 +10,11 @@ import lombok.experimental.FieldNameConstants;
 public class UserProductRatingEntity {
 
     @VirtualForeignKey(entity = CustomerEntity.class)
-    private Long userId;
+    Long userId;
 
     @VirtualForeignKey(entity = ProductEntity.class)
-    private Long productId;
+    Long productId;
 
-    private float rating;
+    float rating;
 	
 }

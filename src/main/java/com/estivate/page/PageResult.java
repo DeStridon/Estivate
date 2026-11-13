@@ -1,12 +1,8 @@
 package com.estivate.page;
 
-import java.util.Collections;
 
-import com.estivate.context.Context;
-import com.estivate.query.SelectQuery;
 import com.estivate.result.ResultTable;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

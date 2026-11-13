@@ -1,12 +1,10 @@
 package com.estivate.query;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estivate.Entity;
 
 import lombok.Data;
 import lombok.Getter;

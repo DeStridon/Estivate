@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import com.estivate.Estivate;
 import com.estivate.context.Context;
-import com.estivate.query.Projection;
+
 import com.estivate.query.SelectQuery;
 
 import com.estivate.test.entities.AbstractEntity;
@@ -26,9 +26,7 @@ import com.estivate.test.entities.CustomerEntity;
 import com.estivate.test.entities.CustomerEntity.Country;
 import com.estivate.test.entities.ProductEntity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 
 public class SelectProjectToAttributeTest {
 
@@ -130,6 +128,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, testCustomer1.getId());
 
+        @SuppressWarnings("unchecked")
         Optional<String> name = (Optional<String>) query.extractOptional(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
         assertTrue(name.isPresent(), "Name should be present");
@@ -141,6 +140,7 @@ public class SelectProjectToAttributeTest {
         SelectQuery<CustomerEntity> query = Estivate.selectQuery(CustomerEntity.class)
             .eq(CustomerEntity.class, AbstractEntity.Fields.id, 99999L);
 
+        @SuppressWarnings("unchecked")
         Optional<String> name = (Optional<String>) query.extractOptional(context, CustomerEntity.class, CustomerEntity.Fields.name);
 
         assertFalse(name.isPresent(), "Name should not be present for non-existing data");

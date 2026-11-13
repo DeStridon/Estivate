@@ -17,6 +17,7 @@ public final class PostgresqlTestDatabase {
 	private PostgresqlTestDatabase() {
 	}
 
+	@SuppressWarnings("resource")
 	public static PostgreSQLContainer<?> newContainer() {
 		return new PostgreSQLContainer<>("postgres:16-alpine")
 				.withDatabaseName("estivate")

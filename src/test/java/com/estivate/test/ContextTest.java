@@ -63,8 +63,7 @@ public class ContextTest {
 		Entity<CustomerEntity> customer = new Entity<>(CustomerEntity.class, "myTask");
 		
 		SelectQuery<CustomerEntity> query = Estivate.selectQuery(customer).in(customer, AbstractEntity.Fields.id, Arrays.asList(1,2,3));
-		List<CustomerEntity> resultQueries = context.extractList(query);
-		
+		Assert.assertNotNull(context.extractList(query));
 	}
 
 

@@ -56,12 +56,13 @@ public class OffsetPagingStrategy implements PagingStrategy {
         // Determine if there's a next page
         boolean hasNext = resultTable.size() > pageSize;
         
-        // Fetch total count if requested
-        Long totalElements = null;
+        long totalElements = -1;
+        int totalPages = -1;
         if (fetchTotalCount) {
             totalElements = context.extractCountAll(query);
+            totalPages = pageSize > 0 ? (int) ((totalElements + pageSize - 1) / pageSize) : -1;
         }
-        
+
         return PageResult.builder()
             .rows(limitToPageSize(resultTable, pageSize))
             .columnNames(resultTable.getColumnNames())
@@ -69,6 +70,8 @@ public class OffsetPagingStrategy implements PagingStrategy {
             .pageSize(pageSize)
             .pagingStrategy(new OffsetPagingStrategy(pageNumber + 1, pageSize))
             .hasNext(hasNext)
+            .totalElements(totalElements)
+            .totalPages(totalPages)
             .build();
     }
 

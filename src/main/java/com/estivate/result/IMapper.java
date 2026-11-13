@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
@@ -155,7 +154,7 @@ public abstract class IMapper<U> {
     
                 javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
                 if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
-                    return Enum.valueOf((Class)type, row);
+                    return enumValueOf((Class<?>) type, row);
                 }
                 else {
                     int ordinal = Integer.parseInt(row);
@@ -165,7 +164,7 @@ public abstract class IMapper<U> {
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
 				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
-					return Enum.valueOf((Class)type, row);
+					return enumValueOf((Class<?>) type, row);
 				}
 				else {
 					int ordinal = Integer.parseInt(row);
@@ -175,6 +174,11 @@ public abstract class IMapper<U> {
 			
 			log.error("This type is not mapped yet : "+type);
 			return null;
+		}
+
+		@SuppressWarnings("unchecked")
+		private static <E extends Enum<E>> Object enumValueOf(Class<?> enumType, String value) {
+			return Enum.valueOf((Class<E>) enumType, value);
 		}
 	
 	}

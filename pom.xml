@@ -225,6 +225,11 @@
 				<version>3.11.0</version>
 				<configuration>
 					<release>${java.version}</release>
+					<compilerArgs>
+						<arg>-Xlint:unchecked</arg>
+						<arg>-Xlint:rawtypes</arg>
+					</compilerArgs>
+					<showWarnings>true</showWarnings>
 				</configuration>
 			</plugin>
 			<plugin>

@@ -27,15 +27,21 @@ public class Chronometer {
 	
 	final String name;
 	
+	@Builder.Default
 	private boolean active = true;
 	/** Threshold in milliseconds before {@link #end(String)} logs. */
+	@Builder.Default
 	private Integer timeThreshold = 5000;
-	
+
+	@Builder.Default
 	private long begin = System.nanoTime();
-	private long lastStep = begin;
-	
+	@Builder.Default
+	private long lastStep = System.nanoTime();
+
 	/** Step durations in seconds (fractional; measured with {@link System#nanoTime()}). */
+	@Builder.Default
 	private List<Pair<String, Float>> steps = new ArrayList<>();
+	@Builder.Default
 	private Map<String, String> details = new LinkedHashMap<>();
 
 	/**

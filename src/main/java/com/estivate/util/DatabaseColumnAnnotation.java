@@ -39,11 +39,6 @@ public class DatabaseColumnAnnotation {
         
 		javax.persistence.Column javaxColumn = field.getDeclaredAnnotation(javax.persistence.Column.class);
 		if (javaxColumn != null) {
-
-			Integer dimension = javaxColumn.length() != 255 ? javaxColumn.length() : null;
-			Integer precision = javaxColumn.precision();
-
-
 			return new DatabaseColumnAnnotation(
 					javaxColumn.length() != 255 ? javaxColumn.length() : null,
 					javaxColumn.precision(),
