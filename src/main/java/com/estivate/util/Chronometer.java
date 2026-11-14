@@ -59,13 +59,18 @@ public class Chronometer {
 	public Chronometer(String name, boolean activated){
 		this.name = name;
 		this.active = activated;
-		
+
 		this.begin = System.nanoTime();
 		this.lastStep = begin;
 		this.timeThreshold = defaultThreshold;
+		// @Builder.Default moves field initializers to the builder only; set them here too.
 		if(!activated) {
 			this.steps = Collections.emptyList();
 			this.details = Collections.emptyMap();
+		}
+		else {
+			this.steps = new ArrayList<>();
+			this.details = new LinkedHashMap<>();
 		}
 	}
 	

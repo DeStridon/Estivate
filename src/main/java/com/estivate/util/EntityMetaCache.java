@@ -285,6 +285,7 @@ public final class EntityMetaCache {
 		}
 		else {
 			fields = new HashSet<>(parent.fields);
+			fieldBindings = new HashMap<>(parent.fieldBindings);
 			for(Field field : objectClass.getDeclaredFields()) {
 				if(field.isSynthetic()) {
 					continue;

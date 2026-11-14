@@ -454,6 +454,9 @@ public class EntityMapper<U> {
 		}
 
 		FieldBinding binding = entityClassMeta.getFieldBinding(field);
+		if(binding == null) {
+			binding = EntityMetaCache.fieldBinding(field);
+		}
 		if(binding != null && binding.hasConverter()) {
 			Object raw = readConverterDatabaseValue(resultSet, index, binding.getConvertDatabaseType());
 			return binding.toEntityAttribute(raw);
@@ -465,7 +468,7 @@ public class EntityMapper<U> {
 			if(raw == null || resultSet.wasNull()) {
 				return null;
 			}
-			FieldBinding enumBinding = binding != null ? binding : EntityMetaCache.fieldBinding(field);
+			FieldBinding enumBinding = binding;
 			if(enumBinding != null && enumBinding.getEnumMode() == FieldBinding.EnumMode.ORDINAL) {
 				int ordinal = Integer.parseInt(raw);
 				return type.getEnumConstants()[ordinal];
