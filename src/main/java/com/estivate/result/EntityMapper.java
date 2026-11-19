@@ -823,7 +823,7 @@ public class EntityMapper<U> {
 				continue;
 			}
 
-			ColumnMapping columnMapping = getColumnMapping(entityClass, field);
+			ColumnMapping columnMapping = getColumnMapping(context, entityClass, field);
 
 			int index = FieldUtils.indexOf(query.getSelects(), columnMapping.getAttribute());
 
@@ -929,19 +929,12 @@ public class EntityMapper<U> {
 		return list;
 	}
 
-	public static ColumnMapping getColumnMapping(Entity<?> entityClass, Field field) {
+	public static ColumnMapping getColumnMapping(Context context, Entity<?> entityClass, Field field) {
 
 		Projection.Attribute attributeAnnotation = field.getDeclaredAnnotation(Projection.Attribute.class);
 
 		if (attributeAnnotation != null) {
-			Function<?, ?> transformer = null;
-			if (attributeAnnotation.transformer() != IdentityFunction.class) {
-				try {
-					transformer = attributeAnnotation.transformer().getConstructor().newInstance();
-				} catch (Exception e) {
-					log.error("Impossible to create transformer for field " + field.getName(), e);
-				}
-			}
+			Function<?, ?> transformer = Projection.createTransformer(context == null ? null : context.getObjectProvider(), attributeAnnotation, field.getName());
 			return new ColumnMapping(
 					Estivate.attribute(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias()),
 					field,

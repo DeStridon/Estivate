@@ -17,6 +17,10 @@ import org.springframework.context.annotation.Import;
  * 
  * <p>A {@link com.estivate.context.Context} bean must be available in the 
  * application context for the managers to function.</p>
+ *
+ * <p>Also registers {@link SpringObjectProvider} and assigns it to each
+ * {@link com.estivate.context.Context} bean, in place of
+ * {@link com.estivate.inject.ConstructorObjectProvider}.</p>
  * 
  * <p>Example usage:</p>
  * <pre>
@@ -37,7 +41,7 @@ import org.springframework.context.annotation.Import;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(EstivateManagerRegistrar.class)
+@Import({ EstivateManagerRegistrar.class, SpringObjectProvider.class })
 public @interface EnableEstivateManagers {
     
     /**

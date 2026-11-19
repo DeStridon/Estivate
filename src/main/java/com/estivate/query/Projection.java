@@ -7,11 +7,10 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.util.Set;
 
+import com.estivate.context.Context;
+import com.estivate.inject.ObjectProvider;
 import com.estivate.util.EntityMetaCache;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class Projection {
 
 	@Target({ ElementType.FIELD, ElementType.RECORD_COMPONENT })
@@ -20,6 +19,12 @@ public class Projection {
 		public Class<?> entity();
 		public String attribute();
 		public String alias() default "";
+		/**
+		 * Applied to the column value before it is written onto the projection or entity field.
+		 * Ignored when left as {@link IdentityFunction}.
+		 * The instance comes from the {@link com.estivate.context.Context} {@link ObjectProvider}.
+		 * The default provider calls the public no-arg constructor.
+		 */
 		@SuppressWarnings("rawtypes")
 		Class<? extends java.util.function.Function> transformer() default IdentityFunction.class;
 	}
@@ -27,6 +32,24 @@ public class Projection {
 	@SuppressWarnings("rawtypes")
 	public static class IdentityFunction implements java.util.function.Function{
 		@Override public Object apply(Object t) { return t; }
+	}
+
+	/**
+	 * Builds the transformer declared on a projection attribute.
+	 * Returns null for {@link IdentityFunction}. Otherwise loads the instance from {@code provider}.
+	 */
+	@SuppressWarnings("unchecked")
+	public static java.util.function.Function<Object, Object> createTransformer(ObjectProvider provider, Attribute attribute, String fieldName) {
+		Class<? extends java.util.function.Function> type = attribute.transformer();
+		if (type == IdentityFunction.class) {
+			return null;
+		}
+		try {
+			return (java.util.function.Function<Object, Object>) ObjectProvider.resolve(provider, type);
+		}
+		catch (RuntimeException e) {
+			throw new IllegalStateException("Impossible to resolve transformer " + type.getName() + " for field " + fieldName, e);
+		}
 	}
 	
 	@Target({ ElementType.FIELD, ElementType.RECORD_COMPONENT })
@@ -158,6 +181,17 @@ public class Projection {
 	 * @throws RuntimeException if fields cannot be accessed
 	 */
 	public static <T>  T mapTo(Object source, T target) {
+		return mapTo(source, target, (ObjectProvider) null);
+	}
+
+	/**
+	 * Same as {@link #mapTo(Object, Object)}, using {@code context}'s {@link ObjectProvider} for transformers.
+	 */
+	public static <T> T mapTo(Object source, T target, Context context) {
+		return mapTo(source, target, context == null ? null : context.getObjectProvider());
+	}
+
+	private static <T> T mapTo(Object source, T target, ObjectProvider provider) {
 		if (source == null || target == null) {
 			return null;
 		}
@@ -178,14 +212,9 @@ public class Projection {
 				projectionField.setAccessible(true);
 				Object value = projectionField.get(source);
 
-				if(attributeAnnotation.transformer() != IdentityFunction.class){
-					try {
-						@SuppressWarnings("unchecked")
-						java.util.function.Function<Object, Object> transformer = (java.util.function.Function<Object, Object>) attributeAnnotation.transformer().getConstructor().newInstance();
-						value = transformer.apply(value);
-					} catch (Exception e) {
-						log.error("Impossible to create transformer for field " + projectionField.getName(), e);
-					}
+				java.util.function.Function<Object, Object> transformer = createTransformer(provider, attributeAnnotation, projectionField.getName());
+				if (transformer != null) {
+					value = transformer.apply(value);
 				}
 
 				Field entityField = EntityMetaCache.findField(targetEntityClass, attributeAnnotation.attribute());
@@ -209,14 +238,9 @@ public class Projection {
 				}
 				sourceField.setAccessible(true);
 				Object value = sourceField.get(source);
-				if(attributeAnnotation.transformer() != IdentityFunction.class){
-					try {
-						@SuppressWarnings("unchecked")
-						java.util.function.Function<Object, Object> transformer = (java.util.function.Function<Object, Object>) attributeAnnotation.transformer().getConstructor().newInstance();
-						value = transformer.apply(value);
-					} catch (Exception e) {
-						log.error("Impossible to create transformer for field " + sourceField.getName(), e);
-					}
+				java.util.function.Function<Object, Object> transformer = createTransformer(provider, attributeAnnotation, sourceField.getName());
+				if (transformer != null) {
+					value = transformer.apply(value);
 				}
 				targetField.setAccessible(true);
 				targetField.set(target, value);

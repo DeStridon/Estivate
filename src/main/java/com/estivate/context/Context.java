@@ -33,6 +33,8 @@ import com.estivate.Estivate;
 import com.estivate.NameMapper;
 import com.estivate.NameMapper.DefaultNameMapper;
 import com.estivate.Statement;
+import com.estivate.inject.ConstructorObjectProvider;
+import com.estivate.inject.ObjectProvider;
 import com.estivate.context.Filter.AlterFilter;
 import com.estivate.context.Filter.DeleteFilter;
 import com.estivate.context.Filter.InsertFilter;
@@ -76,6 +78,8 @@ public abstract class Context {
 	public final Dialect dialect;
 	public boolean tracePerformances = false;
 	@Getter public NameMapper nameMapper = new DefaultNameMapper();
+	/** Builds projection transformers. Replace it with {@link #setObjectProvider(ObjectProvider)} for another container. */
+	@Getter public ObjectProvider objectProvider = new ConstructorObjectProvider();
 	public ZoneId serverZoneId = ZoneOffset.systemDefault();
 	
 	
@@ -119,6 +123,14 @@ public abstract class Context {
 	public Context(DataSource datasource, Dialect dialect) {
 		this.datasource = datasource;
 		this.dialect = dialect;
+	}
+
+	/**
+	 * Replaces the provider used to build projection transformers.
+	 * {@code null} restores {@link ConstructorObjectProvider}.
+	 */
+	public void setObjectProvider(ObjectProvider provider) {
+		this.objectProvider = provider == null ? new ConstructorObjectProvider() : provider;
 	}
 
 	private Chronometer chronometer(String name) {
