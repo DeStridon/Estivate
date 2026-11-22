@@ -20,6 +20,7 @@ import com.estivate.query.Attribute;
 import com.estivate.query.Projection;
 import com.estivate.reconciliation.DatabaseColumnDefinition;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -77,7 +78,7 @@ public class FieldUtils {
 	
 
 	
-	public static <E, P> Attribute attributeFromLambda(AttributeGetter<E, P> getter, Attribute.Function function, String alias) {
+	public static <E, P> Attribute attributeFromLambda(@NonNull AttributeGetter<E, P> getter, Attribute.Function function, String alias) {
 		try {
             SerializedLambda sl = serializeLambda(getter);
 

@@ -45,6 +45,8 @@ import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
+import lombok.NonNull;
+
 
 
 public class Estivate {
@@ -631,145 +633,145 @@ public class Estivate {
 	
 	/* Wrappers for Lambda */
 	
-	public static <E, P> Criterion eq    			(AttributeGetter<E, P> getter, P value) { return eq(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion eqIfNotNull		(AttributeGetter<E, P> getter, P value) { return eqIfNotNull(Estivate.attribute(getter), value); }
-	public static <E, P> EstivateNode eqOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return eqOrFalseIfNull(Estivate.attribute(getter), value); }
-	public static <E> 	 Criterion eqIfNotBlank		(AttributeGetter<E, String> getter, String value) { return eqIfNotBlank(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion eqNullable		(AttributeGetter<E, P> getter, P value) { return eqNullable(Estivate.attribute(getter), value); }
-	public static <E, P> Aggregator eqOrNull		(AttributeGetter<E, P> getter, P value) { return eqOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion eq    			(@NonNull AttributeGetter<E, P> getter, P value) { return eq(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion eqIfNotNull		(@NonNull AttributeGetter<E, P> getter, P value) { return eqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode eqOrFalseIfNull	(@NonNull AttributeGetter<E, P> getter, P value) { return eqOrFalseIfNull(Estivate.attribute(getter), value); }
+	public static <E> 	 Criterion eqIfNotBlank		(@NonNull AttributeGetter<E, String> getter, String value) { return eqIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion eqNullable		(@NonNull AttributeGetter<E, P> getter, P value) { return eqNullable(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator eqOrNull		(@NonNull AttributeGetter<E, P> getter, P value) { return eqOrNull(Estivate.attribute(getter), value); }
 
-	public static <E, P> Criterion notEq 			(AttributeGetter<E, P> getter, P value) { return notEq(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion notEqIfNotNull	(AttributeGetter<E, P> getter, P value) { return notEqIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> 	 Criterion notEqIfNotBlank	(AttributeGetter<E, String> getter, String value) { return notEqIfNotBlank(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion notEqNullable	(AttributeGetter<E, P> getter, P value) { return notEqNullable(Estivate.attribute(getter), value); }
-	public static <E, P> Aggregator notEqOrNull	(AttributeGetter<E, P> getter, P value) { return notEqOrNull(Estivate.attribute(getter), value); }
-
-	
-	public static <E, P> Criterion lt    		(AttributeGetter<E, P> getter, P value)        { return lt(Estivate.attribute(getter), value); }
-	public static <E, P> Aggregator ltOrNull(AttributeGetter<E, P> getter, P value) { return ltOrNull(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion ltIfNotNull   	(AttributeGetter<E, P> getter, P value) { return ltIfNotNull(Estivate.attribute(getter), value); }
-	public static <E, P> EstivateNode ltOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return ltOrFalseIfNull(Estivate.attribute(getter), value); }
-	
-	
-	public static <E, P> Criterion lte   	(AttributeGetter<E, P> getter, P value)        { return lte(Estivate.attribute(getter), value); }
-	public static <E, P> Aggregator lteOrNull(AttributeGetter<E, P> getter, P value) { return lteOrNull(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion lteIfNotNull  	(AttributeGetter<E, P> getter, P value) { return lteIfNotNull(Estivate.attribute(getter), value); }
-	public static <E, P> EstivateNode lteOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return lteOrFalseIfNull(Estivate.attribute(getter), value); }
-	
-	
-	public static <E, P> Criterion gt    	(AttributeGetter<E, P> getter, P value)        { return gt(Estivate.attribute(getter), value); }
-	public static <E, P> Aggregator gtOrNull(AttributeGetter<E, P> getter, P value) { return gtOrNull(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion gtIfNotNull   	(AttributeGetter<E, P> getter, P value) { return gtIfNotNull(Estivate.attribute(getter), value); }
-	public static <E, P> EstivateNode gtOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return gtOrFalseIfNull(Estivate.attribute(getter), value); }
-	
-	public static <E, P> Criterion gte   	(AttributeGetter<E, P> getter, P value)        { return gte(Estivate.attribute(getter), value); }
-	public static <E, P> Aggregator gteOrNull(AttributeGetter<E, P> getter, P value) { return gteOrNull(Estivate.attribute(getter), value); }
-	public static <E, P> Criterion gteIfNotNull  	(AttributeGetter<E, P> getter, P value) { return gteIfNotNull(Estivate.attribute(getter), value); }
-	public static <E, P> EstivateNode gteOrFalseIfNull	(AttributeGetter<E, P> getter, P value) { return gteOrFalseIfNull(Estivate.attribute(getter), value); }
-	
-	
-	public static <E, P> Criterion between	(AttributeGetter<E, P> getter, P left, P right) { return between(Estivate.attribute(getter), left, right); }
-	public static <E, P> Aggregator betweenOrNull(AttributeGetter<E, P> getter, P left, P right) { return betweenOrNull(Estivate.attribute(getter), left, right); }
-	public static <E, P> Criterion betweenIfNotNull(AttributeGetter<E, P> getter, P min, P max) { return betweenIfNotNull(Estivate.attribute(getter), min, max); }
+	public static <E, P> Criterion notEq 			(@NonNull AttributeGetter<E, P> getter, P value) { return notEq(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion notEqIfNotNull	(@NonNull AttributeGetter<E, P> getter, P value) { return notEqIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> 	 Criterion notEqIfNotBlank	(@NonNull AttributeGetter<E, String> getter, String value) { return notEqIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion notEqNullable	(@NonNull AttributeGetter<E, P> getter, P value) { return notEqNullable(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator notEqOrNull	(@NonNull AttributeGetter<E, P> getter, P value) { return notEqOrNull(Estivate.attribute(getter), value); }
 
 	
-	public static <E, P> Criterion in    				(AttributeGetter<E, P> getter, Collection<P> values) { return in(Estivate.attribute(getter), values); }
-	public static <E, P> Criterion inIfNotEmpty		(AttributeGetter<E, P> getter, Collection<P> values) { return inIfNotEmpty(Estivate.attribute(getter), values); }
-	public static <E, P> EstivateNode inIfNotEmptyNullable  (AttributeGetter<E, P> getter, Collection<P> values) { return inIfNotEmptyNullable(Estivate.attribute(getter), values); }
-	public static <E, P> EstivateNode inOrFalseIfEmpty	(AttributeGetter<E, P> getter, Collection<P> values) { return inOrFalseIfEmpty(Estivate.attribute(getter), values); }
-	public static <E, P> Aggregator inOrNull				(AttributeGetter<E, P> getter, Collection<P> values){ return inOrNull(Estivate.attribute(getter), values); }
-	public static <E, P> Aggregator inIfNotEmptyOrNull		(AttributeGetter<E, P> getter, Collection<P> values){ return inIfNotEmptyOrNull(Estivate.attribute(getter), values); }
-
-	public static <E, P> Criterion notIn   (AttributeGetter<E, P> getter, Collection<P> values) { return notIn(Estivate.attribute(getter), values); }
-	public static <E, P> Criterion notInIfNotEmpty		(AttributeGetter<E, P> getter, Collection<P> values){ return notInIfNotEmpty(Estivate.attribute(getter), values); }
-	public static <E, P> Aggregator notInIfNotEmptyNullable(AttributeGetter<E, P> getter, Collection<P> values){ return notInIfNotEmptyNullable(Estivate.attribute(getter), values); }
-	public static <E, P> EstivateNode notInOrTrueIfEmpty	(AttributeGetter<E, P> getter, Collection<P> values){ return notInOrTrueIfEmpty(Estivate.attribute(getter), values); }
-	public static <E, P> Aggregator notInOrNull			(AttributeGetter<E, P> getter, Collection<P> values){ return notInOrNull(Estivate.attribute(getter), values); }
-	public static <E, P> Aggregator notInIfNotEmptyOrNull	(AttributeGetter<E, P> getter, Collection<P> values){ return notInIfNotEmptyOrNull(Estivate.attribute(getter), values); }
+	public static <E, P> Criterion lt    		(@NonNull AttributeGetter<E, P> getter, P value)        { return lt(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator ltOrNull(@NonNull AttributeGetter<E, P> getter, P value) { return ltOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion ltIfNotNull   	(@NonNull AttributeGetter<E, P> getter, P value) { return ltIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode ltOrFalseIfNull	(@NonNull AttributeGetter<E, P> getter, P value) { return ltOrFalseIfNull(Estivate.attribute(getter), value); }
 	
 	
-	public static <E> Criterion like			(AttributeGetter<E, String> getter, String value)	{ return like(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLike			(AttributeGetter<E, String> getter, String value)	{ return notLike(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeIfNotNull		(AttributeGetter<E, String> getter, String value)	{ return likeIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeIfNotNull	(AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeIfNotBlank(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotBlank(Estivate.attribute(getter), value); }
-
-	public static <E> Criterion likeStartsWith	(AttributeGetter<E, String> getter, String value)	{ return likeStartsWith(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeStartsWith(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWith(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeStartsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeStartsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeStartsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeStartsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeStartsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotBlank(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeStartsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotBlank(Estivate.attribute(getter), value); }
-
-	public static <E> Criterion likeEndsWith	(AttributeGetter<E, String> getter, String value)	{ return likeEndsWith(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeEndsWith	(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWith(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeEndsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeEndsWithIfNotNull(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeEndsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeEndsWithIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeEndsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotBlank(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeEndsWithIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion lte   	(@NonNull AttributeGetter<E, P> getter, P value)        { return lte(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator lteOrNull(@NonNull AttributeGetter<E, P> getter, P value) { return lteOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion lteIfNotNull  	(@NonNull AttributeGetter<E, P> getter, P value) { return lteIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode lteOrFalseIfNull	(@NonNull AttributeGetter<E, P> getter, P value) { return lteOrFalseIfNull(Estivate.attribute(getter), value); }
 	
-	public static <E> Criterion likeContains	(AttributeGetter<E, String> getter, String value)	{ return likeContains(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeContains	(AttributeGetter<E, String> getter, String value)	{ return notLikeContains(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeContainsIfNotNull(AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeContainsIfNotNull(AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeContainsIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeContainsIfNotEmpty(AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Criterion likeContainsIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotBlank(Estivate.attribute(getter), value); }
-	public static <E> Criterion notLikeContainsIfNotBlank(AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotBlank(Estivate.attribute(getter), value); }
+	
+	public static <E, P> Criterion gt    	(@NonNull AttributeGetter<E, P> getter, P value)        { return gt(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator gtOrNull(@NonNull AttributeGetter<E, P> getter, P value) { return gtOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion gtIfNotNull   	(@NonNull AttributeGetter<E, P> getter, P value) { return gtIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode gtOrFalseIfNull	(@NonNull AttributeGetter<E, P> getter, P value) { return gtOrFalseIfNull(Estivate.attribute(getter), value); }
+	
+	public static <E, P> Criterion gte   	(@NonNull AttributeGetter<E, P> getter, P value)        { return gte(Estivate.attribute(getter), value); }
+	public static <E, P> Aggregator gteOrNull(@NonNull AttributeGetter<E, P> getter, P value) { return gteOrNull(Estivate.attribute(getter), value); }
+	public static <E, P> Criterion gteIfNotNull  	(@NonNull AttributeGetter<E, P> getter, P value) { return gteIfNotNull(Estivate.attribute(getter), value); }
+	public static <E, P> EstivateNode gteOrFalseIfNull	(@NonNull AttributeGetter<E, P> getter, P value) { return gteOrFalseIfNull(Estivate.attribute(getter), value); }
+	
+	
+	public static <E, P> Criterion between	(@NonNull AttributeGetter<E, P> getter, P left, P right) { return between(Estivate.attribute(getter), left, right); }
+	public static <E, P> Aggregator betweenOrNull(@NonNull AttributeGetter<E, P> getter, P left, P right) { return betweenOrNull(Estivate.attribute(getter), left, right); }
+	public static <E, P> Criterion betweenIfNotNull(@NonNull AttributeGetter<E, P> getter, P min, P max) { return betweenIfNotNull(Estivate.attribute(getter), min, max); }
 
 	
+	public static <E, P> Criterion in    				(@NonNull AttributeGetter<E, P> getter, Collection<P> values) { return in(Estivate.attribute(getter), values); }
+	public static <E, P> Criterion inIfNotEmpty		(@NonNull AttributeGetter<E, P> getter, Collection<P> values) { return inIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> EstivateNode inIfNotEmptyNullable  (@NonNull AttributeGetter<E, P> getter, Collection<P> values) { return inIfNotEmptyNullable(Estivate.attribute(getter), values); }
+	public static <E, P> EstivateNode inOrFalseIfEmpty	(@NonNull AttributeGetter<E, P> getter, Collection<P> values) { return inOrFalseIfEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator inOrNull				(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return inOrNull(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator inIfNotEmptyOrNull		(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return inIfNotEmptyOrNull(Estivate.attribute(getter), values); }
+
+	public static <E, P> Criterion notIn   (@NonNull AttributeGetter<E, P> getter, Collection<P> values) { return notIn(Estivate.attribute(getter), values); }
+	public static <E, P> Criterion notInIfNotEmpty		(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return notInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator notInIfNotEmptyNullable(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return notInIfNotEmptyNullable(Estivate.attribute(getter), values); }
+	public static <E, P> EstivateNode notInOrTrueIfEmpty	(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return notInOrTrueIfEmpty(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator notInOrNull			(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return notInOrNull(Estivate.attribute(getter), values); }
+	public static <E, P> Aggregator notInIfNotEmptyOrNull	(@NonNull AttributeGetter<E, P> getter, Collection<P> values){ return notInIfNotEmptyOrNull(Estivate.attribute(getter), values); }
+	
+	
+	public static <E> Criterion like			(@NonNull AttributeGetter<E, String> getter, String value)	{ return like(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLike			(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLike(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeIfNotNull		(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeIfNotNull	(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeIfNotBlank(Estivate.attribute(getter), value); }
+
+	public static <E> Criterion likeStartsWith	(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeStartsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWith(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeStartsWithIfNotNull(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWithIfNotNull(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeStartsWithIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWithIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeStartsWithIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeStartsWithIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeStartsWithIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeStartsWithIfNotBlank(Estivate.attribute(getter), value); }
+
+	public static <E> Criterion likeEndsWith	(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeEndsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWith	(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWith(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeEndsWithIfNotNull(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWithIfNotNull(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeEndsWithIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWithIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeEndsWithIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeEndsWithIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeEndsWithIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeEndsWithIfNotBlank(Estivate.attribute(getter), value); }
+	
+	public static <E> Criterion likeContains	(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeContains(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContains	(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeContains(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeContainsIfNotNull(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContainsIfNotNull(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeContainsIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContainsIfNotEmpty(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Criterion likeContainsIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return likeContainsIfNotBlank(Estivate.attribute(getter), value); }
+	public static <E> Criterion notLikeContainsIfNotBlank(@NonNull AttributeGetter<E, String> getter, String value)	{ return notLikeContainsIfNotBlank(Estivate.attribute(getter), value); }
+
+	
 	
 
 
-	public static <E> Aggregator likeStartsWithIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeStartsWithIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator likeStartsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(Estivate.attribute(getter), values);}
-	public static <E> Aggregator notLikeStartsWithIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeStartsWithIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator notLikeStartsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeStartsWithInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator likeStartsWithIn(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return likeStartsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeStartsWithInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeStartsWithInIfNotEmpty(Estivate.attribute(getter), values);}
+	public static <E> Aggregator notLikeStartsWithIn(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeStartsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeStartsWithInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeStartsWithInIfNotEmpty(Estivate.attribute(getter), values); }
 	
-	public static <E> Aggregator likeEndsWithIn	(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeEndsWithIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator likeEndsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
-	public static <E> Aggregator notLikeEndsWithIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeEndsWithIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator notLikeEndsWithInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator likeEndsWithIn	(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return likeEndsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeEndsWithInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notLikeEndsWithIn(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeEndsWithIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeEndsWithInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeEndsWithInIfNotEmpty(Estivate.attribute(getter), values); }
 	
-	public static <E> Aggregator likeContainsIn	(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeContainsIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator likeContainsInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
-	public static <E> Aggregator notLikeContainsIn(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeContainsIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator notLikeContainsInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator likeContainsIn	(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return likeContainsIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeContainsInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 	{ return likeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notLikeContainsIn(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeContainsIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeContainsInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 	{ return notLikeContainsInIfNotEmpty(Estivate.attribute(getter), values); }
 	 
-	public static <E> Aggregator likeIn				(AttributeGetter<E, String> getter, Collection<String> value)	{ return likeIn(Estivate.attribute(getter), value); }
-	public static <E> Aggregator likeInIfNotEmpty	(AttributeGetter<E, String> getter, Collection<String> value)  	{ return likeInIfNotEmpty(Estivate.attribute(getter), value); }
-	public static <E> Aggregator notLikeIn			(AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeIn				(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return likeIn(Estivate.attribute(getter), value); }
+	public static <E> Aggregator likeInIfNotEmpty	(@NonNull AttributeGetter<E, String> getter, Collection<String> value)  	{ return likeInIfNotEmpty(Estivate.attribute(getter), value); }
+	public static <E> Aggregator notLikeIn			(@NonNull AttributeGetter<E, String> getter, Collection<String> value)	{ return notLikeIn(Estivate.attribute(getter), value); }
 	
 
-	public static <E, P> Criterion isNull		(AttributeGetter<E, P> getter)	{ return isNull(Estivate.attribute(getter));}
-	public static <E, P> Criterion isNotNull	(AttributeGetter<E, P> getter) 	{ return isNotNull(Estivate.attribute(getter));}
-	public static <E, P> Criterion isTrue		(AttributeGetter<E, P> getter) 	{ return isTrue(Estivate.attribute(getter));}
-	public static <E, P> Criterion isFalse		(AttributeGetter<E, P> getter) 	{ return isFalse(Estivate.attribute(getter));}
+	public static <E, P> Criterion isNull		(@NonNull AttributeGetter<E, P> getter)	{ return isNull(Estivate.attribute(getter));}
+	public static <E, P> Criterion isNotNull	(@NonNull AttributeGetter<E, P> getter) 	{ return isNotNull(Estivate.attribute(getter));}
+	public static <E, P> Criterion isTrue		(@NonNull AttributeGetter<E, P> getter) 	{ return isTrue(Estivate.attribute(getter));}
+	public static <E, P> Criterion isFalse		(@NonNull AttributeGetter<E, P> getter) 	{ return isFalse(Estivate.attribute(getter));}
 	
 
-	public static <E> Criterion matchAgainst(AttributeGetter<E, String> getter, String value) 			{ return matchAgainst(Estivate.attribute(getter), value); }	
-	public static <E> Criterion matchAgainstIfNotNull(AttributeGetter<E, String> getter, String value) { return matchAgainstIfNotNull(Estivate.attribute(getter), value); }
-	public static <E> Criterion notMatchAgainst(AttributeGetter<E, String> getter, String value) 			{ return notMatchAgainst(Estivate.attribute(getter), value); }
-	public static <E> Criterion notMatchAgainstIfNotNull(AttributeGetter<E, String> getter, String value) { return notMatchAgainstIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion matchAgainst(@NonNull AttributeGetter<E, String> getter, String value) 			{ return matchAgainst(Estivate.attribute(getter), value); }	
+	public static <E> Criterion matchAgainstIfNotNull(@NonNull AttributeGetter<E, String> getter, String value) { return matchAgainstIfNotNull(Estivate.attribute(getter), value); }
+	public static <E> Criterion notMatchAgainst(@NonNull AttributeGetter<E, String> getter, String value) 			{ return notMatchAgainst(Estivate.attribute(getter), value); }
+	public static <E> Criterion notMatchAgainstIfNotNull(@NonNull AttributeGetter<E, String> getter, String value) { return notMatchAgainstIfNotNull(Estivate.attribute(getter), value); }
 	
-	public static <E> Aggregator matchAgainstIn(AttributeGetter<E, String> getter, Collection<String> values)			{ return matchAgainstIn(Estivate.attribute(getter), values); }
-	public static <E> Aggregator matchAgainstInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
-	public static <E> Aggregator notMatchAgainstIn(AttributeGetter<E, String> getter, Collection<String> values)			{ return notMatchAgainstIn(Estivate.attribute(getter), values); }
-	public static <E> Aggregator notMatchAgainstInIfNotEmpty(AttributeGetter<E, String> getter, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator matchAgainstIn(@NonNull AttributeGetter<E, String> getter, Collection<String> values)			{ return matchAgainstIn(Estivate.attribute(getter), values); }
+	public static <E> Aggregator matchAgainstInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 		{ return matchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notMatchAgainstIn(@NonNull AttributeGetter<E, String> getter, Collection<String> values)			{ return notMatchAgainstIn(Estivate.attribute(getter), values); }
+	public static <E> Aggregator notMatchAgainstInIfNotEmpty(@NonNull AttributeGetter<E, String> getter, Collection<String> values) 		{ return notMatchAgainstInIfNotEmpty(Estivate.attribute(getter), values); }
 	
-	public static <E> Criterion regexp(AttributeGetter<E, String> getter, String pattern) { return regexp(Estivate.attribute(getter), pattern); }
+	public static <E> Criterion regexp(@NonNull AttributeGetter<E, String> getter, String pattern) { return regexp(Estivate.attribute(getter), pattern); }
 	
-	public static <E> Criterion nativeCriterion (AttributeGetter<E, String> getter, String criterion)	{ return nativeCriterion(Estivate.attribute(getter), criterion); }
+	public static <E> Criterion nativeCriterion (@NonNull AttributeGetter<E, String> getter, String criterion)	{ return nativeCriterion(Estivate.attribute(getter), criterion); }
 	
-	public static <E, P> Criterion in(AttributeGetter<E, P> getter, SelectQuery<?> subQuery)	  	{ return in(Estivate.attribute(getter), subQuery); }
-	public static <E, P> Criterion notIn(AttributeGetter<E, P> getter, SelectQuery<?> subQuery)	{ return notIn(Estivate.attribute(getter), subQuery); }
+	public static <E, P> Criterion in(@NonNull AttributeGetter<E, P> getter, SelectQuery<?> subQuery)	  	{ return in(Estivate.attribute(getter), subQuery); }
+	public static <E, P> Criterion notIn(@NonNull AttributeGetter<E, P> getter, SelectQuery<?> subQuery)	{ return notIn(Estivate.attribute(getter), subQuery); }
 	
 	
 	 

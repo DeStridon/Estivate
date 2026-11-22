@@ -41,6 +41,7 @@ import com.estivate.util.EntityMetaCache;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.Data;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -86,7 +87,7 @@ public class ResultTable implements Iterable<ResultRow>{
     public Object asSingle(Class<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(context, entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
     public Object asSingle(Entity<?> entity, String attribute) { return asSingleMapped(new AttributeMapper(context, entity.entity, attribute), indexOf(Estivate.attribute(entity, attribute))); }
     @SuppressWarnings("unchecked")
-    public <T, P> P asSingle(AttributeGetter<T, P> attributeGetter) { return (P) asSingle(Estivate.attribute(attributeGetter)); }
+    public <T, P> P asSingle(@NonNull AttributeGetter<T, P> attributeGetter) { return (P) asSingle(Estivate.attribute(attributeGetter)); }
 
 
     // Primitive type mapping
@@ -94,70 +95,70 @@ public class ResultTable implements Iterable<ResultRow>{
     public String asSingleString(Attribute attribute) { return asSingleMapped(new StringMapper(), indexOf(attribute)); }
     public String asSingleString(Class<?> entity, String attributeName) { return asSingleString(Estivate.attribute(entity, attributeName)); }
     public String asSingleString(Entity<?> entity, String attributeName) { return asSingleString(Estivate.attribute(entity, attributeName)); }
-    public <T, P> String asSingleString(AttributeGetter<T, P> attributeGetter) { return asSingleString(Estivate.attribute(attributeGetter)); }
+    public <T, P> String asSingleString(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleString(Estivate.attribute(attributeGetter)); }
     public String asSingleString(String columnName) { return asSingleMapped(new StringMapper(), columnNames.indexOf(columnName)); }
 
     public Short asSingleShort() { return asSingleMapped(new ShortMapper()); }
     public Short asSingleShort(Attribute attribute) { return asSingleMapped(new ShortMapper(), indexOf(attribute)); }
     public Short asSingleShort(Class<?> entity, String attributeName) { return asSingleShort(Estivate.attribute(entity, attributeName)); }
     public Short asSingleShort(Entity<?> entity, String attributeName) { return asSingleShort(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Short asSingleShort(AttributeGetter<T, P> attributeGetter) { return asSingleShort(Estivate.attribute(attributeGetter)); }
+    public <T, P> Short asSingleShort(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleShort(Estivate.attribute(attributeGetter)); }
     public Short asSingleShort(String columnName) { return asSingleMapped(new ShortMapper(), columnNames.indexOf(columnName)); }
 
     public Integer asSingleInteger() { return asSingleMapped(new IntegerMapper()); }
     public Integer asSingleInteger(Attribute attribute) { return asSingleMapped(new IntegerMapper(), indexOf(attribute)); }
     public Integer asSingleInteger(Class<?> entity, String attributeName) { return asSingleInteger(Estivate.attribute(entity, attributeName)); }
     public Integer asSingleInteger(Entity<?> entity, String attributeName) { return asSingleInteger(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Integer asSingleInteger(AttributeGetter<T, P> attributeGetter) { return asSingleInteger(Estivate.attribute(attributeGetter)); }
+    public <T, P> Integer asSingleInteger(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleInteger(Estivate.attribute(attributeGetter)); }
     public Integer asSingleInteger(String columnName) { return asSingleMapped(new IntegerMapper(), columnNames.indexOf(columnName)); }
 
     public Long asSingleLong() { return asSingleMapped(new LongMapper()); }
     public Long asSingleLong(Attribute attribute) { return asSingleMapped(new LongMapper(), indexOf(attribute)); }
     public Long asSingleLong(Class<?> entity, String attributeName) { return asSingleLong(Estivate.attribute(entity, attributeName)); }
     public Long asSingleLong(Entity<?> entity, String attributeName) { return asSingleLong(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Long asSingleLong(AttributeGetter<T, P> attributeGetter) { return asSingleLong(Estivate.attribute(attributeGetter)); }
+    public <T, P> Long asSingleLong(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleLong(Estivate.attribute(attributeGetter)); }
     public Long asSingleLong(String columnName) { return asSingleMapped(new LongMapper(), columnNames.indexOf(columnName)); }
 
     public Float asSingleFloat() { return asSingleMapped(new FloatMapper()); }
     public Float asSingleFloat(Attribute attribute) { return asSingleMapped(new FloatMapper(), indexOf(attribute)); }
     public Float asSingleFloat(Class<?> entity, String attributeName) { return asSingleFloat(Estivate.attribute(entity, attributeName)); }
     public Float asSingleFloat(Entity<?> entity, String attributeName) { return asSingleFloat(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Float asSingleFloat(AttributeGetter<T, P> attributeGetter) { return asSingleFloat(Estivate.attribute(attributeGetter)); }
+    public <T, P> Float asSingleFloat(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleFloat(Estivate.attribute(attributeGetter)); }
     public Float asSingleFloat(String columnName) { return asSingleMapped(new FloatMapper(), columnNames.indexOf(columnName)); }
 
     public Double asSingleDouble() { return asSingleMapped(new DoubleMapper()); }
     public Double asSingleDouble(Attribute attribute) { return asSingleMapped(new DoubleMapper(), indexOf(attribute)); }
     public Double asSingleDouble(Class<?> entity, String attributeName) { return asSingleDouble(Estivate.attribute(entity, attributeName)); }
     public Double asSingleDouble(Entity<?> entity, String attributeName) { return asSingleDouble(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Double asSingleDouble(AttributeGetter<T, P> attributeGetter) { return asSingleDouble(Estivate.attribute(attributeGetter)); }
+    public <T, P> Double asSingleDouble(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleDouble(Estivate.attribute(attributeGetter)); }
     public Double asSingleDouble(String columnName) { return asSingleMapped(new DoubleMapper(), columnNames.indexOf(columnName)); }
     
     public Boolean asSingleBoolean() { return asSingleMapped(new BooleanMapper()); }
     public Boolean asSingleBoolean(Attribute attribute) { return asSingleMapped(new BooleanMapper(), indexOf(attribute)); }
     public Boolean asSingleBoolean(Class<?> entity, String attributeName) { return asSingleBoolean(Estivate.attribute(entity, attributeName)); }
     public Boolean asSingleBoolean(Entity<?> entity, String attributeName) { return asSingleBoolean(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Boolean asSingleBoolean(AttributeGetter<T, P> attributeGetter) { return asSingleBoolean(Estivate.attribute(attributeGetter)); }
+    public <T, P> Boolean asSingleBoolean(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleBoolean(Estivate.attribute(attributeGetter)); }
     public Boolean asSingleBoolean(String columnName) { return asSingleMapped(new BooleanMapper(), columnNames.indexOf(columnName)); }
 
     public Date asSingleDate() { return asSingleMapped(new DateMapper(context)); }
     public Date asSingleDate(Attribute attribute) { return asSingleMapped(new DateMapper(context), indexOf(attribute)); }
     public Date asSingleDate(Class<?> entity, String attributeName) { return asSingleDate(Estivate.attribute(entity, attributeName)); }
     public Date asSingleDate(Entity<?> entity, String attributeName) { return asSingleDate(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Date asSingleDate(AttributeGetter<T, P> attributeGetter) { return asSingleDate(Estivate.attribute(attributeGetter)); }
+    public <T, P> Date asSingleDate(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleDate(Estivate.attribute(attributeGetter)); }
     public Date asSingleDate(String columnName) { return asSingleMapped(new DateMapper(context), columnNames.indexOf(columnName)); }
 
     public LocalDateTime asSingleLocalDateTime() { return asSingleMapped(new LocalDateTimeMapper()); }
     public LocalDateTime asSingleLocalDateTime(Attribute attribute) { return asSingleMapped(new LocalDateTimeMapper(), indexOf(attribute)); }
     public LocalDateTime asSingleLocalDateTime(Class<?> entity, String attributeName) { return asSingleLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public LocalDateTime asSingleLocalDateTime(Entity<?> entity, String attributeName) { return asSingleLocalDateTime(Estivate.attribute(entity, attributeName)); }
-    public <T, P> LocalDateTime asSingleLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSingleLocalDateTime(Estivate.attribute(attributeGetter)); }
+    public <T, P> LocalDateTime asSingleLocalDateTime(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleLocalDateTime(Estivate.attribute(attributeGetter)); }
     public LocalDateTime asSingleLocalDateTime(String columnName) { return asSingleMapped(new LocalDateTimeMapper(), columnNames.indexOf(columnName)); }
 
     public Instant asSingleInstant() { return asSingleMapped(new InstantMapper(context)); }
     public Instant asSingleInstant(Attribute attribute) { return asSingleMapped(new InstantMapper(context), indexOf(attribute)); }
     public Instant asSingleInstant(Class<?> entity, String attributeName) { return asSingleInstant(Estivate.attribute(entity, attributeName)); }
     public Instant asSingleInstant(Entity<?> entity, String attributeName) { return asSingleInstant(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Instant asSingleInstant(AttributeGetter<T, P> attributeGetter) { return asSingleInstant(Estivate.attribute(attributeGetter)); }
+    public <T, P> Instant asSingleInstant(@NonNull AttributeGetter<T, P> attributeGetter) { return asSingleInstant(Estivate.attribute(attributeGetter)); }
     public Instant asSingleInstant(String columnName) { return asSingleMapped(new InstantMapper(context), columnNames.indexOf(columnName)); }
 
     // Enum mapping
@@ -176,76 +177,76 @@ public class ResultTable implements Iterable<ResultRow>{
     public Optional<?> asOptional(Class<?> entity, String attributeName) { return asOptional(Estivate.attribute(entity, attributeName)); }
     public Optional<?> asOptional(Entity<?> entity, String attributeName) { return asOptional(Estivate.attribute(entity, attributeName)); }
     @SuppressWarnings("unchecked")
-    public <T, P> Optional<P> asOptional(AttributeGetter<T, P> attributeGetter) { return (Optional<P>) asOptional(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<P> asOptional(@NonNull AttributeGetter<T, P> attributeGetter) { return (Optional<P>) asOptional(Estivate.attribute(attributeGetter)); }
 
     public Optional<String> asOptionalString() { return Optional.ofNullable(asSingleString()); }
     public Optional<String> asOptionalString(Attribute attribute) { return Optional.ofNullable(asSingleString(attribute)); }
     public Optional<String> asOptionalString(Class<?> entity, String attributeName) { return asOptionalString(Estivate.attribute(entity, attributeName)); }
     public Optional<String> asOptionalString(Entity<?> entity, String attributeName) { return asOptionalString(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<String> asOptionalString(AttributeGetter<T, P> attributeGetter) { return asOptionalString(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<String> asOptionalString(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalString(Estivate.attribute(attributeGetter)); }
     public Optional<String> asOptionalString(String columnName) { return Optional.ofNullable(asSingleString(columnName)); }
 
     public Optional<Short> asOptionalShort() { return Optional.ofNullable(asSingleShort()); }
     public Optional<Short> asOptionalShort(Attribute attribute) { return Optional.ofNullable(asSingleShort(attribute)); }
     public Optional<Short> asOptionalShort(Class<?> entity, String attributeName) { return asOptionalShort(Estivate.attribute(entity, attributeName)); }
     public Optional<Short> asOptionalShort(Entity<?> entity, String attributeName) { return asOptionalShort(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Short> asOptionalShort(AttributeGetter<T, P> attributeGetter) { return asOptionalShort(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Short> asOptionalShort(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalShort(Estivate.attribute(attributeGetter)); }
     public Optional<Short> asOptionalShort(String columnName) { return Optional.ofNullable(asSingleShort(columnName)); }
 
     public Optional<Integer> asOptionalInteger() { return Optional.ofNullable(asSingleInteger()); }
     public Optional<Integer> asOptionalInteger(Attribute attribute) { return Optional.ofNullable(asSingleInteger(attribute)); }
     public Optional<Integer> asOptionalInteger(Class<?> entity, String attributeName) { return asOptionalInteger(Estivate.attribute(entity, attributeName)); }
     public Optional<Integer> asOptionalInteger(Entity<?> entity, String attributeName) { return asOptionalInteger(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Integer> asOptionalInteger(AttributeGetter<T, P> attributeGetter) { return asOptionalInteger(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Integer> asOptionalInteger(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalInteger(Estivate.attribute(attributeGetter)); }
     public Optional<Integer> asOptionalInteger(String columnName) { return Optional.ofNullable(asSingleInteger(columnName)); }
 
     public Optional<Long> asOptionalLong() { return Optional.ofNullable(asSingleLong()); }
     public Optional<Long> asOptionalLong(Attribute attribute) { return Optional.ofNullable(asSingleLong(attribute)); }
     public Optional<Long> asOptionalLong(Class<?> entity, String attributeName) { return asOptionalLong(Estivate.attribute(entity, attributeName)); }
     public Optional<Long> asOptionalLong(Entity<?> entity, String attributeName) { return asOptionalLong(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Long> asOptionalLong(AttributeGetter<T, P> attributeGetter) { return asOptionalLong(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Long> asOptionalLong(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalLong(Estivate.attribute(attributeGetter)); }
     public Optional<Long> asOptionalLong(String columnName) { return Optional.ofNullable(asSingleLong(columnName)); }
 
     public Optional<Float> asOptionalFloat() { return Optional.ofNullable(asSingleFloat()); }
     public Optional<Float> asOptionalFloat(Attribute attribute) { return Optional.ofNullable(asSingleFloat(attribute)); }
     public Optional<Float> asOptionalFloat(Class<?> entity, String attributeName) { return asOptionalFloat(Estivate.attribute(entity, attributeName)); }
     public Optional<Float> asOptionalFloat(Entity<?> entity, String attributeName) { return asOptionalFloat(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Float> asOptionalFloat(AttributeGetter<T, P> attributeGetter) { return asOptionalFloat(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Float> asOptionalFloat(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalFloat(Estivate.attribute(attributeGetter)); }
     public Optional<Float> asOptionalFloat(String columnName) { return Optional.ofNullable(asSingleFloat(columnName)); }
 
     public Optional<Double> asOptionalDouble() { return Optional.ofNullable(asSingleDouble()); }
     public Optional<Double> asOptionalDouble(Attribute attribute) { return Optional.ofNullable(asSingleDouble(attribute)); }
     public Optional<Double> asOptionalDouble(Class<?> entity, String attributeName) { return asOptionalDouble(Estivate.attribute(entity, attributeName)); }
     public Optional<Double> asOptionalDouble(Entity<?> entity, String attributeName) { return asOptionalDouble(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Double> asOptionalDouble(AttributeGetter<T, P> attributeGetter) { return asOptionalDouble(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Double> asOptionalDouble(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalDouble(Estivate.attribute(attributeGetter)); }
     public Optional<Double> asOptionalDouble(String columnName) { return Optional.ofNullable(asSingleDouble(columnName)); }
 
     public Optional<Boolean> asOptionalBoolean() { return Optional.ofNullable(asSingleBoolean()); }
     public Optional<Boolean> asOptionalBoolean(Attribute attribute) { return Optional.ofNullable(asSingleBoolean(attribute)); }
     public Optional<Boolean> asOptionalBoolean(Class<?> entity, String attributeName) { return asOptionalBoolean(Estivate.attribute(entity, attributeName)); }
     public Optional<Boolean> asOptionalBoolean(Entity<?> entity, String attributeName) { return asOptionalBoolean(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Boolean> asOptionalBoolean(AttributeGetter<T, P> attributeGetter) { return asOptionalBoolean(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Boolean> asOptionalBoolean(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalBoolean(Estivate.attribute(attributeGetter)); }
     public Optional<Boolean> asOptionalBoolean(String columnName) { return Optional.ofNullable(asSingleBoolean(columnName)); }
 
     public Optional<Date> asOptionalDate() { return Optional.ofNullable(asSingleDate()); }
     public Optional<Date> asOptionalDate(Attribute attribute) { return Optional.ofNullable(asSingleDate(attribute)); }
     public Optional<Date> asOptionalDate(Class<?> entity, String attributeName) { return asOptionalDate(Estivate.attribute(entity, attributeName)); }
     public Optional<Date> asOptionalDate(Entity<?> entity, String attributeName) { return asOptionalDate(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Date> asOptionalDate(AttributeGetter<T, P> attributeGetter) { return asOptionalDate(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Date> asOptionalDate(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalDate(Estivate.attribute(attributeGetter)); }
     public Optional<Date> asOptionalDate(String columnName) { return Optional.ofNullable(asSingleDate(columnName)); }
 
     public Optional<LocalDateTime> asOptionalLocalDateTime() { return Optional.ofNullable(asSingleLocalDateTime()); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(Attribute attribute) { return Optional.ofNullable(asSingleLocalDateTime(attribute)); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(Class<?> entity, String attributeName) { return asOptionalLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(Entity<?> entity, String attributeName) { return asOptionalLocalDateTime(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<LocalDateTime> asOptionalLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asOptionalLocalDateTime(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<LocalDateTime> asOptionalLocalDateTime(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalLocalDateTime(Estivate.attribute(attributeGetter)); }
     public Optional<LocalDateTime> asOptionalLocalDateTime(String columnName) { return Optional.ofNullable(asSingleLocalDateTime(columnName)); }
 
     public Optional<Instant> asOptionalInstant() { return Optional.ofNullable(asSingleInstant()); }
     public Optional<Instant> asOptionalInstant(Attribute attribute) { return Optional.ofNullable(asSingleInstant(attribute)); }
     public Optional<Instant> asOptionalInstant(Class<?> entity, String attributeName) { return asOptionalInstant(Estivate.attribute(entity, attributeName)); }
     public Optional<Instant> asOptionalInstant(Entity<?> entity, String attributeName) { return asOptionalInstant(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Optional<Instant> asOptionalInstant(AttributeGetter<T, P> attributeGetter) { return asOptionalInstant(Estivate.attribute(attributeGetter)); }
+    public <T, P> Optional<Instant> asOptionalInstant(@NonNull AttributeGetter<T, P> attributeGetter) { return asOptionalInstant(Estivate.attribute(attributeGetter)); }
     public Optional<Instant> asOptionalInstant(String columnName) { return Optional.ofNullable(asSingleInstant(columnName)); }
 
 
@@ -372,77 +373,77 @@ public class ResultTable implements Iterable<ResultRow>{
     public List<?> asList(Class<?> entity, String attributeName) { return asListMapped(new AttributeMapper(context, entity, attributeName)); }
     public List<?> asList(Entity<?> entity, String attributeName) { return asListMapped(new AttributeMapper(context, entity.entity, attributeName)); }
     @SuppressWarnings("unchecked")
-    public <T, P> List<P> asList(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) asListMapped(new AttributeMapper(context, attribute.entity.entity, attribute.attribute)); }
+    public <T, P> List<P> asList(@NonNull AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (List<P>) asListMapped(new AttributeMapper(context, attribute.entity.entity, attribute.attribute)); }
 
     // Primitive type list mapping
     public List<String> asListString() { return asListMapped(new StringMapper()); }
     public List<String> asListString(Attribute attribute) { return asListMapped(new StringMapper(), indexOf(attribute)); }
     public List<String> asListString(Class<?> entity, String attributeName) { return asListString(Estivate.attribute(entity, attributeName)); }
     public List<String> asListString(Entity<?> entity, String attributeName) { return asListString(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<String> asListString(AttributeGetter<T, P> attributeGetter) { return asListString(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<String> asListString(@NonNull AttributeGetter<T, P> attributeGetter) { return asListString(Estivate.attribute(attributeGetter)); }
     public List<String> asListString(String columnName) { return asListMapped(new StringMapper(), columnNames.indexOf(columnName)); }
 
     public List<Short> asListShort() { return asListMapped(new ShortMapper()); }
     public List<Short> asListShort(Attribute attribute) { return asListMapped(new ShortMapper(), indexOf(attribute)); }
     public List<Short> asListShort(Class<?> entity, String attributeName) { return asListShort(Estivate.attribute(entity, attributeName)); }
     public List<Short> asListShort(Entity<?> entity, String attributeName) { return asListShort(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Short> asListShort(AttributeGetter<T, P> attributeGetter) { return asListShort(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Short> asListShort(@NonNull AttributeGetter<T, P> attributeGetter) { return asListShort(Estivate.attribute(attributeGetter)); }
     public List<Short> asListShort(String columnName) { return asListMapped(new ShortMapper(), columnNames.indexOf(columnName)); }
 
     public List<Integer> asListInteger() { return asListMapped(new IntegerMapper()); }
     public List<Integer> asListInteger(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new IntegerMapper(), index); }
     public List<Integer> asListInteger(Class<?> entity, String attributeName) { return asListInteger(Estivate.attribute(entity, attributeName)); }
     public List<Integer> asListInteger(Entity<?> entity, String attributeName) { return asListInteger(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Integer> asListInteger(AttributeGetter<T, P> attributeGetter) { return asListInteger(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Integer> asListInteger(@NonNull AttributeGetter<T, P> attributeGetter) { return asListInteger(Estivate.attribute(attributeGetter)); }
     public List<Integer> asListInteger(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new IntegerMapper(), index); }
 
     public List<Long> asListLong() { return asListMapped(new LongMapper()); }
     public List<Long> asListLong(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new LongMapper(), index); }
     public List<Long> asListLong(Class<?> entity, String attributeName) { return asListLong(Estivate.attribute(entity, attributeName)); }
     public List<Long> asListLong(Entity<?> entity, String attributeName) { return asListLong(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Long> asListLong(AttributeGetter<T, P> attributeGetter) { return asListLong(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Long> asListLong(@NonNull AttributeGetter<T, P> attributeGetter) { return asListLong(Estivate.attribute(attributeGetter)); }
     public List<Long> asListLong(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new LongMapper(), index); }
     
     public List<Float> asListFloat() { return asListMapped(new FloatMapper()); }
     public List<Float> asListFloat(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new FloatMapper(), index); }
     public List<Float> asListFloat(Class<?> entity, String attributeName) { return asListFloat(Estivate.attribute(entity, attributeName)); }
     public List<Float> asListFloat(Entity<?> entity, String attributeName) { return asListFloat(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Float> asListFloat(AttributeGetter<T, P> attributeGetter) { return asListFloat(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Float> asListFloat(@NonNull AttributeGetter<T, P> attributeGetter) { return asListFloat(Estivate.attribute(attributeGetter)); }
     public List<Float> asListFloat(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new FloatMapper(), index); }
 
     public List<Double> asListDouble() { return asListMapped(new DoubleMapper()); }
     public List<Double> asListDouble(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new DoubleMapper(), index); }
     public List<Double> asListDouble(Class<?> entity, String attributeName) { return asListDouble(Estivate.attribute(entity, attributeName)); }
     public List<Double> asListDouble(Entity<?> entity, String attributeName) { return asListDouble(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Double> asListDouble(AttributeGetter<T, P> attributeGetter) { return asListDouble(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Double> asListDouble(@NonNull AttributeGetter<T, P> attributeGetter) { return asListDouble(Estivate.attribute(attributeGetter)); }
     public List<Double> asListDouble(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new DoubleMapper(), index); }
 
     public List<Boolean> asListBoolean() { return asListMapped(new BooleanMapper()); }
     public List<Boolean> asListBoolean(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new BooleanMapper(), index); }
     public List<Boolean> asListBoolean(Class<?> entity, String attributeName) { return asListBoolean(Estivate.attribute(entity, attributeName)); }
     public List<Boolean> asListBoolean(Entity<?> entity, String attributeName) { return asListBoolean(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Boolean> asListBoolean(AttributeGetter<T, P> attributeGetter) { return asListBoolean(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Boolean> asListBoolean(@NonNull AttributeGetter<T, P> attributeGetter) { return asListBoolean(Estivate.attribute(attributeGetter)); }
     public List<Boolean> asListBoolean(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new BooleanMapper(), index); }
     
     public List<Date> asListDate() { return asListMapped(new DateMapper(context)); }
     public List<Date> asListDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new DateMapper(context), index); }
     public List<Date> asListDate(Class<?> entity, String attributeName) { return asListDate(Estivate.attribute(entity, attributeName)); }
     public List<Date> asListDate(Entity<?> entity, String attributeName) { return asListDate(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Date> asListDate(AttributeGetter<T, P> attributeGetter) { return asListDate(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Date> asListDate(@NonNull AttributeGetter<T, P> attributeGetter) { return asListDate(Estivate.attribute(attributeGetter)); }
     public List<Date> asListDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new DateMapper(context), index); }
     
     public List<LocalDateTime> asListLocalDateTime() { return asListMapped(new LocalDateTimeMapper()); }
     public List<LocalDateTime> asListLocalDateTime(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new LocalDateTimeMapper(), index); }
     public List<LocalDateTime> asListLocalDateTime(Class<?> entity, String attributeName) { return asListLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public List<LocalDateTime> asListLocalDateTime(Entity<?> entity, String attributeName) { return asListLocalDateTime(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<LocalDateTime> asListLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asListLocalDateTime(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<LocalDateTime> asListLocalDateTime(@NonNull AttributeGetter<T, P> attributeGetter) { return asListLocalDateTime(Estivate.attribute(attributeGetter)); }
     public List<LocalDateTime> asListLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new LocalDateTimeMapper(), index); }
 
     public List<Instant> asListInstant() { return asListMapped(new InstantMapper(context)); }
     public List<Instant> asListInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asListMapped(new InstantMapper(context), index); }
     public List<Instant> asListInstant(Class<?> entity, String attributeName) { return asListInstant(Estivate.attribute(entity, attributeName)); }
     public List<Instant> asListInstant(Entity<?> entity, String attributeName) { return asListInstant(Estivate.attribute(entity, attributeName)); }
-    public <T, P> List<Instant> asListInstant(AttributeGetter<T, P> attributeGetter) { return asListInstant(Estivate.attribute(attributeGetter)); }
+    public <T, P> List<Instant> asListInstant(@NonNull AttributeGetter<T, P> attributeGetter) { return asListInstant(Estivate.attribute(attributeGetter)); }
     public List<Instant> asListInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asListMapped(new InstantMapper(context), index); }
 
     // Enum list mapping
@@ -471,77 +472,77 @@ public class ResultTable implements Iterable<ResultRow>{
     public Set<?> asSetAttribute(Class<?> entity, String attributeName) { return asSetMapped(new AttributeMapper(context, entity, attributeName)); }
     public Set<?> asSetAttribute(Entity<?> entity, String attributeName) { return asSetMapped(new AttributeMapper(context, entity.entity, attributeName)); }
     @SuppressWarnings("unchecked")
-    public <T, P> Set<P> asSetAttribute(AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (Set<P>) asSetMapped(new AttributeMapper(context, attribute.entity.entity, attribute.attribute)); }
+    public <T, P> Set<P> asSetAttribute(@NonNull AttributeGetter<T, P> attributeGetter) { Attribute attribute = Estivate.attribute(attributeGetter); return (Set<P>) asSetMapped(new AttributeMapper(context, attribute.entity.entity, attribute.attribute)); }
     
     // Primitive type set mapping
     public Set<String> asSetString() { return asSetMapped(new StringMapper()); }
     public Set<String> asSetString(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new StringMapper(), index); }
     public Set<String> asSetString(Class<?> entity, String attributeName) { return asSetString(Estivate.attribute(entity, attributeName)); }
     public Set<String> asSetString(Entity<?> entity, String attributeName) { return asSetString(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<String> asSetString(AttributeGetter<T, P> attributeGetter) { return asSetString(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<String> asSetString(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetString(Estivate.attribute(attributeGetter)); }
     public Set<String> asSetString(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new StringMapper(), index); }
 
     public Set<Short> asSetShort() { return asSetMapped(new ShortMapper()); }
     public Set<Short> asSetShort(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new ShortMapper(), index); }
     public Set<Short> asSetShort(Class<?> entity, String attributeName) { return asSetShort(Estivate.attribute(entity, attributeName)); }
     public Set<Short> asSetShort(Entity<?> entity, String attributeName) { return asSetShort(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Short> asSetShort(AttributeGetter<T, P> attributeGetter) { return asSetShort(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Short> asSetShort(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetShort(Estivate.attribute(attributeGetter)); }
     public Set<Short> asSetShort(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new ShortMapper(), index); }
 
     public Set<Integer> asSetInteger() { return asSetMapped(new IntegerMapper()); }
     public Set<Integer> asSetInteger(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new IntegerMapper(), index); }
     public Set<Integer> asSetInteger(Class<?> entity, String attributeName) { return asSetInteger(Estivate.attribute(entity, attributeName)); }
     public Set<Integer> asSetInteger(Entity<?> entity, String attributeName) { return asSetInteger(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Integer> asSetInteger(AttributeGetter<T, P> attributeGetter) { return asSetInteger(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Integer> asSetInteger(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetInteger(Estivate.attribute(attributeGetter)); }
     public Set<Integer> asSetInteger(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new IntegerMapper(), index); }
 
     public Set<Long> asSetLong() { return asSetMapped(new LongMapper()); }
     public Set<Long> asSetLong(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new LongMapper(), index); }
     public Set<Long> asSetLong(Class<?> entity, String attributeName) { return asSetLong(Estivate.attribute(entity, attributeName)); }
     public Set<Long> asSetLong(Entity<?> entity, String attributeName) { return asSetLong(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Long> asSetLong(AttributeGetter<T, P> attributeGetter) { return asSetLong(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Long> asSetLong(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetLong(Estivate.attribute(attributeGetter)); }
     public Set<Long> asSetLong(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new LongMapper(), index); }
 
     public Set<Float> asSetFloat() { return asSetMapped(new FloatMapper()); }
     public Set<Float> asSetFloat(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new FloatMapper(), index); }
     public Set<Float> asSetFloat(Class<?> entity, String attributeName) { return asSetFloat(Estivate.attribute(entity, attributeName)); }
     public Set<Float> asSetFloat(Entity<?> entity, String attributeName) { return asSetFloat(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Float> asSetFloat(AttributeGetter<T, P> attributeGetter) { return asSetFloat(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Float> asSetFloat(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetFloat(Estivate.attribute(attributeGetter)); }
     public Set<Float> asSetFloat(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new FloatMapper(), index); }
 
     public Set<Double> asSetDouble() { return asSetMapped(new DoubleMapper());}
     public Set<Double> asSetDouble(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new DoubleMapper(), index); }
     public Set<Double> asSetDouble(Class<?> entity, String attributeName) { return asSetDouble(Estivate.attribute(entity, attributeName)); }
     public Set<Double> asSetDouble(Entity<?> entity, String attributeName) { return asSetDouble(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Double> asSetDouble(AttributeGetter<T, P> attributeGetter) { return asSetDouble(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Double> asSetDouble(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetDouble(Estivate.attribute(attributeGetter)); }
     public Set<Double> asSetDouble(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new DoubleMapper(), index); }
 
     public Set<Boolean> asSetBoolean() { return asSetMapped(new BooleanMapper()); }
     public Set<Boolean> asSetBoolean(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new BooleanMapper(), index); }
     public Set<Boolean> asSetBoolean(Class<?> entity, String attributeName) { return asSetBoolean(Estivate.attribute(entity, attributeName)); }
     public Set<Boolean> asSetBoolean(Entity<?> entity, String attributeName) { return asSetBoolean(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Boolean> asSetBoolean(AttributeGetter<T, P> attributeGetter) { return asSetBoolean(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Boolean> asSetBoolean(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetBoolean(Estivate.attribute(attributeGetter)); }
     public Set<Boolean> asSetBoolean(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new BooleanMapper(), index); }
 
     public Set<Date> asSetDate() { return asSetMapped(new DateMapper(context)); }
     public Set<Date> asSetDate(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new DateMapper(context), index); }
     public Set<Date> asSetDate(Class<?> entity, String attributeName) { return asSetDate(Estivate.attribute(entity, attributeName)); }
     public Set<Date> asSetDate(Entity<?> entity, String attributeName) { return asSetDate(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Date> asSetDate(AttributeGetter<T, P> attributeGetter) { return asSetDate(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Date> asSetDate(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetDate(Estivate.attribute(attributeGetter)); }
     public Set<Date> asSetDate(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new DateMapper(context), index); }
 
     public Set<LocalDateTime> asSetLocalDateTime() { return asSetMapped(new LocalDateTimeMapper()); }
     public Set<LocalDateTime> asSetLocalDateTime(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new LocalDateTimeMapper(), index); }
     public Set<LocalDateTime> asSetLocalDateTime(Class<?> entity, String attributeName) { return asSetLocalDateTime(Estivate.attribute(entity, attributeName)); }
     public Set<LocalDateTime> asSetLocalDateTime(Entity<?> entity, String attributeName) { return asSetLocalDateTime(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<LocalDateTime> asSetLocalDateTime(AttributeGetter<T, P> attributeGetter) { return asSetLocalDateTime(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<LocalDateTime> asSetLocalDateTime(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetLocalDateTime(Estivate.attribute(attributeGetter)); }
     public Set<LocalDateTime> asSetLocalDateTime(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new LocalDateTimeMapper(), index); }
 
     public Set<Instant> asSetInstant() { return asSetMapped(new InstantMapper(context)); }
     public Set<Instant> asSetInstant(Attribute attribute) { int index = indexOf(attribute); return index == -1 ? null : asSetMapped(new InstantMapper(context), index); }
     public Set<Instant> asSetInstant(Class<?> entity, String attributeName) { return asSetInstant(Estivate.attribute(entity, attributeName)); }
     public Set<Instant> asSetInstant(Entity<?> entity, String attributeName) { return asSetInstant(Estivate.attribute(entity, attributeName)); }
-    public <T, P> Set<Instant> asSetInstant(AttributeGetter<T, P> attributeGetter) { return asSetInstant(Estivate.attribute(attributeGetter)); }
+    public <T, P> Set<Instant> asSetInstant(@NonNull AttributeGetter<T, P> attributeGetter) { return asSetInstant(Estivate.attribute(attributeGetter)); }
     public Set<Instant> asSetInstant(String columnName) { int index = columnNames.indexOf(columnName); return index == -1 ? null : asSetMapped(new InstantMapper(context), index); }
 
     // Enum set mapping
@@ -567,11 +568,11 @@ public class ResultTable implements Iterable<ResultRow>{
 		return map;
 	}
 
-    public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
+    public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(@NonNull AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
         return asMap(uAttribute, vAttribute, new LinkedHashMap<>());
     }
 
-    public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute, Map<A1T, A2T> map) {
+    public <A1E, A1T, A2E, A2T> Map<A1T, A2T> asMap(@NonNull AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute, Map<A1T, A2T> map) {
         for(ResultRow result : rows){
             map.put(result.as(uAttribute), result.as(vAttribute));
         }
@@ -589,11 +590,11 @@ public class ResultTable implements Iterable<ResultRow>{
         return map;
     }
 
-    public <AE, AT, C> Map<AT, C> asMap(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
+    public <AE, AT, C> Map<AT, C> asMap(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
         return asMap(uAttribute, vClass, new LinkedHashMap<>());
     }
 
-    public <AE, AT, C> Map<AT, C> asMap(AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, C> map) {
+    public <AE, AT, C> Map<AT, C> asMap(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, C> map) {
         for(ResultRow result : rows){
             map.put(result.as(uAttribute), result.as(vClass));
         }
@@ -623,22 +624,22 @@ public class ResultTable implements Iterable<ResultRow>{
     }
 
 
-    public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
+    public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(@NonNull AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
         return asMapList(uAttribute, vAttribute, new LinkedHashMap<>());
     }
 
-    public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute, Map<A1T, List<A2T>> map) {
+    public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(@NonNull AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute, Map<A1T, List<A2T>> map) {
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uAttribute), k -> new ArrayList<>()).add(result.as(vAttribute));
         }
         return map;
     }
 
-    public <AE, AT, C> Map<AT, List<C>> asMapList(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
+    public <AE, AT, C> Map<AT, List<C>> asMapList(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
         return asMapList(uAttribute, vClass, new LinkedHashMap<>());
     }
 
-    public <AE, AT, C> Map<AT, List<C>> asMapList(AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, List<C>> map) {
+    public <AE, AT, C> Map<AT, List<C>> asMapList(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, List<C>> map) {
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uAttribute), k -> new ArrayList<>()).add(result.as(vClass));
         }
@@ -667,7 +668,7 @@ public class ResultTable implements Iterable<ResultRow>{
         return map;
     }
     
-    public <A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> asMapSet(AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
+    public <A1E, A1T, A2E, A2T> Map<A1T, Set<A2T>> asMapSet(@NonNull AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
         Map<A1T, Set<A2T>> map = new LinkedHashMap<>();
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uAttribute), k -> new HashSet<>()).add(result.as(vAttribute));
@@ -683,7 +684,7 @@ public class ResultTable implements Iterable<ResultRow>{
         return map;
     }
 
-    public <AE, AT, C> Map<AT, Set<C>> asMapSet(AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
+    public <AE, AT, C> Map<AT, Set<C>> asMapSet(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
         Map<AT, Set<C>> map = new LinkedHashMap<>();
         for(ResultRow result : rows){
             map.computeIfAbsent(result.as(uAttribute), k -> new HashSet<>()).add(result.as(vClass));

@@ -103,6 +103,10 @@ if (courseUuid != null && !courseUuid.isBlank()) query.eq(CourseEntity::getUuid,
 query.addIf(lifecycle != null, Estivate.eq(WorkspaceContactEntity.class, WorkspaceContactEntity.Fields.lifecycleStage, lifecycle));
 ```
 
+## Project onto the response DTO
+
+When the query result is the API/response DTO, put `@Projection.Attribute` on that DTO and fetch it directly. Do not introduce a parallel `*Projection` only to `.map(...)` into the response type. Use `@JsonIgnore` projected helpers + a getter for derived JSON fields, or mutate a few non-SQL fields after fetch. Keep a dedicated projection only when the SQL row is a true intermediate for a different aggregate.
+
 ## Style
 
 - Prefer `AttributeGetter` (`Entity::getField`) or `Fields.x` over bare string column names.

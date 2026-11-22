@@ -13,6 +13,7 @@ import com.estivate.util.FieldUtils.AttributeGetter;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
 @Data
@@ -142,12 +143,12 @@ public class Attribute  {
 		public AttributeWindow partitionBy(Attribute attribute) { this.partitionBy = attribute; return this; }
 		public AttributeWindow partitionBy(Entity<?> entity, String attribute) { return partitionBy(Estivate.attribute(entity, attribute)); }
 		public AttributeWindow partitionBy(Class<?> entity, String attribute) { return partitionBy(Estivate.attribute(new Entity<>(entity), attribute)); }
-		public <E, P> AttributeWindow partitionBy(AttributeGetter<E, P> getter) { return partitionBy(Estivate.attribute(getter)); }
+		public <E, P> AttributeWindow partitionBy(@NonNull AttributeGetter<E, P> getter) { return partitionBy(Estivate.attribute(getter)); }
 
 		public AttributeWindow orderBy(Attribute attribute) { this.orderBy = 	attribute; return this; }
 		public AttributeWindow orderBy(Entity<?> entity, String attribute) { return orderBy(Estivate.attribute(entity, attribute)); }
 		public AttributeWindow orderBy(Class<?> entity, String attribute) { return orderBy(Estivate.attribute(new Entity<>(entity), attribute)); }
-		public <E, P> AttributeWindow orderBy(AttributeGetter<E, P> getter) { return orderBy(Estivate.attribute(getter)); }
+		public <E, P> AttributeWindow orderBy(@NonNull AttributeGetter<E, P> getter) { return orderBy(Estivate.attribute(getter)); }
 		
 	}
     

@@ -9,6 +9,8 @@ import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
+import lombok.NonNull;
+
 
 
 @lombok.Getter
@@ -428,123 +430,123 @@ public class Aggregator implements EstivateNode {
 
 	/* Wrappers for Lambda */
 
-	public <T, P> Aggregator eq    		(AttributeGetter<T, P> function, P value) { add(Estivate.eq(function, value)); return this; }
-	public <T, P> Aggregator eqIfNotNull   (AttributeGetter<T, P> function, P value) { add(Estivate.eqIfNotNull(function, value)); return this; }
-	public <T, P> Aggregator eqOrFalseIfNull(AttributeGetter<T, P> function, P value) { add(Estivate.eqOrFalseIfNull(function, value)); return this; }
-	public <T> 	  Aggregator eqIfNotBlank  (AttributeGetter<T, String> function, String value) { add(Estivate.eqIfNotBlank(function, value)); return this; }
-	public <T, P> Aggregator eqNullable    (AttributeGetter<T, P> function, P value) { add(Estivate.eqNullable(function, value)); return this; }
-	public <T, P> Aggregator eqOrNull		(AttributeGetter<T, P> function, P value) { add(Estivate.eqOrNull(function, value)); return this; }
+	public <T, P> Aggregator eq    		(@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.eq(function, value)); return this; }
+	public <T, P> Aggregator eqIfNotNull   (@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.eqIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator eqOrFalseIfNull(@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.eqOrFalseIfNull(function, value)); return this; }
+	public <T> 	  Aggregator eqIfNotBlank  (@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.eqIfNotBlank(function, value)); return this; }
+	public <T, P> Aggregator eqNullable    (@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.eqNullable(function, value)); return this; }
+	public <T, P> Aggregator eqOrNull		(@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.eqOrNull(function, value)); return this; }
 	
-	public <T, P> Aggregator notEq 		(AttributeGetter<T, P> function, P value) { add(Estivate.notEq(function, value)); return this; }
-	public <T, P> Aggregator notEqIfNotNull(AttributeGetter<T, P> function, P value) { add(Estivate.notEqIfNotNull(function, value)); return this; }
-	public <T>    Aggregator notEqIfNotBlank(AttributeGetter<T, String> function, String value) { add(Estivate.notEqIfNotBlank(function, value)); return this; }
-	public <T, P> Aggregator notEqNullable (AttributeGetter<T, P> function, P value) { add(Estivate.notEqNullable(function, value)); return this; }
-	public <T, P> Aggregator notEqOrNull	(AttributeGetter<T, P> function, P value) { add(Estivate.notEqOrNull(function, value)); return this; }
+	public <T, P> Aggregator notEq 		(@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.notEq(function, value)); return this; }
+	public <T, P> Aggregator notEqIfNotNull(@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.notEqIfNotNull(function, value)); return this; }
+	public <T>    Aggregator notEqIfNotBlank(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notEqIfNotBlank(function, value)); return this; }
+	public <T, P> Aggregator notEqNullable (@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.notEqNullable(function, value)); return this; }
+	public <T, P> Aggregator notEqOrNull	(@NonNull AttributeGetter<T, P> function, P value) { add(Estivate.notEqOrNull(function, value)); return this; }
 	
-	public <T, P> Aggregator lt    	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.lt(function, value)); return this; }
-	public <T, P> Aggregator ltIfNotNull   	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.ltIfNotNull(function, value)); return this; }
-	public <T, P> Aggregator ltOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.ltOrFalseIfNull(function, value)); return this; }
-	public <T, P> Aggregator ltOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.ltOrNull(function, value)); return this; }
-	public <T, P> Aggregator lte   	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.lte(function, value)); return this; }
-	public <T, P> Aggregator lteIfNotNull  	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.lteIfNotNull(function, value)); return this; }
-	public <T, P> Aggregator lteOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.lteOrFalseIfNull(function, value)); return this; }
-	public <T, P> Aggregator lteOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.lteOrNull(function, value)); return this; }
+	public <T, P> Aggregator lt    	(@NonNull AttributeGetter<T, P> function, P value)     		{ add(Estivate.lt(function, value)); return this; }
+	public <T, P> Aggregator ltIfNotNull   	(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.ltIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator ltOrFalseIfNull(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.ltOrFalseIfNull(function, value)); return this; }
+	public <T, P> Aggregator ltOrNull(@NonNull AttributeGetter<T, P> function, P value) 			{ add(Estivate.ltOrNull(function, value)); return this; }
+	public <T, P> Aggregator lte   	(@NonNull AttributeGetter<T, P> function, P value)     		{ add(Estivate.lte(function, value)); return this; }
+	public <T, P> Aggregator lteIfNotNull  	(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.lteIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator lteOrFalseIfNull(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.lteOrFalseIfNull(function, value)); return this; }
+	public <T, P> Aggregator lteOrNull(@NonNull AttributeGetter<T, P> function, P value) 			{ add(Estivate.lteOrNull(function, value)); return this; }
 	
-	public <T, P> Aggregator gt    	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.gt(function, value)); return this; }
-	public <T, P> Aggregator gtIfNotNull   	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gtIfNotNull(function, value)); return this; }
-	public <T, P> Aggregator gtOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gtOrFalseIfNull(function, value)); return this; }
-	public <T, P> Aggregator gtOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.gtOrNull(function, value)); return this; }
+	public <T, P> Aggregator gt    	(@NonNull AttributeGetter<T, P> function, P value)     		{ add(Estivate.gt(function, value)); return this; }
+	public <T, P> Aggregator gtIfNotNull   	(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.gtIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator gtOrFalseIfNull(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.gtOrFalseIfNull(function, value)); return this; }
+	public <T, P> Aggregator gtOrNull(@NonNull AttributeGetter<T, P> function, P value) 			{ add(Estivate.gtOrNull(function, value)); return this; }
 	
-	public <T, P> Aggregator gte   	(AttributeGetter<T, P> function, P value)     		{ add(Estivate.gte(function, value)); return this; }
-	public <T, P> Aggregator gteIfNotNull  	(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gteIfNotNull(function, value)); return this; }
-	public <T, P> Aggregator gteOrFalseIfNull(AttributeGetter<T, P> function, P value) 	{ add(Estivate.gteOrFalseIfNull(function, value)); return this; }
-	public <T, P> Aggregator gteOrNull(AttributeGetter<T, P> function, P value) 			{ add(Estivate.gteOrNull(function, value)); return this; }
+	public <T, P> Aggregator gte   	(@NonNull AttributeGetter<T, P> function, P value)     		{ add(Estivate.gte(function, value)); return this; }
+	public <T, P> Aggregator gteIfNotNull  	(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.gteIfNotNull(function, value)); return this; }
+	public <T, P> Aggregator gteOrFalseIfNull(@NonNull AttributeGetter<T, P> function, P value) 	{ add(Estivate.gteOrFalseIfNull(function, value)); return this; }
+	public <T, P> Aggregator gteOrNull(@NonNull AttributeGetter<T, P> function, P value) 			{ add(Estivate.gteOrNull(function, value)); return this; }
 
-	public <T, P> Aggregator between 	(AttributeGetter<T, P> function, P min, P max)		{ add(Estivate.between(function, min, max)); return this; }
-	public <T, P> Aggregator betweenIfNotNull	(AttributeGetter<T, P> function, P min, P max){ add(Estivate.betweenIfNotNull(function, min, max)); return this; }
-	public <T, P> Aggregator betweenOrNull	(AttributeGetter<T, P> function, P min, P max) 	{ add(Estivate.betweenOrNull(function, min, max)); return this; }
+	public <T, P> Aggregator between 	(@NonNull AttributeGetter<T, P> function, P min, P max)		{ add(Estivate.between(function, min, max)); return this; }
+	public <T, P> Aggregator betweenIfNotNull	(@NonNull AttributeGetter<T, P> function, P min, P max){ add(Estivate.betweenIfNotNull(function, min, max)); return this; }
+	public <T, P> Aggregator betweenOrNull	(@NonNull AttributeGetter<T, P> function, P min, P max) 	{ add(Estivate.betweenOrNull(function, min, max)); return this; }
 	
 	
-	public <T, P> Aggregator in    	(AttributeGetter<T, P> function, Collection<P> values) 		 	{ add(Estivate.in(function, values)); return this; }
-	public <T, P> Aggregator inIfNotEmptyNullable(AttributeGetter<T, P> function, Collection<P> values)	{ add(Estivate.inIfNotEmptyNullable(function, values)); return this; }
-	public <T, P> Aggregator inOrNull(AttributeGetter<T, P> function, Collection<P> values)			 	{ add(Estivate.inOrNull(function, values)); return this; }
-	public <T, P> Aggregator inIfNotEmptyOrNull(AttributeGetter<T, P> function, Collection<P> values)	 	{ add(Estivate.inIfNotEmptyOrNull(function, values)); return this; }
-	public <T, P> Aggregator notIn    	(AttributeGetter<T, P> function, Collection<P> values) 		 	{ add(Estivate.notIn(function, values)); return this; }
-	public <T, P> Aggregator notInOrNull (AttributeGetter<T, P> function, Collection<P> values) 		 	{ add(Estivate.notInOrNull(function, values)); return this; }
-	public <T, P> Aggregator notInIfNotEmptyOrNull (AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.notInIfNotEmptyOrNull(function, values)); return this; }
+	public <T, P> Aggregator in    	(@NonNull AttributeGetter<T, P> function, Collection<P> values) 		 	{ add(Estivate.in(function, values)); return this; }
+	public <T, P> Aggregator inIfNotEmptyNullable(@NonNull AttributeGetter<T, P> function, Collection<P> values)	{ add(Estivate.inIfNotEmptyNullable(function, values)); return this; }
+	public <T, P> Aggregator inOrNull(@NonNull AttributeGetter<T, P> function, Collection<P> values)			 	{ add(Estivate.inOrNull(function, values)); return this; }
+	public <T, P> Aggregator inIfNotEmptyOrNull(@NonNull AttributeGetter<T, P> function, Collection<P> values)	 	{ add(Estivate.inIfNotEmptyOrNull(function, values)); return this; }
+	public <T, P> Aggregator notIn    	(@NonNull AttributeGetter<T, P> function, Collection<P> values) 		 	{ add(Estivate.notIn(function, values)); return this; }
+	public <T, P> Aggregator notInOrNull (@NonNull AttributeGetter<T, P> function, Collection<P> values) 		 	{ add(Estivate.notInOrNull(function, values)); return this; }
+	public <T, P> Aggregator notInIfNotEmptyOrNull (@NonNull AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.notInIfNotEmptyOrNull(function, values)); return this; }
 
-	public <T> Aggregator like				(AttributeGetter<T, String> function, String value)     { add(Estivate.like(function, value)); return this; }
-	public <T> Aggregator likeStartsWith	(AttributeGetter<T, String> function, String value)     { add(Estivate.likeStartsWith(function, value)); return this; }
-	public <T> Aggregator likeEndsWith		(AttributeGetter<T, String> function, String value)     { add(Estivate.likeEndsWith(function, value)); return this; }
-	public <T> Aggregator likeContains		(AttributeGetter<T, String> function, String value)     { add(Estivate.likeContains(function, value)); return this; }
-	public <T> Aggregator notLike			(AttributeGetter<T, String> function, String value)     { add(Estivate.notLike(function, value)); return this; }
-	public <T> Aggregator notLikeStartsWith	(AttributeGetter<T, String> function, String value)     { add(Estivate.notLikeStartsWith(function, value)); return this; }
-	public <T> Aggregator notLikeEndsWith	(AttributeGetter<T, String> function, String value)     { add(Estivate.notLikeEndsWith(function, value)); return this; }
-	public <T> Aggregator notLikeContains	(AttributeGetter<T, String> function, String value)     { add(Estivate.notLikeContains(function, value)); return this; }
+	public <T> Aggregator like				(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.like(function, value)); return this; }
+	public <T> Aggregator likeStartsWith	(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.likeStartsWith(function, value)); return this; }
+	public <T> Aggregator likeEndsWith		(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.likeEndsWith(function, value)); return this; }
+	public <T> Aggregator likeContains		(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.likeContains(function, value)); return this; }
+	public <T> Aggregator notLike			(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.notLike(function, value)); return this; }
+	public <T> Aggregator notLikeStartsWith	(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.notLikeStartsWith(function, value)); return this; }
+	public <T> Aggregator notLikeEndsWith	(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.notLikeEndsWith(function, value)); return this; }
+	public <T> Aggregator notLikeContains	(@NonNull AttributeGetter<T, String> function, String value)     { add(Estivate.notLikeContains(function, value)); return this; }
 
-	public <T> Aggregator likeIn			(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeIn(function, value)); return this; }
-	public <T> Aggregator likeStartsWithIn	(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeStartsWithIn(function, value)); return this; }
-	public <T> Aggregator likeEndsWithIn	(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeEndsWithIn(function, value)); return this; }
-	public <T> Aggregator likeContainsIn	(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeContainsIn(function, value)); return this; }
-	public <T> Aggregator notLikeIn			(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.notLikeIn(function, value)); return this; }
-	public <T> Aggregator notLikeStartsWithIn(AttributeGetter<T, String> function, Collection<String> value){ add(Estivate.notLikeStartsWithIn(function, value)); return this; }
-	public <T> Aggregator notLikeEndsWithIn	(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.notLikeEndsWithIn(function, value)); return this; }
-	public <T> Aggregator notLikeContainsIn	(AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.notLikeContainsIn(function, value)); return this; }
+	public <T> Aggregator likeIn			(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeIn(function, value)); return this; }
+	public <T> Aggregator likeStartsWithIn	(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeStartsWithIn(function, value)); return this; }
+	public <T> Aggregator likeEndsWithIn	(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeEndsWithIn(function, value)); return this; }
+	public <T> Aggregator likeContainsIn	(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.likeContainsIn(function, value)); return this; }
+	public <T> Aggregator notLikeIn			(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.notLikeIn(function, value)); return this; }
+	public <T> Aggregator notLikeStartsWithIn(@NonNull AttributeGetter<T, String> function, Collection<String> value){ add(Estivate.notLikeStartsWithIn(function, value)); return this; }
+	public <T> Aggregator notLikeEndsWithIn	(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.notLikeEndsWithIn(function, value)); return this; }
+	public <T> Aggregator notLikeContainsIn	(@NonNull AttributeGetter<T, String> function, Collection<String> value) { add(Estivate.notLikeContainsIn(function, value)); return this; }
 	
 
-	public <T, P> Aggregator inIfNotEmpty   	(AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.inIfNotEmpty(function, values)); return this; }
-	public <T, P> Aggregator notInIfNotEmpty	(AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.notInIfNotEmpty(function, values)); return this; }
-	public <T, P> Aggregator inOrFalseIfEmpty	(AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.inOrFalseIfEmpty(function, values)); return this; }
-	public <T, P> Aggregator notInOrTrueIfEmpty(AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.notInOrTrueIfEmpty(function, values)); return this; }
+	public <T, P> Aggregator inIfNotEmpty   	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.inIfNotEmpty(function, values)); return this; }
+	public <T, P> Aggregator notInIfNotEmpty	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.notInIfNotEmpty(function, values)); return this; }
+	public <T, P> Aggregator inOrFalseIfEmpty	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.inOrFalseIfEmpty(function, values)); return this; }
+	public <T, P> Aggregator notInOrTrueIfEmpty(@NonNull AttributeGetter<T, P> function, Collection<P> values) { add(Estivate.notInOrTrueIfEmpty(function, values)); return this; }
 	
 	
-	public <T> Aggregator likeIfNotNull 			(AttributeGetter<T, String> function, String value) { add(Estivate.likeIfNotNull(function, value)); return this; }
-	public <T> Aggregator likeStartsWithIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeStartsWithIfNotNull(function, value)); return this; }
-	public <T> Aggregator likeEndsWithIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeEndsWithIfNotNull(function, value)); return this; }
-	public <T> Aggregator likeContainsIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeContainsIfNotNull(function, value)); return this; }
-	public <T> Aggregator likeIfNotBlank 			(AttributeGetter<T, String> function, String value) { add(Estivate.likeIfNotBlank(function, value)); return this; }
-	public <T> Aggregator likeStartsWithIfNotBlank 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeStartsWithIfNotBlank(function, value)); return this; }
-	public <T> Aggregator likeEndsWithIfNotBlank 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeEndsWithIfNotBlank(function, value)); return this; }
-	public <T> Aggregator likeContainsIfNotBlank 	(AttributeGetter<T, String> function, String value) { add(Estivate.likeContainsIfNotBlank(function, value)); return this; }
-
-	
-	public <T> Aggregator likeInIfNotEmpty 			(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeInIfNotEmpty(function, values)); return this; }
-	public <T> Aggregator likeStartsWithInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeStartsWithInIfNotEmpty(function, values)); return this; }
-	public <T> Aggregator likeEndsWithInIfNotEmpty	(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeEndsWithInIfNotEmpty(function, values)); return this; }
-	public <T> Aggregator likeContainsInIfNotEmpty	(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeContainsInIfNotEmpty(function, values)); return this; }
+	public <T> Aggregator likeIfNotNull 			(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeIfNotNull(function, value)); return this; }
+	public <T> Aggregator likeStartsWithIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeStartsWithIfNotNull(function, value)); return this; }
+	public <T> Aggregator likeEndsWithIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeEndsWithIfNotNull(function, value)); return this; }
+	public <T> Aggregator likeContainsIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeContainsIfNotNull(function, value)); return this; }
+	public <T> Aggregator likeIfNotBlank 			(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeIfNotBlank(function, value)); return this; }
+	public <T> Aggregator likeStartsWithIfNotBlank 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeStartsWithIfNotBlank(function, value)); return this; }
+	public <T> Aggregator likeEndsWithIfNotBlank 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeEndsWithIfNotBlank(function, value)); return this; }
+	public <T> Aggregator likeContainsIfNotBlank 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.likeContainsIfNotBlank(function, value)); return this; }
 
 	
-	
-	public <T> Aggregator notLikeIfNotNull 			(AttributeGetter<T, String> function, String value) { add(Estivate.notLikeIfNotNull(function, value)); return this; }
-	public <T> Aggregator notLikeStartsWithIfNotNull(AttributeGetter<T, String> function, String value) { add(Estivate.notLikeStartsWithIfNotNull(function, value)); return this; }
-	public <T> Aggregator notLikeEndsWithIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.notLikeEndsWithIfNotNull(function, value)); return this; }
-	public <T> Aggregator notLikeContainsIfNotNull 	(AttributeGetter<T, String> function, String value) { add(Estivate.notLikeContainsIfNotNull(function, value)); return this; }
+	public <T> Aggregator likeInIfNotEmpty 			(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeInIfNotEmpty(function, values)); return this; }
+	public <T> Aggregator likeStartsWithInIfNotEmpty(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeStartsWithInIfNotEmpty(function, values)); return this; }
+	public <T> Aggregator likeEndsWithInIfNotEmpty	(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeEndsWithInIfNotEmpty(function, values)); return this; }
+	public <T> Aggregator likeContainsInIfNotEmpty	(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.likeContainsInIfNotEmpty(function, values)); return this; }
 
-	public <T> Aggregator isNull(AttributeGetter<T, ?> function) 	{ add(Estivate.isNull(function)); 	return this; }
-	public <T> Aggregator isNotNull(AttributeGetter<T, ?> function) { add(Estivate.isNotNull(function)); return this; }
-	public <T> Aggregator isTrue(AttributeGetter<T, ?> function) 	{ add(Estivate.isTrue(function)); return this; }
-	public <T> Aggregator isFalse(AttributeGetter<T, ?> function) 	{ add(Estivate.isFalse(function)); return this; }
+	
+	
+	public <T> Aggregator notLikeIfNotNull 			(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notLikeIfNotNull(function, value)); return this; }
+	public <T> Aggregator notLikeStartsWithIfNotNull(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notLikeStartsWithIfNotNull(function, value)); return this; }
+	public <T> Aggregator notLikeEndsWithIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notLikeEndsWithIfNotNull(function, value)); return this; }
+	public <T> Aggregator notLikeContainsIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notLikeContainsIfNotNull(function, value)); return this; }
 
-	public <T> Aggregator matchAgainst(AttributeGetter<T, String> function, String value) { add(Estivate.matchAgainst(function, value)); return this; }
-	public <T> Aggregator matchAgainstIfNotNull(AttributeGetter<T, String> function, String value) { add(Estivate.matchAgainstIfNotNull(function, value)); return this; }
-	public <T> Aggregator notMatchAgainst(AttributeGetter<T, String> function, String value) { add(Estivate.notMatchAgainst(function, value)); return this; }
-	public <T> Aggregator notMatchAgainstIfNotNull(AttributeGetter<T, String> function, String value) { add(Estivate.notMatchAgainstIfNotNull(function, value)); return this; }
-	
-	public <T> Aggregator matchAgainstIn(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.matchAgainstIn(function, values)); return this; }
-	public <T> Aggregator matchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(function, values)); return this; }
-	public <T> Aggregator notMatchAgainstIn(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.notMatchAgainstIn(function, values)); return this; }
-	public <T> Aggregator notMatchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(function, values)); return this; }
-	
-	public <T> Aggregator regexp(AttributeGetter<T, String> function, String pattern) { add(Estivate.regexp(function, pattern)); return this; }
-	
-	public <T> Aggregator nativeCriterion(AttributeGetter<T, String> function, String criterion) { add(Estivate.nativeCriterion(function, criterion)); return this; }
+	public <T> Aggregator isNull(@NonNull AttributeGetter<T, ?> function) 	{ add(Estivate.isNull(function)); 	return this; }
+	public <T> Aggregator isNotNull(@NonNull AttributeGetter<T, ?> function) { add(Estivate.isNotNull(function)); return this; }
+	public <T> Aggregator isTrue(@NonNull AttributeGetter<T, ?> function) 	{ add(Estivate.isTrue(function)); return this; }
+	public <T> Aggregator isFalse(@NonNull AttributeGetter<T, ?> function) 	{ add(Estivate.isFalse(function)); return this; }
 
-	public <T> Aggregator in		(AttributeGetter<T, ?> function, SelectQuery<?> subQuery)	{ add(Estivate.in(function, subQuery)); return this; }
-	public <T> Aggregator notIn	(AttributeGetter<T, ?> function, SelectQuery<?> subQuery)	{ add(Estivate.notIn(function, subQuery)); return this; }
+	public <T> Aggregator matchAgainst(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.matchAgainst(function, value)); return this; }
+	public <T> Aggregator matchAgainstIfNotNull(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.matchAgainstIfNotNull(function, value)); return this; }
+	public <T> Aggregator notMatchAgainst(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notMatchAgainst(function, value)); return this; }
+	public <T> Aggregator notMatchAgainstIfNotNull(@NonNull AttributeGetter<T, String> function, String value) { add(Estivate.notMatchAgainstIfNotNull(function, value)); return this; }
+	
+	public <T> Aggregator matchAgainstIn(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.matchAgainstIn(function, values)); return this; }
+	public <T> Aggregator matchAgainstInIfNotEmpty(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.matchAgainstInIfNotEmpty(function, values)); return this; }
+	public <T> Aggregator notMatchAgainstIn(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.notMatchAgainstIn(function, values)); return this; }
+	public <T> Aggregator notMatchAgainstInIfNotEmpty(@NonNull AttributeGetter<T, String> function, Collection<String> values) { add(Estivate.notMatchAgainstInIfNotEmpty(function, values)); return this; }
+	
+	public <T> Aggregator regexp(@NonNull AttributeGetter<T, String> function, String pattern) { add(Estivate.regexp(function, pattern)); return this; }
+	
+	public <T> Aggregator nativeCriterion(@NonNull AttributeGetter<T, String> function, String criterion) { add(Estivate.nativeCriterion(function, criterion)); return this; }
+
+	public <T> Aggregator in		(@NonNull AttributeGetter<T, ?> function, SelectQuery<?> subQuery)	{ add(Estivate.in(function, subQuery)); return this; }
+	public <T> Aggregator notIn	(@NonNull AttributeGetter<T, ?> function, SelectQuery<?> subQuery)	{ add(Estivate.notIn(function, subQuery)); return this; }
 			
 	
-	public <T> Aggregator exists	(AttributeGetter<T, ?> function, SelectQuery<?> subQuery)						{ add(Estivate.existsSubQuery(subQuery)); return this; }
-	public <T> Aggregator notExists	(AttributeGetter<T, ?> function, SelectQuery<?> subQuery)						{ add(Estivate.notExistsSubQuery(subQuery)); return this; }
+	public <T> Aggregator exists	(@NonNull AttributeGetter<T, ?> function, SelectQuery<?> subQuery)						{ add(Estivate.existsSubQuery(subQuery)); return this; }
+	public <T> Aggregator notExists	(@NonNull AttributeGetter<T, ?> function, SelectQuery<?> subQuery)						{ add(Estivate.notExistsSubQuery(subQuery)); return this; }
 	
 	
 	/* Misc Methods */

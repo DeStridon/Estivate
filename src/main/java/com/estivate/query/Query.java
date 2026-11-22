@@ -15,6 +15,7 @@ import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
 public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
@@ -623,116 +624,116 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q regexp(Entity<?> entity, String attribute, String pattern) { super.regexp(entity, attribute, pattern); return self(); }
 
 	/* Wrappers for Lambda */
-	public <T, P> Q eq   			(AttributeGetter<T, P> function, P value) { super.eq(function, value);  return self(); }
-	public <T, P> Q eqIfNotNull   	(AttributeGetter<T, P> function, P value) { super.eqIfNotNull(function, value);  return self(); }
-	public <T, P> Q eqOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.eqOrFalseIfNull(function, value); return self(); }
-	public <T>    Q eqIfNotBlank    (AttributeGetter<T, String> function, String value) { super.eqIfNotBlank(function, value); return self(); }
-	public <T, P> Q eqNullable		(AttributeGetter<T, P> function, P value) { super.eqNullable(function, value); return self(); }
-	public <T, P> Q eqOrNull		(AttributeGetter<T, P> function, P value) { super.eqOrNull(function, value); return self(); }
-	public <T, P> Q notEq			(AttributeGetter<T, P> function, P value) { super.notEq(function, value);  return self(); }
-	public <T, P> Q notEqIfNotNull	(AttributeGetter<T, P> function, P value) { super.notEqIfNotNull(function, value);  return self(); }
-	public <T>	  Q notEqIfNotBlank (AttributeGetter<T, String> function, String value) { super.notEqIfNotBlank(function, value); return self(); }
-	public <T, P> Q notEqNullable	(AttributeGetter<T, P> function, P value) { super.notEqNullable(function, value); return self(); }
-	public <T, P> Q notEqOrNull		(AttributeGetter<T, P> function, P value) { super.notEqOrNull(function, value); return self(); }
+	public <T, P> Q eq   			(@NonNull AttributeGetter<T, P> function, P value) { super.eq(function, value);  return self(); }
+	public <T, P> Q eqIfNotNull   	(@NonNull AttributeGetter<T, P> function, P value) { super.eqIfNotNull(function, value);  return self(); }
+	public <T, P> Q eqOrFalseIfNull	(@NonNull AttributeGetter<T, P> function, P value) { super.eqOrFalseIfNull(function, value); return self(); }
+	public <T>    Q eqIfNotBlank    (@NonNull AttributeGetter<T, String> function, String value) { super.eqIfNotBlank(function, value); return self(); }
+	public <T, P> Q eqNullable		(@NonNull AttributeGetter<T, P> function, P value) { super.eqNullable(function, value); return self(); }
+	public <T, P> Q eqOrNull		(@NonNull AttributeGetter<T, P> function, P value) { super.eqOrNull(function, value); return self(); }
+	public <T, P> Q notEq			(@NonNull AttributeGetter<T, P> function, P value) { super.notEq(function, value);  return self(); }
+	public <T, P> Q notEqIfNotNull	(@NonNull AttributeGetter<T, P> function, P value) { super.notEqIfNotNull(function, value);  return self(); }
+	public <T>	  Q notEqIfNotBlank (@NonNull AttributeGetter<T, String> function, String value) { super.notEqIfNotBlank(function, value); return self(); }
+	public <T, P> Q notEqNullable	(@NonNull AttributeGetter<T, P> function, P value) { super.notEqNullable(function, value); return self(); }
+	public <T, P> Q notEqOrNull		(@NonNull AttributeGetter<T, P> function, P value) { super.notEqOrNull(function, value); return self(); }
 
-	public <T, P> Q lt   			(AttributeGetter<T, P> function, P value) { super.lt(function, value);  return self(); }
-	public <T, P> Q ltIfNotNull		(AttributeGetter<T, P> function, P value) { super.ltIfNotNull(function, value);  return self(); }
-	public <T, P> Q ltOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.ltOrFalseIfNull(function, value); return self(); }
-	public <T, P> Q ltOrNull		(AttributeGetter<T, P> function, P value) { super.ltOrNull(function, value); return self(); }
+	public <T, P> Q lt   			(@NonNull AttributeGetter<T, P> function, P value) { super.lt(function, value);  return self(); }
+	public <T, P> Q ltIfNotNull		(@NonNull AttributeGetter<T, P> function, P value) { super.ltIfNotNull(function, value);  return self(); }
+	public <T, P> Q ltOrFalseIfNull	(@NonNull AttributeGetter<T, P> function, P value) { super.ltOrFalseIfNull(function, value); return self(); }
+	public <T, P> Q ltOrNull		(@NonNull AttributeGetter<T, P> function, P value) { super.ltOrNull(function, value); return self(); }
 
-	public <T, P> Q lte  		(AttributeGetter<T, P> function, P value) { super.lte(function, value);  return self(); }
-	public <T, P> Q lteIfNotNull  	(AttributeGetter<T, P> function, P value) { super.lteIfNotNull(function, value);  return self(); }
-	public <T, P> Q lteOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.lteOrFalseIfNull(function, value); return self(); }
-	public <T, P> Q lteOrNull		(AttributeGetter<T, P> function, P value) { super.lteOrNull(function, value); return self(); }
+	public <T, P> Q lte  		(@NonNull AttributeGetter<T, P> function, P value) { super.lte(function, value);  return self(); }
+	public <T, P> Q lteIfNotNull  	(@NonNull AttributeGetter<T, P> function, P value) { super.lteIfNotNull(function, value);  return self(); }
+	public <T, P> Q lteOrFalseIfNull	(@NonNull AttributeGetter<T, P> function, P value) { super.lteOrFalseIfNull(function, value); return self(); }
+	public <T, P> Q lteOrNull		(@NonNull AttributeGetter<T, P> function, P value) { super.lteOrNull(function, value); return self(); }
 	
-	public <T, P> Q gt   			(AttributeGetter<T, P> function, P value) { super.gt(function, value);  return self(); }
-	public <T, P> Q gtIfNotNull   	(AttributeGetter<T, P> function, P value) { super.gtIfNotNull(function, value);  return self(); }
-	public <T, P> Q gtOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.gtOrFalseIfNull(function, value); return self(); }
-	public <T, P> Q gtOrNull		(AttributeGetter<T, P> function, P value) { super.gtOrNull(function, value); return self(); }
-	public <T, P> Q gte  			(AttributeGetter<T, P> function, P value) { super.gte(function, value);  return self(); }
-	public <T, P> Q gteIfNotNull  	(AttributeGetter<T, P> function, P value) { super.gteIfNotNull(function, value);  return self(); }
-	public <T, P> Q gteOrFalseIfNull	(AttributeGetter<T, P> function, P value) { super.gteOrFalseIfNull(function, value); return self(); }
-	public <T, P> Q gteOrNull		(AttributeGetter<T, P> function, P value) { super.gteOrNull(function, value); return self(); }
+	public <T, P> Q gt   			(@NonNull AttributeGetter<T, P> function, P value) { super.gt(function, value);  return self(); }
+	public <T, P> Q gtIfNotNull   	(@NonNull AttributeGetter<T, P> function, P value) { super.gtIfNotNull(function, value);  return self(); }
+	public <T, P> Q gtOrFalseIfNull	(@NonNull AttributeGetter<T, P> function, P value) { super.gtOrFalseIfNull(function, value); return self(); }
+	public <T, P> Q gtOrNull		(@NonNull AttributeGetter<T, P> function, P value) { super.gtOrNull(function, value); return self(); }
+	public <T, P> Q gte  			(@NonNull AttributeGetter<T, P> function, P value) { super.gte(function, value);  return self(); }
+	public <T, P> Q gteIfNotNull  	(@NonNull AttributeGetter<T, P> function, P value) { super.gteIfNotNull(function, value);  return self(); }
+	public <T, P> Q gteOrFalseIfNull	(@NonNull AttributeGetter<T, P> function, P value) { super.gteOrFalseIfNull(function, value); return self(); }
+	public <T, P> Q gteOrNull		(@NonNull AttributeGetter<T, P> function, P value) { super.gteOrNull(function, value); return self(); }
 	
-	public <T, P> Q between			(AttributeGetter<T, P> function, P min, P max) { super.between(function, min, max); return self(); }
-	public <T, P> Q betweenIfNotNull(AttributeGetter<T, P> function, P min, P max) { super.betweenIfNotNull(function, min, max); return self(); }
+	public <T, P> Q between			(@NonNull AttributeGetter<T, P> function, P min, P max) { super.between(function, min, max); return self(); }
+	public <T, P> Q betweenIfNotNull(@NonNull AttributeGetter<T, P> function, P min, P max) { super.betweenIfNotNull(function, min, max); return self(); }
 
-	public <T, P> Q in   					(AttributeGetter<T, P> function, Collection<P> values) { super.in(function, values); return self(); }
-	public <T, P> Q inIfNotEmpty  			(AttributeGetter<T, P> function, Collection<P> values) { super.inIfNotEmpty(function, values); return self(); }
-	public <T, P> Q inIfNotEmptyNullable  	(AttributeGetter<T, P> function, Collection<P> values) { super.inIfNotEmptyNullable(function, values); return self(); }
-	public <T, P> Q inOrNull 				(AttributeGetter<T, P> function, Collection<P> values) { super.inOrNull(function, values); return self(); }
-	public <T, P> Q inIfNotEmptyOrNull 	(AttributeGetter<T, P> function, Collection<P> values) { super.inIfNotEmptyOrNull(function, values); return self(); }
-	public <T, P> Q notIn  				(AttributeGetter<T, P> function, Collection<P> values) { super.notIn(function, values); return self(); }
-	public <T, P> Q notInOrNull			(AttributeGetter<T, P> function, Collection<P> values) { super.notInOrNull(function, values); return self(); }
-	public <T, P> Q notInIfNotEmptyOrNull	(AttributeGetter<T, P> function, Collection<P> values) { super.notInIfNotEmptyOrNull(function, values); return self(); }
-
-
-	public <T> Q like 			(AttributeGetter<T, String> function, String value)				{ super.like(function, value);  return self(); }
-	public <T> Q likeIn 		(AttributeGetter<T, String> function, Collection<String> value)	{ super.likeIn(function, value);  return self(); }
-	public <T> Q notLike		(AttributeGetter<T, String> function, String value)				{ super.notLike(function, value);  return self(); }
-	public <T> Q notLikeIn	(AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeIn(function, value);  return self(); }
-	
-	
-	public <T> Q likeStartsWith 	(AttributeGetter<T, String> function, String value)	{ super.likeStartsWith(function, value);  return self(); }
-	public <T> Q likeStartsWithIn 	(AttributeGetter<T, String> function, Collection<String> value)	{ super.likeStartsWithIn(function, value);  return self(); }
-	public <T> Q notLikeStartsWith 	(AttributeGetter<T, String> function, String value)	{ super.notLikeStartsWith(function, value);  return self(); }
-	
-	public <T> Q likeEndsWith 		(AttributeGetter<T, String> function, String value)	{ super.likeEndsWith(function, value);  return self(); }
-	public <T> Q notLikeEndsWith 	(AttributeGetter<T, String> function, String value)	{ super.notLikeEndsWith(function, value);  return self(); }
-	
-	public <T> Q likeContains 		(AttributeGetter<T, String> function, String value)	{ super.likeContains(function, value);  return self(); }
-	public <T> Q notLikeContains 	(AttributeGetter<T, String> function, String value)	{ super.notLikeContains(function, value);  return self(); }
-
-	public <T> Q likeEndsWithIn 	(AttributeGetter<T, String> function, Collection<String> value)	{ super.likeEndsWithIn(function, value);  return self(); }
-	public <T> Q likeContainsIn 	(AttributeGetter<T, String> function, Collection<String> value)	{ super.likeContainsIn(function, value);  return self(); }
-	public <T> Q notLikeStartsWithIn(AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeStartsWithIn(function, value);  return self(); }
-	public <T> Q notLikeEndsWithIn 	(AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeEndsWithIn(function, value);  return self(); }
-	public <T> Q notLikeContainsIn 	(AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeContainsIn(function, value);  return self(); }
-
-	public <T> Q nativeCriterion 	(AttributeGetter<T, String> function, String criterion) { super.nativeCriterion(function, criterion); return self(); }
-	
-	public <T> Q in			(AttributeGetter<T, ?> function, SelectQuery<?> subQuery){ super.in(function, subQuery); return self(); }
-	public <T> Q notIn		(AttributeGetter<T, ?> function, SelectQuery<?> subQuery){ super.notIn(function, subQuery); return self(); }
-	
-	
-	public <T, P> Q notInIfNotEmpty   	(AttributeGetter<T, P> function, Collection<P> values) { super.notInIfNotEmpty(function, values); return self(); }
-	public <T, P> Q inOrFalseIfEmpty	(AttributeGetter<T, P> function, Collection<P> values) { super.inOrFalseIfEmpty(function, values); return self(); }
-	public <T, P> Q notInOrTrueIfEmpty	(AttributeGetter<T, P> function, Collection<P> values) { super.notInOrTrueIfEmpty(function, values); return self(); }
-	
-	
-	public <T> Q likeIfNotNull 				(AttributeGetter<T, String> function, String value)        	{ super.likeIfNotNull (function, value);  return self(); }
-	public <T> Q likeStartsWithIfNotNull 	(AttributeGetter<T, String> function, String value)        	{ super.likeStartsWithIfNotNull (function, value);  return self(); }
-	public <T> Q likeEndsWithIfNotNull 		(AttributeGetter<T, String> function, String value)        	{ super.likeEndsWithIfNotNull (function, value);  return self(); }
-	public <T> Q likeContainsIfNotNull 		(AttributeGetter<T, String> function, String value)        	{ super.likeContainsIfNotNull (function, value);  return self(); }
-
-	public <T> Q likeInIfNotEmpty 			(AttributeGetter<T, String> function, Collection<String> values) { super.likeInIfNotEmpty(function, values); return self(); }
-	public <T> Q likeStartsWithInIfNotEmpty (AttributeGetter<T, String> function, Collection<String> values) { super.likeStartsWithInIfNotEmpty(function, values); return self(); }
-	public <T> Q likeEndsWithInIfNotEmpty	(AttributeGetter<T, String> function, Collection<String> values) { super.likeEndsWithInIfNotEmpty(function, values); return self(); }
-	public <T> Q likeContainsInIfNotEmpty	(AttributeGetter<T, String> function, Collection<String> values) { super.likeContainsInIfNotEmpty(function, values); return self(); }
-	
-	public <T> Q notLikeIfNotNull 			(AttributeGetter<T, String> function, String value)        	{ super.notLikeIfNotNull (function, value);  return self(); }
-	public <T> Q notLikeStartsWithIfNotNull (AttributeGetter<T, String> function, String value)        	{ super.notLikeStartsWithIfNotNull (function, value);  return self(); }
-	public <T> Q notLikeEndsWithIfNotNull 	(AttributeGetter<T, String> function, String value)        	{ super.notLikeEndsWithIfNotNull (function, value);  return self(); }
-	public <T> Q notLikeContainsIfNotNull 	(AttributeGetter<T, String> function, String value)        	{ super.notLikeContainsIfNotNull (function, value);  return self(); }
-
-	public <T> Q matchAgainst(AttributeGetter<T, String> function, String value) { super.matchAgainst(function, value); return self(); }
-	public <T> Q matchAgainstIfNotNull(AttributeGetter<T, String> function, String value) { super.matchAgainstIfNotNull(function, value); return self(); }
-	public <T> Q notMatchAgainst(AttributeGetter<T, String> function, String value) { super.notMatchAgainst(function, value); return self(); }
-	public <T> Q notMatchAgainstIfNotNull(AttributeGetter<T, String> function, String value) { super.notMatchAgainstIfNotNull(function, value); return self(); }
+	public <T, P> Q in   					(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.in(function, values); return self(); }
+	public <T, P> Q inIfNotEmpty  			(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.inIfNotEmpty(function, values); return self(); }
+	public <T, P> Q inIfNotEmptyNullable  	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.inIfNotEmptyNullable(function, values); return self(); }
+	public <T, P> Q inOrNull 				(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.inOrNull(function, values); return self(); }
+	public <T, P> Q inIfNotEmptyOrNull 	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.inIfNotEmptyOrNull(function, values); return self(); }
+	public <T, P> Q notIn  				(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.notIn(function, values); return self(); }
+	public <T, P> Q notInOrNull			(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.notInOrNull(function, values); return self(); }
+	public <T, P> Q notInIfNotEmptyOrNull	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.notInIfNotEmptyOrNull(function, values); return self(); }
 
 
-	public <T> Q matchAgainstIn(AttributeGetter<T, String> function, Collection<String> values) { super.matchAgainstIn(function, values); return self(); }
-	public <T> Q matchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { super.matchAgainstInIfNotEmpty(function, values); return self(); }
-	public <T> Q notMatchAgainstIn(AttributeGetter<T, String> function, Collection<String> values) { super.notMatchAgainstIn(function, values); return self(); }
-	public <T> Q notMatchAgainstInIfNotEmpty(AttributeGetter<T, String> function, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(function, values); return self(); }
-	
-	public <T> Q regexp(AttributeGetter<T, String> function, String pattern) { super.regexp(function, pattern); return self(); }
+	public <T> Q like 			(@NonNull AttributeGetter<T, String> function, String value)				{ super.like(function, value);  return self(); }
+	public <T> Q likeIn 		(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.likeIn(function, value);  return self(); }
+	public <T> Q notLike		(@NonNull AttributeGetter<T, String> function, String value)				{ super.notLike(function, value);  return self(); }
+	public <T> Q notLikeIn	(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeIn(function, value);  return self(); }
 	
 	
-	public <T> Q isNotNull	(AttributeGetter<T, ?> function) 				{ super.isNotNull(function); return self();}
-	public <T> Q isNull		(AttributeGetter<T, ?> function) 				{ super.isNull(function); return self();}
-	public <T> Q isTrue		(AttributeGetter<T, ?> function) 				{ super.isTrue(function); return self();}
-	public <T> Q isFalse	(AttributeGetter<T, ?> function) 				{ super.isFalse(function); return self();}
+	public <T> Q likeStartsWith 	(@NonNull AttributeGetter<T, String> function, String value)	{ super.likeStartsWith(function, value);  return self(); }
+	public <T> Q likeStartsWithIn 	(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.likeStartsWithIn(function, value);  return self(); }
+	public <T> Q notLikeStartsWith 	(@NonNull AttributeGetter<T, String> function, String value)	{ super.notLikeStartsWith(function, value);  return self(); }
+	
+	public <T> Q likeEndsWith 		(@NonNull AttributeGetter<T, String> function, String value)	{ super.likeEndsWith(function, value);  return self(); }
+	public <T> Q notLikeEndsWith 	(@NonNull AttributeGetter<T, String> function, String value)	{ super.notLikeEndsWith(function, value);  return self(); }
+	
+	public <T> Q likeContains 		(@NonNull AttributeGetter<T, String> function, String value)	{ super.likeContains(function, value);  return self(); }
+	public <T> Q notLikeContains 	(@NonNull AttributeGetter<T, String> function, String value)	{ super.notLikeContains(function, value);  return self(); }
+
+	public <T> Q likeEndsWithIn 	(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.likeEndsWithIn(function, value);  return self(); }
+	public <T> Q likeContainsIn 	(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.likeContainsIn(function, value);  return self(); }
+	public <T> Q notLikeStartsWithIn(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeStartsWithIn(function, value);  return self(); }
+	public <T> Q notLikeEndsWithIn 	(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeEndsWithIn(function, value);  return self(); }
+	public <T> Q notLikeContainsIn 	(@NonNull AttributeGetter<T, String> function, Collection<String> value)	{ super.notLikeContainsIn(function, value);  return self(); }
+
+	public <T> Q nativeCriterion 	(@NonNull AttributeGetter<T, String> function, String criterion) { super.nativeCriterion(function, criterion); return self(); }
+	
+	public <T> Q in			(@NonNull AttributeGetter<T, ?> function, SelectQuery<?> subQuery){ super.in(function, subQuery); return self(); }
+	public <T> Q notIn		(@NonNull AttributeGetter<T, ?> function, SelectQuery<?> subQuery){ super.notIn(function, subQuery); return self(); }
+	
+	
+	public <T, P> Q notInIfNotEmpty   	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.notInIfNotEmpty(function, values); return self(); }
+	public <T, P> Q inOrFalseIfEmpty	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.inOrFalseIfEmpty(function, values); return self(); }
+	public <T, P> Q notInOrTrueIfEmpty	(@NonNull AttributeGetter<T, P> function, Collection<P> values) { super.notInOrTrueIfEmpty(function, values); return self(); }
+	
+	
+	public <T> Q likeIfNotNull 				(@NonNull AttributeGetter<T, String> function, String value)        	{ super.likeIfNotNull (function, value);  return self(); }
+	public <T> Q likeStartsWithIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value)        	{ super.likeStartsWithIfNotNull (function, value);  return self(); }
+	public <T> Q likeEndsWithIfNotNull 		(@NonNull AttributeGetter<T, String> function, String value)        	{ super.likeEndsWithIfNotNull (function, value);  return self(); }
+	public <T> Q likeContainsIfNotNull 		(@NonNull AttributeGetter<T, String> function, String value)        	{ super.likeContainsIfNotNull (function, value);  return self(); }
+
+	public <T> Q likeInIfNotEmpty 			(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.likeInIfNotEmpty(function, values); return self(); }
+	public <T> Q likeStartsWithInIfNotEmpty (@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.likeStartsWithInIfNotEmpty(function, values); return self(); }
+	public <T> Q likeEndsWithInIfNotEmpty	(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.likeEndsWithInIfNotEmpty(function, values); return self(); }
+	public <T> Q likeContainsInIfNotEmpty	(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.likeContainsInIfNotEmpty(function, values); return self(); }
+	
+	public <T> Q notLikeIfNotNull 			(@NonNull AttributeGetter<T, String> function, String value)        	{ super.notLikeIfNotNull (function, value);  return self(); }
+	public <T> Q notLikeStartsWithIfNotNull (@NonNull AttributeGetter<T, String> function, String value)        	{ super.notLikeStartsWithIfNotNull (function, value);  return self(); }
+	public <T> Q notLikeEndsWithIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value)        	{ super.notLikeEndsWithIfNotNull (function, value);  return self(); }
+	public <T> Q notLikeContainsIfNotNull 	(@NonNull AttributeGetter<T, String> function, String value)        	{ super.notLikeContainsIfNotNull (function, value);  return self(); }
+
+	public <T> Q matchAgainst(@NonNull AttributeGetter<T, String> function, String value) { super.matchAgainst(function, value); return self(); }
+	public <T> Q matchAgainstIfNotNull(@NonNull AttributeGetter<T, String> function, String value) { super.matchAgainstIfNotNull(function, value); return self(); }
+	public <T> Q notMatchAgainst(@NonNull AttributeGetter<T, String> function, String value) { super.notMatchAgainst(function, value); return self(); }
+	public <T> Q notMatchAgainstIfNotNull(@NonNull AttributeGetter<T, String> function, String value) { super.notMatchAgainstIfNotNull(function, value); return self(); }
+
+
+	public <T> Q matchAgainstIn(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.matchAgainstIn(function, values); return self(); }
+	public <T> Q matchAgainstInIfNotEmpty(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.matchAgainstInIfNotEmpty(function, values); return self(); }
+	public <T> Q notMatchAgainstIn(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.notMatchAgainstIn(function, values); return self(); }
+	public <T> Q notMatchAgainstInIfNotEmpty(@NonNull AttributeGetter<T, String> function, Collection<String> values) { super.notMatchAgainstInIfNotEmpty(function, values); return self(); }
+	
+	public <T> Q regexp(@NonNull AttributeGetter<T, String> function, String pattern) { super.regexp(function, pattern); return self(); }
+	
+	
+	public <T> Q isNotNull	(@NonNull AttributeGetter<T, ?> function) 				{ super.isNotNull(function); return self();}
+	public <T> Q isNull		(@NonNull AttributeGetter<T, ?> function) 				{ super.isNull(function); return self();}
+	public <T> Q isTrue		(@NonNull AttributeGetter<T, ?> function) 				{ super.isTrue(function); return self();}
+	public <T> Q isFalse	(@NonNull AttributeGetter<T, ?> function) 				{ super.isFalse(function); return self();}
 
 	
 	
@@ -1073,8 +1074,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q orderBy(String attribute, Order.Direction direction) 										{ return orderBy(this.entity, attribute, null, direction); }
 	public Q orderBy(Attribute attribute, Order.Direction direction) 									{ return orderBy(attribute.entity, attribute.attribute, attribute.function, direction); }
 	public Q orderBy(Attribute attribute, Function function, Order.Direction direction) 				{ return orderBy(attribute.entity, attribute.attribute, function, direction); }
-	public <T, P> Q orderBy(AttributeGetter<T, P> getter, Order.Direction direction) 							{ return orderBy(Estivate.attribute(getter), direction); }
-	public <T, P> Q orderBy(AttributeGetter<T, P> getter, Function function, Order.Direction direction) 		{ return orderBy(Estivate.attribute(getter), function, direction); }
+	public <T, P> Q orderBy(@NonNull AttributeGetter<T, P> getter, Order.Direction direction) 							{ return orderBy(Estivate.attribute(getter), direction); }
+	public <T, P> Q orderBy(@NonNull AttributeGetter<T, P> getter, Function function, Order.Direction direction) 		{ return orderBy(Estivate.attribute(getter), function, direction); }
 	public Q orderByAlias(String alias, Order.Direction direction) 										{ orders.add(Order.builder().attribute(alias).direction(direction).build()); return self(); }
 
 	public Q orderByAsc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Asc); }
@@ -1084,8 +1085,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q orderByAsc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Asc); }
 	public Q orderByAsc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, function, Order.Direction.Asc); }
 	public Q orderByAsc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, attribute.function, Order.Direction.Asc); }
-	public <T, P> Q orderByAsc(AttributeGetter<T, P> getter) 					{ return orderBy(Estivate.attribute(getter), Order.Direction.Asc); }
-	public <T, P> Q orderByAsc(AttributeGetter<T, P> getter, Function function) { return orderBy(Estivate.attribute(getter), function, Order.Direction.Asc); }
+	public <T, P> Q orderByAsc(@NonNull AttributeGetter<T, P> getter) 					{ return orderBy(Estivate.attribute(getter), Order.Direction.Asc); }
+	public <T, P> Q orderByAsc(@NonNull AttributeGetter<T, P> getter, Function function) { return orderBy(Estivate.attribute(getter), function, Order.Direction.Asc); }
 	public Q orderByAscAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Asc); }
 	
 	public Q orderByDesc(Entity<?> entity, String attribute) 					{ return orderBy(entity, attribute, Order.Direction.Desc); }
@@ -1095,8 +1096,8 @@ public abstract class Query<Q extends Query<Q, E>, E> extends Aggregator {
 	public Q orderByDesc(String attribute) 										{ return orderBy(this.entity, attribute, Order.Direction.Desc); }
 	public Q orderByDesc(String attribute, Function function) 					{ return orderBy(this.entity, attribute, function, Order.Direction.Desc); }
 	public Q orderByDesc(Attribute attribute) 									{ return orderBy(attribute.entity, attribute.attribute, attribute.function, Order.Direction.Desc); }
-	public <T, P> Q orderByDesc(AttributeGetter<T, P> getter) 					{ return orderBy(Estivate.attribute(getter), Order.Direction.Desc); }
-	public <T, P> Q orderByDesc(AttributeGetter<T, P> getter, Function function){ return orderBy(Estivate.attribute(getter), function, Order.Direction.Desc); }
+	public <T, P> Q orderByDesc(@NonNull AttributeGetter<T, P> getter) 					{ return orderBy(Estivate.attribute(getter), Order.Direction.Desc); }
+	public <T, P> Q orderByDesc(@NonNull AttributeGetter<T, P> getter, Function function){ return orderBy(Estivate.attribute(getter), function, Order.Direction.Desc); }
 	public Q orderByDescAlias(String alias)										{ return orderByAlias(alias, Order.Direction.Desc); }
 	
 	

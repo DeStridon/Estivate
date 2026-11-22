@@ -11,6 +11,7 @@ import com.estivate.context.Context;
 import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 public class UpdateQuery<E> extends Query<UpdateQuery<E>, E> {
 
@@ -38,7 +39,7 @@ public class UpdateQuery<E> extends Query<UpdateQuery<E>, E> {
         return set(Attribute.of(entity, field), value);
     }
 
-    public <T, P> UpdateQuery<E> set(AttributeGetter<T, P> getter, P value) {
+    public <T, P> UpdateQuery<E> set(@NonNull AttributeGetter<T, P> getter, P value) {
         return set(Estivate.attribute(getter), value);
     }
 

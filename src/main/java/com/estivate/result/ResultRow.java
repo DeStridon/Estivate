@@ -21,6 +21,7 @@ import com.estivate.util.FieldUtils.AttributeGetter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -203,7 +204,7 @@ public class ResultRow {
 		return (T) asOrdinalEnum(column, (Class<E>) enumType);
 	}
 
-	public <T, R> R  as(AttributeGetter<T, R> attributeGetter) {
+	public <T, R> R  as(@NonNull AttributeGetter<T, R> attributeGetter) {
 		Attribute attribute = Estivate.attribute(attributeGetter);
 		return as(attribute.getEntity().entity, attribute.getAttribute());
 	}
@@ -214,88 +215,88 @@ public class ResultRow {
 	public 		 String 		asString		(Class<?> c, String attribute, Function function) 	{ return asString(Estivate.attribute(c, attribute, function)); }
 	public 		 String 		asString		(Entity<?> e, String attribute)	{ return asString(Estivate.attribute(e, attribute)); }
 	public 		 String 		asString		(Entity<?> e, String attribute, Function function) 	{ return asString(Estivate.attribute(e, attribute, function)); }
-	public <T,R> String 		asString		(AttributeGetter<T, R> attributeGetter) { return asString(Estivate.attribute(attributeGetter)); }
+	public <T,R> String 		asString		(@NonNull AttributeGetter<T, R> attributeGetter) { return asString(Estivate.attribute(attributeGetter)); }
 	// Numbers
 //	public Short 				asShort			(Attribute attribute) { return asShort(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Short 				asShort			(Class<?> c, String attribute) 	{ return asShort(Estivate.attribute(c, attribute)); }
 	public Short 				asShort			(Class<?> c, String attribute, Function function) 	{ return asShort(Estivate.attribute(c, attribute, function)); }
 	public Short 				asShort			(Entity<?> e, String attribute)	{ return asShort(Estivate.attribute(e, attribute)); }
 	public Short 				asShort			(Entity<?> e, String attribute, Function function) 	{ return asShort(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Short 			asShort			(AttributeGetter<T, R> attributeGetter) { return asShort(Estivate.attribute(attributeGetter)); }
+	public <T,R> Short 			asShort			(@NonNull AttributeGetter<T, R> attributeGetter) { return asShort(Estivate.attribute(attributeGetter)); }
 //	public Integer 				asInteger		(Attribute attribute) { return asInteger(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Integer 				asInteger		(Class<?> c, String attribute) 	{ return asInteger(Estivate.attribute(c, attribute)); }
 	public Integer 				asInteger		(Class<?> c, String attribute, Function function) 	{ return asInteger(Estivate.attribute(c, attribute, function)); }
 	public Integer 				asInteger		(Entity<?> e, String attribute)	{ return asInteger(Estivate.attribute(e, attribute)); }
 	public Integer 				asInteger		(Entity<?> e, String attribute, Function function) 	{ return asInteger(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Integer 		asInteger		(AttributeGetter<T, R> attributeGetter) { return asInteger(Estivate.attribute(attributeGetter)); }
+	public <T,R> Integer 		asInteger		(@NonNull AttributeGetter<T, R> attributeGetter) { return asInteger(Estivate.attribute(attributeGetter)); }
 //	public Long 				asLong			(Attribute attribute) { return asLong(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Long 				asLong			(Class<?> c, String attribute) 	{ return asLong(Estivate.attribute(c, attribute)); }
 	public Long 				asLong			(Class<?> c, String attribute, Function function) 	{ return asLong(Estivate.attribute(c, attribute, function)); }
 	public Long 				asLong			(Entity<?> e, String attribute)	{ return asLong(Estivate.attribute(e, attribute)); }
 	public Long 				asLong			(Entity<?> e, String attribute, Function function) 	{ return asLong(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Long 			asLong			(AttributeGetter<T, R> attributeGetter) { return asLong(Estivate.attribute(attributeGetter)); }
+	public <T,R> Long 			asLong			(@NonNull AttributeGetter<T, R> attributeGetter) { return asLong(Estivate.attribute(attributeGetter)); }
 //	public Float 				asFloat			(Attribute attribute) { return asFloat(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Float 				asFloat			(Class<?> c, String attribute) 	{ return asFloat(Estivate.attribute(c, attribute)); }
 	public Float 				asFloat			(Class<?> c, String attribute, Function function) 	{ return asFloat(Estivate.attribute(c, attribute, function)); }
 	public Float 				asFloat			(Entity<?> e, String attribute)	{ return asFloat(Estivate.attribute(e, attribute)); }
 	public Float 				asFloat			(Entity<?> e, String attribute, Function function) 	{ return asFloat(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Float 			asFloat			(AttributeGetter<T, R> attributeGetter) { return asFloat(Estivate.attribute(attributeGetter)); }
+	public <T,R> Float 			asFloat			(@NonNull AttributeGetter<T, R> attributeGetter) { return asFloat(Estivate.attribute(attributeGetter)); }
 //	public Double 				asDouble		(Attribute attribute) { return asDouble(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Double 				asDouble		(Class<?> c, String attribute) 	{ return asDouble(Estivate.attribute(c, attribute)); }
 	public Double 				asDouble		(Class<?> c, String attribute, Function function) 	{ return asDouble(Estivate.attribute(c, attribute, function)); }
 	public Double 				asDouble		(Entity<?> e, String attribute)	{ return asDouble(Estivate.attribute(e, attribute)); }
 	public Double 				asDouble		(Entity<?> e, String attribute, Function function) 	{ return asDouble(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Double 		asDouble		(AttributeGetter<T, R> attributeGetter) { return asDouble(Estivate.attribute(attributeGetter)); }
+	public <T,R> Double 		asDouble		(@NonNull AttributeGetter<T, R> attributeGetter) { return asDouble(Estivate.attribute(attributeGetter)); }
 //	public BigDecimal			asBigDecimal	(Attribute attribute) { return asBigDecimal(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public BigDecimal			asBigDecimal	(Class<?> c, String attribute) 	{ return asBigDecimal(Estivate.attribute(c, attribute)); }
 	public BigDecimal			asBigDecimal	(Class<?> c, String attribute, Function function) 	{ return asBigDecimal(Estivate.attribute(c, attribute, function)); }
 	public BigDecimal			asBigDecimal	(Entity<?> e, String attribute)	{ return asBigDecimal(Estivate.attribute(e, attribute)); }
 	public BigDecimal			asBigDecimal	(Entity<?> e, String attribute, Function function) 	{ return asBigDecimal(Estivate.attribute(e, attribute, function)); }
-	public <T,R> BigDecimal		asBigDecimal	(AttributeGetter<T, R> attributeGetter) { return asBigDecimal(Estivate.attribute(attributeGetter)); }
+	public <T,R> BigDecimal		asBigDecimal	(@NonNull AttributeGetter<T, R> attributeGetter) { return asBigDecimal(Estivate.attribute(attributeGetter)); }
 	// Date
 //	public Date 				asDate			(Attribute attribute) { return asDate(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Date 				asDate			(Class<?> c, String attribute)	{ return asDate(Estivate.attribute(c, attribute)); }
 	public Date 				asDate			(Class<?> c, String attribute, Function function) 	{ return asDate(Estivate.attribute(c, attribute, function)); }
 	public Date 				asDate			(Entity<?> e, String attribute)	{ return asDate(Estivate.attribute(e, attribute)); }
 	public Date 				asDate			(Entity<?> e, String attribute, Function function) 	{ return asDate(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Date 			asDate			(AttributeGetter<T, R> attributeGetter) { return asDate(Estivate.attribute(attributeGetter)); }
+	public <T,R> Date 			asDate			(@NonNull AttributeGetter<T, R> attributeGetter) { return asDate(Estivate.attribute(attributeGetter)); }
 //	public LocalDateTime		asLocalDateTime	(Attribute attribute) { return asLocalDateTime(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public LocalDateTime		asLocalDateTime	(Class<?> c, String attribute)	{ return asLocalDateTime(Estivate.attribute(c, attribute)); }
 	public LocalDateTime 		asLocalDateTime	(Class<?> c, String attribute, Function function) 	{ return asLocalDateTime(Estivate.attribute(c, attribute, function)); }
 	public LocalDateTime 		asLocalDateTime	(Entity<?> e, String attribute) { return asLocalDateTime(Estivate.attribute(e, attribute)); }
 	public LocalDateTime 		asLocalDateTime	(Entity<?> e, String attribute, Function function) 	{ return asLocalDateTime(Estivate.attribute(e, attribute, function)); }
-	public <T,R> LocalDateTime 	asLocalDateTime	(AttributeGetter<T, R> attributeGetter) { return asLocalDateTime(Estivate.attribute(attributeGetter)); }
+	public <T,R> LocalDateTime 	asLocalDateTime	(@NonNull AttributeGetter<T, R> attributeGetter) { return asLocalDateTime(Estivate.attribute(attributeGetter)); }
 //	public Instant				asInstant		(Attribute attribute) { return asInstant(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Instant				asInstant		(Class<?> c, String attribute)	{ return asInstant(Estivate.attribute(c, attribute)); }
 	public Instant				asInstant		(Class<?> c, String attribute, Function function) 	{ return asInstant(Estivate.attribute(c, attribute, function)); }
 	public Instant		 		asInstant		(Entity<?> e, String attribute) { return asInstant(Estivate.attribute(e, attribute)); }
 	public Instant				asInstant		(Entity<?> e, String attribute, Function function) 	{ return asInstant(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Instant 		asInstant		(AttributeGetter<T, R> attributeGetter) { return asInstant(Estivate.attribute(attributeGetter)); }
+	public <T,R> Instant 		asInstant		(@NonNull AttributeGetter<T, R> attributeGetter) { return asInstant(Estivate.attribute(attributeGetter)); }
 //	public LocalDate			asLocalDate		(Attribute attribute) { return asLocalDate(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public LocalDate			asLocalDate		(Class<?> c, String attribute)	{ return asLocalDate(Estivate.attribute(c, attribute)); }
 	public LocalDate			asLocalDate		(Class<?> c, String attribute, Function function) 	{ return asLocalDate(Estivate.attribute(c, attribute, function)); }
 	public LocalDate	 		asLocalDate		(Entity<?> e, String attribute) { return asLocalDate(Estivate.attribute(e, attribute)); }
 	public LocalDate	 		asLocalDate		(Entity<?> e, String attribute, Function function) 	{ return asLocalDate(Estivate.attribute(e, attribute, function)); }
-	public <T,R> LocalDate 		asLocalDate		(AttributeGetter<T, R> attributeGetter) { return asLocalDate(Estivate.attribute(attributeGetter)); }
+	public <T,R> LocalDate 		asLocalDate		(@NonNull AttributeGetter<T, R> attributeGetter) { return asLocalDate(Estivate.attribute(attributeGetter)); }
 	// Other
 //	public Boolean 				asBoolean		(Attribute attribute) { return asBoolean(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Boolean 				asBoolean		(Class<?> c, String attribute) 	{ return asBoolean(Estivate.attribute(c, attribute)); }
 	public Boolean 				asBoolean		(Class<?> c, String attribute, Function function) 	{ return asBoolean(Estivate.attribute(c, attribute, function)); }
 	public Boolean 				asBoolean		(Entity<?> e, String attribute)	{ return asBoolean(Estivate.attribute(e, attribute)); }
 	public Boolean 				asBoolean		(Entity<?> e, String attribute, Function function) 	{ return asBoolean(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Boolean 		asBoolean		(AttributeGetter<T, R> attributeGetter) { return asBoolean(Estivate.attribute(attributeGetter)); }
+	public <T,R> Boolean 		asBoolean		(@NonNull AttributeGetter<T, R> attributeGetter) { return asBoolean(Estivate.attribute(attributeGetter)); }
 //	public Byte					asByte			(Attribute attribute) { return asByte(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Byte					asByte			(Class<?> c, String attribute) 	{ return asByte(Estivate.attribute(c, attribute)); }
 	public Byte					asByte			(Class<?> c, String attribute, Function function) 	{ return asByte(Estivate.attribute(c, attribute, function)); }
 	public Byte					asByte			(Entity<?> e, String attribute) { return asByte(Estivate.attribute(e, attribute)); }
 	public Byte					asByte			(Entity<?> e, String attribute, Function function) 	{ return asByte(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Byte 			asByte			(AttributeGetter<T, R> attributeGetter) { return asByte(Estivate.attribute(attributeGetter)); }
+	public <T,R> Byte 			asByte			(@NonNull AttributeGetter<T, R> attributeGetter) { return asByte(Estivate.attribute(attributeGetter)); }
 //	public Character			asChar			(Attribute attribute) { return asChar(resultTable.context.nameMapper.toEntityNameAttribute(attribute.getEntity(), attribute.getAttribute())); }
 	public Character			asChar			(Class<?> c, String attribute)  					{ return asChar(Estivate.attribute(c, attribute)); }
 	public Character			asChar			(Class<?> c, String attribute, Function function) 	{ return asChar(Estivate.attribute(c, attribute, function)); }
 	public Character			asChar			(Entity<?> e, String attribute)						{ return asChar(Estivate.attribute(e, attribute)); }
 	public Character			asChar			(Entity<?> e, String attribute, Function function) 	{ return asChar(Estivate.attribute(e, attribute, function)); }
-	public <T,R> Character 		asChar			(AttributeGetter<T, R> attributeGetter) { return asChar(Estivate.attribute(attributeGetter)); }
+	public <T,R> Character 		asChar			(@NonNull AttributeGetter<T, R> attributeGetter) { return asChar(Estivate.attribute(attributeGetter)); }
 	
 	
 
@@ -338,7 +339,7 @@ public class ResultRow {
 
 	public Enum<?> asEnum(Class<?> entity, String attribute) { return asEnum(Estivate.attribute(entity, attribute)); }
 	public Enum<?> asEnum(Entity<?> entity, String attribute) { return asEnum(Estivate.attribute(entity, attribute)); }
-	public <T,R> Enum<?> asEnum(AttributeGetter<T, R> attributeGetter) { return asEnum(Estivate.attribute(attributeGetter)); }
+	public <T,R> Enum<?> asEnum(@NonNull AttributeGetter<T, R> attributeGetter) { return asEnum(Estivate.attribute(attributeGetter)); }
     
 
 	public Long getCount() { return asLong("count(*)"); }

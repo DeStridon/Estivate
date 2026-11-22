@@ -23,6 +23,7 @@ import com.estivate.util.FieldUtils.AttributeGetter;
 import com.estivate.util.ReflectionUtils;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -99,20 +100,20 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 
 	public SelectQuery<E> select(Class<?> c, String attribute) { return select(Estivate.attribute(new Entity<>(c), attribute)); }
 	public SelectQuery<E> select(Entity<?> c, String attribute) { return select(Estivate.attribute(c, attribute)); }
-	public <T, P> SelectQuery<E> select(com.estivate.util.FieldUtils.AttributeGetter<T, P> getter) { return select(Estivate.attribute(getter)); }
+	public <T, P> SelectQuery<E> select(@NonNull AttributeGetter<T, P> getter) { return select(Estivate.attribute(getter)); }
 
 	public SelectQuery<E> select(Class<?> c, String attribute, String alias) { return select(Estivate.attribute(new Entity<>(c), attribute, null, alias)); }
 	public SelectQuery<E> select(Entity<?> c, String attribute, String alias) { return select(Estivate.attribute(c, attribute, null, alias)); }
-	public <T, P> SelectQuery<E> select(com.estivate.util.FieldUtils.AttributeGetter<T, P> getter, String alias) { return select(Estivate.attribute(getter, alias)); }
+	public <T, P> SelectQuery<E> select(@NonNull AttributeGetter<T, P> getter, String alias) { return select(Estivate.attribute(getter, alias)); }
 	
 	
 	public SelectQuery<E> select(Class<?> c, String attribute, Attribute.Function function) { return select(Estivate.attribute(new Entity<>(c), attribute, function)); }
 	public SelectQuery<E> select(Entity<?> c, String attribute, Attribute.Function function) { return select(Estivate.attribute(c, attribute, function)); }
-	public <T, P> SelectQuery<E> select(com.estivate.util.FieldUtils.AttributeGetter<T, P> getter, Attribute.Function function) { return select(Estivate.attribute(getter, function)); }
+	public <T, P> SelectQuery<E> select(@NonNull AttributeGetter<T, P> getter, Attribute.Function function) { return select(Estivate.attribute(getter, function)); }
 
 	public SelectQuery<E> select(Class<?> c, String attribute, Attribute.Function function, String alias) { return select(Estivate.attribute(new Entity<>(c), attribute, function, alias)); }
 	public SelectQuery<E> select(Entity<?> c, String attribute, Attribute.Function function, String alias) { return select(Estivate.attribute(c, attribute, function, alias)); }
-	public <T, P> SelectQuery<E> select(com.estivate.util.FieldUtils.AttributeGetter<T, P> getter, Attribute.Function function, String alias) { return select(Estivate.attribute(getter, function, alias)); }
+	public <T, P> SelectQuery<E> select(@NonNull AttributeGetter<T, P> getter, Attribute.Function function, String alias) { return select(Estivate.attribute(getter, function, alias)); }
 	
 	public SelectQuery<E> select(Attribute.AttributeWindow attributeWindow) { select(attributeWindow.entity, attributeWindow.attribute, attributeWindow.function, attributeWindow.alias); return this; }
 
@@ -299,28 +300,28 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public SelectQuery<E> selectCount(Entity<?> entity, String attribute) { return select(entity, attribute, Estivate.Functions.count); }
 	public SelectQuery<E> selectCount(Class<?> c, String attribute) { return select(new Entity<>(c), attribute, Estivate.Functions.count); }
 	public SelectQuery<E> selectCount(String attribute) { return select(this.entity, attribute, Estivate.Functions.count); }
-	public <T, P> SelectQuery<E> selectCount(AttributeGetter<T, P> getter) { return select(getter, Estivate.Functions.count); }
+	public <T, P> SelectQuery<E> selectCount(@NonNull AttributeGetter<T, P> getter) { return select(getter, Estivate.Functions.count); }
 
 	// Select count with alias@
 	public SelectQuery<E> selectCount(Attribute attribute, String alias) 				{ return select(attribute.entity, attribute.attribute, Estivate.Functions.count, alias); }
 	public SelectQuery<E> selectCount(Entity<?> c, String attribute, String alias) 	{ return select(c, attribute, Estivate.Functions.count, alias); }
 	public SelectQuery<E> selectCount(Class<?> c, String attribute, String alias) 	{ return select(new Entity<>(c), attribute, Estivate.Functions.count, alias); }
 	public SelectQuery<E> selectCount(String attribute, String alias) 				{ return select(this.entity, attribute, Estivate.Functions.count, alias); }
-	public <T, P> SelectQuery<E> selectCount(AttributeGetter<T, P> getter, String alias) 	{ return select(getter, Estivate.Functions.count, alias); }
+	public <T, P> SelectQuery<E> selectCount(@NonNull AttributeGetter<T, P> getter, String alias) 	{ return select(getter, Estivate.Functions.count, alias); }
 
 	// Select count distinct field
 	public SelectQuery<E> selectCountDistinct(Attribute attribute) 								{ return select(attribute.entity, attribute.attribute, Estivate.Functions.countDistinct, attribute.alias); }
 	public SelectQuery<E> selectCountDistinct(Entity<?> entity, String attribute) 				{ return select(entity, attribute, Estivate.Functions.countDistinct); }
 	public SelectQuery<E> selectCountDistinct(Class<?> c, String attribute) 					{ return select(new Entity<>(c), attribute, Estivate.Functions.countDistinct); }
 	public SelectQuery<E> selectCountDistinct(String attribute) 								{ return select(this.entity, attribute, Estivate.Functions.countDistinct); }
-	public <T, P> SelectQuery<E> selectCountDistinct(AttributeGetter<T, P> getter) 				{ return select(getter, Estivate.Functions.countDistinct); }
+	public <T, P> SelectQuery<E> selectCountDistinct(@NonNull AttributeGetter<T, P> getter) 				{ return select(getter, Estivate.Functions.countDistinct); }
 
 	// Select count distinct with alias
 	public SelectQuery<E> selectCountDistinct(Attribute attribute, String alias) 				{ return select(attribute.entity, attribute.attribute, Estivate.Functions.countDistinct, alias); }
 	public SelectQuery<E> selectCountDistinct(Entity<?> c, String attribute, String alias) 		{ return select(c, attribute, Estivate.Functions.countDistinct, alias); }
 	public SelectQuery<E> selectCountDistinct(Class<?> c, String attribute, String alias) 		{ return select(new Entity<>(c), attribute, Estivate.Functions.countDistinct, alias); }
 	public SelectQuery<E> selectCountDistinct(String attribute, String alias) 					{ return select(this.entity, attribute, Estivate.Functions.countDistinct, alias); }
-	public <T, P> SelectQuery<E> selectCountDistinct(AttributeGetter<T, P> getter, String alias){ return select(getter, Estivate.Functions.countDistinct, alias); }
+	public <T, P> SelectQuery<E> selectCountDistinct(@NonNull AttributeGetter<T, P> getter, String alias){ return select(getter, Estivate.Functions.countDistinct, alias); }
 	
 
 	// Select min
@@ -328,7 +329,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public SelectQuery<E> selectMin(Entity<?> entity, String attribute) 						{ return select(entity, attribute, Estivate.Functions.min); }
 	public SelectQuery<E> selectMin(Class<?> c, String attribute) 								{ return select(new Entity<>(c), attribute, Estivate.Functions.min); }
 	public SelectQuery<E> selectMin(String attribute) 											{ return select(this.entity, attribute, Estivate.Functions.min); }
-	public <T, P> SelectQuery<E> selectMin(AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.min); }
+	public <T, P> SelectQuery<E> selectMin(@NonNull AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.min); }
 
 
 	// Select min with alias
@@ -336,63 +337,63 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public SelectQuery<E> selectMin(Entity<?> c, String attribute, String alias) 				{ return select(c, attribute, Estivate.Functions.min, alias); }
 	public SelectQuery<E> selectMin(Class<?> c, String attribute, String alias) 				{ return select(new Entity<>(c), attribute, Estivate.Functions.min, alias); }
 	public SelectQuery<E> selectMin(String attribute, String alias) 							{ return select(this.entity, attribute, Estivate.Functions.min, alias); }
-	public <T, P> SelectQuery<E> selectMin(AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.min, alias); }
+	public <T, P> SelectQuery<E> selectMin(@NonNull AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.min, alias); }
 
 	// Select max
 	public SelectQuery<E> selectMax(Attribute attribute) 										{ return select(attribute.entity, attribute.attribute, Estivate.Functions.max, attribute.alias); }
 	public SelectQuery<E> selectMax(Entity<?> entity, String attribute) 						{ return select(entity, attribute, Estivate.Functions.max); }
 	public SelectQuery<E> selectMax(Class<?> c, String attribute) 								{ return select(new Entity<>(c), attribute, Estivate.Functions.max); }
 	public SelectQuery<E> selectMax(String attribute) 											{ return select(this.entity, attribute, Estivate.Functions.max); }
-	public <T, P> SelectQuery<E> selectMax(AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.max); }
+	public <T, P> SelectQuery<E> selectMax(@NonNull AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.max); }
 	
 	// Select max with alias
 	public SelectQuery<E> selectMax(Attribute attribute, String alias) 							{ return select(attribute.entity, attribute.attribute, Estivate.Functions.max, alias); }
 	public SelectQuery<E> selectMax(Entity<?> c, String attribute, String alias) 				{ return select(c, attribute, Estivate.Functions.max, alias); }
 	public SelectQuery<E> selectMax(Class<?> c, String attribute, String alias) 				{ return select(new Entity<>(c), attribute, Estivate.Functions.max, alias); }
 	public SelectQuery<E> selectMax(String attribute, String alias) 							{ return select(this.entity, attribute, Estivate.Functions.max, alias); }
-	public <T, P> SelectQuery<E> selectMax(AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.max, alias); }
+	public <T, P> SelectQuery<E> selectMax(@NonNull AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.max, alias); }
 
 	// Select sum
 	public SelectQuery<E> selectSum(Attribute attribute) 										{ return select(attribute.entity, attribute.attribute, Estivate.Functions.sum, attribute.alias); }
 	public SelectQuery<E> selectSum(Entity<?> entity, String attribute) 						{ return select(entity, attribute, Estivate.Functions.sum); }
 	public SelectQuery<E> selectSum(Class<?> c, String attribute) 								{ return select(new Entity<>(c), attribute, Estivate.Functions.sum); }
 	public SelectQuery<E> selectSum(String attribute) 											{ return select(this.entity, attribute, Estivate.Functions.sum); }
-	public <T, P> SelectQuery<E> selectSum(AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.sum); }
+	public <T, P> SelectQuery<E> selectSum(@NonNull AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.sum); }
 
 	// Select sum with alias
 	public SelectQuery<E> selectSum(Attribute attribute, String alias) 							{ return select(attribute.entity, attribute.attribute, Estivate.Functions.sum, alias); }
 	public SelectQuery<E> selectSum(Entity<?> c, String attribute, String alias) 				{ return select(c, attribute, Estivate.Functions.sum, alias); }
 	public SelectQuery<E> selectSum(Class<?> c, String attribute, String alias) 				{ return select(new Entity<>(c), attribute, Estivate.Functions.sum, alias); }
 	public SelectQuery<E> selectSum(String attribute, String alias) 							{ return select(this.entity, attribute, Estivate.Functions.sum, alias); }
-	public <T, P> SelectQuery<E> selectSum(AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.sum, alias); }
+	public <T, P> SelectQuery<E> selectSum(@NonNull AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.sum, alias); }
 	
 	// Select avg
 	public SelectQuery<E> selectAvg(Attribute attribute) 										{ return select(attribute.entity, attribute.attribute, Estivate.Functions.avg, attribute.alias); }
 	public SelectQuery<E> selectAvg(Entity<?> entity, String attribute) 						{ return select(entity, attribute, Estivate.Functions.avg); }
 	public SelectQuery<E> selectAvg(Class<?> c, String attribute) 								{ return select(new Entity<>(c), attribute, Estivate.Functions.avg); }
 	public SelectQuery<E> selectAvg(String attribute) 											{ return select(this.entity, attribute, Estivate.Functions.avg); }
-	public <T, P> SelectQuery<E> selectAvg(AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.avg); }
+	public <T, P> SelectQuery<E> selectAvg(@NonNull AttributeGetter<T, P> getter) 						{ return select(getter, Estivate.Functions.avg); }
 
 	// Select Avg with alias
 	public SelectQuery<E> selectAvg(Class<?> c, String attribute, String alias) 				{ return select(new Entity<>(c), attribute, Estivate.Functions.avg, alias); }
 	public SelectQuery<E> selectAvg(Entity<?> c, String attribute, String alias) 				{ return select(c, attribute, Estivate.Functions.avg, alias); }
 	public SelectQuery<E> selectAvg(String attribute, String alias) 							{ return select(this.entity, attribute, Estivate.Functions.avg, alias); }
 	public SelectQuery<E> selectAvg(Attribute attribute, String alias) 							{ return select(attribute.entity, attribute.attribute, Estivate.Functions.avg, alias); }
-	public <T, P> SelectQuery<E> selectAvg(AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.avg, alias); }
+	public <T, P> SelectQuery<E> selectAvg(@NonNull AttributeGetter<T, P> getter, String alias) 			{ return select(getter, Estivate.Functions.avg, alias); }
 
 	// Select group concat
 	public SelectQuery<E> selectGroupConcat(Attribute attribute) 								{ return select(attribute.entity, attribute.attribute, Estivate.Functions.groupConcat, attribute.alias); }
 	public SelectQuery<E> selectGroupConcat(Entity<?> entity, String attribute) 				{ return select(entity, attribute, Estivate.Functions.groupConcat); }
 	public SelectQuery<E> selectGroupConcat(Class<?> c, String attribute) 						{ return select(new Entity<>(c), attribute, Estivate.Functions.groupConcat); }
 	public SelectQuery<E> selectGroupConcat(String attribute) 									{ return select(this.entity, attribute, Estivate.Functions.groupConcat); }
-	public <T, P> SelectQuery<E> selectGroupConcat(AttributeGetter<T, P> getter) 				{ return select(getter, Estivate.Functions.groupConcat); }
+	public <T, P> SelectQuery<E> selectGroupConcat(@NonNull AttributeGetter<T, P> getter) 				{ return select(getter, Estivate.Functions.groupConcat); }
 
 	// Select Group Concat with alias
 	public SelectQuery<E> selectGroupConcat(Attribute attribute, String alias) 					{ return select(attribute.entity, attribute.attribute, Estivate.Functions.groupConcat, alias); }
 	public SelectQuery<E> selectGroupConcat(Entity<?> c, String attribute, String alias)		{ return select(c, attribute, Estivate.Functions.groupConcat, alias); }
 	public SelectQuery<E> selectGroupConcat(Class<?> c, String attribute, String alias) 		{ return select(new Entity<>(c), attribute, Estivate.Functions.groupConcat, alias); }
 	public SelectQuery<E> selectGroupConcat(String attribute, String alias) 					{ return select(this.entity, attribute, Estivate.Functions.groupConcat, alias); }
-	public <T, P> SelectQuery<E> selectGroupConcat(AttributeGetter<T, P> getter, String alias) 	{ return select(getter, Estivate.Functions.groupConcat, alias); }
+	public <T, P> SelectQuery<E> selectGroupConcat(@NonNull AttributeGetter<T, P> getter, String alias) 	{ return select(getter, Estivate.Functions.groupConcat, alias); }
 
 	public SelectQuery<E> clearSelects(){ selects.clear(); return this; }
 	public SelectQuery<E> clearOrderBys(){ super.clearOrderBys(); return this; }
@@ -429,7 +430,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 	public SelectQuery<E> groupBy(Attribute attribute) { groupBys.add(attribute); return this; }
 	public SelectQuery<E> groupBy(Entity<?> entity, String field) { return groupBy(Estivate.attribute(entity, field)); }
 	public SelectQuery<E> groupBy(Class<?> c, String field) { return groupBy(new Entity<>(c), field); }
-	public <T, P> SelectQuery<E> groupBy(AttributeGetter<T, P> getter) { return groupBy(Estivate.attribute(getter)); }
+	public <T, P> SelectQuery<E> groupBy(@NonNull AttributeGetter<T, P> getter) { return groupBy(Estivate.attribute(getter)); }
 	
 
 	public SelectQuery<E> groupBy(String attribute) { return groupBy(this.entity, attribute); }
