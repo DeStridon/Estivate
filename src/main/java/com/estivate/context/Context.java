@@ -1001,7 +1001,7 @@ public abstract class Context {
 		if(nestedBy == null) {
 			throw new IllegalArgumentException("hydrate requires @Projection.NestedBy on " + entityClass.getName());
 		}
-		clone.select(nestedBy.entity(), nestedBy.attribute());
+		clone.select(Estivate.entity(nestedBy.entity(), nestedBy.entityAlias()), nestedBy.attribute());
 
 		String[] fieldsToSelect = nestedFieldNames;
 		if(fieldsToSelect.length == 0) {

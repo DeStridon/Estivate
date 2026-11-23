@@ -89,7 +89,7 @@ public class Estivate {
 	public static Attribute.AttributeWindow attributeWindow(Attribute.Function function) { return attributeWindow(function, null); }
 	
 	public static <U> Entity<U> entity(Class<U> entity) { return new Entity<>(entity); }
-	public static <U> Entity<U> entity(Class<U> entity, String alias) { return new Entity<>(entity, alias); }
+	public static <U> Entity<U> entity(Class<U> entity, String alias) { return (alias == null || alias.isEmpty()) ? new Entity<>(entity) : new Entity<>(entity, alias); }
 
 	public static <U> SubQueryEntity<U> subQueryEntity(SelectQuery<U> query) { return new SubQueryEntity<>(query); }
 	public static <U> SubQueryEntity<U> subQueryEntity(SelectQuery<U> query, String alias) { return new SubQueryEntity<>(query, alias); }

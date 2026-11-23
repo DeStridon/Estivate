@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.util.Set;
 
+import com.estivate.Entity;
 import com.estivate.context.Context;
 import com.estivate.inject.ObjectProvider;
 import com.estivate.util.EntityMetaCache;
@@ -17,6 +18,8 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Attribute {
 		public Class<?> entity();
+		/** Join or query alias of {@link #entity()}. Blank keeps the unaliased table. */
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 		/**
@@ -56,6 +59,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Count {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -64,6 +68,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface CountDistinct {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -72,6 +77,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Sum {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -80,6 +86,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Min {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -88,6 +95,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Max {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -96,6 +104,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Avg {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -104,6 +113,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface IsNull {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -112,6 +122,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface IsNotNull {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -120,6 +131,7 @@ public class Projection {
 	@Retention( RetentionPolicy.RUNTIME )
 	public @interface Function {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 		public String functionPrefix();
@@ -139,6 +151,7 @@ public class Projection {
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface NestedAttribute {
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 		public String alias() default "";
 	}
@@ -153,9 +166,11 @@ public class Projection {
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface NestedMap {
 		public Class<?> keyEntity();
+		public String keyEntityAlias() default "";
 		public String keyAttribute();
 		public String keyAlias() default "";
 		public Class<?> valueEntity();
+		public String valueEntityAlias() default "";
 		public String valueAttribute();
 		public String valueAlias() default "";
 	}
@@ -164,6 +179,7 @@ public class Projection {
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface NestedBy{
 		public Class<?> entity();
+		public String entityAlias() default "";
 		public String attribute();
 	}
 	

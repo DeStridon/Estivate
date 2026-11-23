@@ -145,7 +145,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			
 			if(field.getDeclaredAnnotation(Projection.Attribute.class) != null) {
 				Projection.Attribute attribute = field.getDeclaredAnnotation(Projection.Attribute.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -153,7 +153,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.Count.class) != null) {
 				Projection.Count attribute = field.getDeclaredAnnotation(Projection.Count.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -161,7 +161,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.CountDistinct.class) != null) {
 				Projection.CountDistinct attribute = field.getDeclaredAnnotation(Projection.CountDistinct.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -169,7 +169,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.Sum.class) != null) {
 				Projection.Sum attribute = field.getDeclaredAnnotation(Projection.Sum.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -177,7 +177,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.Min.class) != null) {
 				Projection.Min attribute = field.getDeclaredAnnotation(Projection.Min.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -185,7 +185,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.Max.class) != null) {
 				Projection.Max attribute = field.getDeclaredAnnotation(Projection.Max.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -193,7 +193,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.Avg.class) != null) {
 				Projection.Avg attribute = field.getDeclaredAnnotation(Projection.Avg.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -201,7 +201,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.IsNull.class) != null) {
 				Projection.IsNull attribute = field.getDeclaredAnnotation(Projection.IsNull.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -209,7 +209,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.IsNotNull.class) != null) {
 				Projection.IsNotNull attribute = field.getDeclaredAnnotation(Projection.IsNotNull.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -217,7 +217,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.Function.class) != null) {
 				Projection.Function attribute = field.getDeclaredAnnotation(Projection.Function.class);
-				Entity<?> target = projectionEntity(c, attribute.entity());
+				Entity<?> target = projectionEntity(c, attribute.entity(), attribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -238,7 +238,7 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.NestedAttribute.class) != null) {
 				Projection.NestedAttribute nestedAttribute = field.getDeclaredAnnotation(Projection.NestedAttribute.class);
-				Entity<?> target = projectionEntity(c, nestedAttribute.entity());
+				Entity<?> target = projectionEntity(c, nestedAttribute.entity(), nestedAttribute.entityAlias());
 				if(!isEntityAvailable(target, availableEntities)) {
 					continue;
 				}
@@ -246,8 +246,8 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 			}
 			else if(field.getDeclaredAnnotation(Projection.NestedMap.class) != null) {
 				Projection.NestedMap nestedMap = field.getDeclaredAnnotation(Projection.NestedMap.class);
-				Entity<?> keyTarget = projectionEntity(c, nestedMap.keyEntity());
-				Entity<?> valueTarget = projectionEntity(c, nestedMap.valueEntity());
+				Entity<?> keyTarget = projectionEntity(c, nestedMap.keyEntity(), nestedMap.keyEntityAlias());
+				Entity<?> valueTarget = projectionEntity(c, nestedMap.valueEntity(), nestedMap.valueEntityAlias());
 				if(!isEntityAvailable(keyTarget, availableEntities) || !isEntityAvailable(valueTarget, availableEntities)) {
 					continue;
 				}
@@ -280,11 +280,11 @@ public class SelectQuery<E> extends Query<SelectQuery<E>, E> {
 		return classes;
 	}
 
-	private static Entity<?> projectionEntity(Entity<?> fallback, Class<?> annotatedEntity) {
+	private static Entity<?> projectionEntity(Entity<?> fallback, Class<?> annotatedEntity, String entityAlias) {
 		if(annotatedEntity == null || annotatedEntity == void.class) {
 			return fallback;
 		}
-		return new Entity<>(annotatedEntity);
+		return Estivate.entity(annotatedEntity, entityAlias);
 	}
 
 	private static boolean isEntityAvailable(Entity<?> target, Set<Class<?>> availableEntities) {

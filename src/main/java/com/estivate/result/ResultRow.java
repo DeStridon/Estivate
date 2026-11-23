@@ -115,45 +115,50 @@ public class ResultRow {
 
 
 	public Object as(Attribute attribute) {
-		return as(attribute.getEntity().entity, attribute.getAttribute(), attribute.getFunction());
+		return as(attribute.getEntity(), attribute.getAttribute(), attribute.getFunction());
 	}
 
 	public <T> T as(Class<?> c, String attribute) {
 		return as(c, attribute, null);
 	}
 
+	public <T> T as(Class<?> c, String attribute, Function function) {
+		return as(new Entity<>(c), attribute, function);
+	}
+
 	@SneakyThrows
 	@SuppressWarnings("unchecked")
-	public <T> T as(Class<?> c, String attribute, Function function) {
+	public <T> T as(Entity<?> entity, String attribute, Function function) {
 
+		Class<?> c = entity == null ? null : entity.entity;
 		Class<?> returnType = function == null ? null : function.getReturnType();
 
 		if(returnType == null){
 			Field field = EntityMetaCache.findField(c, attribute);
 			Type type = field.getGenericType();
 
-			if(type == String.class) { return (T) asString(c, attribute, function); }
-			else if(type == boolean.class || type == Boolean.class) { return (T) asBoolean(c, attribute, function);}
-			else if(type == byte.class || type == Byte.class) { return (T) asByte(c, attribute, function);}
-			else if(type == short.class || type == Short.class) { return (T) asShort(c, attribute, function);}
-			else if(type == int.class || type == Integer.class) { return (T) asInteger(c, attribute, function);}
-			else if(type == long.class || type == Long.class) { return (T) asLong(c, attribute, function);}
-			else if(type == float.class || type == Float.class) { return (T) asFloat(c, attribute, function);}
-			else if(type == double.class || type == Double.class) { return (T) asDouble(c, attribute, function);}
-			else if(type == char.class || type == Character.class) { return (T) asChar(c, attribute, function);}
-			else if(type == Date.class) { return (T) asDate(c, attribute, function);}
-			else if(type == LocalDateTime.class) { return (T) asLocalDateTime(c, attribute, function);}
-			else if(type == Instant.class) { return (T) asInstant(c, attribute, function);}
-			else if(type == LocalDate.class) { return (T) asLocalDate(c, attribute, function);}
+			if(type == String.class) { return (T) asString(entity, attribute, function); }
+			else if(type == boolean.class || type == Boolean.class) { return (T) asBoolean(entity, attribute, function);}
+			else if(type == byte.class || type == Byte.class) { return (T) asByte(entity, attribute, function);}
+			else if(type == short.class || type == Short.class) { return (T) asShort(entity, attribute, function);}
+			else if(type == int.class || type == Integer.class) { return (T) asInteger(entity, attribute, function);}
+			else if(type == long.class || type == Long.class) { return (T) asLong(entity, attribute, function);}
+			else if(type == float.class || type == Float.class) { return (T) asFloat(entity, attribute, function);}
+			else if(type == double.class || type == Double.class) { return (T) asDouble(entity, attribute, function);}
+			else if(type == char.class || type == Character.class) { return (T) asChar(entity, attribute, function);}
+			else if(type == Date.class) { return (T) asDate(entity, attribute, function);}
+			else if(type == LocalDateTime.class) { return (T) asLocalDateTime(entity, attribute, function);}
+			else if(type == Instant.class) { return (T) asInstant(entity, attribute, function);}
+			else if(type == LocalDate.class) { return (T) asLocalDate(entity, attribute, function);}
 			// @Convert (might be enum, this condition should be tested before classic enum)
 			else if(FieldUtils.hasConvertAnnotation(field)) {
-				return (T) EntityMetaCache.fieldBinding(field).toEntityAttribute(asString(c, attribute));
+				return (T) EntityMetaCache.fieldBinding(field).toEntityAttribute(asString(entity, attribute));
 			}
 			// @Enumerated
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(javax.persistence.Enumerated.class) != null) {
 
 				javax.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(javax.persistence.Enumerated.class);
-				String column = resultTable.context.nameMapper.toEntityNameAttribute(c, attribute);
+				String column = resultTable.context.nameMapper.toEntityNameAttribute(entity, attribute);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == javax.persistence.EnumType.STRING) {
 					return asEnumFromString(column, (Class<?>) type);
 				}
@@ -163,7 +168,7 @@ public class ResultRow {
 			}
 			else if(type instanceof Class && ((Class<?>) type).isEnum() && field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class) != null) {
 				jakarta.persistence.Enumerated enumeratedAnnotation = field.getDeclaredAnnotation(jakarta.persistence.Enumerated.class);
-				String column = resultTable.context.nameMapper.toEntityNameAttribute(c, attribute);
+				String column = resultTable.context.nameMapper.toEntityNameAttribute(entity, attribute);
 				if(enumeratedAnnotation.value() != null && enumeratedAnnotation.value() == jakarta.persistence.EnumType.STRING) {
 					return asEnumFromString(column, (Class<?>) type);
 				}
@@ -175,19 +180,19 @@ public class ResultRow {
 				log.error("This type is not mapped yet : "+type);
 			}
 		}
-		else if(returnType == Integer.class){ return (T) asInteger(c, attribute, function); }
-		else if(returnType == Long.class){ 	return (T) asLong(c, attribute, function); }
-		else if(returnType == Float.class){ 	return (T) asFloat(c, attribute, function); }
-		else if(returnType == Double.class){	return (T) asDouble(c, attribute, function); }
-		else if(returnType == String.class){ return (T) asString(c, attribute, function); }
-		else if(returnType == Character.class){ return (T) asChar(c, attribute, function); }
-		else if(returnType == Boolean.class){ return (T) asBoolean(c, attribute, function); }
-		else if(returnType == Byte.class){ return (T) asByte(c, attribute, function); }
-		else if(returnType == Short.class){ return (T) asShort(c, attribute, function); }
-		else if(returnType == Date.class){ return (T) asDate(c, attribute, function); }
-		else if(returnType == LocalDateTime.class){ return (T) asLocalDateTime(c, attribute, function); }
-		else if(returnType == Instant.class){ return (T) asInstant(c, attribute, function); }
-		else if(returnType == LocalDate.class){ return (T) asLocalDate(c, attribute, function); }
+		else if(returnType == Integer.class){ return (T) asInteger(entity, attribute, function); }
+		else if(returnType == Long.class){ 	return (T) asLong(entity, attribute, function); }
+		else if(returnType == Float.class){ 	return (T) asFloat(entity, attribute, function); }
+		else if(returnType == Double.class){	return (T) asDouble(entity, attribute, function); }
+		else if(returnType == String.class){ return (T) asString(entity, attribute, function); }
+		else if(returnType == Character.class){ return (T) asChar(entity, attribute, function); }
+		else if(returnType == Boolean.class){ return (T) asBoolean(entity, attribute, function); }
+		else if(returnType == Byte.class){ return (T) asByte(entity, attribute, function); }
+		else if(returnType == Short.class){ return (T) asShort(entity, attribute, function); }
+		else if(returnType == Date.class){ return (T) asDate(entity, attribute, function); }
+		else if(returnType == LocalDateTime.class){ return (T) asLocalDateTime(entity, attribute, function); }
+		else if(returnType == Instant.class){ return (T) asInstant(entity, attribute, function); }
+		else if(returnType == LocalDate.class){ return (T) asLocalDate(entity, attribute, function); }
 		else {
 			log.error("This type is not mapped yet : "+returnType);
 		}

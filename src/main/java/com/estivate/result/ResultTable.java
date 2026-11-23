@@ -281,9 +281,8 @@ public class ResultTable implements Iterable<ResultRow>{
 
         Map<Object, T> resultsMap = new LinkedHashMap<>();
 
-        // TODO : 
         for(ResultRow row : rows) {
-            Object keyValue = row.as(key.entity(), key.attribute());
+            Object keyValue = row.as(Estivate.attribute(Estivate.entity(key.entity(), key.entityAlias()), key.attribute()));
             T object = resultsMap.get(keyValue);
             if(object == null) {
                 object = entityMapper.map(row.getColumnValues());
@@ -314,7 +313,7 @@ public class ResultTable implements Iterable<ResultRow>{
         if (key == null) {
             throw new IllegalArgumentException("hydrate requires @Projection.NestedBy on " + entityClass.getName());
         }
-        if(query.getSelects().stream().noneMatch(s -> s.entity.entity.equals(key.entity()) && s.attribute.equals(key.attribute()))) {
+        if(query.getSelects().stream().noneMatch(s -> selectMatchesNestedBy(s, key))) {
             throw new IllegalArgumentException("@Projection.NestedBy attribute '" + key.entity().getSimpleName() + "." + key.attribute() + "' of entity '" + key.entity().getSimpleName() + "' must be present in selects");
         }
 
@@ -328,7 +327,7 @@ public class ResultTable implements Iterable<ResultRow>{
 
         EntityMapper<T> entityMapper = new EntityMapper<>(context, query, new Entity<>(entityClass));
         for (ResultRow row : rows) {
-            Object keyValue = row.as(key.entity(), key.attribute());
+            Object keyValue = row.as(Estivate.attribute(Estivate.entity(key.entity(), key.entityAlias()), key.attribute()));
             T object = existingByKey.get(keyValue);
             if (object == null) {
                 object = entityMapper.map(row.getColumnValues());
@@ -359,11 +358,32 @@ public class ResultTable implements Iterable<ResultRow>{
         // Look for a field in entityClass that has a @Projection.Attribute mapping to the same key attribute in the key entity.
         for (Field f : entityClass.getDeclaredFields()) {
             Projection.Attribute projectionAttr = f.getDeclaredAnnotation(Projection.Attribute.class);
-            if (projectionAttr != null && projectionAttr.entity().equals(key.entity()) && projectionAttr.attribute().equals(key.attribute())) {
+            if (projectionAttr != null && projectionAttr.entity().equals(key.entity()) && projectionAttr.attribute().equals(key.attribute()) && nestedByAliasMatches(key.entityAlias(), projectionAttr.entityAlias())) {
                 return f;
             }
         }
         throw new IllegalArgumentException("Could not find a field in " + entityClass.getName() + " with @Projection.Attribute(entity=" + key.entity().getSimpleName() + ", attribute=" + key.attribute() + ")");
+    }
+
+    private static boolean selectMatchesNestedBy(Attribute select, Projection.NestedBy key) {
+        if(select.entity == null || select.entity.entity == null || select.attribute == null) {
+            return false;
+        }
+        if(!select.entity.entity.equals(key.entity()) || !select.attribute.equals(key.attribute())) {
+            return false;
+        }
+        if(key.entityAlias() == null || key.entityAlias().isEmpty()) {
+            return true;
+        }
+        return key.entityAlias().equals(select.entity.alias);
+    }
+
+    /** A blank NestedBy alias matches any field alias. A set alias must match the field. */
+    private static boolean nestedByAliasMatches(String keyAlias, String fieldAlias) {
+        if(keyAlias == null || keyAlias.isEmpty()) {
+            return true;
+        }
+        return keyAlias.equals(fieldAlias);
     }
 
     

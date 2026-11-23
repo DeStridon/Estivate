@@ -614,46 +614,46 @@ public class EntityMapper<U> {
 		
 		Projection.Attribute attributeAnnotation = field.getDeclaredAnnotation(Projection.Attribute.class);
 		if (attributeAnnotation != null) {
-			return getColumnNameFromAnnotation(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias());
+			return getColumnNameFromAnnotation(attributeAnnotation.entity(), attributeAnnotation.entityAlias(), attributeAnnotation.attribute(), attributeAnnotation.alias());
 		}
 
 		Projection.Count countAnnotation = field.getDeclaredAnnotation(Projection.Count.class);
 		if (countAnnotation != null) {
-			return getColumnNameFromAnnotation(countAnnotation.entity(), countAnnotation.attribute(), countAnnotation.alias());
+			return getColumnNameFromAnnotation(countAnnotation.entity(), countAnnotation.entityAlias(), countAnnotation.attribute(), countAnnotation.alias());
 		}
 
 		Projection.Sum sumAnnotation = field.getDeclaredAnnotation(Projection.Sum.class);
 		if (sumAnnotation != null) {
-			return getColumnNameFromAnnotation(sumAnnotation.entity(), sumAnnotation.attribute(), sumAnnotation.alias());
+			return getColumnNameFromAnnotation(sumAnnotation.entity(), sumAnnotation.entityAlias(), sumAnnotation.attribute(), sumAnnotation.alias());
 		}
 
 		Projection.Min minAnnotation = field.getDeclaredAnnotation(Projection.Min.class);
 		if (minAnnotation != null) {
-			return getColumnNameFromAnnotation(minAnnotation.entity(), minAnnotation.attribute(), minAnnotation.alias());
+			return getColumnNameFromAnnotation(minAnnotation.entity(), minAnnotation.entityAlias(), minAnnotation.attribute(), minAnnotation.alias());
 		}
 
 		Projection.Max maxAnnotation = field.getDeclaredAnnotation(Projection.Max.class);
 		if (maxAnnotation != null) {
-			return getColumnNameFromAnnotation(maxAnnotation.entity(), maxAnnotation.attribute(), maxAnnotation.alias());
+			return getColumnNameFromAnnotation(maxAnnotation.entity(), maxAnnotation.entityAlias(), maxAnnotation.attribute(), maxAnnotation.alias());
 		}
 
 		Projection.Avg avgAnnotation = field.getDeclaredAnnotation(Projection.Avg.class);
 		if (avgAnnotation != null) {
-			return getColumnNameFromAnnotation(avgAnnotation.entity(), avgAnnotation.attribute(), avgAnnotation.alias());
+			return getColumnNameFromAnnotation(avgAnnotation.entity(), avgAnnotation.entityAlias(), avgAnnotation.attribute(), avgAnnotation.alias());
 		}
 
 		Projection.IsNull isNullAnnotation = field.getDeclaredAnnotation(Projection.IsNull.class);
 		if (isNullAnnotation != null) {
-			return getColumnNameFromAnnotation(isNullAnnotation.entity(), isNullAnnotation.attribute(), isNullAnnotation.alias());
+			return getColumnNameFromAnnotation(isNullAnnotation.entity(), isNullAnnotation.entityAlias(), isNullAnnotation.attribute(), isNullAnnotation.alias());
 		}
 		Projection.IsNotNull isNotNullAnnotation = field.getDeclaredAnnotation(Projection.IsNotNull.class);
 		if (isNotNullAnnotation != null) {
-			return getColumnNameFromAnnotation(isNotNullAnnotation.entity(), isNotNullAnnotation.attribute(), isNotNullAnnotation.alias());
+			return getColumnNameFromAnnotation(isNotNullAnnotation.entity(), isNotNullAnnotation.entityAlias(), isNotNullAnnotation.attribute(), isNotNullAnnotation.alias());
 		}
 
 		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);
 		if (functionAnnotation != null) {
-			return getColumnNameFromAnnotation(functionAnnotation.entity(), functionAnnotation.attribute(), functionAnnotation.alias());
+			return getColumnNameFromAnnotation(functionAnnotation.entity(), functionAnnotation.entityAlias(), functionAnnotation.attribute(), functionAnnotation.alias());
 		}
 		
 		return context.nameMapper.toEntityNameAttribute(entity, field.getName());
@@ -666,7 +666,7 @@ public class EntityMapper<U> {
 	 * Common logic to get column name from annotations with entity, attribute, and
 	 * alias
 	 */
-	private String getColumnNameFromAnnotation(Class<?> entityClass, String attribute, String alias) {
+	private String getColumnNameFromAnnotation(Class<?> entityClass, String entityAlias, String attribute, String alias) {
 		// If alias is not null and not empty, use it directly
 		if (alias != null && !alias.isEmpty()) {
 			return context.nameMapper.mapEntityField(alias);
@@ -682,7 +682,7 @@ public class EntityMapper<U> {
 			return null;
 		}
 
-		return fieldToColumnName(new Entity<>(entityClass), mappingField);
+		return fieldToColumnName(Estivate.entity(entityClass, entityAlias), mappingField);
 	}
 
 	public void setGeneratedField(Entity<?> entity, Field field, U obj, String value) throws EstivateException {
@@ -880,7 +880,7 @@ public class EntityMapper<U> {
 				log.error("@Projection.NestedAttribute requires a Collection field: " + field.getName());
 				continue;
 			}
-			Attribute attribute = Estivate.attribute(nestedAttribute.entity(), nestedAttribute.attribute(), nestedAttribute.alias());
+			Attribute attribute = Estivate.attribute(Estivate.entity(nestedAttribute.entity(), nestedAttribute.entityAlias()), nestedAttribute.attribute(), nestedAttribute.alias());
 			int index = FieldUtils.indexOf(query.getSelects(), attribute);
 			if(index == -1) {
 				log.warn("NestedAttribute select missing for field " + field.getName() + " (" + attribute + ")");
@@ -907,8 +907,8 @@ public class EntityMapper<U> {
 				log.error("@Projection.NestedMap requires a Map field: " + field.getName());
 				continue;
 			}
-			Attribute keyAttribute = Estivate.attribute(nestedMap.keyEntity(), nestedMap.keyAttribute(), nestedMap.keyAlias());
-			Attribute valueAttribute = Estivate.attribute(nestedMap.valueEntity(), nestedMap.valueAttribute(), nestedMap.valueAlias());
+			Attribute keyAttribute = Estivate.attribute(Estivate.entity(nestedMap.keyEntity(), nestedMap.keyEntityAlias()), nestedMap.keyAttribute(), nestedMap.keyAlias());
+			Attribute valueAttribute = Estivate.attribute(Estivate.entity(nestedMap.valueEntity(), nestedMap.valueEntityAlias()), nestedMap.valueAttribute(), nestedMap.valueAlias());
 			int keyIndex = FieldUtils.indexOf(query.getSelects(), keyAttribute);
 			int valueIndex = FieldUtils.indexOf(query.getSelects(), valueAttribute);
 			if(keyIndex == -1 || valueIndex == -1) {
@@ -936,53 +936,53 @@ public class EntityMapper<U> {
 		if (attributeAnnotation != null) {
 			Function<?, ?> transformer = Projection.createTransformer(context == null ? null : context.getObjectProvider(), attributeAnnotation, field.getName());
 			return new ColumnMapping(
-					Estivate.attribute(attributeAnnotation.entity(), attributeAnnotation.attribute(), attributeAnnotation.alias()),
+					Estivate.attribute(Estivate.entity(attributeAnnotation.entity(), attributeAnnotation.entityAlias()), attributeAnnotation.attribute(), attributeAnnotation.alias()),
 					field,
 					transformer);
 		}
 
 		Projection.Count countAnnotation = field.getDeclaredAnnotation(Projection.Count.class);
 		if (countAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(countAnnotation.entity(), countAnnotation.attribute(), Estivate.Functions.count, countAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(countAnnotation.entity(), countAnnotation.entityAlias()), countAnnotation.attribute(), Estivate.Functions.count, countAnnotation.alias()), field, null);
 		}
 		
 		Projection.CountDistinct countDistinctAnnotation = field.getDeclaredAnnotation(Projection.CountDistinct.class);
 		if (countDistinctAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(countDistinctAnnotation.entity(), countDistinctAnnotation.attribute(), Estivate.Functions.countDistinct, countDistinctAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(countDistinctAnnotation.entity(), countDistinctAnnotation.entityAlias()), countDistinctAnnotation.attribute(), Estivate.Functions.countDistinct, countDistinctAnnotation.alias()), field, null);
 		}
 
 		Projection.Sum sumAnnotation = field.getDeclaredAnnotation(Projection.Sum.class);
 		if (sumAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(sumAnnotation.entity(), sumAnnotation.attribute(), Estivate.Functions.sum, sumAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(sumAnnotation.entity(), sumAnnotation.entityAlias()), sumAnnotation.attribute(), Estivate.Functions.sum, sumAnnotation.alias()), field, null);
 		}
 
 		Projection.Min minAnnotation = field.getDeclaredAnnotation(Projection.Min.class);
 		if (minAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(minAnnotation.entity(), minAnnotation.attribute(), Estivate.Functions.min, minAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(minAnnotation.entity(), minAnnotation.entityAlias()), minAnnotation.attribute(), Estivate.Functions.min, minAnnotation.alias()), field, null);
 		}
 
 		Projection.Max maxAnnotation = field.getDeclaredAnnotation(Projection.Max.class);
 		if (maxAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(maxAnnotation.entity(), maxAnnotation.attribute(), Estivate.Functions.max, maxAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(maxAnnotation.entity(), maxAnnotation.entityAlias()), maxAnnotation.attribute(), Estivate.Functions.max, maxAnnotation.alias()), field, null);
 		}
 
 		Projection.Avg avgAnnotation = field.getDeclaredAnnotation(Projection.Avg.class);
 		if (avgAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(avgAnnotation.entity(), avgAnnotation.attribute(), Estivate.Functions.avg, avgAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(avgAnnotation.entity(), avgAnnotation.entityAlias()), avgAnnotation.attribute(), Estivate.Functions.avg, avgAnnotation.alias()), field, null);
 		}
 
 		Projection.IsNull isNullAnnotation = field.getDeclaredAnnotation(Projection.IsNull.class);
 		if (isNullAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(isNullAnnotation.entity(), isNullAnnotation.attribute(), Estivate.Functions.isNull, isNullAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(isNullAnnotation.entity(), isNullAnnotation.entityAlias()), isNullAnnotation.attribute(), Estivate.Functions.isNull, isNullAnnotation.alias()), field, null);
 		}
 		Projection.IsNotNull isNotNullAnnotation = field.getDeclaredAnnotation(Projection.IsNotNull.class);
 		if (isNotNullAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(isNotNullAnnotation.entity(), isNotNullAnnotation.attribute(), Estivate.Functions.isNotNull, isNotNullAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(isNotNullAnnotation.entity(), isNotNullAnnotation.entityAlias()), isNotNullAnnotation.attribute(), Estivate.Functions.isNotNull, isNotNullAnnotation.alias()), field, null);
 		}
 
 		Projection.Function functionAnnotation = field.getDeclaredAnnotation(Projection.Function.class);
 		if (functionAnnotation != null) {
-			return new ColumnMapping(Estivate.attribute(functionAnnotation.entity(), functionAnnotation.attribute(), Estivate.function(functionAnnotation.functionPrefix(), functionAnnotation.functionSuffix()), functionAnnotation.alias()), field, null);
+			return new ColumnMapping(Estivate.attribute(Estivate.entity(functionAnnotation.entity(), functionAnnotation.entityAlias()), functionAnnotation.attribute(), Estivate.function(functionAnnotation.functionPrefix(), functionAnnotation.functionSuffix()), functionAnnotation.alias()), field, null);
 		}
 
 		return new ColumnMapping(Estivate.attribute(entityClass, field.getName()), field, null);

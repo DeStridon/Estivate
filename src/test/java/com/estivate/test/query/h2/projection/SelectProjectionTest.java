@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.estivate.Entity;
 import com.estivate.Estivate;
 import com.estivate.context.Context;
 import com.estivate.query.Projection;
@@ -106,6 +107,17 @@ public class SelectProjectionTest {
         
         @Projection.Count(entity = CustomerEntity.class, attribute = AbstractEntity.Fields.id)
         private Long count;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerAliasPairProjection {
+        @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.name, entityAlias = "buyer")
+        private String buyerName;
+
+        @Projection.Attribute(entity = CustomerEntity.class, attribute = CustomerEntity.Fields.name, entityAlias = "seller")
+        private String sellerName;
     }
 
     @Data
@@ -478,6 +490,27 @@ public class SelectProjectionTest {
 
         // Find the non-null email customers and check projection
        
+    }
+
+    @Test
+    public void testProject_EntityAlias() {
+        Entity<CustomerEntity> buyer = Estivate.entity(CustomerEntity.class, "buyer");
+        Entity<CustomerEntity> seller = Estivate.entity(CustomerEntity.class, "seller");
+
+        SelectQuery<CustomerEntity> query = Estivate.selectQuery(buyer)
+            .joinLeft(buyer, seller, CustomerEntity.Fields.country, CustomerEntity.Fields.country)
+            .eq(Estivate.attribute(buyer, AbstractEntity.Fields.id), testCustomer1.getId())
+            .eq(Estivate.attribute(seller, AbstractEntity.Fields.id), testCustomer2.getId())
+            .selectAll(CustomerAliasPairProjection.class);
+
+        assertTrue(query.getSelects().stream().anyMatch(select -> "buyer".equals(select.getEntity().alias) && CustomerEntity.Fields.name.equals(select.getAttribute())));
+        assertTrue(query.getSelects().stream().anyMatch(select -> "seller".equals(select.getEntity().alias) && CustomerEntity.Fields.name.equals(select.getAttribute())));
+
+        CustomerAliasPairProjection result = query.extractSingle(context, CustomerAliasPairProjection.class);
+
+        assertNotNull(result);
+        assertEquals(testCustomer1.getName(), result.getBuyerName());
+        assertEquals(testCustomer2.getName(), result.getSellerName());
     }
     
 }
