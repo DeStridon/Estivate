@@ -599,10 +599,24 @@ public class ResultTable implements Iterable<ResultRow>{
         return map;
     }
 
-    public Map<Object, Object> asMap(Attribute keyAttribute, Attribute valueAttribute) {
-        return asMap(keyAttribute, valueAttribute, new LinkedHashMap<>());
+
+    // asMap : Attribute / Entity
+    public <T> Map<Object, T> asMap(Attribute keyAttribute, Entity<T> entity, Map<Object, T> map) {
+        for(ResultRow result : rows){
+            map.put(result.as(keyAttribute), result.as(entity));
+        }
+        return map;
     }
 
+    // asMap : Entity / Attribute
+    public <T> Map<T, Object> asMap(Entity<T> keyEntity, Attribute valueAttribute, Map<T, Object> map) {
+        for(ResultRow result : rows){
+            map.put(result.as(keyEntity), result.as(valueAttribute));
+        }
+        return map;
+    }
+
+    // asMap : Attribute / Attribute
     public Map<Object, Object> asMap(Attribute keyAttribute, Attribute valueAttribute, Map<Object, Object> map) {
         for(ResultRow result : rows){
             map.put(result.as(keyAttribute), result.as(valueAttribute));
@@ -610,16 +624,23 @@ public class ResultTable implements Iterable<ResultRow>{
         return map;
     }
 
-    public <AE, AT, C> Map<AT, C> asMap(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass) {
-        return asMap(uAttribute, vClass, new LinkedHashMap<>());
-    }
-
-    public <AE, AT, C> Map<AT, C> asMap(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, C> map) {
+    // asMap : Entity / Entity
+    public <T> Map<T, T> asMap(Entity<T> keyEntity, Entity<T> valueEntity, Map<T, T> map) {
         for(ResultRow result : rows){
-            map.put(result.as(uAttribute), result.as(vClass));
+            map.put(result.as(keyEntity), result.as(valueEntity));
         }
         return map;
     }
+
+    public <T> Map<Object, T> asMap(Attribute keyAttribute, Entity<T> entity) { return asMap(keyAttribute, entity, new LinkedHashMap<>()); }
+    public Map<Object, Object> asMap(Attribute keyAttribute, Attribute valueAttribute) { return asMap(keyAttribute, valueAttribute, new LinkedHashMap<>()); }
+    public <T> Map<T, T> asMap(Entity<T> keyEntity, Entity<T> valueEntity) { return asMap(keyEntity, valueEntity, new LinkedHashMap<>()); }
+    public <T> Map<T, Object> asMap(Entity<T> keyEntity, Attribute valueAttribute) { return asMap(keyEntity, valueAttribute, new LinkedHashMap<>()); }
+
+    public <AE, AT, C> Map<AT, C> asMap(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass) { return asMap(uAttribute, vClass, new LinkedHashMap<>()); }
+
+    public <AE, AT, C> Map<AT, C> asMap(@NonNull AttributeGetter<AE, AT> uAttribute, Class<C> vClass, Map<AT, C> map) { return (Map<AT, C>) asMap(Estivate.attribute(uAttribute), Estivate.entity(vClass), (Map) map); }
+    
 
     public <C1, C2> Map<C1, C2> asMap(Class<C1> uClass, Class<C2> vClass) {
         return asMap(uClass, vClass, new LinkedHashMap<>());
@@ -642,6 +663,44 @@ public class ResultTable implements Iterable<ResultRow>{
         }
         return map;
     }
+
+
+    // Attribute / Entity
+    public <T> Map<Object, List<T>> asMapList(Attribute keyAttribute, Entity<T> entity, Map<Object, List<T>> map) {
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(keyAttribute), k -> new ArrayList<>()).add(result.as(entity));
+        }
+        return map;
+    }
+
+    // Entity / Attribute
+    public <T> Map<T, List<Object>> asMapList(Entity<T> keyEntity, Attribute valueAttribute, Map<T, List<Object>> map) {
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(keyEntity), k -> new ArrayList<>()).add(result.as(valueAttribute));
+        }
+        return map;
+    }
+
+    // Attribute / Attribute
+    public Map<Object, List<Object>> asMapList(Attribute keyAttribute, Attribute valueAttribute, Map<Object, List<Object>> map) {
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(keyAttribute), k -> new ArrayList<>()).add(result.as(valueAttribute));
+        }
+        return map;
+    }
+
+    // Entity / Entity
+    public <T> Map<T, List<T>> asMapList(Entity<T> keyEntity, Entity<T> valueEntity, Map<T, List<T>> map) {
+        for(ResultRow result : rows){
+            map.computeIfAbsent(result.as(keyEntity), k -> new ArrayList<>()).add(result.as(valueEntity));
+        }
+        return map;
+    }
+
+    public <T> Map<Object, List<T>> asMapList(Attribute keyAttribute, Entity<T> entity) { return asMapList(keyAttribute, entity, new LinkedHashMap<>()); }
+    public <T> Map<T, List<Object>> asMapList(Entity<T> keyEntity, Attribute valueAttribute) { return asMapList(keyEntity, valueAttribute, new LinkedHashMap<>()); }
+    public <T> Map<Object, List<T>> asMapList(Attribute keyAttribute, Attribute valueAttribute) { return asMapList(keyAttribute, valueAttribute, new LinkedHashMap<>()); }
+    public <T> Map<T, List<T>> asMapList(Entity<T> keyEntity, Entity<T> valueEntity) { return asMapList(keyEntity, valueEntity, new LinkedHashMap<>()); }
 
 
     public <A1E, A1T, A2E, A2T> Map<A1T, List<A2T>> asMapList(@NonNull AttributeGetter<A1E, A1T> uAttribute, AttributeGetter<A2E, A2T> vAttribute) {
